@@ -24,9 +24,15 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.22"
-      - name: Build
+      - name: Build CLI
         working-directory: apps/go
-        run: go build ./cmd/simulator/
+        run: go build -o simulator ./cmd/simulator/
+      - name: Build Server
+        working-directory: apps/go
+        run: go build -o server ./cmd/server/
+      - name: Vet
+        working-directory: apps/go
+        run: go vet ./...
       - name: Run
         working-directory: apps/go
         run: ./simulator 2>&1 | head -50
@@ -52,7 +58,7 @@ jobs:
         run: make
       - name: Run
         working-directory: apps/c
-        run: ./inthebeginning 2>&1 | head -50
+        run: ./build/simulator 2>&1 | head -50
 
   cpp-build:
     runs-on: ubuntu-latest
@@ -86,14 +92,16 @@ jobs:
         working-directory: apps/java
         run: java -jar build/inthebeginning.jar 2>&1 | head -50
 
-  nodejs-run:
+  nodejs-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Run
+      - name: Run tests
+        run: node --test apps/nodejs/test/test_simulator.js
+      - name: Run CLI
         working-directory: apps/nodejs
         run: node index.js 2>&1 | head -50
 
@@ -104,11 +112,21 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Install and build
+      - name: Install and build CLI
         working-directory: apps/typescript
         run: |
           npm install
-          npx tsc
-      - name: Run
+          npm run build
+      - name: Build browser
+        working-directory: apps/typescript
+        run: npm run build:browser 2>/dev/null || true
+      - name: Run CLI
         working-directory: apps/typescript
         run: node dist/index.js 2>&1 | head -50
+
+  perl-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run tests
+        run: prove -v apps/perl/t/

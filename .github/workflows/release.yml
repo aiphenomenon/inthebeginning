@@ -29,7 +29,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.22"
-      - name: Build
+      - name: Build CLI
         working-directory: apps/go
         env:
           GOOS: ${{ matrix.goos }}
@@ -38,6 +38,15 @@ jobs:
           EXT=""
           if [ "$GOOS" = "windows" ]; then EXT=".exe"; fi
           go build -ldflags="-s -w" -o "inthebeginning-go-${GOOS}-${GOARCH}${EXT}" ./cmd/simulator/
+      - name: Build SSE Server
+        working-directory: apps/go
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          EXT=""
+          if [ "$GOOS" = "windows" ]; then EXT=".exe"; fi
+          go build -ldflags="-s -w" -o "inthebeginning-go-server-${GOOS}-${GOARCH}${EXT}" ./cmd/server/
       - uses: actions/upload-artifact@v4
         with:
           name: go-${{ matrix.goos }}-${{ matrix.goarch }}
@@ -105,7 +114,7 @@ jobs:
         run: make static
       - name: Package
         working-directory: apps/c
-        run: cp inthebeginning inthebeginning-c-linux-amd64
+        run: cp build/simulator-static inthebeginning-c-linux-amd64 2>/dev/null || cp build/simulator inthebeginning-c-linux-amd64
       - uses: actions/upload-artifact@v4
         with:
           name: c-linux-amd64
@@ -146,8 +155,46 @@ jobs:
           name: java-jar
           path: apps/java/build/inthebeginning.jar
 
+  build-nodejs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Package
+        working-directory: apps/nodejs
+        run: |
+          npm install --omit=dev 2>/dev/null || true
+          cd ..
+          tar czf nodejs/inthebeginning-nodejs.tar.gz nodejs/*.js nodejs/package.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nodejs
+          path: apps/nodejs/inthebeginning-nodejs.tar.gz
+
+  build-typescript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Build
+        working-directory: apps/typescript
+        run: |
+          npm install
+          npm run build
+          npm run build:browser 2>/dev/null || true
+          cd ..
+          tar czf typescript/inthebeginning-typescript.tar.gz typescript/dist/ typescript/dist-browser/ typescript/public/ typescript/package.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: typescript
+          path: apps/typescript/inthebeginning-typescript.tar.gz
+
   release:
-    needs: [build-go, build-rust, build-c, build-cpp, build-java]
+    needs: [build-go, build-rust, build-c, build-cpp, build-java, build-nodejs, build-typescript]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4

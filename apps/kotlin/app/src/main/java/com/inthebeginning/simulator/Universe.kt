@@ -4,7 +4,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlin.math.cos
-import kotlin.math.ln
 import kotlin.math.sin
 import kotlin.random.Random
 
