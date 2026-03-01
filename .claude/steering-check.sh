@@ -81,7 +81,18 @@ echo "[FAIL-CUE] Test coverage: Ensure full test coverage; use coverage_map for 
 # 8. Commit format
 echo "[FAIL-CUE] Commit format: Use '<type>(<scope>): <description>' with AST context"
 
-# 9. Reflection principle — TRIPLE CROSS-CHECK
+# 9. AST-guided code generation (bug prevention)
+echo "[FAIL-CUE] AST-guided code gen: Before editing files, run:"
+echo "           - symbols query (prevents naming collisions, duplicate defs)"
+echo "           - dependencies query (prevents broken imports)"
+echo "           - callers query before renaming/moving (prevents broken call sites)"
+echo "           After editing files, run:"
+echo "           - parse query (verify syntax)"
+echo "           - coverage_map query (identify untested paths)"
+echo "           Bug classes prevented: broken imports, type mismatches, dead code,"
+echo "           duplicate defs, missing coverage, circular deps, stale references"
+
+# 10. Reflection principle — TRIPLE CROSS-CHECK
 echo "[FAIL-CUE] Reflection (TRIPLE CROSS-CHECK):"
 echo "           Every steering rule MUST exist in ALL THREE locations:"
 echo "             1. CLAUDE.md  (agent steering for Claude Code)"
@@ -95,6 +106,7 @@ echo "             - Release history update per turn"
 echo "             - Markdown consistency review per turn"
 echo "             - Test coverage enforcement per turn"
 echo "             - AST introspection on changed files"
+echo "             - AST-guided code generation (bug prevention)"
 echo "             - Cross-language consistency for physics changes"
 echo "             - Commit format rules"
 

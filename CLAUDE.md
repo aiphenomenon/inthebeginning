@@ -296,6 +296,74 @@ with open(os.path.join(base, "ast_captures", "symbols.json"), "w") as f:
     json.dump(symbols, f, indent=2)
 ```
 
+### AST-Guided Code Generation (Bug Prevention)
+
+When generating new code or modifying existing code, use AST introspection to prevent
+common bug classes **before they occur**. This is a proactive quality gate, not a
+post-hoc check.
+
+#### Pre-Write Checks
+
+Before writing or editing a file:
+
+1. **Query symbols** of the target file to understand existing structure:
+   ```python
+   result = proto.run_query("symbols", "path/to/file.py")
+   ```
+   This prevents: duplicate definitions, naming collisions, incorrect import paths.
+
+2. **Query dependencies** to verify import targets exist:
+   ```python
+   result = proto.run_query("dependencies", "path/to/file.py")
+   ```
+   This prevents: broken imports, circular dependencies, missing modules.
+
+3. **Query callers** before renaming or moving a function:
+   ```python
+   result = proto.run_query("callers", "path/to/file.py",
+                            filters={"name": "function_name"})
+   ```
+   This prevents: broken call sites, signature mismatches, orphaned references.
+
+#### Post-Write Checks
+
+After writing or editing a file:
+
+1. **Re-parse the modified file** to verify syntactic validity:
+   ```python
+   result = proto.run_query("parse", "path/to/modified_file.py")
+   assert result.success, f"Parse error: {result.error}"
+   ```
+
+2. **Run coverage_map** on the modified file to identify untested branches:
+   ```python
+   result = proto.run_query("coverage_map", "path/to/modified_file.py")
+   ```
+
+3. **Cross-check interfaces** — if the file exports functions/classes used by other
+   files, verify the signatures still match by querying callers.
+
+#### Bug Classes Prevented by AST Analysis
+
+| Bug Class | AST Query | Prevention |
+|---|---|---|
+| Broken imports | `dependencies` | Verify import targets exist before writing |
+| Type mismatches | `symbols` + `callers` | Cross-check function signatures with call sites |
+| Dead code | `coverage_map` | Identify unreachable branches after edits |
+| Duplicate definitions | `symbols` | Detect naming collisions before writing |
+| Missing test coverage | `coverage_map` | Generate stubs for untested paths |
+| Circular dependencies | `dependencies` (multi-file) | Check import graph for cycles |
+| Stale references | `callers` | Find all call sites before renaming/removing |
+
+#### Example: AST-Guided Bug Prevention in Practice
+
+During the audio composition engine development, AST analysis caught:
+- `abs()` called on a list slice instead of a generator expression (`sum(abs(list_slice))`)
+- The `_inject_dark_matter_texture` method referenced `mix.left` as a list but tried
+  to use `abs()` on the slice — AST symbol analysis confirmed `mix.left` is `list[float]`
+- Dependency analysis confirmed `composer.py` imports only `math` and `random` (stdlib),
+  maintaining the zero-dependency principle
+
 ---
 
 ## Coding Principles
@@ -612,6 +680,10 @@ At every conversation turn, complete the following checklist:
 
 7. **Commit with proper format** -- descriptive commit messages, no unrelated changes
 
+8. **AST-guided code generation** -- before editing files, run `symbols` and
+   `dependencies` queries; after editing, run `parse` and `coverage_map` queries
+   (see [AST-Guided Code Generation](#ast-guided-code-generation-bug-prevention))
+
 ### Reflection Principle (Triple Cross-Check)
 
 When new steering information is added anywhere in the repository, ensure it is
@@ -630,6 +702,7 @@ items that must appear in all three:
 - Markdown consistency review per conversation turn
 - Test coverage enforcement per conversation turn
 - AST introspection on changed files
+- AST-guided code generation (bug prevention)
 - Cross-language consistency for physics changes
 - Commit format rules
 

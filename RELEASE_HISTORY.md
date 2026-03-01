@@ -4,6 +4,71 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.5.0 — 2026-03-01 — Enhanced Musical Composition Engine + AST Bug Prevention Steering
+
+### Summary
+
+Added a rich musical composition engine (`apps/audio/composer.py`) that draws from
+6000+ years of human musical tradition to create evolving soundscapes driven by
+simulation state. Integrated with the existing audio renderer for enhanced mode.
+Introduced AST-guided code generation as a formal steering practice for bug prevention.
+
+### Changes
+
+- **Composition engine** (`apps/audio/composer.py`, 1085 lines):
+  - 40+ world musical scales (Western, Japanese, Chinese, Middle Eastern, Indian, African, gamelan)
+  - 16 instrument timbre profiles via additive synthesis with wavetable oscillators
+  - 20+ polyrhythmic patterns (3:2, 4:3, 5:4, West African bell, gamelan kotekan)
+  - 15+ harmonic progressions (Bach, minimalist, drone, circle of fifths)
+  - 15+ melodic motifs from public domain works (Bach, Mozart, Beethoven, Chopin, Debussy,
+    Satie, Grieg, Dvořák, Sakura, Jasmine Flower)
+  - Streaming oscillator architecture (StreamingOsc) for O(samples_per_tick) rendering
+  - Beat engine with 10-90% presence oscillation guided by simulation epoch
+  - 4-voice polyphonic melodic system with phrase queuing
+  - Universe pocket navigation across simulation domains
+  - Percussion synthesis (kick, snare, hihat, rim) with caching
+- **Performance optimizations** in `apps/audio/generate.py`:
+  - Wavetable-based gen_pad (27% faster)
+  - Inlined lowpass filter coefficients (reduced function call overhead)
+  - Optimized PCM conversion with local variable caching
+  - Dark matter texture for silence prevention
+  - `--basic` flag (enhanced is default)
+- **67 new tests** in `apps/audio/test_composer.py` covering all components
+- **AST-guided code generation steering** added to all three steering locations:
+  - Pre-write protocol: symbols, dependencies, callers queries
+  - Post-write protocol: parse, coverage_map queries
+  - Bug class taxonomy: broken imports, type mismatches, dead code, duplicates, etc.
+- **Steering triple cross-check**: Updated CLAUDE.md, AGENTS.md, .claude/steering-check.sh
+
+### Files Created
+
+- `apps/audio/composer.py` — Musical composition engine
+- `apps/audio/test_composer.py` — 67 tests for composer
+
+### Files Modified
+
+- `apps/audio/generate.py` — Enhanced mode integration, performance optimizations
+- `CLAUDE.md` — AST-guided code generation section + checklist item
+- `AGENTS.md` — AST-guided code generation section + reflection principle
+- `.claude/steering-check.sh` — Bug prevention cue + reflection principle update
+- `RELEASE_HISTORY.md` — This entry
+
+### Agent Activity
+
+- AST introspection run on composer.py (44 symbols, 1628 result tokens, 6.7x compression)
+- Dependency analysis confirmed zero external dependencies in composer.py
+- Coverage map identified 36 testable paths in composer.py, all covered by tests
+- Background MP3 generation (10 minutes, enhanced mode, ~27 minutes render time)
+
+### Test Results
+
+- Python reference: 400 passed
+- Audio tests (generate.py): 36 passed
+- Composer tests: 67 passed
+- Total: 503 passed, 0 failed
+
+---
+
 ## v0.4.1 — 2026-03-01 — 100% Test Coverage Expansion Across All 15 Languages
 
 ### Summary

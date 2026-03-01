@@ -459,6 +459,7 @@ propagated to the other two. Specific items that must appear in all three:
 - Markdown consistency review per conversation turn
 - Test coverage enforcement per conversation turn
 - AST introspection on changed files
+- AST-guided code generation (bug prevention)
 - Cross-language consistency for physics changes
 - Commit format rules
 
@@ -555,6 +556,50 @@ matrix.
 - Do not add build dependencies that are unavailable in the CI matrix runners
   (Ubuntu latest, macOS latest, Windows latest).
 - Reference `.github/workflows/release.yml` for the definitive target list.
+
+---
+
+## AST-Guided Code Generation (Bug Prevention)
+
+All agents MUST use AST introspection as a proactive quality gate when generating or
+modifying code. This prevents common bug classes before they occur.
+
+### Pre-Write Protocol
+
+1. **Query symbols** of the target file before editing (prevents naming collisions,
+   duplicate definitions).
+2. **Query dependencies** to verify import targets exist (prevents broken imports).
+3. **Query callers** before renaming or moving functions (prevents broken call sites).
+
+### Post-Write Protocol
+
+1. **Re-parse the modified file** to verify syntactic validity.
+2. **Run coverage_map** to identify untested branches created by the edit.
+3. **Cross-check interfaces** — verify exported function signatures match call sites.
+
+### Bug Classes Prevented
+
+| Bug Class | AST Query | Prevention |
+|---|---|---|
+| Broken imports | `dependencies` | Verify targets exist |
+| Type mismatches | `symbols` + `callers` | Cross-check signatures |
+| Dead code | `coverage_map` | Detect unreachable branches |
+| Duplicate definitions | `symbols` | Detect naming collisions |
+| Missing coverage | `coverage_map` | Generate stubs for untested paths |
+| Circular dependencies | `dependencies` | Check import graph |
+| Stale references | `callers` | Find all call sites before renaming |
+
+### Agent Workflow Integration
+
+```
+1. QUERY symbols of target file
+2. QUERY dependencies of target file
+3. [Generate/edit code]
+4. QUERY parse of modified file (verify syntax)
+5. QUERY coverage_map of modified file (identify untested paths)
+6. [Write tests for any untested paths]
+7. [Run test suite]
+```
 
 ---
 
