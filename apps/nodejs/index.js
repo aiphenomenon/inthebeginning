@@ -67,6 +67,57 @@ function formatCounts(counts) {
 }
 
 
+// ─── AST Self-Introspection ──────────────────────────────────────────────────
+
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+function runAstIntrospection() {
+    console.log(`\n${BOLD}${CYAN}=== AST Self-Introspection: Node.js App ===${RESET}\n`);
+
+    const files = readdirSync(__dirname)
+        .filter(f => f.endsWith('.js') && !f.startsWith('.'))
+        .sort();
+
+    let totalLines = 0;
+    let totalBytes = 0;
+    let totalFunctions = 0;
+    let totalClasses = 0;
+    let totalExports = 0;
+
+    console.log(`  ${'File'.padEnd(28)} ${'Lines'.padStart(6)} ${'Bytes'.padStart(8)} ${'Funcs'.padStart(6)} ${'Classes'.padStart(8)} ${'Exports'.padStart(8)}`);
+    console.log(`  ${'─'.repeat(28)} ${'─'.repeat(6)} ${'─'.repeat(8)} ${'─'.repeat(6)} ${'─'.repeat(8)} ${'─'.repeat(8)}`);
+
+    for (const file of files) {
+        const fpath = join(__dirname, file);
+        const src = readFileSync(fpath, 'utf-8');
+        const lines = src.split('\n').length;
+        const bytes = statSync(fpath).size;
+
+        // Simple regex-based analysis
+        const funcMatches = src.match(/(?:function\s+\w+|(?:const|let|var)\s+\w+\s*=\s*(?:\([^)]*\)|[^=])\s*=>|(?:get|set)\s+\w+\s*\()/g) || [];
+        const classMatches = src.match(/class\s+\w+/g) || [];
+        const exportMatches = src.match(/export\s+(?:class|function|const|let|default)/g) || [];
+
+        totalLines += lines;
+        totalBytes += bytes;
+        totalFunctions += funcMatches.length;
+        totalClasses += classMatches.length;
+        totalExports += exportMatches.length;
+
+        console.log(`  ${file.padEnd(28)} ${String(lines).padStart(6)} ${String(bytes).padStart(8)} ${String(funcMatches.length).padStart(6)} ${String(classMatches.length).padStart(8)} ${String(exportMatches.length).padStart(8)}`);
+    }
+
+    console.log(`  ${'─'.repeat(28)} ${'─'.repeat(6)} ${'─'.repeat(8)} ${'─'.repeat(6)} ${'─'.repeat(8)} ${'─'.repeat(8)}`);
+    console.log(`  ${'TOTAL'.padEnd(28)} ${String(totalLines).padStart(6)} ${String(totalBytes).padStart(8)} ${String(totalFunctions).padStart(6)} ${String(totalClasses).padStart(8)} ${String(totalExports).padStart(8)}`);
+    console.log();
+}
+
+
 // ─── Main simulation ────────────────────────────────────────────────────────
 
 function printBanner() {
@@ -209,6 +260,9 @@ function main() {
             maxTicks = parseInt(args[++i], 10);
         } else if ((args[i] === "--interval" || args[i] === "-i") && args[i + 1]) {
             reportInterval = parseInt(args[++i], 10);
+        } else if (args[i] === "--ast-introspect") {
+            runAstIntrospection();
+            process.exit(0);
         } else if (args[i] === "--help" || args[i] === "-h") {
             console.log("Usage: node index.js [options]");
             console.log();
@@ -216,6 +270,7 @@ function main() {
             console.log("  -s, --step <n>      Simulation step size (default: 100)");
             console.log("  -m, --max <n>       Max ticks (default: 300000)");
             console.log("  -i, --interval <n>  Report every N ticks (default: 5000)");
+            console.log("  --ast-introspect    Show AST self-introspection of source files");
             console.log("  -h, --help          Show this help");
             console.log();
             process.exit(0);

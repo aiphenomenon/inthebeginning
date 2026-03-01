@@ -148,7 +148,73 @@ def run_simulation():
     return universe
 
 
+def run_introspection():
+    """Run AST self-introspection across all application directories."""
+    from ast_dsl.introspect import introspect_all_apps
+
+    print(f"\n{BOLD}{CYAN}=== AST Self-Introspection: All Applications ==={RESET}\n")
+
+    project_root = os.path.dirname(os.path.abspath(__file__))
+    reports = introspect_all_apps(project_root)
+
+    if not reports:
+        print("  No applications found.")
+        return
+
+    # Table header
+    print(f"  {'App':<22} {'Lang':<12} {'Files':>5} {'Lines':>7} "
+          f"{'AST Nodes':>10} {'Funcs':>5} {'Classes':>7} {'Compact':>8}")
+    print(f"  {'─'*22} {'─'*12} {'─'*5} {'─'*7} {'─'*10} {'─'*5} {'─'*7} {'─'*8}")
+
+    total_files = 0
+    total_lines = 0
+    total_nodes = 0
+    total_funcs = 0
+    total_classes = 0
+
+    for name in sorted(reports.keys()):
+        r = reports[name]
+        ratio_str = f"{r.avg_compaction_ratio:.1f}x" if r.avg_compaction_ratio > 0 else "N/A"
+        print(f"  {name:<22} {r.language:<12} {len(r.files):>5} {r.total_lines:>7,} "
+              f"{r.total_ast_nodes:>10,} {r.total_functions:>5} {r.total_classes:>7} {ratio_str:>8}")
+        total_files += len(r.files)
+        total_lines += r.total_lines
+        total_nodes += r.total_ast_nodes
+        total_funcs += r.total_functions
+        total_classes += r.total_classes
+
+    print(f"  {'─'*22} {'─'*12} {'─'*5} {'─'*7} {'─'*10} {'─'*5} {'─'*7} {'─'*8}")
+    print(f"  {'TOTAL':<22} {'':12} {total_files:>5} {total_lines:>7,} "
+          f"{total_nodes:>10,} {total_funcs:>5} {total_classes:>7}")
+
+    # Save JSON report
+    report_path = os.path.join(project_root, "ast_captures", "introspection_report.json")
+    report_data = {name: r.to_dict() for name, r in sorted(reports.items())}
+    with open(report_path, "w") as f:
+        json.dump(report_data, f, indent=2)
+    print(f"\n  Report saved to {report_path}")
+
+
 def main():
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="In The Beginning: AST-Driven Reality Simulator"
+    )
+    parser.add_argument(
+        "--ast-introspect", action="store_true",
+        help="Run AST self-introspection across all apps and exit",
+    )
+    parser.add_argument(
+        "--sim-only", action="store_true",
+        help="Skip the AST demo and run only the simulation",
+    )
+    args = parser.parse_args()
+
+    if args.ast_introspect:
+        run_introspection()
+        return
+
     print(f"\n{BOLD}{YELLOW}")
     print("  ╔══════════════════════════════════════════╗")
     print("  ║       IN THE BEGINNING                   ║")
@@ -157,7 +223,8 @@ def main():
     print(f"{RESET}")
 
     # Phase 1: AST Demo
-    protocol = run_ast_demo()
+    if not args.sim_only:
+        protocol = run_ast_demo()
 
     # Phase 2: Simulation
     universe = run_simulation()

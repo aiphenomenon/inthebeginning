@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"math"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -15,6 +17,14 @@ const (
 )
 
 func main() {
+	// Check for --ast-introspect flag
+	for _, arg := range os.Args[1:] {
+		if arg == "--ast-introspect" {
+			runASTIntrospection()
+			return
+		}
+	}
+
 	printBanner()
 
 	seed := time.Now().UnixNano()
@@ -209,4 +219,93 @@ func center(s string) string {
 	}
 	pad := (bannerWidth - len(s)) / 2
 	return "  " + strings.Repeat(" ", pad) + s
+}
+
+// runASTIntrospection analyzes the Go source files in this project.
+func runASTIntrospection() {
+	fmt.Println()
+	fmt.Println("  === AST Self-Introspection: Go App ===")
+	fmt.Println()
+
+	// Find the project root (two levels up from cmd/simulator/)
+	exe, err := os.Executable()
+	if err != nil {
+		exe = os.Args[0]
+	}
+	rootDir := filepath.Dir(filepath.Dir(filepath.Dir(exe)))
+
+	// Also check current working dir
+	cwd, _ := os.Getwd()
+	candidates := []string{rootDir, cwd}
+
+	var goRoot string
+	for _, c := range candidates {
+		if _, err := os.Stat(filepath.Join(c, "go.mod")); err == nil {
+			goRoot = c
+			break
+		}
+	}
+	if goRoot == "" {
+		// Fallback: look relative to current directory
+		goRoot = "."
+	}
+
+	fmt.Printf("  %-30s %6s %8s %6s %6s\n", "File", "Lines", "Bytes", "Funcs", "Types")
+	fmt.Printf("  %-30s %6s %8s %6s %6s\n",
+		strings.Repeat("─", 30), strings.Repeat("─", 6),
+		strings.Repeat("─", 8), strings.Repeat("─", 6), strings.Repeat("─", 6))
+
+	var totalLines, totalBytes, totalFuncs, totalTypes int
+
+	err = filepath.Walk(goRoot, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return nil
+		}
+		if info.IsDir() {
+			name := info.Name()
+			if name == "vendor" || name == "builds" || name == ".git" {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		if !strings.HasSuffix(path, ".go") {
+			return nil
+		}
+
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return nil
+		}
+
+		content := string(data)
+		lines := strings.Count(content, "\n") + 1
+		bytes := len(data)
+
+		// Simple regex-like counting
+		funcs := strings.Count(content, "\nfunc ")
+		types := strings.Count(content, "\ntype ")
+
+		relPath, _ := filepath.Rel(goRoot, path)
+		if relPath == "" {
+			relPath = path
+		}
+
+		fmt.Printf("  %-30s %6d %8d %6d %6d\n", relPath, lines, bytes, funcs, types)
+
+		totalLines += lines
+		totalBytes += bytes
+		totalFuncs += funcs
+		totalTypes += types
+		return nil
+	})
+
+	if err != nil {
+		fmt.Printf("  Error walking directory: %v\n", err)
+	}
+
+	fmt.Printf("  %-30s %6s %8s %6s %6s\n",
+		strings.Repeat("─", 30), strings.Repeat("─", 6),
+		strings.Repeat("─", 8), strings.Repeat("─", 6), strings.Repeat("─", 6))
+	fmt.Printf("  %-30s %6d %8d %6d %6d\n", "TOTAL", totalLines, totalBytes, totalFuncs, totalTypes)
+	fmt.Println()
 }

@@ -7,6 +7,34 @@ htmlcov/
 
 # Node.js
 node_modules/
+package-lock.json
+
+# TypeScript
+apps/typescript/dist/
+apps/typescript/dist-browser/
+
+# Go
+apps/go/builds/
+apps/go/server
+apps/go/simulator
+
+# Rust
+apps/rust/target/
+apps/wasm/target/
+
+# C / C++
+apps/c/build/
+apps/cpp/build/
+*.o
+
+# Java
+apps/java/build/
+apps/java/.gradle/
+
+# Ubuntu screensaver build artifacts
+apps/screensaver-ubuntu/inthebeginning-screensaver
+apps/screensaver-ubuntu/*.o
+apps/screensaver-ubuntu/simulator/*.o
 
 # Large generated files
 ast_captures/full_ast.json
