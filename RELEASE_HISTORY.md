@@ -4,6 +4,86 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.4.0 — 2026-03-01 — Steering Infrastructure, Session Logging, and CI Fix
+
+### Summary
+
+Major expansion of project governance infrastructure. Fixed CI pipeline failure,
+added comprehensive steering enforcement via gVisor hooks, established session
+logging protocol with historical reconstruction, created feature roadmap, and
+ensured all markdown files reference each other coherently.
+
+### Changes
+
+- **CI fix**: Added `pip install pytest` step to `python-tests` job in
+  `.github/workflows/ci.yml` — the root cause of the CI failure on the branch
+- **CLAUDE.md**: Major rewrite (192→730+ lines) pulling in steering content from
+  `docs/steering.md` — CueSignal protocol, AgentState tracking, token efficiency
+  data, session logging protocol, markdown consistency checks, test coverage
+  enforcement, self-cueing/gVisor enforcement, cross-compilation guidance,
+  release history update mandate, triple cross-check reflection principle
+- **AGENTS.md**: Major rewrite with same enhancements — session logging, release
+  history, markdown review, test coverage, gVisor self-cueing, reflection principle
+- **gVisor self-cueing**: Created `.claude/settings.json` and
+  `.claude/steering-check.sh` — hook-based enforcement of steering rules with
+  FAIL-CUE markers that prompt the agent to complete all per-turn tasks. Includes
+  triple cross-check requirement (CLAUDE.md + AGENTS.md + gVisor hooks).
+- **Session logs**: Reconstructed `v0.1.0-session.md` and `v0.2.0-session.md` from
+  git history; created `v0.4.0-session.md` with full transcript detail
+- **Feature roadmap**: Created `docs/roadmap.md` covering containerization
+  (Docker/Colima), deployment target matrix, metacognitive steering enhancements,
+  cross-language consistency automation, performance benchmarking
+- **Network surface clarification**: Updated steering to note Go SSE server and PHP
+  HTTP server are intentional localhost web servers for end-user use
+- **Release history mandate**: Added to steering checklist — RELEASE_HISTORY.md must
+  be updated at every conversation turn
+
+### Test Results (this session)
+
+| Language | Tests | Result |
+|----------|-------|--------|
+| Python   | 400   | PASS   |
+| Go       | suite | PASS   |
+| Rust     | 240   | PASS   |
+| C        | 213   | PASS   |
+| C++      | suite | PASS   |
+| Node.js  | 44    | PASS   |
+| Perl     | 56    | PASS   |
+| PHP      | 309   | PASS   |
+
+### AST Passing Stats (this session)
+
+- AST introspection ran on simulator modules: quantum.py (30 symbols),
+  universe.py (14 symbols), biology.py (40 symbols), constants.py
+- Pre-computed captures in `ast_captures/` validated
+
+### Agent Activity (this session)
+
+1. Codebase exploration agent — exhaustive file inventory and structure analysis
+2. CLAUDE.md rewrite agent — comprehensive steering document
+3. AGENTS.md rewrite agent — comprehensive multi-agent protocol
+4. Feature roadmap agent — created `docs/roadmap.md`
+5. Session log v0.1 agent — reconstructed from git history
+6. Session log v0.2 agent — reconstructed from git history
+
+### Files Created
+
+- `.claude/settings.json` — gVisor hook configuration
+- `.claude/steering-check.sh` — Steering enforcement script
+- `docs/roadmap.md` — Feature roadmap
+- `session_logs/v0.1.0-session.md` — Reconstructed session log
+- `session_logs/v0.2.0-session.md` — Reconstructed session log
+- `session_logs/v0.4.0-session.md` — This session's log
+
+### Files Modified
+
+- `.github/workflows/ci.yml` — Added pytest install step
+- `CLAUDE.md` — Major rewrite with steering enhancements
+- `AGENTS.md` — Major rewrite with steering enhancements
+- `RELEASE_HISTORY.md` — Added v0.4.0 entry
+
+---
+
 ## v0.3.0 — 2026-03-01 — Comprehensive Testing, Documentation, and Store Deployment Guides
 
 ### Summary

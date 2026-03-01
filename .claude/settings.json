@@ -1,0 +1,42 @@
+{
+  "hooks": {
+    "PreToolUse": [],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /home/user/inthebeginning/.claude/steering-check.sh post-tool"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /home/user/inthebeginning/.claude/steering-check.sh notification"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /home/user/inthebeginning/.claude/steering-check.sh stop"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [],
+    "deny": []
+  }
+}
