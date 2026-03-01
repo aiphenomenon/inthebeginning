@@ -757,15 +757,13 @@ describe('AtomicSystem', () => {
     });
 
     it('attemptBond forms a bond between compatible atoms at close range', () => {
-        const as = new AtomicSystem(300);
+        // Use very high temperature so exp(-E/(K_B*T)) is close to 1
+        const as = new AtomicSystem(1e8);
         const h1 = new Atom({ atomicNumber: 1, position: [0, 0, 0] });
         const h2 = new Atom({ atomicNumber: 1, position: [0.5, 0, 0] });
         as.atoms.push(h1, h2);
-        // Bond probability is temperature-dependent; at 300K with low barrier
-        // try multiple times
         let bonded = false;
         for (let i = 0; i < 200; i++) {
-            // Reset bonds each attempt
             h1.bonds = [];
             h2.bonds = [];
             if (as.attemptBond(h1, h2)) {
