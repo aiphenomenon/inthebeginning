@@ -15,6 +15,7 @@ pub mod chemistry;
 pub mod biology;
 pub mod environment;
 pub mod universe;
+pub mod introspect;
 
 // The renderer module and WASM entry point require wasm32 target
 #[cfg(target_arch = "wasm32")]

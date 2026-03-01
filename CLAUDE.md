@@ -457,6 +457,10 @@ in `docs/` at each conversation turn** to ensure familiarity with the full archi
 | `docs/cpp_ast.md` | C++ AST parser details |
 | `docs/perl_ast.md` | Perl AST parser details |
 | `docs/php_ast.md` | PHP AST parser details |
+| `docs/wasm_ast.md` | WebAssembly (WAT) AST parser details |
+| `docs/typescript_ast.md` | TypeScript AST parser details |
+| `docs/swift_ast.md` | Swift AST parser details |
+| `docs/kotlin_ast.md` | Kotlin AST parser details |
 
 ---
 

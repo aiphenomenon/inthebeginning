@@ -7,6 +7,10 @@
  * through the emergence of complex life, with formatted terminal output.
  */
 
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
 import {
     Universe,
     type SimulationSnapshot,
@@ -200,6 +204,61 @@ function printFinalReport(universe: Universe, elapsedMs: number): void {
     console.log();
 }
 
+// -- AST Self-Introspection ---------------------------------------------------
+
+function runAstIntrospection(): void {
+    console.log(`\n${BOLD}${CYAN}=== AST Self-Introspection: TypeScript App ===${RESET}\n`);
+
+    const srcDir = dirname(fileURLToPath(import.meta.url));
+    // Read .ts source files from the source directory (one level up from dist/)
+    const tsSrcDir = srcDir.replace(/[/\\]dist$/, "/src");
+    let scanDir = tsSrcDir;
+    try {
+        readdirSync(scanDir);
+    } catch {
+        scanDir = srcDir;
+    }
+
+    const files = readdirSync(scanDir)
+        .filter(f => f.endsWith(".ts") || f.endsWith(".js"))
+        .sort();
+
+    let totalLines = 0;
+    let totalBytes = 0;
+    let totalFunctions = 0;
+    let totalClasses = 0;
+    let totalInterfaces = 0;
+    let totalTypes = 0;
+
+    console.log(`  ${"File".padEnd(28)} ${"Lines".padStart(6)} ${"Bytes".padStart(8)} ${"Funcs".padStart(6)} ${"Classes".padStart(8)} ${"Ifaces".padStart(7)} ${"Types".padStart(6)}`);
+    console.log(`  ${"─".repeat(28)} ${"─".repeat(6)} ${"─".repeat(8)} ${"─".repeat(6)} ${"─".repeat(8)} ${"─".repeat(7)} ${"─".repeat(6)}`);
+
+    for (const file of files) {
+        const fpath = join(scanDir, file);
+        const src = readFileSync(fpath, "utf-8");
+        const lines = src.split("\n").length;
+        const bytes = statSync(fpath).size;
+
+        const funcMatches = src.match(/(?:function\s+\w+|(?:const|let|var)\s+\w+\s*=\s*(?:\([^)]*\)|[^=])\s*=>)/g) || [];
+        const classMatches = src.match(/class\s+\w+/g) || [];
+        const ifaceMatches = src.match(/interface\s+\w+/g) || [];
+        const typeMatches = src.match(/type\s+\w+\s*[<=]/g) || [];
+
+        totalLines += lines;
+        totalBytes += bytes;
+        totalFunctions += funcMatches.length;
+        totalClasses += classMatches.length;
+        totalInterfaces += ifaceMatches.length;
+        totalTypes += typeMatches.length;
+
+        console.log(`  ${file.padEnd(28)} ${String(lines).padStart(6)} ${String(bytes).padStart(8)} ${String(funcMatches.length).padStart(6)} ${String(classMatches.length).padStart(8)} ${String(ifaceMatches.length).padStart(7)} ${String(typeMatches.length).padStart(6)}`);
+    }
+
+    console.log(`  ${"─".repeat(28)} ${"─".repeat(6)} ${"─".repeat(8)} ${"─".repeat(6)} ${"─".repeat(8)} ${"─".repeat(7)} ${"─".repeat(6)}`);
+    console.log(`  ${"TOTAL".padEnd(28)} ${String(totalLines).padStart(6)} ${String(totalBytes).padStart(8)} ${String(totalFunctions).padStart(6)} ${String(totalClasses).padStart(8)} ${String(totalInterfaces).padStart(7)} ${String(totalTypes).padStart(6)}`);
+    console.log();
+}
+
 // -- Main ---------------------------------------------------------------------
 
 function parseArgs(): { stepSize: number; maxTicks: number; reportInterval: number; seed: number } {
@@ -218,6 +277,9 @@ function parseArgs(): { stepSize: number; maxTicks: number; reportInterval: numb
             reportInterval = parseInt(args[++i], 10);
         } else if ((args[i] === "--seed") && args[i + 1]) {
             seed = parseInt(args[++i], 10);
+        } else if (args[i] === "--ast-introspect") {
+            runAstIntrospection();
+            process.exit(0);
         } else if (args[i] === "--help" || args[i] === "-h") {
             console.log("Usage: node dist/index.js [options]");
             console.log();
@@ -226,6 +288,7 @@ function parseArgs(): { stepSize: number; maxTicks: number; reportInterval: numb
             console.log("  -m, --max <n>       Max ticks (default: 300000)");
             console.log("  -i, --interval <n>  Report every N ticks (default: 5000)");
             console.log("  --seed <n>          Random seed (default: 42)");
+            console.log("  --ast-introspect    Show AST self-introspection of source files");
             console.log("  -h, --help          Show this help");
             console.log();
             process.exit(0);

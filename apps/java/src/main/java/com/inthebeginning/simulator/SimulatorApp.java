@@ -1,5 +1,6 @@
 package com.inthebeginning.simulator;
 
+import java.io.*;
 import java.util.*;
 
 import static com.inthebeginning.simulator.Constants.*;
@@ -28,6 +29,14 @@ public class SimulatorApp {
     };
 
     public static void main(String[] args) {
+        // Handle --ast-introspect flag before anything else
+        for (String arg : args) {
+            if ("--ast-introspect".equals(arg)) {
+                runAstIntrospect();
+                System.exit(0);
+            }
+        }
+
         long seed = 42L;
         if (args.length > 0) {
             try {
@@ -93,6 +102,116 @@ public class SimulatorApp {
 
         // Final summary
         printFinalSummary(universe);
+    }
+
+    /**
+     * Runs a self-introspection routine over all .java source files under
+     * src/main/java/com/inthebeginning/. For each file, counts lines, bytes,
+     * method declarations, and class/interface declarations, then prints a
+     * formatted summary table.
+     */
+    private static void runAstIntrospect() {
+        File sourceDir = new File("src/main/java/com/inthebeginning");
+        if (!sourceDir.isDirectory()) {
+            System.err.println("Source directory not found: " + sourceDir.getAbsolutePath());
+            System.err.println("Run from the apps/java/ directory.");
+            return;
+        }
+
+        List<File> javaFiles = new ArrayList<>();
+        collectJavaFiles(sourceDir, javaFiles);
+        Collections.sort(javaFiles);
+
+        System.out.println();
+        System.out.println(BOLD + CYAN + "  AST Introspection -- Java Source Summary" + RESET);
+        System.out.println(CYAN + "  ========================================" + RESET);
+        System.out.println();
+
+        // Table header
+        System.out.printf("  %-40s %6s %8s %7s %7s%n",
+                "File", "Lines", "Bytes", "Methods", "Classes");
+        System.out.printf("  %-40s %6s %8s %7s %7s%n",
+                "----------------------------------------",
+                "------", "--------", "-------", "-------");
+
+        int totalLines = 0;
+        long totalBytes = 0;
+        int totalMethods = 0;
+        int totalClasses = 0;
+
+        for (File file : javaFiles) {
+            int lines = 0;
+            int methods = 0;
+            int classes = 0;
+            long bytes = file.length();
+
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    lines++;
+                    String trimmed = line.trim();
+                    // Match method declarations: access modifiers, optional static/abstract/final/synchronized,
+                    // return type, method name, opening parenthesis
+                    if (trimmed.matches(
+                            "(public|protected|private)\\s+(static\\s+)?(abstract\\s+)?(final\\s+)?(synchronized\\s+)?[\\w<>\\[\\],\\s]+\\s+\\w+\\s*\\(.*")) {
+                        // Exclude lines that are constructors (name matches class name pattern
+                        // followed by opening paren with no return type) -- constructors are included
+                        // as methods for simplicity
+                        methods++;
+                    }
+                    // Match class, interface, and enum declarations
+                    if (trimmed.matches(
+                            "(public\\s+|protected\\s+|private\\s+)?(abstract\\s+)?(static\\s+)?(final\\s+)?(class|interface|enum)\\s+\\w+.*")) {
+                        classes++;
+                    }
+                }
+            } catch (IOException e) {
+                System.err.println("  Error reading " + file + ": " + e.getMessage());
+                continue;
+            }
+
+            // Display path relative to src/ for readability
+            String filePath = file.getPath();
+            String prefix = "src" + File.separator + "main" + File.separator + "java" + File.separator;
+            int idx = filePath.indexOf(prefix);
+            String relativePath = (idx >= 0) ? filePath.substring(idx + prefix.length()) : file.getName();
+
+            System.out.printf("  %-40s %6d %8d %7d %7d%n",
+                    relativePath, lines, bytes, methods, classes);
+
+            totalLines += lines;
+            totalBytes += bytes;
+            totalMethods += methods;
+            totalClasses += classes;
+        }
+
+        System.out.printf("  %-40s %6s %8s %7s %7s%n",
+                "----------------------------------------",
+                "------", "--------", "-------", "-------");
+        System.out.printf("  %-40s %6d %8d %7d %7d%n",
+                "TOTAL (" + javaFiles.size() + " files)",
+                totalLines, totalBytes, totalMethods, totalClasses);
+        System.out.println();
+    }
+
+    /**
+     * Recursively collects all .java files under the given directory.
+     *
+     * @param dir       the directory to search
+     * @param results   the list to populate with discovered .java files
+     */
+    private static void collectJavaFiles(File dir, List<File> results) {
+        File[] entries = dir.listFiles();
+        if (entries == null) {
+            return;
+        }
+        for (File entry : entries) {
+            if (entry.isDirectory()) {
+                collectJavaFiles(entry, results);
+            } else if (entry.getName().endsWith(".java")) {
+                results.add(entry);
+            }
+        }
     }
 
     private static void printBanner() {

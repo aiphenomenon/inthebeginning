@@ -316,6 +316,78 @@ static void destroy_window(void)
 /*  Main                                                               */
 /* ------------------------------------------------------------------ */
 
+static void ast_introspect(void)
+{
+    printf("\n\033[1;36m=== AST Self-Introspection: Ubuntu Screensaver ===\033[0m\n\n");
+
+    /* List of source files to analyze */
+    static const char *files[] = {
+        "inthebeginning-screensaver.c",
+        "test_simulator.c",
+        "simulator/universe.h",
+        "simulator/universe.c",
+        "simulator/quantum.h",
+        "simulator/quantum.c",
+        "simulator/atomic.h",
+        "simulator/atomic.c",
+        "simulator/chemistry.h",
+        "simulator/chemistry.c",
+        "simulator/biology.h",
+        "simulator/biology.c",
+        "simulator/environment.h",
+        "simulator/environment.c",
+        "simulator/constants.h",
+        NULL
+    };
+
+    int total_lines = 0, total_bytes = 0, total_funcs = 0, total_structs = 0;
+
+    printf("  %-28s %6s %8s %6s %7s\n", "File", "Lines", "Bytes", "Funcs", "Structs");
+    printf("  %-28s %6s %8s %6s %7s\n",
+           "────────────────────────────", "──────", "────────", "──────", "───────");
+
+    for (int i = 0; files[i]; i++) {
+        FILE *fp = fopen(files[i], "r");
+        if (!fp) continue;
+
+        int lines = 0, funcs = 0, structs = 0;
+        char line[1024];
+        while (fgets(line, sizeof(line), fp)) {
+            lines++;
+            /* Simple heuristic: line starting with type + word + ( is a function def */
+            const char *p = line;
+            while (*p == ' ' || *p == '\t') p++;
+            if (strstr(p, "static ") == p || strstr(p, "void ") == p ||
+                strstr(p, "int ") == p || strstr(p, "float ") == p ||
+                strstr(p, "double ") == p || strstr(p, "char ") == p ||
+                strstr(p, "unsigned ") == p || strstr(p, "long ") == p ||
+                strstr(p, "const ") == p) {
+                if (strchr(p, '(') && !strchr(p, ';'))
+                    funcs++;
+            }
+            if (strstr(p, "struct ") == p || strstr(p, "typedef struct") == p)
+                structs++;
+        }
+
+        fseek(fp, 0, SEEK_END);
+        int bytes = (int)ftell(fp);
+        fclose(fp);
+
+        total_lines += lines;
+        total_bytes += bytes;
+        total_funcs += funcs;
+        total_structs += structs;
+
+        printf("  %-28s %6d %8d %6d %7d\n", files[i], lines, bytes, funcs, structs);
+    }
+
+    printf("  %-28s %6s %8s %6s %7s\n",
+           "────────────────────────────", "──────", "────────", "──────", "───────");
+    printf("  %-28s %6d %8d %6d %7d\n", "TOTAL", total_lines, total_bytes,
+           total_funcs, total_structs);
+    printf("\n");
+}
+
 static void parse_args(int argc, char **argv)
 {
     for (int i = 1; i < argc; i++) {
@@ -324,11 +396,15 @@ static void parse_args(int argc, char **argv)
         else if (strcmp(argv[i], "-window") == 0) {
             fullscreen_mode = 0;
             use_root = 0;
+        } else if (strcmp(argv[i], "--ast-introspect") == 0) {
+            ast_introspect();
+            exit(0);
         } else if (strcmp(argv[i], "-help") == 0 || strcmp(argv[i], "--help") == 0) {
-            printf("Usage: %s [-root|-window|-help]\n", argv[0]);
-            printf("  -root     Draw on root window (XScreenSaver mode)\n");
-            printf("  -window   Windowed mode (800x600)\n");
-            printf("  (default) Fullscreen mode\n");
+            printf("Usage: %s [-root|-window|--ast-introspect|-help]\n", argv[0]);
+            printf("  -root             Draw on root window (XScreenSaver mode)\n");
+            printf("  -window           Windowed mode (800x600)\n");
+            printf("  --ast-introspect  Show AST self-introspection of source files\n");
+            printf("  (default)         Fullscreen mode\n");
             exit(0);
         }
     }

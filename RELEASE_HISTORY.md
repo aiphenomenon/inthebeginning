@@ -67,6 +67,17 @@ melodic phrases, bass lines, and percussion patterns.
 
 - `apps/audio/generate.py` — Integrated new music engine via `--engine` flag
 
+### Additional Changes (Turn 2)
+
+- **AST parser documentation** for 4 new parsers:
+  - `docs/wasm_ast.md`, `docs/typescript_ast.md`, `docs/swift_ast.md`, `docs/kotlin_ast.md`
+- **AST self-introspection** added to all 14 simulation apps:
+  - CLI apps: `--ast-introspect` flag (C, C++, Rust, Java, PHP, TypeScript, Ubuntu screensaver)
+  - GUI/mobile apps: Utility classes (Swift iOS, Kotlin Android, macOS screensaver)
+  - WASM: `introspect.rs` module with compile-time metrics
+- **Updated CLAUDE.md** with new AST parser doc references
+- **Test total**: 1219+ tests passing across all verified languages
+
 ---
 
 ## v0.5.1 — 2026-03-01 — Vectorized Mixing Pipeline + Parallel Encoding + AST Analysis

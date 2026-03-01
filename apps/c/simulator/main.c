@@ -5,11 +5,17 @@
  * from the Planck era to present day, and prints ASCII output showing
  * physics data at each stage.
  */
+#define _GNU_SOURCE
 #include "universe.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <ctype.h>
+#include <libgen.h>
+#include <limits.h>
 
 /* ------------------------------------------------------------------ */
 /* ASCII art and display helpers                                       */
@@ -221,6 +227,359 @@ static void print_events(const Universe *u, int from_event)
 }
 
 /* ------------------------------------------------------------------ */
+/* AST self-introspection                                              */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Count functions in a source buffer using simple heuristics.
+ *
+ * A "function" is detected when a line (after optional leading whitespace)
+ * contains an identifier followed by '(' and the preceding token looks
+ * like a return type (another identifier or '*').  This catches patterns
+ * such as:
+ *     void foo(...)
+ *     static int bar(...)
+ *     Universe *universe_init(...)
+ *
+ * It intentionally skips control-flow keywords (if, for, while, switch,
+ * return) and macro-like identifiers that happen to precede '('.
+ */
+static int count_functions(const char *buf, long len)
+{
+    int count = 0;
+    const char *keywords[] = {
+        "if", "for", "while", "switch", "return", "sizeof", "typeof",
+        "case", "else", NULL
+    };
+
+    const char *p = buf;
+    const char *end = buf + len;
+
+    while (p < end) {
+        /* Find the start of the current line */
+        const char *line_start = p;
+
+        /* Find end of this line */
+        const char *line_end = p;
+        while (line_end < end && *line_end != '\n')
+            line_end++;
+
+        /* Skip leading whitespace */
+        const char *s = line_start;
+        while (s < line_end && (*s == ' ' || *s == '\t'))
+            s++;
+
+        /* Skip preprocessor lines and comments */
+        if (s < line_end && (*s == '#' || *s == '/' || *s == '*')) {
+            p = (line_end < end) ? line_end + 1 : end;
+            continue;
+        }
+
+        /* Look for identifier followed by '(' on this line.
+         * We scan for '(' then look backward for the function name
+         * and further back for a return-type token.
+         */
+        const char *paren = s;
+        while (paren < line_end) {
+            paren = memchr(paren, '(', (size_t)(line_end - paren));
+            if (!paren) break;
+
+            /* Walk backward from '(' to find the function name */
+            const char *name_end = paren;
+            while (name_end > s && *(name_end - 1) == ' ')
+                name_end--;
+
+            const char *name_start = name_end;
+            while (name_start > s &&
+                   (isalnum((unsigned char)*(name_start - 1)) ||
+                    *(name_start - 1) == '_'))
+                name_start--;
+
+            size_t name_len = (size_t)(name_end - name_start);
+            if (name_len == 0) {
+                paren++;
+                continue;
+            }
+
+            /* Check if the name is a keyword -- skip if so */
+            int is_keyword = 0;
+            for (int k = 0; keywords[k] != NULL; k++) {
+                if (strlen(keywords[k]) == name_len &&
+                    strncmp(name_start, keywords[k], name_len) == 0) {
+                    is_keyword = 1;
+                    break;
+                }
+            }
+            if (is_keyword) {
+                paren++;
+                continue;
+            }
+
+            /* There must be a return-type token before the function name.
+             * Walk backward past spaces and look for an identifier or '*'.
+             */
+            const char *before = name_start;
+            while (before > s && (*(before - 1) == ' ' || *(before - 1) == '\t'))
+                before--;
+
+            if (before > s &&
+                (*(before - 1) == '*' ||
+                 isalnum((unsigned char)*(before - 1)) ||
+                 *(before - 1) == '_')) {
+                count++;
+            }
+
+            /* Only count the first match per line */
+            break;
+        }
+
+        p = (line_end < end) ? line_end + 1 : end;
+    }
+
+    return count;
+}
+
+/**
+ * Count struct definitions in a source buffer.
+ *
+ * Matches occurrences of "struct" that represent a definition, including:
+ *   - "struct Name {"            (named struct definition)
+ *   - "typedef struct {"         (anonymous typedef'd struct)
+ *   - "typedef struct Name {"    (named typedef'd struct)
+ *
+ * Excludes forward declarations like "struct Name;" and variable
+ * declarations like "struct Name var;".
+ */
+static int count_structs(const char *buf, long len)
+{
+    int count = 0;
+    const char *p = buf;
+    const char *end = buf + len;
+    const char *needle = "struct";
+    size_t needle_len = 6;
+
+    while (p < end) {
+        const char *found = (const char *)memmem(p, (size_t)(end - p),
+                                                  needle, needle_len);
+        if (!found) break;
+
+        /* Check that 'struct' is not part of a larger identifier */
+        if (found > buf &&
+            (isalnum((unsigned char)*(found - 1)) || *(found - 1) == '_')) {
+            p = found + needle_len;
+            continue;
+        }
+        const char *after_kw = found + needle_len;
+        if (after_kw < end &&
+            (isalnum((unsigned char)*after_kw) || *after_kw == '_')) {
+            p = found + needle_len;
+            continue;
+        }
+
+        /* Skip whitespace after "struct" */
+        const char *s = after_kw;
+        while (s < end && (*s == ' ' || *s == '\t'))
+            s++;
+
+        if (s >= end) break;
+
+        /* Case 1: "struct {" -- anonymous (typically from typedef struct {) */
+        if (*s == '{') {
+            count++;
+            p = s + 1;
+            continue;
+        }
+
+        /* Case 2: "struct Name" -- check what follows the name */
+        if (isalpha((unsigned char)*s) || *s == '_') {
+            /* Skip the identifier */
+            const char *id_end = s;
+            while (id_end < end &&
+                   (isalnum((unsigned char)*id_end) || *id_end == '_'))
+                id_end++;
+
+            /* Skip whitespace after identifier */
+            const char *after_id = id_end;
+            while (after_id < end && (*after_id == ' ' || *after_id == '\t'))
+                after_id++;
+
+            /* Count if followed by '{' (definition) */
+            if (after_id < end && *after_id == '{') {
+                count++;
+            }
+        }
+
+        p = found + needle_len;
+    }
+
+    return count;
+}
+
+/**
+ * Run AST self-introspection on the simulator/ directory.
+ *
+ * Opens each .c and .h file, counts lines, bytes, functions, and struct
+ * definitions, and prints a formatted table of results.  Follows the same
+ * pattern as the Node.js runAstIntrospection() in apps/nodejs/index.js.
+ */
+static int run_ast_introspection(const char *prog_path)
+{
+    /*
+     * Locate the simulator/ source directory.  Strategy:
+     *   1. Try "simulator/" relative to the current working directory
+     *      (the typical invocation: run from apps/c/).
+     *   2. Try the directory containing the source file itself -- i.e.,
+     *      resolve the binary path's parent, then check for a sibling
+     *      "simulator/" directory.
+     *   3. Fall back to the directory of the binary itself.
+     */
+    char dir_buf[PATH_MAX];
+    const char *dir = NULL;
+    DIR *dp = NULL;
+
+    /* Strategy 1: "simulator/" from cwd */
+    dp = opendir("simulator");
+    if (dp) {
+        dir = "simulator";
+    }
+
+    /* Strategy 2: relative to binary location */
+    if (!dp) {
+        char prog_copy[PATH_MAX];
+        strncpy(prog_copy, prog_path, sizeof(prog_copy) - 1);
+        prog_copy[sizeof(prog_copy) - 1] = '\0';
+        char *bin_dir = dirname(prog_copy);
+        snprintf(dir_buf, sizeof(dir_buf), "%s/../simulator", bin_dir);
+        dp = opendir(dir_buf);
+        if (dp) {
+            dir = dir_buf;
+        }
+    }
+
+    /* Strategy 3: dirname of binary */
+    if (!dp) {
+        char prog_copy[PATH_MAX];
+        strncpy(prog_copy, prog_path, sizeof(prog_copy) - 1);
+        prog_copy[sizeof(prog_copy) - 1] = '\0';
+        char *bin_dir = dirname(prog_copy);
+        dp = opendir(bin_dir);
+        if (dp) {
+            strncpy(dir_buf, bin_dir, sizeof(dir_buf) - 1);
+            dir_buf[sizeof(dir_buf) - 1] = '\0';
+            dir = dir_buf;
+        }
+    }
+
+    if (!dp) {
+        fprintf(stderr, "Error: cannot open simulator directory\n");
+        return 1;
+    }
+
+    /* Collect matching filenames (simple static array) */
+    char filenames[64][256];
+    int file_count = 0;
+
+    struct dirent *entry;
+    while ((entry = readdir(dp)) != NULL && file_count < 64) {
+        const char *name = entry->d_name;
+        size_t nlen = strlen(name);
+        if (nlen < 3) continue;
+
+        /* Check for .c or .h extension */
+        int is_c = (nlen >= 2 && strcmp(name + nlen - 2, ".c") == 0);
+        int is_h = (nlen >= 2 && strcmp(name + nlen - 2, ".h") == 0);
+
+        if (is_c || is_h) {
+            strncpy(filenames[file_count], name, 255);
+            filenames[file_count][255] = '\0';
+            file_count++;
+        }
+    }
+    closedir(dp);
+
+    /* Sort filenames alphabetically */
+    for (int i = 0; i < file_count - 1; i++) {
+        for (int j = i + 1; j < file_count; j++) {
+            if (strcmp(filenames[i], filenames[j]) > 0) {
+                char tmp[256];
+                memcpy(tmp, filenames[i], 256);
+                memcpy(filenames[i], filenames[j], 256);
+                memcpy(filenames[j], tmp, 256);
+            }
+        }
+    }
+
+    /* Print header */
+    printf("\n");
+    printf("  === AST Self-Introspection: C Simulator ===\n\n");
+    printf("  %-28s %6s %8s %6s %8s\n", "File", "Lines", "Bytes", "Funcs", "Structs");
+    printf("  %-28s %6s %8s %6s %8s\n",
+           "----------------------------", "------", "--------",
+           "------", "--------");
+
+    long total_lines = 0;
+    long total_bytes = 0;
+    int total_functions = 0;
+    int total_structs = 0;
+
+    for (int i = 0; i < file_count; i++) {
+        char filepath[PATH_MAX + 512];
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-truncation"
+        snprintf(filepath, sizeof(filepath), "%s/%s", dir, filenames[i]);
+#pragma GCC diagnostic pop
+
+        FILE *fp = fopen(filepath, "r");
+        if (!fp) continue;
+
+        /* Get file size */
+        fseek(fp, 0, SEEK_END);
+        long fsize = ftell(fp);
+        fseek(fp, 0, SEEK_SET);
+
+        /* Read entire file */
+        char *buf = (char *)malloc((size_t)fsize + 1);
+        if (!buf) {
+            fclose(fp);
+            continue;
+        }
+        size_t nread = fread(buf, 1, (size_t)fsize, fp);
+        buf[nread] = '\0';
+        fclose(fp);
+
+        /* Count lines */
+        long lines = 0;
+        for (size_t c = 0; c < nread; c++) {
+            if (buf[c] == '\n') lines++;
+        }
+        if (nread > 0 && buf[nread - 1] != '\n') lines++;
+
+        /* Count functions and structs */
+        int funcs = count_functions(buf, (long)nread);
+        int structs = count_structs(buf, (long)nread);
+
+        total_lines += lines;
+        total_bytes += fsize;
+        total_functions += funcs;
+        total_structs += structs;
+
+        printf("  %-28s %6ld %8ld %6d %8d\n",
+               filenames[i], lines, fsize, funcs, structs);
+
+        free(buf);
+    }
+
+    printf("  %-28s %6s %8s %6s %8s\n",
+           "----------------------------", "------", "--------",
+           "------", "--------");
+    printf("  %-28s %6ld %8ld %6d %8d\n",
+           "TOTAL", total_lines, total_bytes, total_functions, total_structs);
+    printf("\n");
+
+    return 0;
+}
+
+/* ------------------------------------------------------------------ */
 /* Main simulation driver with verbose output                          */
 /* ------------------------------------------------------------------ */
 
@@ -363,9 +722,10 @@ static void print_usage(const char *prog)
 {
     printf("Usage: %s [options]\n", prog);
     printf("Options:\n");
-    printf("  -v, --verbose    Enable verbose output\n");
-    printf("  -s, --seed NUM   Set random seed (default: time-based)\n");
-    printf("  -h, --help       Show this help\n");
+    printf("  -v, --verbose          Enable verbose output\n");
+    printf("  -s, --seed NUM         Set random seed (default: time-based)\n");
+    printf("      --ast-introspect   Run AST self-introspection and exit\n");
+    printf("  -h, --help             Show this help\n");
 }
 
 int main(int argc, char *argv[])
@@ -379,6 +739,8 @@ int main(int argc, char *argv[])
         } else if ((strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--seed") == 0)
                    && i + 1 < argc) {
             seed = (unsigned int)atoi(argv[++i]);
+        } else if (strcmp(argv[i], "--ast-introspect") == 0) {
+            return run_ast_introspection(argv[0]);
         } else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
             print_usage(argv[0]);
             return 0;

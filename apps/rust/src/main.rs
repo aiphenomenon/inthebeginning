@@ -6,6 +6,8 @@
 mod simulator;
 
 use simulator::universe::{SimStats, Universe};
+use std::fs;
+use std::path::Path;
 
 // ---------------------------------------------------------------------------
 // Display helpers
@@ -359,7 +361,181 @@ mod tests {
     }
 }
 
+// ---------------------------------------------------------------------------
+// AST self-introspection
+// ---------------------------------------------------------------------------
+
+/// Count occurrences of a simple pattern in the source text.
+///
+/// Matches patterns like `fn `, `struct `, `impl `, and `mod ` at the start
+/// of a token boundary (preceded by start-of-line or whitespace).
+fn count_pattern(src: &str, keyword: &str) -> usize {
+    let mut count = 0;
+    for line in src.lines() {
+        let trimmed = line.trim();
+        // Match keyword at start of trimmed line, or after `pub `, `pub(crate) `, etc.
+        // This handles: `fn foo`, `pub fn foo`, `pub(crate) fn foo`, `unsafe fn foo`, etc.
+        let tokens: Vec<&str> = trimmed.split_whitespace().collect();
+        for (i, token) in tokens.iter().enumerate() {
+            if *token == keyword {
+                // For `fn`, avoid matching inside `pub(crate)` or attribute-like contexts
+                // by checking it looks like a real definition (keyword followed by a name or '{')
+                if keyword == "fn" {
+                    // `fn` should be followed by something (function name)
+                    if i + 1 < tokens.len() {
+                        count += 1;
+                    }
+                    break;
+                } else if keyword == "struct" {
+                    if i + 1 < tokens.len() {
+                        count += 1;
+                    }
+                    break;
+                } else if keyword == "impl" {
+                    // `impl` block
+                    count += 1;
+                    break;
+                } else if keyword == "mod" {
+                    if i + 1 < tokens.len() {
+                        count += 1;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    count
+}
+
+/// Collect all `.rs` files from `src/` and `src/simulator/`, analyze them,
+/// and print a formatted table of results.
+fn run_ast_introspection() {
+    println!();
+    println!("=== AST Self-Introspection: Rust App ===");
+    println!();
+
+    // Determine the src directory relative to the binary's expected project root.
+    // We look for the `src/` directory starting from the current working directory.
+    let src_dir = Path::new("src");
+    let sim_dir = src_dir.join("simulator");
+
+    let mut files: Vec<(String, String)> = Vec::new(); // (display_name, full_path)
+
+    // Collect files from src/
+    if let Ok(entries) = fs::read_dir(src_dir) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.extension().map_or(false, |e| e == "rs") {
+                let display = path.file_name().unwrap().to_string_lossy().to_string();
+                files.push((display, path.to_string_lossy().to_string()));
+            }
+        }
+    }
+
+    // Collect files from src/simulator/
+    if let Ok(entries) = fs::read_dir(&sim_dir) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.extension().map_or(false, |e| e == "rs") {
+                let display = format!(
+                    "simulator/{}",
+                    path.file_name().unwrap().to_string_lossy()
+                );
+                files.push((display, path.to_string_lossy().to_string()));
+            }
+        }
+    }
+
+    files.sort_by(|a, b| a.0.cmp(&b.0));
+
+    if files.is_empty() {
+        println!("  No .rs files found. Run from the apps/rust/ directory.");
+        std::process::exit(1);
+    }
+
+    // Table header
+    println!(
+        "  {:<28} {:>6} {:>8} {:>5} {:>7} {:>6} {:>5}",
+        "File", "Lines", "Bytes", "fn", "struct", "impl", "mod"
+    );
+    println!(
+        "  {:<28} {:>6} {:>8} {:>5} {:>7} {:>6} {:>5}",
+        "─".repeat(28),
+        "─".repeat(6),
+        "─".repeat(8),
+        "─".repeat(5),
+        "─".repeat(7),
+        "─".repeat(6),
+        "─".repeat(5)
+    );
+
+    let mut total_lines: usize = 0;
+    let mut total_bytes: usize = 0;
+    let mut total_fns: usize = 0;
+    let mut total_structs: usize = 0;
+    let mut total_impls: usize = 0;
+    let mut total_mods: usize = 0;
+
+    for (display_name, filepath) in &files {
+        let content = match fs::read_to_string(filepath) {
+            Ok(c) => c,
+            Err(_) => continue,
+        };
+        let bytes = match fs::metadata(filepath) {
+            Ok(m) => m.len() as usize,
+            Err(_) => content.len(),
+        };
+        let lines = content.lines().count();
+        let fns = count_pattern(&content, "fn");
+        let structs = count_pattern(&content, "struct");
+        let impls = count_pattern(&content, "impl");
+        let mods = count_pattern(&content, "mod");
+
+        total_lines += lines;
+        total_bytes += bytes;
+        total_fns += fns;
+        total_structs += structs;
+        total_impls += impls;
+        total_mods += mods;
+
+        println!(
+            "  {:<28} {:>6} {:>8} {:>5} {:>7} {:>6} {:>5}",
+            display_name, lines, bytes, fns, structs, impls, mods
+        );
+    }
+
+    // Totals row
+    println!(
+        "  {:<28} {:>6} {:>8} {:>5} {:>7} {:>6} {:>5}",
+        "─".repeat(28),
+        "─".repeat(6),
+        "─".repeat(8),
+        "─".repeat(5),
+        "─".repeat(7),
+        "─".repeat(6),
+        "─".repeat(5)
+    );
+    println!(
+        "  {:<28} {:>6} {:>8} {:>5} {:>7} {:>6} {:>5}",
+        "TOTAL",
+        total_lines,
+        total_bytes,
+        total_fns,
+        total_structs,
+        total_impls,
+        total_mods
+    );
+    println!();
+}
+
 fn main() {
+    // Check for --ast-introspect flag
+    let args: Vec<String> = std::env::args().collect();
+    if args.iter().any(|a| a == "--ast-introspect") {
+        run_ast_introspection();
+        std::process::exit(0);
+    }
+
     println!();
     println!(
         "  ╔══════════════════════════════════════════════════════════════════════════╗"
