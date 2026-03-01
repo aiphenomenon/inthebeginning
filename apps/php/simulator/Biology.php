@@ -17,8 +17,22 @@ require_once __DIR__ . '/Chemistry.php';
  * - Natural selection pressure
  */
 
+/**
+ * An epigenetic modification on a DNA position.
+ *
+ * Represents methylation, acetylation, or phosphorylation marks that
+ * regulate gene expression without altering the DNA sequence itself.
+ */
 class EpigeneticMark
 {
+    /**
+     * Create a new epigenetic mark.
+     *
+     * @param int    $position        Base position in the gene sequence.
+     * @param string $markType        Type: 'methylation', 'acetylation', or 'phosphorylation'.
+     * @param bool   $active          Whether this mark is currently active.
+     * @param int    $generationAdded The generation in which this mark was added.
+     */
     public function __construct(
         public readonly int $position,
         public readonly string $markType,  // "methylation", "acetylation", "phosphorylation"
@@ -26,6 +40,11 @@ class EpigeneticMark
         public readonly int $generationAdded = 0,
     ) {}
 
+    /**
+     * Get a compact string representation of this mark (e.g., 'M3+' for active methylation at position 3).
+     *
+     * @return string Compact mark descriptor.
+     */
     public function toCompact(): string
     {
         $m = strtoupper($this->markType[0]);
@@ -34,8 +53,15 @@ class EpigeneticMark
     }
 }
 
+/**
+ * A gene within a DNA strand.
+ *
+ * Contains a sequence of nucleotide bases, epigenetic marks, and expression level.
+ * Supports transcription to mRNA, mutation, methylation, and acetylation.
+ */
 class Gene
 {
+    /** @var float Expression level from 0.0 (silenced) to 1.0 (fully expressed). */
     public float $expressionLevel;
 
     /** @var EpigeneticMark[] */
