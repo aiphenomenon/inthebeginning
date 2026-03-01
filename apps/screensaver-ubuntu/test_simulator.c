@@ -432,6 +432,328 @@ TEST(test_universe_full_run_small)
 }
 
 /* ================================================================== */
+/*  Recombination and Stellar epochs                                   */
+/* ================================================================== */
+
+TEST(test_universe_recombination)
+{
+    Universe u;
+    universe_init(&u, 42);
+
+    /* Advance past recombination epoch */
+    while (u.tick <= RECOMBINATION_EPOCH + 1)
+        universe_step(&u);
+
+    /* Should have formed atoms during nucleosynthesis + recombination */
+    ASSERT_GT(u.atoms_formed, 0);
+    ASSERT_GT(u.as.atom_count, 0);
+}
+
+TEST(test_universe_star_formation)
+{
+    Universe u;
+    universe_init(&u, 42);
+
+    /* Advance into star formation epoch */
+    while (u.tick < STAR_FORMATION_EPOCH + 100)
+        universe_step(&u);
+
+    ASSERT_EQ_INT((int)u.current_epoch, (int)EPOCH_STAR_FORMATION);
+    /* Stellar nucleosynthesis should have formed atoms */
+    ASSERT_GT(u.atoms_formed, 0);
+}
+
+/* ================================================================== */
+/*  Chemistry epoch tests                                              */
+/* ================================================================== */
+
+TEST(test_universe_chemistry_epoch)
+{
+    Universe u;
+    universe_init(&u, 42);
+
+    /* Advance past Earth epoch where chemistry activates */
+    while (u.tick < EARTH_EPOCH + 10)
+        universe_step(&u);
+
+    /* Chemical system should be initialised */
+    ASSERT_TRUE(u.cs.initialised);
+    /* Should have formed molecules (water, methane, ammonia) */
+    ASSERT_GT(u.cs.molecule_count, 0);
+    ASSERT_GT(u.molecules_formed, 0);
+}
+
+TEST(test_universe_water_formation)
+{
+    Universe u;
+    universe_init(&u, 42);
+
+    /* Advance to just past Earth epoch */
+    while (u.tick <= EARTH_EPOCH + 1)
+        universe_step(&u);
+
+    /* Water should be among the formed molecules */
+    ASSERT_GT(u.cs.water_count, 0);
+}
+
+/* ================================================================== */
+/*  Biology / Life epoch tests                                         */
+/* ================================================================== */
+
+TEST(test_universe_life_epoch)
+{
+    Universe u;
+    universe_init(&u, 42);
+
+    /* Advance past Life epoch -- biosphere should be created */
+    while (u.tick < LIFE_EPOCH + 50)
+        universe_step(&u);
+
+    ASSERT_TRUE(u.bio.initialised);
+    ASSERT_GT(u.bio.cell_count, 0);
+    ASSERT_GT(u.cells_born, 0);
+}
+
+TEST(test_universe_biosphere_generations)
+{
+    Universe u;
+    universe_init(&u, 42);
+
+    /* Advance well past Life epoch for multiple generations */
+    while (u.tick < LIFE_EPOCH + 200)
+        universe_step(&u);
+
+    ASSERT_GT(u.bio.generation, 0);
+    /* Cells should be present */
+    ASSERT_GT(u.bio.cell_count, 0);
+}
+
+/* ================================================================== */
+/*  Snapshot field validation tests                                     */
+/* ================================================================== */
+
+TEST(test_snapshot_habitable_at_life_epoch)
+{
+    Universe u;
+    universe_init(&u, 42);
+
+    /* Advance to well past Life epoch */
+    while (u.tick < LIFE_EPOCH + 100)
+        universe_step(&u);
+
+    Snapshot s = universe_snapshot(&u);
+    /* At Life epoch, environment should be habitable for bio to exist */
+    ASSERT_TRUE(s.habitable);
+    ASSERT_GT(s.cell_count, 0);
+}
+
+TEST(test_snapshot_temperature_early_universe)
+{
+    Universe u;
+    universe_init(&u, 42);
+
+    /* At tick 0, temperature should be T_PLANCK */
+    Snapshot s = universe_snapshot(&u);
+    ASSERT_EQ_DBL(s.temperature, T_PLANCK, 1.0);
+
+    /* After some steps, temperature should decrease */
+    for (int i = 0; i < 500; i++)
+        universe_step(&u);
+
+    s = universe_snapshot(&u);
+    ASSERT_LT(s.temperature, T_PLANCK);
+    ASSERT_GT(s.temperature, 0.0);
+}
+
+TEST(test_snapshot_at_earth_epoch)
+{
+    Universe u;
+    universe_init(&u, 42);
+
+    /* Advance to Earth epoch */
+    while (u.tick < EARTH_EPOCH + 5)
+        universe_step(&u);
+
+    Snapshot s = universe_snapshot(&u);
+    ASSERT_EQ_INT((int)s.epoch, (int)EPOCH_EARTH);
+    /* Temperature should be near Earth surface */
+    ASSERT_GT(s.temperature, 100.0);
+    ASSERT_LT(s.temperature, 500.0);
+    /* Should have atoms and molecules */
+    ASSERT_GT(s.atom_count, 0);
+    ASSERT_GT(s.molecule_count, 0);
+}
+
+TEST(test_snapshot_average_fitness_at_life)
+{
+    Universe u;
+    universe_init(&u, 42);
+
+    /* Run to well past Life epoch */
+    while (u.tick < LIFE_EPOCH + 200)
+        universe_step(&u);
+
+    Snapshot s = universe_snapshot(&u);
+    /* Average fitness should be positive when cells exist */
+    if (s.cell_count > 0) {
+        ASSERT_GT(s.average_fitness, 0.0);
+        ASSERT_LE(s.average_fitness, 1.0);
+    }
+}
+
+TEST(test_snapshot_generation_and_mutations)
+{
+    Universe u;
+    universe_init(&u, 42);
+
+    /* Run past Life epoch for mutations to accumulate */
+    while (u.tick < LIFE_EPOCH + 500)
+        universe_step(&u);
+
+    Snapshot s = universe_snapshot(&u);
+    if (s.cell_count > 0) {
+        ASSERT_GT(s.generation, 0);
+        /* Mutations should accumulate due to UV and cosmic rays */
+        ASSERT_GE(s.total_mutations, 0);
+    }
+}
+
+/* ================================================================== */
+/*  Epoch progression tests                                            */
+/* ================================================================== */
+
+TEST(test_all_epoch_transitions)
+{
+    Universe u;
+    universe_init(&u, 42);
+
+    /* Walk through all epochs and verify each one is reached */
+    while (u.tick < INFLATION_EPOCH) universe_step(&u);
+    ASSERT_EQ_INT((int)u.current_epoch, (int)EPOCH_INFLATION);
+
+    while (u.tick < ELECTROWEAK_EPOCH) universe_step(&u);
+    ASSERT_EQ_INT((int)u.current_epoch, (int)EPOCH_ELECTROWEAK);
+
+    while (u.tick < QUARK_EPOCH) universe_step(&u);
+    ASSERT_EQ_INT((int)u.current_epoch, (int)EPOCH_QUARK);
+
+    while (u.tick < HADRON_EPOCH) universe_step(&u);
+    ASSERT_EQ_INT((int)u.current_epoch, (int)EPOCH_HADRON);
+
+    while (u.tick < NUCLEOSYNTHESIS_EPOCH) universe_step(&u);
+    ASSERT_EQ_INT((int)u.current_epoch, (int)EPOCH_NUCLEOSYNTHESIS);
+
+    while (u.tick < RECOMBINATION_EPOCH) universe_step(&u);
+    ASSERT_EQ_INT((int)u.current_epoch, (int)EPOCH_RECOMBINATION);
+
+    while (u.tick < STAR_FORMATION_EPOCH) universe_step(&u);
+    ASSERT_EQ_INT((int)u.current_epoch, (int)EPOCH_STAR_FORMATION);
+
+    while (u.tick < SOLAR_SYSTEM_EPOCH) universe_step(&u);
+    ASSERT_EQ_INT((int)u.current_epoch, (int)EPOCH_SOLAR_SYSTEM);
+
+    while (u.tick < EARTH_EPOCH) universe_step(&u);
+    ASSERT_EQ_INT((int)u.current_epoch, (int)EPOCH_EARTH);
+
+    while (u.tick < LIFE_EPOCH) universe_step(&u);
+    ASSERT_EQ_INT((int)u.current_epoch, (int)EPOCH_LIFE);
+
+    while (u.tick < DNA_EPOCH) universe_step(&u);
+    ASSERT_EQ_INT((int)u.current_epoch, (int)EPOCH_DNA);
+
+    while (u.tick < PRESENT_EPOCH) universe_step(&u);
+    ASSERT_EQ_INT((int)u.current_epoch, (int)EPOCH_PRESENT);
+}
+
+/* ================================================================== */
+/*  Edge case and lookup tests                                         */
+/* ================================================================== */
+
+TEST(test_epoch_name_boundary)
+{
+    /* Epoch names for valid values should not be "Unknown" */
+    for (int i = 0; i < EPOCH_COUNT; i++) {
+        const char *name = epoch_name((EpochId)i);
+        ASSERT_TRUE(strcmp(name, "Unknown") != 0);
+    }
+    /* Out of bounds should return "Unknown" */
+    ASSERT_STREQ(epoch_name((EpochId)-1), "Unknown");
+    ASSERT_STREQ(epoch_name((EpochId)EPOCH_COUNT), "Unknown");
+}
+
+TEST(test_particle_type_name_all)
+{
+    /* All valid particle types should return a non-empty string */
+    for (int i = 0; i < PTYPE_COUNT; i++) {
+        const char *name = particle_type_name((ParticleType)i);
+        ASSERT_TRUE(strlen(name) > 0);
+        ASSERT_TRUE(strcmp(name, "?") != 0);
+    }
+    /* Out of bounds should return "?" */
+    ASSERT_STREQ(particle_type_name((ParticleType)-1), "?");
+    ASSERT_STREQ(particle_type_name((ParticleType)PTYPE_COUNT), "?");
+}
+
+TEST(test_particle_mass_zero_for_photon)
+{
+    ASSERT_EQ_DBL(particle_mass(PTYPE_PHOTON), 0.0, 1e-15);
+    ASSERT_EQ_DBL(particle_mass(PTYPE_GLUON), 0.0, 1e-15);
+    /* Out of bounds should return 0 */
+    ASSERT_EQ_DBL(particle_mass((ParticleType)-1), 0.0, 1e-15);
+}
+
+TEST(test_particle_charge_out_of_bounds)
+{
+    ASSERT_EQ_DBL(particle_charge((ParticleType)-1), 0.0, 1e-15);
+    ASSERT_EQ_DBL(particle_charge((ParticleType)PTYPE_COUNT), 0.0, 1e-15);
+}
+
+TEST(test_element_symbol_valid)
+{
+    /* Test a few key elements */
+    ASSERT_STREQ(element_symbol(1), "H");
+    ASSERT_STREQ(element_symbol(2), "He");
+    ASSERT_STREQ(element_symbol(6), "C");
+    ASSERT_STREQ(element_symbol(7), "N");
+    ASSERT_STREQ(element_symbol(8), "O");
+    ASSERT_STREQ(element_symbol(11), "Na");
+    ASSERT_STREQ(element_symbol(14), "Si");
+    ASSERT_STREQ(element_symbol(16), "S");
+    ASSERT_STREQ(element_symbol(17), "Cl");
+    ASSERT_STREQ(element_symbol(18), "Ar");
+    ASSERT_STREQ(element_symbol(19), "K");
+    ASSERT_STREQ(element_symbol(20), "Ca");
+}
+
+TEST(test_universe_seed_zero)
+{
+    /* seed of 0 should be converted to 42 internally */
+    Universe u;
+    universe_init(&u, 0);
+    ASSERT_EQ_INT(u.rng_state, 42);
+
+    /* Should still function correctly */
+    for (int i = 0; i < 50; i++)
+        universe_step(&u);
+    ASSERT_GT(u.qf.particle_count, 0);
+}
+
+TEST(test_universe_snapshot_not_habitable_early)
+{
+    Universe u;
+    universe_init(&u, 42);
+
+    /* Early universe should not be habitable */
+    for (int i = 0; i < 100; i++)
+        universe_step(&u);
+
+    Snapshot s = universe_snapshot(&u);
+    ASSERT_FALSE(s.habitable);
+    ASSERT_EQ_INT(s.cell_count, 0);
+    ASSERT_EQ_INT(s.generation, 0);
+}
+
+/* ================================================================== */
 /*  Main test runner                                                   */
 /* ================================================================== */
 
@@ -472,6 +794,37 @@ int main(void)
     RUN_TEST(test_universe_nucleosynthesis);
     RUN_TEST(test_universe_temperature_decreases);
     RUN_TEST(test_universe_full_run_small);
+
+    printf("\n[Recombination & Stellar]\n");
+    RUN_TEST(test_universe_recombination);
+    RUN_TEST(test_universe_star_formation);
+
+    printf("\n[Chemistry]\n");
+    RUN_TEST(test_universe_chemistry_epoch);
+    RUN_TEST(test_universe_water_formation);
+
+    printf("\n[Biology / Life]\n");
+    RUN_TEST(test_universe_life_epoch);
+    RUN_TEST(test_universe_biosphere_generations);
+
+    printf("\n[Snapshot Fields]\n");
+    RUN_TEST(test_snapshot_habitable_at_life_epoch);
+    RUN_TEST(test_snapshot_temperature_early_universe);
+    RUN_TEST(test_snapshot_at_earth_epoch);
+    RUN_TEST(test_snapshot_average_fitness_at_life);
+    RUN_TEST(test_snapshot_generation_and_mutations);
+
+    printf("\n[Epoch Progression]\n");
+    RUN_TEST(test_all_epoch_transitions);
+
+    printf("\n[Edge Cases]\n");
+    RUN_TEST(test_epoch_name_boundary);
+    RUN_TEST(test_particle_type_name_all);
+    RUN_TEST(test_particle_mass_zero_for_photon);
+    RUN_TEST(test_particle_charge_out_of_bounds);
+    RUN_TEST(test_element_symbol_valid);
+    RUN_TEST(test_universe_seed_zero);
+    RUN_TEST(test_universe_snapshot_not_habitable_early);
 
     printf("\n========================================\n");
     printf("  Results: %d passed, %d failed\n", tests_passed, tests_failed);
