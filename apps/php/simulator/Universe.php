@@ -13,6 +13,14 @@ require_once __DIR__ . '/Environment.php';
  * Universe orchestrator - runs the full cosmic simulation through 13 epochs.
  */
 
+/**
+ * Universe orchestrator - runs the full cosmic simulation through 13 epochs.
+ *
+ * Coordinates quantum fields, atomic systems, chemical reactions, biological
+ * evolution, and environmental changes from the Planck epoch through the
+ * present day. Each epoch applies temperature cooling, spatial expansion,
+ * and epoch-specific physics.
+ */
 class Universe
 {
     private const EPOCH_NAMES = [
@@ -57,12 +65,22 @@ class Universe
         'lifeforms_created' => 0,
     ];
 
+    /**
+     * Create a new Universe simulation.
+     *
+     * @param int $ticksPerEpoch Number of simulation ticks to execute per epoch.
+     */
     public function __construct(int $ticksPerEpoch = 100)
     {
         $this->ticksPerEpoch = $ticksPerEpoch;
         $this->temperature = T_PLANCK;
     }
 
+    /**
+     * Get the display name of the current epoch.
+     *
+     * @return string Epoch name (e.g., 'Planck', 'Inflation', 'Present Day').
+     */
     public function epochName(): string
     {
         return self::EPOCH_NAMES[$this->currentEpoch] ?? 'Unknown';
@@ -127,6 +145,15 @@ class Universe
         $this->stats['lifeforms_created'] = $this->populationCount;
     }
 
+    /**
+     * Run a single epoch of the simulation.
+     *
+     * Executes ticksPerEpoch ticks, applying temperature cooling, spatial expansion,
+     * and the appropriate physics subsystems for this epoch index.
+     *
+     * @param int $epochIdx The epoch index (0-12).
+     * @return array{epoch: string, temperature: float, scale: float, stats: array} Epoch result data.
+     */
     public function runEpoch(int $epochIdx): array
     {
         $this->currentEpoch = $epochIdx;
@@ -162,7 +189,13 @@ class Universe
     }
 
     /**
-     * @return array<array>
+     * Run the full 13-epoch cosmic simulation from Planck to Present.
+     *
+     * Initializes all subsystems (quantum field, atomic system, chemical system,
+     * biosphere, environment) and runs each epoch in sequence.
+     *
+     * @param callable|null $onEpochComplete Optional callback invoked after each epoch: fn(int $idx, array $result).
+     * @return array<array> Array of 13 epoch result arrays.
      */
     public function run(?callable $onEpochComplete = null): array
     {

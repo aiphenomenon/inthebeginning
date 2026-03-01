@@ -241,12 +241,21 @@ class DNAStrand
         $this->mutationCount = $mutationCount;
     }
 
+    /**
+     * Get the length of this DNA strand in base pairs.
+     *
+     * @return int Number of nucleotide bases.
+     */
     public function length(): int
     {
         return count($this->sequence);
     }
 
-    /** @return string[] */
+    /**
+     * Generate the complementary strand using Watson-Crick base pairing.
+     *
+     * @return string[] Complementary base sequence (A<->T, G<->C).
+     */
     public function complementaryStrand(): array
     {
         return array_map(
@@ -255,6 +264,13 @@ class DNAStrand
         );
     }
 
+    /**
+     * Calculate the GC content (fraction of G and C bases).
+     *
+     * Optimal GC content near 0.5 indicates balanced base composition.
+     *
+     * @return float GC fraction from 0.0 to 1.0 (0.0 for empty sequences).
+     */
     public function gcContent(): float
     {
         if (empty($this->sequence)) {
@@ -416,7 +432,15 @@ class DNAStrand
     }
 }
 
-/** Translate mRNA to protein (amino acid sequence). */
+/**
+ * Translate an mRNA codon sequence into a protein (amino acid sequence).
+ *
+ * Begins at the first AUG (Met/start) codon and continues until a stop codon
+ * (UAA, UAG, UGA) is reached or the sequence ends.
+ *
+ * @param string[] $mrna Array of RNA bases (A, U, G, C).
+ * @return string[] Array of amino acid names (e.g., ['Met', 'Phe', 'Gly']).
+ */
 function translateMRNA(array $mrna): array
 {
     $protein = [];
@@ -443,9 +467,15 @@ function translateMRNA(array $mrna): array
     return $protein;
 }
 
+/**
+ * A protein assembled from amino acids via translation.
+ *
+ * Models protein structure including amino acid sequence, folding state,
+ * biological function (enzyme, structural, signaling), and activity status.
+ */
 class Protein
 {
-    /** @var string[] */
+    /** @var string[] Ordered list of amino acid names in this protein. */
     public array $aminoAcids;
 
     public string $name;
@@ -470,12 +500,23 @@ class Protein
         $this->active = $active;
     }
 
+    /**
+     * Get the number of amino acids in this protein.
+     *
+     * @return int Protein length.
+     */
     public function length(): int
     {
         return count($this->aminoAcids);
     }
 
-    /** Simplified protein folding - probability based on length. */
+    /**
+     * Attempt to fold this protein into a functional conformation.
+     *
+     * Folding probability increases with protein length (minimum 3 residues required).
+     *
+     * @return bool True if the protein folded successfully.
+     */
     public function fold(): bool
     {
         if ($this->length() < 3) {
@@ -488,10 +529,19 @@ class Protein
     }
 }
 
+/**
+ * A biological cell with DNA, proteins, metabolism, and reproduction.
+ *
+ * Implements the central dogma (DNA -> mRNA -> Protein), basic metabolism,
+ * cell division with DNA replication, and fitness computation based on
+ * functional proteins, energy levels, and GC content.
+ */
 class Cell
 {
+    /** @var int Auto-incrementing counter for unique cell IDs. */
     private static int $idCounter = 0;
 
+    /** @var int Unique identifier for this cell instance. */
     public readonly int $cellId;
     public DNAStrand $dna;
 
@@ -521,12 +571,23 @@ class Cell
         $this->energy = $energy;
     }
 
+    /**
+     * Reset the cell ID counter (useful for testing).
+     */
     public static function resetIdCounter(): void
     {
         self::$idCounter = 0;
     }
 
-    /** Central dogma: DNA -> mRNA -> Protein. */
+    /**
+     * Execute the central dogma: transcribe DNA to mRNA and translate to proteins.
+     *
+     * Iterates over all genes, transcribing non-silenced genes to mRNA and
+     * translating codons to amino acid sequences. Produced proteins are folded
+     * and added to the cell's protein inventory.
+     *
+     * @return Protein[] Array of newly synthesized proteins.
+     */
     public function transcribeAndTranslate(): array
     {
         $newProteins = [];
@@ -566,7 +627,13 @@ class Cell
         return $newProteins;
     }
 
-    /** Basic metabolism: consume energy, produce waste. */
+    /**
+     * Perform basic metabolism: absorb environmental energy and expend basal metabolic cost.
+     *
+     * Efficiency scales with functional enzyme count. Cell dies if energy drops to zero.
+     *
+     * @param float $environmentEnergy Available environmental energy per tick.
+     */
     public function metabolize(float $environmentEnergy = 10.0): void
     {
         $enzymeCount = 0;
@@ -585,7 +652,14 @@ class Cell
         }
     }
 
-    /** Cell division with DNA replication and possible mutation. */
+    /**
+     * Divide this cell into a mother and daughter cell.
+     *
+     * Requires the cell to be alive with energy >= 50. Energy is split evenly.
+     * The daughter receives a replicated copy of the DNA.
+     *
+     * @return Cell|null The daughter cell, or null if division is not possible.
+     */
     public function divide(): ?Cell
     {
         if (!$this->alive || $this->energy < 50.0) {
@@ -607,7 +681,14 @@ class Cell
         return $daughter;
     }
 
-    /** Compute cell fitness based on functional proteins and DNA integrity. */
+    /**
+     * Compute and return the cell's fitness based on functional proteins, energy, and GC content.
+     *
+     * Fitness is a weighted combination: protein fitness (40%), energy fitness (30%),
+     * and GC content fitness (30%). Essential genes must be active.
+     *
+     * @return float Fitness score from 0.0 to 1.0.
+     */
     public function computeFitness(): float
     {
         if (!$this->alive) {
@@ -654,9 +735,15 @@ class Cell
     }
 }
 
+/**
+ * The biosphere: a population of cells undergoing evolution.
+ *
+ * Manages metabolism, mutation, transcription/translation, fitness computation,
+ * natural selection (survival of the fittest), reproduction, and population control.
+ */
 class Biosphere
 {
-    /** @var Cell[] */
+    /** @var Cell[] Living cells in the biosphere. */
     public array $cells = [];
 
     public int $generation = 0;
@@ -664,6 +751,12 @@ class Biosphere
     public int $totalDied = 0;
     public int $dnaLength;
 
+    /**
+     * Create a new biosphere with an initial population.
+     *
+     * @param int $initialCells Number of cells to start with.
+     * @param int $dnaLength    Length of each cell's random DNA strand.
+     */
     public function __construct(int $initialCells = 5, int $dnaLength = 90)
     {
         $this->dnaLength = $dnaLength;
@@ -752,6 +845,11 @@ class Biosphere
         }
     }
 
+    /**
+     * Calculate the average fitness across all living cells.
+     *
+     * @return float Mean fitness (0.0 if population is empty).
+     */
     public function averageFitness(): float
     {
         if (empty($this->cells)) {
@@ -764,6 +862,11 @@ class Biosphere
         return $sum / count($this->cells);
     }
 
+    /**
+     * Calculate the average GC content across all living cells' DNA.
+     *
+     * @return float Mean GC fraction (0.0 if population is empty).
+     */
     public function averageGcContent(): float
     {
         if (empty($this->cells)) {
@@ -776,6 +879,11 @@ class Biosphere
         return $sum / count($this->cells);
     }
 
+    /**
+     * Sum all accumulated mutations across all living cells.
+     *
+     * @return int Total mutation count.
+     */
     public function totalMutations(): int
     {
         $total = 0;
@@ -785,6 +893,11 @@ class Biosphere
         return $total;
     }
 
+    /**
+     * Create a snapshot of the biosphere's current state for reporting.
+     *
+     * @return array{generation: int, population: int, average_fitness: float, average_gc: float, total_born: int, total_died: int, total_mutations: int}
+     */
     public function toSnapshot(): array
     {
         return [

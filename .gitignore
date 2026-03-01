@@ -29,6 +29,7 @@ apps/cpp/build/
 
 # Java
 apps/java/build/
+apps/java/out/
 apps/java/.gradle/
 
 # Ubuntu screensaver build artifacts

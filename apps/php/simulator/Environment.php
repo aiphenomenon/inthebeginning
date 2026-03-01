@@ -11,8 +11,23 @@ require_once __DIR__ . '/Constants.php';
  * that influence cosmic and biological evolution.
  */
 
+/**
+ * A discrete environmental event (e.g., volcanic eruption, meteor impact).
+ *
+ * Records the event type, intensity, duration, spatial position, and
+ * simulation tick at which it occurred.
+ */
 class EnvironmentalEvent
 {
+    /**
+     * Create a new environmental event.
+     *
+     * @param string  $eventType    Type of event (e.g., 'volcanic', 'impact').
+     * @param float   $intensity    Event intensity from 0.0 to 1.0.
+     * @param int     $duration     Duration in simulation ticks.
+     * @param float[] $position     3D position [x, y, z] where the event occurs.
+     * @param int     $tickOccurred Simulation tick when the event started.
+     */
     public function __construct(
         public readonly string $eventType,
         public readonly float $intensity,
@@ -21,16 +36,33 @@ class EnvironmentalEvent
         public readonly int $tickOccurred = 0,
     ) {}
 
+    /**
+     * Get a compact string representation of this event.
+     *
+     * @return string Formatted event descriptor.
+     */
     public function toCompact(): string
     {
         return sprintf('Event(%s,i=%.2f,d=%d)', $this->eventType, $this->intensity, $this->duration);
     }
 }
 
+/**
+ * The planetary environment simulation.
+ *
+ * Models temperature, radiation levels, atmospheric pressure and composition,
+ * volcanic activity, and atmospheric evolution. Tracks environmental events
+ * and drives conditions toward habitability.
+ */
 class Environment
 {
+    /** @var float Surface temperature in simulation Kelvin. */
     public float $temperature;
+
+    /** @var float Radiation level (decays over time from initial 1.0). */
     public float $radiation;
+
+    /** @var float Atmospheric pressure in atmospheres. */
     public float $pressure;
     /** @var array<string, float> */
     public array $atmosphere;
@@ -38,6 +70,11 @@ class Environment
     public array $events = [];
     public int $tick = 0;
 
+    /**
+     * Create a new environment with default primordial conditions.
+     *
+     * @param float $temperature Initial temperature (defaults to Planck temperature).
+     */
     public function __construct(float $temperature = T_PLANCK)
     {
         $this->temperature = $temperature;
@@ -52,6 +89,14 @@ class Environment
         ];
     }
 
+    /**
+     * Advance the environment by one simulation tick.
+     *
+     * Updates temperature, decays radiation, may generate volcanic events,
+     * and evolves the atmosphere toward Earth-like composition at low temperatures.
+     *
+     * @param float $temperature The new temperature for this tick.
+     */
     public function step(float $temperature): void
     {
         $this->tick++;
@@ -77,6 +122,11 @@ class Environment
         }
     }
 
+    /**
+     * Get a summary of the current environmental state.
+     *
+     * @return array{temperature: float, radiation: float, pressure: float, atmosphere: array, events: int}
+     */
     public function getSummary(): array
     {
         return [
