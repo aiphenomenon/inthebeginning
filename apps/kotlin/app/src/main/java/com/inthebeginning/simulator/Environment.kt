@@ -9,8 +9,6 @@ import com.inthebeginning.simulator.Constants.T_PLANCK
 import com.inthebeginning.simulator.Constants.THERMAL_FLUCTUATION
 import com.inthebeginning.simulator.Constants.UV_MUTATION_RATE
 import kotlin.math.exp
-import kotlin.math.ln
-import kotlin.math.sqrt
 import kotlin.random.Random
 
 /**

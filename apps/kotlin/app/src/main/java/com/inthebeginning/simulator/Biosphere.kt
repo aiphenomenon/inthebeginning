@@ -7,8 +7,6 @@ import com.inthebeginning.simulator.Constants.HISTONE_ACETYLATION_PROB
 import com.inthebeginning.simulator.Constants.HISTONE_DEACETYLATION_PROB
 import com.inthebeginning.simulator.Constants.METHYLATION_PROBABILITY
 import com.inthebeginning.simulator.Constants.NUCLEOTIDE_BASES
-import com.inthebeginning.simulator.Constants.RNA_BASES
-import kotlin.math.exp
 import kotlin.random.Random
 
 /**

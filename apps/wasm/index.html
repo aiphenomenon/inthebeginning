@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>In The Beginning</title>
+<style>
+  /* ---- reset & fullscreen canvas ---- */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: #000005;
+    font-family: "SF Mono", "Cascadia Mono", "Consolas", monospace;
+    color: #ccc;
+  }
+
+  #app {
+    width: 100%; height: 100%;
+    opacity: 0;
+    transition: opacity 1.8s ease-in;
+    position: relative;
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* ---- epoch overlay (top bar) ---- */
+  #overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    padding: 12px 20px 10px;
+    background: linear-gradient(180deg, rgba(0,0,5,0.85) 0%, rgba(0,0,5,0) 100%);
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  #epoch-name {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #e0e0ff;
+    text-shadow: 0 0 12px rgba(120,140,255,0.5);
+  }
+
+  #epoch-desc {
+    font-size: 13px;
+    margin-top: 2px;
+    color: #8888aa;
+  }
+
+  /* progress bar */
+  #progress-track {
+    margin-top: 8px;
+    width: 100%;
+    height: 3px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  #epoch-progress {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #334, #668cff, #aa88ff);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+
+  /* stats line */
+  #stats {
+    margin-top: 6px;
+    font-size: 11px;
+    color: #556;
+    letter-spacing: 0.5px;
+  }
+
+  /* ---- bottom credit ---- */
+  #credit {
+    position: absolute;
+    bottom: 10px; right: 16px;
+    font-size: 10px;
+    color: #333;
+    pointer-events: none;
+    z-index: 10;
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <canvas id="canvas"></canvas>
+
+  <div id="overlay">
+    <div id="epoch-name">Void</div>
+    <div id="epoch-desc">Before time itself</div>
+    <div id="progress-track"><div id="epoch-progress"></div></div>
+    <div id="stats"></div>
+  </div>
+
+  <div id="credit">In The Beginning</div>
+</div>
+
+<script type="module">
+  import init from './pkg/inthebeginning_wasm.js';
+  init();
+</script>
+
+</body>
+</html>

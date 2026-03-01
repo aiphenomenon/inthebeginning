@@ -1,0 +1,380 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10001010000000000000001 /* InTheBeginningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10002010000000000000001 /* InTheBeginningView.swift */; };
+		A10001010000000000000002 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10002010000000000000002 /* Constants.swift */; };
+		A10001010000000000000003 /* QuantumField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10002010000000000000003 /* QuantumField.swift */; };
+		A10001010000000000000004 /* AtomicSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10002010000000000000004 /* AtomicSystem.swift */; };
+		A10001010000000000000005 /* ChemicalSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10002010000000000000005 /* ChemicalSystem.swift */; };
+		A10001010000000000000006 /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10002010000000000000006 /* Environment.swift */; };
+		A10001010000000000000007 /* Biosphere.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10002010000000000000007 /* Biosphere.swift */; };
+		A10001010000000000000008 /* Universe.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10002010000000000000008 /* Universe.swift */; };
+		A10001010000000000000009 /* MetalRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10002010000000000000009 /* MetalRenderer.swift */; };
+		A1000101000000000000000A /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = A1000201000000000000000A /* Shaders.metal */; };
+		A1000101000000000000000B /* ScreenSaver.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1000201000000000000000B /* ScreenSaver.framework */; };
+		A1000101000000000000000C /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1000201000000000000000C /* Metal.framework */; };
+		A1000101000000000000000D /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1000201000000000000000D /* MetalKit.framework */; };
+		A1000101000000000000000E /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A1000201000000000000000E /* Info.plist */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A10002010000000000000001 /* InTheBeginningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InTheBeginningView.swift; sourceTree = "<group>"; };
+		A10002010000000000000002 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		A10002010000000000000003 /* QuantumField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuantumField.swift; sourceTree = "<group>"; };
+		A10002010000000000000004 /* AtomicSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtomicSystem.swift; sourceTree = "<group>"; };
+		A10002010000000000000005 /* ChemicalSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChemicalSystem.swift; sourceTree = "<group>"; };
+		A10002010000000000000006 /* Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Environment.swift; sourceTree = "<group>"; };
+		A10002010000000000000007 /* Biosphere.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Biosphere.swift; sourceTree = "<group>"; };
+		A10002010000000000000008 /* Universe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Universe.swift; sourceTree = "<group>"; };
+		A10002010000000000000009 /* MetalRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalRenderer.swift; sourceTree = "<group>"; };
+		A1000201000000000000000A /* Shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
+		A1000201000000000000000B /* ScreenSaver.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ScreenSaver.framework; path = System/Library/Frameworks/ScreenSaver.framework; sourceTree = SDKROOT; };
+		A1000201000000000000000C /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		A1000201000000000000000D /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
+		A1000201000000000000000E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A1000201000000000000000F /* InTheBeginning.saver */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = InTheBeginning.saver; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A10003010000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1000101000000000000000B /* ScreenSaver.framework in Frameworks */,
+				A1000101000000000000000C /* Metal.framework in Frameworks */,
+				A1000101000000000000000D /* MetalKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A10004010000000000000001 /* Root */ = {
+			isa = PBXGroup;
+			children = (
+				A10004010000000000000002 /* InTheBeginning */,
+				A10004010000000000000005 /* Frameworks */,
+				A10004010000000000000006 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A10004010000000000000002 /* InTheBeginning */ = {
+			isa = PBXGroup;
+			children = (
+				A10002010000000000000001 /* InTheBeginningView.swift */,
+				A1000201000000000000000E /* Info.plist */,
+				A10004010000000000000003 /* Simulator */,
+				A10004010000000000000004 /* Renderer */,
+			);
+			path = InTheBeginning;
+			sourceTree = "<group>";
+		};
+		A10004010000000000000003 /* Simulator */ = {
+			isa = PBXGroup;
+			children = (
+				A10002010000000000000002 /* Constants.swift */,
+				A10002010000000000000003 /* QuantumField.swift */,
+				A10002010000000000000004 /* AtomicSystem.swift */,
+				A10002010000000000000005 /* ChemicalSystem.swift */,
+				A10002010000000000000006 /* Environment.swift */,
+				A10002010000000000000007 /* Biosphere.swift */,
+				A10002010000000000000008 /* Universe.swift */,
+			);
+			path = Simulator;
+			sourceTree = "<group>";
+		};
+		A10004010000000000000004 /* Renderer */ = {
+			isa = PBXGroup;
+			children = (
+				A10002010000000000000009 /* MetalRenderer.swift */,
+				A1000201000000000000000A /* Shaders.metal */,
+			);
+			path = Renderer;
+			sourceTree = "<group>";
+		};
+		A10004010000000000000005 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				A1000201000000000000000B /* ScreenSaver.framework */,
+				A1000201000000000000000C /* Metal.framework */,
+				A1000201000000000000000D /* MetalKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		A10004010000000000000006 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A1000201000000000000000F /* InTheBeginning.saver */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A10005010000000000000001 /* InTheBeginning */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A10007010000000000000001 /* Build configuration list for PBXNativeTarget "InTheBeginning" */;
+			buildPhases = (
+				A10006010000000000000001 /* Sources */,
+				A10003010000000000000001 /* Frameworks */,
+				A10006010000000000000002 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = InTheBeginning;
+			productName = InTheBeginning;
+			productReference = A1000201000000000000000F /* InTheBeginning.saver */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A10008010000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 1500;
+			};
+			buildConfigurationList = A10007010000000000000003 /* Build configuration list for PBXProject "InTheBeginning" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A10004010000000000000001 /* Root */;
+			productRefGroup = A10004010000000000000006 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A10005010000000000000001 /* InTheBeginning */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A10006010000000000000002 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1000101000000000000000E /* Info.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A10006010000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10001010000000000000001 /* InTheBeginningView.swift in Sources */,
+				A10001010000000000000002 /* Constants.swift in Sources */,
+				A10001010000000000000003 /* QuantumField.swift in Sources */,
+				A10001010000000000000004 /* AtomicSystem.swift in Sources */,
+				A10001010000000000000005 /* ChemicalSystem.swift in Sources */,
+				A10001010000000000000006 /* Environment.swift in Sources */,
+				A10001010000000000000007 /* Biosphere.swift in Sources */,
+				A10001010000000000000008 /* Universe.swift in Sources */,
+				A10001010000000000000009 /* MetalRenderer.swift in Sources */,
+				A1000101000000000000000A /* Shaders.metal in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A10009010000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = arm64;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		A10009010000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = arm64;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		A10009010000000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = InTheBeginning/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = InTheBeginning;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright 2025 InTheBeginning. All rights reserved.";
+				INFOPLIST_KEY_NSPrincipalClass = InTheBeginning.InTheBeginningView;
+				MARKETING_VERSION = 1.0;
+				MODULE_NAME = InTheBeginning;
+				PRODUCT_BUNDLE_IDENTIFIER = com.inthebeginning.screensaver;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				WRAPPER_EXTENSION = saver;
+			};
+			name = Debug;
+		};
+		A10009010000000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = InTheBeginning/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = InTheBeginning;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright 2025 InTheBeginning. All rights reserved.";
+				INFOPLIST_KEY_NSPrincipalClass = InTheBeginning.InTheBeginningView;
+				MARKETING_VERSION = 1.0;
+				MODULE_NAME = InTheBeginning;
+				PRODUCT_BUNDLE_IDENTIFIER = com.inthebeginning.screensaver;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				WRAPPER_EXTENSION = saver;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A10007010000000000000001 /* Build configuration list for PBXNativeTarget "InTheBeginning" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A10009010000000000000003 /* Debug */,
+				A10009010000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A10007010000000000000003 /* Build configuration list for PBXProject "InTheBeginning" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A10009010000000000000001 /* Debug */,
+				A10009010000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A10008010000000000000001 /* Project object */;
+}

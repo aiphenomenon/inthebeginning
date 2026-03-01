@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>In The Beginning -- Cosmic Sonification</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+    <!-- ============================================================
+         Click-to-start overlay (required for Web Audio autoplay policy)
+         ============================================================ -->
+    <div id="overlay">
+        <h1>In The Beginning</h1>
+        <p>Click anywhere to start the cosmic simulation</p>
+    </div>
+
+    <!-- ============================================================
+         Epoch progress indicator bar (top edge)
+         ============================================================ -->
+    <div id="epoch-bar"></div>
+
+    <!-- ============================================================
+         Heads-up display (top-left corner)
+         ============================================================ -->
+    <div id="hud">
+        <div id="epoch-label">VOID</div>
+        <div id="tick-label">Tick 0 / 300,000 (0.0%)</div>
+        <div id="temp-label">-- K</div>
+        <div id="particle-label">Particles: 0</div>
+    </div>
+
+    <!-- ============================================================
+         Full-screen spectrogram canvas
+         ============================================================ -->
+    <canvas id="spectrogram"></canvas>
+
+    <!-- ============================================================
+         Controls panel (bottom)
+         ============================================================ -->
+    <div id="controls">
+        <label>
+            Volume
+            <input
+                type="range"
+                id="volume"
+                min="0"
+                max="1"
+                step="0.01"
+                value="0.7"
+            />
+        </label>
+
+        <label>
+            Tempo
+            <input
+                type="range"
+                id="tempo"
+                min="0.25"
+                max="4"
+                step="0.05"
+                value="1"
+            />
+        </label>
+
+        <button id="mute-btn" type="button">Mute</button>
+    </div>
+
+    <!-- ============================================================
+         Script -- compiled browser bundle from dist/
+         ============================================================ -->
+
+    <!--
+        The TypeScript browser build compiles src/browser_main.ts (and its
+        imports) into dist-browser/.  We use an ES-module import map so that
+        bare ".js" specifiers resolve correctly from the dist-browser output
+        directory.
+
+        For a production build you would typically use a bundler (esbuild,
+        vite, webpack).  For development the import-map approach works when
+        served from any static HTTP server that sets correct MIME types.
+    -->
+    <script type="importmap">
+    {
+        "imports": {
+            "./simulator.js":  "../dist-browser/simulator.js",
+            "./constants.js":  "../dist-browser/constants.js",
+            "./audio_engine.js": "../dist-browser/audio_engine.js",
+            "./instruments.js": "../dist-browser/instruments.js"
+        }
+    }
+    </script>
+    <script type="module" src="../dist-browser/browser_main.js"></script>
+
+</body>
+</html>

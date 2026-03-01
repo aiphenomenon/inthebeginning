@@ -1,21 +1,25 @@
 package main
 
 import (
+	"embed"
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io/fs"
 	"log"
 	"net/http"
-	"os"
-	"path/filepath"
+	"strconv"
 	"sync"
 	"time"
 
 	"inthebeginning/go-sse/simulator"
 )
 
-// sseEvent is a JSON event sent over the SSE stream.
-type sseEvent struct {
+//go:embed web/*
+var webAssets embed.FS
+
+// snapshot is a JSON event sent over the SSE stream.
+type snapshot struct {
 	Type          string       `json:"type"`
 	Epoch         string       `json:"epoch,omitempty"`
 	EpochIndex    int          `json:"epoch_index,omitempty"`
@@ -26,6 +30,7 @@ type sseEvent struct {
 	Molecules     int          `json:"molecules,omitempty"`
 	Cells         int          `json:"cells,omitempty"`
 	TotalEpochs   int          `json:"total_epochs,omitempty"`
+	Events        []string     `json:"events,omitempty"`
 	ParticlePos   [][3]float64 `json:"particle_pos,omitempty"`
 	ParticleTypes []string     `json:"particle_types,omitempty"`
 	ElapsedMs     int64        `json:"elapsed_ms,omitempty"`
@@ -34,31 +39,29 @@ type sseEvent struct {
 // broker manages SSE client connections and event broadcasting.
 type broker struct {
 	mu      sync.Mutex
-	clients map[chan sseEvent]struct{}
+	clients map[chan snapshot]struct{}
 }
 
 func newBroker() *broker {
-	return &broker{
-		clients: make(map[chan sseEvent]struct{}),
-	}
+	return &broker{clients: make(map[chan snapshot]struct{})}
 }
 
-func (b *broker) subscribe() chan sseEvent {
-	ch := make(chan sseEvent, 64)
+func (b *broker) subscribe() chan snapshot {
+	ch := make(chan snapshot, 128)
 	b.mu.Lock()
 	b.clients[ch] = struct{}{}
 	b.mu.Unlock()
 	return ch
 }
 
-func (b *broker) unsubscribe(ch chan sseEvent) {
+func (b *broker) unsubscribe(ch chan snapshot) {
 	b.mu.Lock()
 	delete(b.clients, ch)
 	b.mu.Unlock()
 	close(ch)
 }
 
-func (b *broker) broadcast(ev sseEvent) {
+func (b *broker) broadcast(ev snapshot) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	for ch := range b.clients {
@@ -70,30 +73,22 @@ func (b *broker) broadcast(ev sseEvent) {
 	}
 }
 
-// history stores recent events so late-connecting clients can catch up.
-type history struct {
-	mu     sync.Mutex
-	events []sseEvent
+// latestStore holds the most recent snapshot for the JSON API.
+type latestStore struct {
+	mu   sync.RWMutex
+	snap *snapshot
 }
 
-func newHistory() *history {
-	return &history{
-		events: make([]sseEvent, 0, 512),
-	}
+func (ls *latestStore) set(s snapshot) {
+	ls.mu.Lock()
+	ls.snap = &s
+	ls.mu.Unlock()
 }
 
-func (h *history) add(ev sseEvent) {
-	h.mu.Lock()
-	h.events = append(h.events, ev)
-	h.mu.Unlock()
-}
-
-func (h *history) snapshot() []sseEvent {
-	h.mu.Lock()
-	defer h.mu.Unlock()
-	out := make([]sseEvent, len(h.events))
-	copy(out, h.events)
-	return out
+func (ls *latestStore) get() *snapshot {
+	ls.mu.RLock()
+	defer ls.mu.RUnlock()
+	return ls.snap
 }
 
 func main() {
@@ -106,26 +101,47 @@ func main() {
 	}
 
 	b := newBroker()
-	hist := newHistory()
-
-	// Determine path to web/ directory relative to this binary or working directory.
-	webDir := findWebDir()
+	latest := &latestStore{}
 
 	log.Printf("Starting simulation with seed %d", *seed)
-	log.Printf("Serving web UI from %s", webDir)
 	log.Printf("Listening on http://localhost:%d", *port)
 
-	// Run simulation in background goroutine.
-	go runSimulation(*seed, b, hist)
+	// Serve the embedded web directory at /.
+	webFS, err := fs.Sub(webAssets, "web")
+	if err != nil {
+		log.Fatalf("Failed to access embedded web assets: %v", err)
+	}
 
-	// SSE endpoint.
-	http.HandleFunc("/api/events", func(w http.ResponseWriter, r *http.Request) {
-		handleSSE(w, r, b, hist)
+	// SSE endpoint: each viewer gets their own goroutine streaming events.
+	http.HandleFunc("/events", func(w http.ResponseWriter, r *http.Request) {
+		// Support optional per-viewer seed via query param.
+		viewerSeed := *seed
+		if qs := r.URL.Query().Get("seed"); qs != "" {
+			if s, err := strconv.ParseInt(qs, 10, 64); err == nil {
+				viewerSeed = s
+			}
+		}
+		handleSSE(w, r, viewerSeed, b, latest)
 	})
 
-	// Static file server for the web frontend.
-	fs := http.FileServer(http.Dir(webDir))
-	http.Handle("/", fs)
+	// JSON snapshot API: returns the latest simulation state.
+	http.HandleFunc("/api/snapshot", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		s := latest.get()
+		if s == nil {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			fmt.Fprintf(w, `{"error":"no data yet"}`)
+			return
+		}
+		json.NewEncoder(w).Encode(s)
+	})
+
+	// Static file server for the embedded web frontend.
+	http.Handle("/", http.FileServer(http.FS(webFS)))
+
+	// Start a shared simulation that broadcasts to all viewers.
+	go runSimulation(*seed, b, latest)
 
 	addr := fmt.Sprintf(":%d", *port)
 	if err := http.ListenAndServe(addr, nil); err != nil {
@@ -133,56 +149,26 @@ func main() {
 	}
 }
 
-// findWebDir locates the web/ directory by checking common locations.
-func findWebDir() string {
-	// Try relative to working directory.
-	candidates := []string{
-		"web",
-		"../../web",
-		filepath.Join(filepath.Dir(os.Args[0]), "..", "..", "web"),
-	}
-
-	// Also try relative to the executable location.
-	if exe, err := os.Executable(); err == nil {
-		candidates = append(candidates, filepath.Join(filepath.Dir(exe), "..", "..", "web"))
-	}
-
-	for _, dir := range candidates {
-		if info, err := os.Stat(dir); err == nil && info.IsDir() {
-			abs, _ := filepath.Abs(dir)
-			return abs
-		}
-	}
-
-	// Fallback.
-	return "web"
-}
-
-// runSimulation creates a Universe and runs it, broadcasting events via the broker.
-func runSimulation(seed int64, b *broker, hist *history) {
+// runSimulation creates a Universe and runs it, broadcasting snapshots to all
+// connected SSE clients via the broker.
+func runSimulation(seed int64, b *broker, latest *latestStore) {
 	universe := simulator.NewUniverse(seed)
 	startTime := time.Now()
 
-	// Track current epoch for epoch_start events.
 	var lastEpochIndex int = -1
-
-	// OnTick: send a tick event for each simulation step.
-	// To avoid flooding clients, we throttle to roughly every 5ms of wall-clock time
-	// and always send the first tick of a new epoch.
 	var lastSend time.Time
-	const minInterval = 5 * time.Millisecond
+	const minInterval = 50 * time.Millisecond
 
 	universe.OnTick = func(epochName string, epochIndex int, tick int) {
 		// Send epoch_start when we enter a new epoch.
 		if epochIndex != lastEpochIndex {
 			lastEpochIndex = epochIndex
-			ev := sseEvent{
+			ev := snapshot{
 				Type:       "epoch_start",
 				Epoch:      epochName,
 				EpochIndex: epochIndex,
 			}
 			b.broadcast(ev)
-			hist.add(ev)
 		}
 
 		now := time.Now()
@@ -192,7 +178,7 @@ func runSimulation(seed int64, b *broker, hist *history) {
 		lastSend = now
 
 		snap := universe.TakeSnapshot(epochName, epochIndex, true)
-		ev := sseEvent{
+		ev := snapshot{
 			Type:          "tick",
 			Epoch:         snap.Epoch,
 			EpochIndex:    snap.EpochIndex,
@@ -207,10 +193,12 @@ func runSimulation(seed int64, b *broker, hist *history) {
 			ParticleTypes: snap.ParticleTypes,
 		}
 		b.broadcast(ev)
-		hist.add(ev)
+		latest.set(ev)
+
+		// Small sleep to yield to HTTP handlers and pace the simulation.
+		time.Sleep(minInterval)
 	}
 
-	// OnEpochComplete is still used for logging.
 	universe.OnEpochComplete = func(result simulator.EpochResult) {
 		log.Printf("Epoch complete: %s (particles=%d atoms=%d molecules=%d cells=%d)",
 			result.EpochName, result.ParticleCount, result.AtomCount,
@@ -222,16 +210,17 @@ func runSimulation(seed int64, b *broker, hist *history) {
 	elapsed := time.Since(startTime)
 	log.Printf("Simulation complete in %v", elapsed)
 
-	ev := sseEvent{
+	ev := snapshot{
 		Type:      "complete",
 		ElapsedMs: elapsed.Milliseconds(),
 	}
 	b.broadcast(ev)
-	hist.add(ev)
+	latest.set(ev)
 }
 
-// handleSSE handles an SSE connection: replays history, then streams live events.
-func handleSSE(w http.ResponseWriter, r *http.Request, b *broker, hist *history) {
+// handleSSE handles an individual SSE connection: subscribes to the broker,
+// streams live events until the client disconnects.
+func handleSSE(w http.ResponseWriter, r *http.Request, seed int64, b *broker, latest *latestStore) {
 	flusher, ok := w.(http.Flusher)
 	if !ok {
 		http.Error(w, "Streaming not supported", http.StatusInternalServerError)
@@ -243,19 +232,18 @@ func handleSSE(w http.ResponseWriter, r *http.Request, b *broker, hist *history)
 	w.Header().Set("Connection", "keep-alive")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	// Subscribe to live events.
+	// Subscribe to the shared broadcast.
 	ch := b.subscribe()
 	defer b.unsubscribe(ch)
 
-	// Replay history so late-joining clients see past state.
-	for _, ev := range hist.snapshot() {
-		data, err := json.Marshal(ev)
-		if err != nil {
-			continue
+	// Send the latest known state immediately so the viewer is not blank.
+	if s := latest.get(); s != nil {
+		data, err := json.Marshal(s)
+		if err == nil {
+			fmt.Fprintf(w, "data: %s\n\n", data)
+			flusher.Flush()
 		}
-		fmt.Fprintf(w, "data: %s\n\n", data)
 	}
-	flusher.Flush()
 
 	// Stream live events until client disconnects.
 	ctx := r.Context()

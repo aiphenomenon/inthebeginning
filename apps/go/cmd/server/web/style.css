@@ -1,0 +1,370 @@
+/* === Cosmic Dark Theme === */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Courier New', 'Consolas', monospace;
+  background: #000005;
+  color: #c8c8e0;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Stars background canvas */
+.stars {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 940px;
+  margin: 0 auto;
+  padding: 16px 20px;
+}
+
+/* === Header === */
+header {
+  text-align: center;
+  padding: 28px 0 18px;
+}
+
+header h1 {
+  font-size: 2.1em;
+  color: #e0d0ff;
+  text-shadow: 0 0 24px rgba(160, 120, 255, 0.5),
+               0 0 60px rgba(120, 80, 220, 0.2);
+  letter-spacing: 0.18em;
+  margin-bottom: 6px;
+}
+
+header p {
+  color: #7777aa;
+  font-size: 0.85em;
+  letter-spacing: 0.06em;
+}
+
+/* === Status Bar === */
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0 12px;
+  padding: 10px 16px;
+  background: rgba(8, 8, 28, 0.85);
+  border: 1px solid #1a1a3a;
+  border-radius: 6px;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #333;
+  flex-shrink: 0;
+  transition: background 0.3s, box-shadow 0.3s;
+}
+
+.status-dot.connected {
+  background: #44ff66;
+  box-shadow: 0 0 8px #44ff66;
+}
+
+.status-dot.running {
+  background: #ffee44;
+  box-shadow: 0 0 8px #ffee44;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.status-dot.complete {
+  background: #44ffdd;
+  box-shadow: 0 0 8px #44ffdd;
+}
+
+.status-dot.error {
+  background: #ff4444;
+  box-shadow: 0 0 8px #ff4444;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.status-text {
+  flex: 1;
+  font-size: 0.82em;
+  color: #9999bb;
+}
+
+/* === Epoch Section === */
+.epoch-section {
+  margin: 14px 0;
+  padding: 18px;
+  background: rgba(6, 6, 24, 0.9);
+  border: 1px solid #1a1a3a;
+  border-radius: 8px;
+  transition: border-color 0.5s;
+}
+
+.epoch-name {
+  font-size: 1.35em;
+  color: #d0c0ff;
+  margin-bottom: 3px;
+  transition: color 0.4s;
+  text-shadow: 0 0 12px rgba(160, 120, 255, 0.25);
+}
+
+.epoch-desc {
+  font-size: 0.78em;
+  color: #6666aa;
+  margin-bottom: 14px;
+  min-height: 1.2em;
+}
+
+/* === Epoch Progress Bar === */
+.progress-outer {
+  width: 100%;
+  height: 24px;
+  background: #080818;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #1a1a4a;
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.progress-inner {
+  height: 100%;
+  border-radius: 12px;
+  transition: width 0.2s ease, background 0.6s ease;
+  min-width: 0;
+  position: relative;
+  /* Default gradient; overridden per-epoch by JS */
+  background: linear-gradient(90deg, #3030aa, #6040dd, #9050ff);
+}
+
+.progress-inner.epoch-planck         { background: linear-gradient(90deg, #ffffff, #ddddff, #aaaaee); }
+.progress-inner.epoch-inflation      { background: linear-gradient(90deg, #ff4444, #ff8800, #ffcc00); }
+.progress-inner.epoch-electroweak    { background: linear-gradient(90deg, #ff00ff, #aa44ff, #6644ff); }
+.progress-inner.epoch-quarkgluon     { background: linear-gradient(90deg, #ff2266, #ff6644, #ffaa22); }
+.progress-inner.epoch-hadron         { background: linear-gradient(90deg, #ff6644, #cc4422, #993322); }
+.progress-inner.epoch-nucleosynthesis { background: linear-gradient(90deg, #ffaa00, #ff8800, #ff6600); }
+.progress-inner.epoch-recombination  { background: linear-gradient(90deg, #4488ff, #44aaff, #44ddff); }
+.progress-inner.epoch-starformation  { background: linear-gradient(90deg, #ffdd44, #ffaa22, #ff8800); }
+.progress-inner.epoch-solarsystem    { background: linear-gradient(90deg, #8866ff, #6644dd, #4422bb); }
+.progress-inner.epoch-earthformation { background: linear-gradient(90deg, #2266ff, #2288aa, #22aa66); }
+.progress-inner.epoch-lifeemergence  { background: linear-gradient(90deg, #22ff66, #22dd88, #22bbaa); }
+.progress-inner.epoch-dnaevolution   { background: linear-gradient(90deg, #44ff88, #88ffaa, #aaffcc); }
+.progress-inner.epoch-present        { background: linear-gradient(90deg, #44ffdd, #22ddff, #4488ff); }
+
+.progress-label {
+  position: absolute;
+  right: 10px;
+  top: 0;
+  line-height: 24px;
+  font-size: 0.72em;
+  color: #fff;
+  text-shadow: 0 0 6px rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+}
+
+/* === Temperature Display === */
+.temp-display {
+  text-align: right;
+  font-size: 0.82em;
+  color: #888;
+  margin-bottom: 4px;
+}
+
+.temp-display span {
+  color: #ffaa44;
+  text-shadow: 0 0 6px rgba(255, 170, 68, 0.3);
+}
+
+/* === Counter Cards Grid === */
+.counters {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin: 14px 0;
+}
+
+@media (max-width: 640px) {
+  .counters {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.counter-card {
+  background: rgba(10, 10, 35, 0.85);
+  border: 1px solid #1a1a3a;
+  border-radius: 6px;
+  padding: 14px 10px;
+  text-align: center;
+  transition: border-color 0.4s, box-shadow 0.4s;
+}
+
+.counter-card:hover {
+  border-color: #3a3a6a;
+}
+
+.counter-card .label {
+  font-size: 0.65em;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #6666aa;
+  margin-bottom: 6px;
+}
+
+.counter-card .value {
+  font-size: 1.7em;
+  font-weight: bold;
+  transition: color 0.3s;
+}
+
+.counter-card.particles .value { color: #ff6688; }
+.counter-card.atoms .value     { color: #66aaff; }
+.counter-card.molecules .value { color: #66ffaa; }
+.counter-card.cells .value     { color: #ffdd44; }
+
+.counter-card.particles.active { border-color: #ff668855; box-shadow: 0 0 12px rgba(255, 102, 136, 0.15); }
+.counter-card.atoms.active     { border-color: #66aaff55; box-shadow: 0 0 12px rgba(102, 170, 255, 0.15); }
+.counter-card.molecules.active { border-color: #66ffaa55; box-shadow: 0 0 12px rgba(102, 255, 170, 0.15); }
+.counter-card.cells.active     { border-color: #ffdd4455; box-shadow: 0 0 12px rgba(255, 221, 68, 0.15); }
+
+/* === Canvas Sections === */
+.canvas-section {
+  margin: 14px 0;
+  padding: 16px;
+  background: rgba(6, 6, 24, 0.9);
+  border: 1px solid #1a1a3a;
+  border-radius: 8px;
+}
+
+.canvas-section h2 {
+  font-size: 0.9em;
+  color: #9999bb;
+  margin-bottom: 10px;
+  letter-spacing: 0.05em;
+}
+
+.canvas-wrap {
+  position: relative;
+  width: 100%;
+  background: #020208;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #111130;
+}
+
+.canvas-wrap.field-wrap {
+  aspect-ratio: 2 / 1;
+}
+
+.canvas-wrap.sparkline-wrap {
+  height: 80px;
+}
+
+.canvas-wrap canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* === Completion Banner === */
+.complete-banner {
+  text-align: center;
+  padding: 22px;
+  margin: 14px 0;
+  background: rgba(8, 30, 20, 0.85);
+  border: 1px solid #1a5a3a;
+  border-radius: 8px;
+  display: none;
+  animation: fadeIn 0.6s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.complete-banner h2 {
+  color: #44ffaa;
+  font-size: 1.3em;
+  margin-bottom: 6px;
+  text-shadow: 0 0 16px rgba(68, 255, 170, 0.3);
+}
+
+.complete-banner p {
+  color: #88bbaa;
+  font-size: 0.88em;
+}
+
+/* === Event Log === */
+.log-section {
+  margin: 14px 0;
+  padding: 16px;
+  background: rgba(6, 6, 24, 0.9);
+  border: 1px solid #1a1a3a;
+  border-radius: 8px;
+}
+
+.log-section h2 {
+  font-size: 0.9em;
+  color: #9999bb;
+  margin-bottom: 10px;
+  letter-spacing: 0.05em;
+}
+
+.log-entries {
+  max-height: 220px;
+  overflow-y: auto;
+  font-size: 0.76em;
+  line-height: 1.65;
+}
+
+.log-entries::-webkit-scrollbar { width: 5px; }
+.log-entries::-webkit-scrollbar-track { background: transparent; }
+.log-entries::-webkit-scrollbar-thumb { background: #2a2a5a; border-radius: 3px; }
+
+.log-entry {
+  color: #7777aa;
+  padding: 2px 0;
+  border-bottom: 1px solid rgba(30, 30, 60, 0.4);
+  animation: logSlide 0.2s ease;
+}
+
+@keyframes logSlide {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.log-entry .tag {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 0.82em;
+  margin-right: 6px;
+  font-weight: bold;
+}
+
+.log-entry .tag.epoch { background: #1a1a5a; color: #a0a0ff; }
+.log-entry .tag.tick  { background: #1a3a1a; color: #66ff66; }
+.log-entry .tag.done  { background: #3a3a1a; color: #ffff66; }
+.log-entry .tag.info  { background: #1a2a3a; color: #66aaff; }
+
+/* === Footer === */
+footer {
+  text-align: center;
+  padding: 28px 0 18px;
+  color: #333355;
+  font-size: 0.72em;
+  letter-spacing: 0.04em;
+}

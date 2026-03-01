@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">In The Beginning</string>
+    <string name="simulation_title">Cosmic Simulation</string>
+    <string name="settings_title">Settings</string>
+    <string name="play">Play</string>
+    <string name="pause">Pause</string>
+    <string name="reset">Reset</string>
+    <string name="settings">Settings</string>
+    <string name="speed">Speed</string>
+    <string name="seed">Seed</string>
+    <string name="visualization_style">Visualization Style</string>
+    <string name="canvas_mode">Canvas</string>
+    <string name="opengl_mode">OpenGL</string>
+    <string name="minimal_mode">Minimal</string>
+    <string name="event_log">Event Log</string>
+    <string name="press_play">Press Play to begin the simulation...</string>
+    <string name="simulation_complete">Simulation complete: the present epoch reached.</string>
+</resources>
