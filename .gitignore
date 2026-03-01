@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.coverage
+htmlcov/
+
+# Node.js
+node_modules/
+
+# Large generated files
+ast_captures/full_ast.json

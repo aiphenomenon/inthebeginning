@@ -1,0 +1,80 @@
+{
+  "metrics": {
+    "wall_time_s": 0.428,
+    "cpu_user_s": 0.4,
+    "cpu_system_s": 0.0,
+    "peak_memory_kb": 611,
+    "ticks": 300000,
+    "particles": 110,
+    "atoms": 201,
+    "molecules": 39,
+    "cells": 498,
+    "mutations": 0
+  },
+  "final_state": {
+    "tick": 300000,
+    "epoch": "Present",
+    "temperature": 301.50810497848954,
+    "particles": 50,
+    "atoms": 201,
+    "molecules": 39,
+    "cells": 100,
+    "fitness": 0.725,
+    "mutations": 0,
+    "generation": 51,
+    "environment": "Env[T=301.5 UV=0.000 CR=0.051 atm=1.00 H2O=1.00 hab=Y ev=0]"
+  },
+  "epoch_transitions": [
+    {
+      "tick": 1000,
+      "from": "Void",
+      "to": "Quark"
+    },
+    {
+      "tick": 5000,
+      "from": "Quark",
+      "to": "Hadron"
+    },
+    {
+      "tick": 10000,
+      "from": "Hadron",
+      "to": "Nucleosynthesis"
+    },
+    {
+      "tick": 50000,
+      "from": "Nucleosynthesis",
+      "to": "Recombination"
+    },
+    {
+      "tick": 100000,
+      "from": "Recombination",
+      "to": "Star Formation"
+    },
+    {
+      "tick": 200000,
+      "from": "Star Formation",
+      "to": "Solar System"
+    },
+    {
+      "tick": 210000,
+      "from": "Solar System",
+      "to": "Earth"
+    },
+    {
+      "tick": 250000,
+      "from": "Earth",
+      "to": "Life"
+    },
+    {
+      "tick": 280000,
+      "from": "Life",
+      "to": "DNA Era"
+    },
+    {
+      "tick": 300000,
+      "from": "DNA Era",
+      "to": "Present"
+    }
+  ],
+  "history_snapshots": 100
+}
