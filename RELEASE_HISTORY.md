@@ -4,6 +4,71 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.6.0 — 2026-03-01 — Structured Music Engine + 40 Instrument Samples + Spectral Safety
+
+### Summary
+
+Complete music engine rewrite with bar-based time signature system, multi-track
+mixing, 40 synthetic instrument samples, and spectral frequency filtering.
+Eliminates harsh high-frequency and low-frequency noise. Music now uses proper
+time signatures (4/4, 3/4, 6/8, 5/4, 7/8, etc.) with real chord progressions,
+melodic phrases, bass lines, and percussion patterns.
+
+### Changes
+
+- **New structured music engine** (`apps/audio/music_engine.py`, ~1200 lines):
+  - `MusicDirector`: Top-level orchestrator managing sections, tracks, and phrases
+  - `TimeSignature` system: 12 time signatures (4/4, 3/4, 6/8, 7/8, 5/4, etc.)
+  - `PhraseGenerator`: Creates melodic lines, bass patterns, chord voicings, drum patterns
+  - `Track` / `DrumTrack`: Separate instrument voices with gain/pan control
+  - `MixBus`: Multi-track mixer with highpass (80Hz) + lowpass (8kHz) filtering
+  - `Section`: Musical sections (4-16 bars) with consistent style
+  - `SampleBank`: Sample-based instruments with numpy-accelerated pitch shifting
+  - `BiquadFilter`: Highpass/lowpass for frequency safety
+- **40 synthetic instrument samples** (`apps/audio/sample_gen.py` + `apps/audio/samples/`):
+  - Piano, electric piano, harpsichord, celesta (4 keyboard)
+  - Violin, viola, cello, harp, pizzicato (5 strings)
+  - Flute, clarinet, oboe, bassoon (4 woodwinds)
+  - French horn, trumpet, trombone (3 brass)
+  - Tubular bell, glockenspiel, vibraphone, singing bowl (4 bells)
+  - Kick, snare, hi-hat (closed/open), cymbal, tom (6 percussion)
+  - Sitar, koto, kalimba, gamelan gong, shakuhachi, didgeridoo (6 world)
+  - Warm pad, string ensemble, choir, glass pad, cosmic drone (5 pads)
+  - Acoustic bass, synth bass, electric bass (3 bass)
+  - All stored as MP3, ~1.5MB total
+- **Spectral safety**:
+  - Highpass filter at 80Hz removes sub-bass rumble
+  - Lowpass filter at 3-10kHz (epoch-dependent) removes harsh highs
+  - Soft limiter prevents clipping (output always in [-1, 1])
+  - Verified: sub-bass 3%, no energy above 8kHz
+- **Performance**: 9.8x realtime (10-min MP3 in ~70 seconds rendering)
+  - Sample preloading eliminates ffmpeg subprocess overhead during render
+  - Numpy-vectorized pitch shifting and mixing
+- **62 new tests** for music engine (`apps/audio/test_music_engine.py`)
+- **10-minute MP3** (`cosmic_simulation_v2.mp3`) with structured music
+
+### Test Results
+
+- Python reference: 400 passed
+- Audio tests: 36 passed
+- Composer tests: 67 passed
+- Music engine tests: 62 passed
+- **Total: 565 tests passing**
+
+### Files Created
+
+- `apps/audio/music_engine.py` — Structured music engine
+- `apps/audio/sample_gen.py` — Instrument sample generator
+- `apps/audio/test_music_engine.py` — 62 tests for music engine
+- `apps/audio/samples/*.mp3` — 40 instrument samples
+- `cosmic_simulation_v2.mp3` — New 10-minute MP3
+
+### Files Modified
+
+- `apps/audio/generate.py` — Integrated new music engine via `--engine` flag
+
+---
+
 ## v0.5.1 — 2026-03-01 — Vectorized Mixing Pipeline + Parallel Encoding + AST Analysis
 
 ### Summary

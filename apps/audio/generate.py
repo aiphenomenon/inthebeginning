@@ -57,6 +57,7 @@ sys.path.insert(0, PROJECT_ROOT)
 
 from simulator.universe import Universe
 from apps.audio.composer import Composer, AdditiveSynth, PercSynth, SCALES, EPOCH_SCALE_FAMILIES
+from apps.audio.music_engine import MusicDirector
 
 # ---------------------------------------------------------------------------
 # Audio constants
@@ -596,12 +597,14 @@ class CosmicAudioRenderer:
     sonification mappings.
     """
 
-    def __init__(self, seed=42, ticks_per_second=50.0, enhanced=True):
+    def __init__(self, seed=42, ticks_per_second=50.0, enhanced=True,
+                 engine='structured'):
         self.universe = Universe(seed=seed, max_ticks=999999999)
         self.seed = seed
         self.ticks_per_second = ticks_per_second
         self.samples_per_tick = int(SAMPLE_RATE / ticks_per_second)
         self.enhanced = enhanced
+        self.engine_mode = engine  # 'structured' (new) or 'classic'
         self.use_numpy = HAS_NUMPY
 
         # State tracking
@@ -633,9 +636,16 @@ class CosmicAudioRenderer:
         # RNG for instrument variations
         self._rng = random.Random(seed + 1)
 
-        # Enhanced composition engine
-        if enhanced:
+        # Music engines
+        if enhanced and engine == 'structured':
+            self._music_director = MusicDirector(seed=seed)
+            self._composer = None
+        elif enhanced:
+            self._music_director = None
             self._composer = Composer(seed=seed)
+        else:
+            self._music_director = None
+            self._composer = None
 
     def _epoch_index(self, name):
         """Get numeric index for epoch name."""
@@ -684,12 +694,22 @@ class CosmicAudioRenderer:
             self._lpf_r.set_cutoff(cutoff)
 
             if self.enhanced:
-                # --- Enhanced composition ---
-                comp_l, comp_r = self._composer.compose_tick(
-                    epoch, epoch_idx, root, temp,
-                    particles, atoms, molecules, cells, generation,
-                    self.samples_per_tick,
-                )
+                if self._music_director is not None:
+                    # --- Structured music engine (new) ---
+                    comp_l, comp_r = self._music_director.compose_tick(
+                        epoch, epoch_idx, temp,
+                        particles, atoms, molecules, cells, generation,
+                        self.samples_per_tick,
+                    )
+                elif self._composer is not None:
+                    # --- Classic composition engine ---
+                    comp_l, comp_r = self._composer.compose_tick(
+                        epoch, epoch_idx, root, temp,
+                        particles, atoms, molecules, cells, generation,
+                        self.samples_per_tick,
+                    )
+                else:
+                    comp_l = comp_r = [0.0] * self.samples_per_tick
                 # Vectorized mixing — numpy slice assignment vs per-sample loop
                 end = min(sample_offset + self.samples_per_tick, total_samples)
                 count = end - sample_offset
@@ -1292,6 +1312,9 @@ def main():
                         help='Play through local speakers via ffplay')
     parser.add_argument('--basic', action='store_true',
                         help='Use basic sonification only (no composer engine)')
+    parser.add_argument('--engine', choices=['structured', 'classic'],
+                        default='structured',
+                        help='Music engine: structured (new, sample-based) or classic (default: structured)')
 
     args = parser.parse_args()
 
@@ -1307,8 +1330,8 @@ def main():
 
     enhanced = not args.basic
     renderer = CosmicAudioRenderer(seed=args.seed, ticks_per_second=args.tps,
-                                   enhanced=enhanced)
-    mode_str = "enhanced" if enhanced else "basic"
+                                   enhanced=enhanced, engine=args.engine)
+    mode_str = f"enhanced/{args.engine}" if enhanced else "basic"
 
     if args.radio:
         run_radio(renderer, port=args.port, bitrate=args.bitrate)
