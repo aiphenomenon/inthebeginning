@@ -46,6 +46,7 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(_
 sys.path.insert(0, PROJECT_ROOT)
 
 from simulator.universe import Universe
+from apps.audio.composer import Composer, AdditiveSynth, PercSynth, SCALES, EPOCH_SCALE_FAMILIES
 
 # ---------------------------------------------------------------------------
 # Audio constants
@@ -121,14 +122,17 @@ class MixBuffer:
 
     def to_pcm16(self):
         """Convert to interleaved 16-bit PCM bytes with soft limiting."""
-        data = bytearray(self.num_samples * 4)  # 2 channels * 2 bytes
-        for i in range(self.num_samples):
-            l = self.left[i]
-            r = self.right[i]
-            # Soft limiter (tanh)
-            l = math.tanh(l) * MAX_AMPLITUDE
-            r = math.tanh(r) * MAX_AMPLITUDE
-            struct.pack_into('<hh', data, i * 4, int(l), int(r))
+        n = self.num_samples
+        data = bytearray(n * 4)  # 2 channels * 2 bytes
+        left = self.left
+        right = self.right
+        amp = MAX_AMPLITUDE
+        _tanh = math.tanh
+        _pack = struct.pack_into
+        for i in range(n):
+            _pack('<hh', data, i * 4,
+                  int(_tanh(left[i]) * amp),
+                  int(_tanh(right[i]) * amp))
         return bytes(data)
 
 
@@ -209,10 +213,15 @@ def gen_pulse(freq, width=0.15):
     return samples
 
 
+_PAD_WT_SIZE = 4096
+_PAD_WT = [math.sin(2 * math.pi * i / _PAD_WT_SIZE) for i in range(_PAD_WT_SIZE)]
+_PAD_INV_SR = 1.0 / SAMPLE_RATE
+
+
 def gen_pad(notes, sustain=5.0):
     """Epoch ambient drone — layered detuned oscillators.
 
-    Ports createPad from instruments.ts.
+    Ports createPad from instruments.ts. Optimized with wavetable.
     Returns (left_samples, right_samples).
     """
     fade_in = 0.6
@@ -223,44 +232,52 @@ def gen_pad(notes, sustain=5.0):
     right = [0.0] * n
     gain_per_note = 0.10 / max(1, len(notes))
 
+    # Pre-compute envelope as array (shared by all oscillators)
+    fade_in_end = int(fade_in * SAMPLE_RATE)
+    sustain_end = int((fade_in + sustain) * SAMPLE_RATE)
+    inv_fade_in = 1.0 / max(fade_in_end, 1)
+    fade_out_tau = fade_out * 0.4
+
+    env_arr = [0.0] * n
+    for i in range(n):
+        if i < fade_in_end:
+            env_arr[i] = i * inv_fade_in
+        elif i < sustain_end:
+            env_arr[i] = 1.0
+        else:
+            remaining = (i - sustain_end) * _PAD_INV_SR
+            env_arr[i] = max(0.001, math.exp(-remaining / fade_out_tau))
+
+    wt = _PAD_WT
+    wt_size = _PAD_WT_SIZE
+
     for note in notes:
         freq = mtof(note)
         for detune_cents in [-8, 8]:
             det_freq = freq * (2.0 ** (detune_cents / 1200.0))
-            # Slightly different pan for width
             pan_l = 0.5 + (0.1 if detune_cents < 0 else -0.1)
             pan_r = 1.0 - pan_l
+            phase_inc = det_freq * _PAD_INV_SR
+            phase = 0.0
+            g_l = gain_per_note * pan_l
+            g_r = gain_per_note * pan_r
             for i in range(n):
-                t = i / SAMPLE_RATE
-                # Envelope
-                if t < fade_in:
-                    env = t / fade_in
-                elif t < fade_in + sustain:
-                    env = 1.0
-                else:
-                    remaining = t - fade_in - sustain
-                    env = max(0.001, math.exp(-remaining / (fade_out * 0.4)))
-                s = math.sin(2 * math.pi * det_freq * t) * env * gain_per_note
-                left[i] += s * pan_l
-                right[i] += s * pan_r
+                s = wt[int(phase * wt_size) % wt_size] * env_arr[i]
+                left[i] += s * g_l
+                right[i] += s * g_r
+                phase += phase_inc
 
         # Triangle shimmer an octave above
         shimmer_freq = freq * 2
+        phase_inc = shimmer_freq * _PAD_INV_SR
+        phase = 0.0
+        g = gain_per_note * 0.3 * 0.5
         for i in range(n):
-            t = i / SAMPLE_RATE
-            if t < fade_in:
-                env = t / fade_in
-            elif t < fade_in + sustain:
-                env = 1.0
-            else:
-                remaining = t - fade_in - sustain
-                env = max(0.001, math.exp(-remaining / (fade_out * 0.4)))
-            # Triangle wave
-            phase = (shimmer_freq * t) % 1.0
-            tri = 4.0 * abs(phase - 0.5) - 1.0
-            s = tri * env * gain_per_note * 0.3
-            left[i] += s * 0.5
-            right[i] += s * 0.5
+            tri = 4.0 * abs((phase % 1.0) - 0.5) - 1.0
+            s = tri * env_arr[i] * g
+            left[i] += s
+            right[i] += s
+            phase += phase_inc
 
     return left, right
 
@@ -382,9 +399,22 @@ class LowpassFilter:
         return y
 
     def process_block(self, samples):
-        out = [0.0] * len(samples)
-        for i, x in enumerate(samples):
-            out[i] = self.process(x)
+        n = len(samples)
+        out = [0.0] * n
+        b0, b1, b2 = self.b0, self.b1, self.b2
+        a1, a2 = self.a1, self.a2
+        x1, x2 = self._x1, self._x2
+        y1, y2 = self._y1, self._y2
+        for i in range(n):
+            x = samples[i]
+            y = b0 * x + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2
+            x2 = x1
+            x1 = x
+            y2 = y1
+            y1 = y
+            out[i] = y
+        self._x1, self._x2 = x1, x2
+        self._y1, self._y2 = y1, y2
         return out
 
 
@@ -395,23 +425,28 @@ class CosmicAudioRenderer:
     """Maps the Python simulator to audio output.
 
     Drives the Universe simulator, captures physics state each tick,
-    and produces corresponding audio using the sonification mappings
-    from the TypeScript audio engine.
+    and produces corresponding audio. The enhanced mode uses the full
+    Composer engine with world musical scales, polyrhythmic beats,
+    polyphonic melodic voices, harmonic progressions, and additive
+    synthesis timbres. The basic mode uses the original TypeScript-style
+    sonification mappings.
     """
 
-    def __init__(self, seed=42, ticks_per_second=50.0):
+    def __init__(self, seed=42, ticks_per_second=50.0, enhanced=True):
         self.universe = Universe(seed=seed, max_ticks=999999999)
         self.seed = seed
         self.ticks_per_second = ticks_per_second
         self.samples_per_tick = int(SAMPLE_RATE / ticks_per_second)
+        self.enhanced = enhanced
 
-        # State tracking (matches AudioEngine private fields)
+        # State tracking
         self._last_epoch = ""
         self._last_particle_count = 0
         self._last_blip_tick = -100
         self._last_bell_tick = -100
         self._last_pulse_tick = -100
         self._last_sequence_tick = -100
+        self._silence_counter = 0  # Track silence to prevent dead air
 
         # Filters
         self._lpf_l = LowpassFilter(8000, 0.7)
@@ -428,6 +463,10 @@ class CosmicAudioRenderer:
 
         # RNG for instrument variations
         self._rng = random.Random(seed + 1)
+
+        # Enhanced composition engine
+        if enhanced:
+            self._composer = Composer(seed=seed)
 
     def _epoch_index(self, name):
         """Get numeric index for epoch name."""
@@ -474,27 +513,41 @@ class CosmicAudioRenderer:
             self._lpf_l.set_cutoff(cutoff)
             self._lpf_r.set_cutoff(cutoff)
 
-            # --- Epoch transition: schedule new pad ---
+            if self.enhanced:
+                # --- Enhanced composition ---
+                comp_l, comp_r = self._composer.compose_tick(
+                    epoch, epoch_idx, root, temp,
+                    particles, atoms, molecules, cells, generation,
+                    self.samples_per_tick,
+                )
+                for i in range(self.samples_per_tick):
+                    si = sample_offset + i
+                    if si < total_samples:
+                        mix.left[si] += comp_l[i]
+                        mix.right[si] += comp_r[i]
+
+            # --- Original simulation sonification (always active) ---
+            # Epoch transition: schedule ambient pad
             if epoch != self._last_epoch:
                 self._last_epoch = epoch
                 self._schedule_pad(root)
 
-            # Re-trigger pad if expired
             if self._pad_remaining_samples <= 0:
                 self._schedule_pad(root)
 
-            # Mix pad into buffer
             pad_end = min(self.samples_per_tick, self._pad_remaining_samples)
             for i in range(pad_end):
                 si = sample_offset + i
                 pi = self._pad_offset + i
                 if si < total_samples and pi < len(self._pad_l):
-                    mix.left[si] += self._pad_l[pi]
-                    mix.right[si] += self._pad_r[pi]
+                    # Reduce pad level in enhanced mode (composer has its own pads)
+                    pad_gain = 0.3 if self.enhanced else 1.0
+                    mix.left[si] += self._pad_l[pi] * pad_gain
+                    mix.right[si] += self._pad_r[pi] * pad_gain
             self._pad_offset += pad_end
             self._pad_remaining_samples -= pad_end
 
-            # --- Epoch-specific sonification ---
+            # Epoch-specific simulation sounds
             if epoch_idx <= 4:
                 self._sonify_quantum(mix, sample_offset, root, particles, tick_i)
             elif epoch_idx <= 7:
@@ -504,6 +557,19 @@ class CosmicAudioRenderer:
             else:
                 self._sonify_biology(mix, sample_offset, root, cells, generation, tick_i)
 
+            # --- Silence prevention ---
+            # Check energy level and inject dark matter / quantum texture if too quiet
+            if self.enhanced and tick_i % 10 == 0:
+                energy = sum(abs(s) for s in mix.left[max(0, sample_offset - 100):sample_offset + 1]) / 100
+                if energy < 0.001:
+                    self._silence_counter += 1
+                    if self._silence_counter > 5:
+                        # "Dark matter" texture — sub-bass drone + quantum shimmer
+                        self._inject_dark_matter_texture(mix, sample_offset, root)
+                        self._silence_counter = 0
+                else:
+                    self._silence_counter = 0
+
             self._last_particle_count = particles
 
         # Apply lowpass filter
@@ -512,10 +578,38 @@ class CosmicAudioRenderer:
 
         return mix.to_pcm16()
 
+    def _inject_dark_matter_texture(self, mix, offset, root):
+        """Fill silence with dark matter / quantum entanglement texture.
+
+        When the simulation enters sparse regions (void of space), this
+        produces a subtle sub-bass drone with high-frequency quantum
+        shimmer — representing dark matter's gravitational hum and
+        quantum vacuum fluctuations.
+        """
+        n = self.samples_per_tick * 3
+        # Sub-bass drone (dark matter gravitational hum)
+        sub_freq = mtof(max(24, root - 36))  # Very low
+        # High shimmer (quantum vacuum fluctuations)
+        shimmer_freq = mtof(root + 48)  # Very high
+
+        for i in range(min(n, mix.num_samples - offset)):
+            t = i / SAMPLE_RATE
+            # Sub-bass
+            sub = 0.04 * math.sin(2 * math.pi * sub_freq * t)
+            # Shimmer — two detuned high sines
+            sh1 = 0.02 * math.sin(2 * math.pi * shimmer_freq * t)
+            sh2 = 0.015 * math.sin(2 * math.pi * shimmer_freq * 1.003 * t)
+            # Slow amplitude modulation (quantum entanglement pulsing)
+            entangle = 0.5 + 0.5 * math.sin(2 * math.pi * 0.3 * t)
+            si = offset + i
+            if si < mix.num_samples:
+                mix.left[si] += sub + (sh1 + sh2) * entangle * 0.5
+                mix.right[si] += sub + (sh1 + sh2) * entangle * 0.5
+
     def _schedule_pad(self, root):
         """Generate a new ambient pad."""
         chord = self._chord_notes(root)
-        sustain = 5.0
+        sustain = 2.0 if self.enhanced else 5.0  # Shorter in enhanced (composer has its own pad)
         self._pad_l, self._pad_r = gen_pad(chord, sustain)
         self._pad_remaining_samples = len(self._pad_l)
         self._pad_offset = 0
@@ -527,7 +621,10 @@ class CosmicAudioRenderer:
         if new_particles > 0 and (tick_i - self._last_blip_tick) > cooldown:
             count = min(new_particles, 3)
             for _ in range(count):
-                midi = root + 24 + self._rng.randint(0, 23)
+                # Full pitch range: from low rumbles to high chirps
+                octave_shift = self._rng.choice([-12, 0, 12, 24])
+                midi = root + octave_shift + self._rng.randint(0, 23)
+                midi = clamp(midi, 28, 108)  # ~40Hz to ~4186Hz
                 freq = mtof(midi)
                 duration = 0.04 + self._rng.random() * 0.06
                 pan = self._rng.random() * 2 - 1
@@ -547,11 +644,11 @@ class CosmicAudioRenderer:
             for i in range(n):
                 t = i / SAMPLE_RATE
                 amp = 0.12 * math.exp(-t / 0.15)
-                # Detuned pair
                 s1 = math.sin(2 * math.pi * freq * (2.0 ** (-6 / 1200.0)) * t)
                 s2 = math.sin(2 * math.pi * freq * (2.0 ** (6 / 1200.0)) * t)
                 samples[i] = amp * (s1 + s2) * 0.5
-            mix.add_mono(samples, offset, 0.0, 1.0)
+            pan = self._rng.random() * 1.2 - 0.6
+            mix.add_mono(samples, offset, pan, 1.0)
             self._last_blip_tick = tick_i
 
     def _sonify_chemistry(self, mix, offset, root, molecules, tick_i):
@@ -562,12 +659,12 @@ class CosmicAudioRenderer:
             note_idx = molecules % len(chord)
             freq = mtof(chord[note_idx])
             samples = gen_bell_tone(freq, 1.0)
-            mix.add_mono(samples, offset, 0.0, 1.0)
+            pan = self._rng.random() * 1.0 - 0.5
+            mix.add_mono(samples, offset, pan, 1.0)
             self._last_bell_tick = tick_i
 
     def _sonify_biology(self, mix, offset, root, cells, generation, tick_i):
         """Biology epoch: pulses for cell division, melody for DNA."""
-        # Cell division pulses
         cooldown_pulse = int(self.ticks_per_second * 0.4)
         if cells > 0 and (tick_i - self._last_pulse_tick) > cooldown_pulse:
             freq = mtof(root - 24)
@@ -575,7 +672,6 @@ class CosmicAudioRenderer:
             mix.add_mono(samples, offset, 0.0, 1.0)
             self._last_pulse_tick = tick_i
 
-        # DNA melody sequences
         cooldown_seq = int(self.ticks_per_second * 2.0)
         if (tick_i - self._last_sequence_tick) > cooldown_seq:
             if self.universe.biosphere and self.universe.biosphere.cells:
@@ -967,6 +1063,8 @@ def main():
                         help='Radio stream port (default: 8000)')
     parser.add_argument('--play', action='store_true',
                         help='Play through local speakers via ffplay')
+    parser.add_argument('--basic', action='store_true',
+                        help='Use basic sonification only (no composer engine)')
 
     args = parser.parse_args()
 
@@ -980,22 +1078,25 @@ def main():
         else:
             fmt = 'mp3'
 
-    renderer = CosmicAudioRenderer(seed=args.seed, ticks_per_second=args.tps)
+    enhanced = not args.basic
+    renderer = CosmicAudioRenderer(seed=args.seed, ticks_per_second=args.tps,
+                                   enhanced=enhanced)
+    mode_str = "enhanced" if enhanced else "basic"
 
     if args.radio:
         run_radio(renderer, port=args.port, bitrate=args.bitrate)
     elif args.play:
-        sys.stderr.write(f"  Playing cosmic simulation (seed={args.seed})...\n")
+        sys.stderr.write(f"  Playing cosmic simulation [{mode_str}] (seed={args.seed})...\n")
         play_local(renderer, args.duration)
     elif args.output == '-':
         stream_raw(renderer, args.duration)
     elif fmt == 'wav':
-        sys.stderr.write(f"  Rendering {args.duration}s WAV to {args.output}...\n")
+        sys.stderr.write(f"  Rendering {args.duration}s WAV [{mode_str}] to {args.output}...\n")
         write_wav(renderer, args.duration, args.output)
         size = os.path.getsize(args.output)
         sys.stderr.write(f"  Done: {args.output} ({size / 1024 / 1024:.1f} MB)\n")
     else:
-        sys.stderr.write(f"  Rendering {args.duration}s MP3 to {args.output}...\n")
+        sys.stderr.write(f"  Rendering {args.duration}s MP3 [{mode_str}] to {args.output}...\n")
         write_mp3(renderer, args.duration, args.output, args.bitrate)
         size = os.path.getsize(args.output)
         sys.stderr.write(f"  Done: {args.output} ({size / 1024 / 1024:.1f} MB)\n")
