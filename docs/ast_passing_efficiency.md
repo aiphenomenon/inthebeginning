@@ -1,165 +1,237 @@
 # AST Passing Efficiency Metrics
 
-Measured statistics from running `introspect_all_apps()` across the entire
-project. These metrics quantify how effectively the compact AST representation
-reduces token consumption when passing code structure to an LLM.
+## Overview
 
----
+When passing code between LLM conversations, agent handoffs, or multi-step
+reasoning chains, the full source text of a file consumes a large portion of
+the context window. AST passing replaces raw source with a compact structural
+representation -- function signatures, class hierarchies, type annotations,
+and import graphs -- that preserves the information an LLM needs to reason
+about code while dramatically reducing token count.
 
-## Per-Language Statistics
+The **compaction ratio** (source tokens / AST tokens) measures how much
+context window space is saved. A compaction ratio of 5.0x means the AST
+representation uses roughly one-fifth the tokens of the original source. The
+higher the ratio, the more conversations, files, or agent steps can fit
+within a single context window.
 
-Data gathered by running:
+This matters in practice for:
+
+- **Multi-file reasoning**: Fitting an entire module's structure into a
+  single prompt instead of cherry-picking files.
+- **Agent-to-agent handoffs**: Passing a project summary from a planning
+  agent to an implementation agent without exhausting the context budget.
+- **Iterative refinement**: Retaining the structural context of prior
+  iterations without re-sending full source each round.
+
+## Methodology
+
+The `ast_dsl/introspect.py` module provides a universal introspection
+interface that walks an application directory, identifies source files by
+extension, and parses each file with the appropriate language-specific AST
+parser. The project includes 13 AST parsers covering C, C++, Go, Java,
+JavaScript, Kotlin, Perl, PHP, Python, Rust, Swift, TypeScript, and
+WebAssembly.
+
+For each file the introspection module:
+
+1. Reads the source and computes raw byte count and line count.
+2. Estimates **source tokens** as `len(source_bytes) / 4` (a standard
+   approximation for English-weighted tokenizers).
+3. Parses the source into a universal `ASTNode` tree using the registered
+   parser for that language.
+4. Walks the AST tree to count total nodes, functions/methods, classes/
+   structs/interfaces/traits, and imports/uses.
+5. Serializes the AST to a compact text representation via
+   `ASTNode.to_compact()` and estimates **AST tokens** as
+   `len(compact_text) / 4`.
+6. Computes the **compaction ratio** as `source_tokens / ast_tokens`.
+
+Higher ratios indicate that the language's source syntax carries more
+boilerplate relative to its structural content, making AST passing
+especially beneficial.
+
+Data was collected by running:
 
 ```python
 from ast_dsl.introspect import introspect_all_apps
-reports = introspect_all_apps('.')
+results = introspect_all_apps('/home/user/inthebeginning')
 ```
 
-### Application-Level Summary
+**Note on parser availability**: Several parsers (C, C++, Go, JavaScript)
+are implemented in their native languages or require external dependencies
+(e.g., `pycparser`, Acorn, `go/parser`). When these dependencies are not
+available in the Python runtime, the introspection module reports zero AST
+nodes and a 0.0x compaction ratio. Results for those languages are reported
+separately below.
 
-| App              | Language   | Files | Lines  | Bytes    | AST Nodes | Functions | Classes | Compaction |
-|------------------|-----------|-------|--------|----------|-----------|-----------|---------|------------|
-| c                | C          | 14    | 3,084  | 98,090   | 0*        | 0*        | 0*      | --         |
-| cpp              | C++        | 14    | 3,327  | 106,116  | 0*        | 0*        | 0*      | --         |
-| go               | Go         | 9     | 3,047  | 78,758   | 0*        | 0*        | 0*      | --         |
-| java             | Java       | 12    | 2,815  | 106,465  | 717       | 650       | 15      | 2.8x       |
-| kotlin           | Kotlin     | 16    | 4,992  | 164,749  | 1,158     | 0         | 44      | 3.0x       |
-| nodejs           | JavaScript | 9     | 3,337  | 109,774  | 0*        | 0*        | 0*      | --         |
-| perl             | Perl       | 8     | 2,697  | 80,316   | 785       | 156       | 0       | 3.3x       |
-| php              | PHP        | 10    | 3,009  | 88,576   | 174       | 144       | 20      | 10.4x      |
-| rust             | Rust       | 9     | 3,197  | 103,707  | 212       | 0         | 18      | 10.1x      |
-| screensaver-macos| Swift      | 9     | 3,017  | 100,626  | 424       | 0         | 23      | 5.3x       |
-| screensaver-ubuntu| C         | 4     | 2,517  | 80,361   | 0*        | 0*        | 0*      | --         |
-| swift            | Swift      | 14    | 4,700  | 154,215  | 604       | 0         | 31      | 5.4x       |
-| typescript       | TypeScript | 6     | 3,156  | 111,184  | 1,182     | 597       | 19      | 2.3x       |
-| wasm             | Rust       | 9     | 2,880  | 97,179   | 148       | 0         | 16      | 14.8x      |
+## Per-Language Results
 
-*\* C, C++, Go, and JavaScript parsers run natively (Go/JS) or via regex
-patterns that produce raw node text rather than structured ASTNode trees,
-resulting in zero counted nodes in the Python-based introspection harness.
-Their actual compaction is comparable to other compiled languages.*
+### Applications With Successful AST Parsing
 
-### Parse Performance
+| Language   | App Dir           | Files | Lines | AST Nodes | Functions | Classes | Compaction Ratio |
+|------------|-------------------|------:|------:|----------:|----------:|--------:|-----------------:|
+| Rust       | wasm              |     9 | 2,880 |       148 |         0 |      16 |           14.3x  |
+| PHP        | php               |    10 | 3,009 |       174 |       144 |      20 |           10.1x  |
+| Rust       | rust              |     9 | 3,197 |       212 |         0 |      18 |            9.8x  |
+| Swift      | swift             |    14 | 4,700 |       604 |         0 |      31 |            5.3x  |
+| Swift      | screensaver-macos |     9 | 3,017 |       424 |         0 |      23 |            5.2x  |
+| Perl       | perl              |     8 | 2,697 |       785 |       156 |       0 |            3.3x  |
+| Kotlin     | kotlin            |    16 | 4,991 |     1,157 |         0 |      44 |            3.0x  |
+| Java       | java              |    12 | 2,815 |       717 |       650 |      15 |            2.8x  |
+| TypeScript | typescript        |     6 | 3,156 |     1,182 |       597 |      19 |            2.3x  |
 
-| App              | Parse Time (ms) | Throughput (lines/ms) |
-|------------------|-----------------|-----------------------|
-| c                | 18.3            | 168.5                 |
-| cpp              | 2.1             | 1,584.3               |
-| go               | < 0.1           | --                    |
-| java             | 79.6            | 35.4                  |
-| kotlin           | 306.7           | 16.3                  |
-| nodejs           | < 0.1           | --                    |
-| perl             | 6.7             | 402.5                 |
-| php              | 19.4            | 155.1                 |
-| rust             | 20.5            | 155.9                 |
-| screensaver-macos| 82.7            | 36.5                  |
-| swift            | 110.4           | 42.6                  |
-| typescript       | 83.0            | 38.0                  |
-| wasm             | 16.8            | 171.4                 |
+### Applications With Unavailable Native Parsers
 
----
+These languages have parsers written in their native runtimes (Go binary,
+Node.js module) or require external C libraries (`pycparser`). Their parsers
+returned zero AST nodes in the Python-based introspection harness. Raw
+source metrics are included for reference.
 
-## Compaction Ratio Analysis
+| Language   | App Dir            | Files | Lines | Source Tokens | Parser Dependency       |
+|------------|--------------------|------:|------:|--------------:|-------------------------|
+| C          | c                  |    14 | 3,084 |        24,517 | pycparser (not installed)|
+| C          | screensaver-ubuntu |     4 | 2,517 |        20,089 | pycparser (not installed)|
+| C++        | cpp                |    14 | 3,327 |        26,524 | pycparser / clang        |
+| Go         | go                 |     9 | 3,047 |        19,685 | Native Go binary         |
+| JavaScript | nodejs             |     9 | 3,337 |        27,240 | Acorn (Node.js module)   |
 
-The compaction ratio measures how much the compact AST reduces token
-consumption compared to passing raw source code. A ratio of 5.0x means the
-AST representation uses one-fifth the tokens of the original source.
+## Analysis
 
-### Tier Classification
+### High-Compaction Languages (5x and above)
 
-**High compaction (10x+)**:
-- **WASM/Rust**: 14.8x -- The Rust WASM app uses deeply nested module
-  structures with verbose type annotations that compress extremely well into
-  compact struct/impl/use summaries.
-- **PHP**: 10.4x -- PHP's verbose class syntax and docblocks compress well;
-  the parser captures class/function signatures and discards body details.
-- **Rust**: 10.1x -- Trait implementations, lifetime annotations, and
-  `pub(crate)` visibility modifiers are reduced to compact attribute tags.
+**PHP (10.1x)** achieves strong compaction because PHP source is
+syntactically verbose. Opening/closing tags, long function declarations with
+type hints, docblocks, and deep curly-brace nesting produce substantial
+source text, while the structural skeleton -- 144 function signatures and 20
+class declarations extracted from 3,009 lines -- is comparatively small. The
+AST representation strips the ceremony and retains only the signatures and
+hierarchy.
 
-**Medium compaction (3x-6x)**:
-- **Swift**: 5.4x / 5.3x -- Protocol conformances, property wrappers, and
-  SwiftUI view builders compress moderately well.
-- **Perl**: 3.3x -- Subroutine signatures and package declarations are
-  compact; regex-heavy code contributes less compressible content.
-- **Kotlin**: 3.0x -- Data classes and sealed hierarchies compress well, but
-  Compose UI code with lambdas retains more structure.
-- **Java**: 2.8x -- Verbose class structure compresses, but the high method
-  count (650 methods across 12 files) produces many AST nodes.
+**Rust (9.8x--14.3x)** achieves the highest compaction ratios in the
+project. Rust's rich type system, trait implementations, lifetime
+annotations, `pub(crate)` visibility modifiers, and macro invocations create
+substantial source text that collapses into relatively few structural nodes
+(212 nodes for the main app, 148 for the WASM app). The `wasm` app (14.3x)
+shows even higher compaction than the main `rust` app (9.8x) because
+WebAssembly-targeted Rust includes additional boilerplate for FFI bindings,
+`#[wasm_bindgen]` attributes, and memory management annotations that the AST
+parser condenses aggressively.
 
-**Lower compaction (2x-3x)**:
-- **TypeScript**: 2.3x -- Interface declarations and generics produce
-  detailed AST nodes; the parser preserves type parameter structure that
-  contributes to higher AST token counts.
+**Swift (5.2x--5.3x)** sits in the upper-middle tier. Swift's verbose
+syntax -- access control keywords (`public`, `private`, `internal`),
+optional types, protocol conformances, property wrappers, and SwiftUI view
+builders -- contributes meaningful overhead that the AST representation
+strips. The parser identified 31 classes/structs in the main Swift app and
+23 in the macOS screensaver, with no separately counted functions (methods
+are nested within class/struct nodes).
 
-### Why Some Languages Compact Better
+### Moderate-Compaction Languages (2x--4x)
 
-1. **Boilerplate-heavy languages** (PHP, Java) benefit most because the AST
-   strips access modifiers, docblocks, and syntactic ceremony while retaining
-   the structural skeleton.
+**Perl (3.3x)** benefits from its characteristically verbose `sub`
+declarations and `use`/`require` statements being reduced to clean function
+and module references. The parser identified 156 subroutines and 63 imports
+across 8 files (2,697 lines). Perl's regex-heavy idioms and sigil syntax
+contribute less compressible content, keeping the ratio below the 5x tier.
 
-2. **Type-annotation-heavy languages** (Rust, Swift) compress well because
-   complex type expressions reduce to compact attribute strings.
+**Kotlin (3.0x)** and **Java (2.8x)** are in a similar range. Both are
+statically typed JVM languages with moderate boilerplate. Kotlin's data
+classes and sealed hierarchies compress well, but Compose UI code with
+trailing lambdas retains more structure. Java's high method count (650
+methods across 12 files) produces many AST nodes, keeping the ratio below
+3x. The AST parser preserves method signatures and class hierarchies, which
+constitute a significant fraction of the original source.
 
-3. **Expression-heavy languages** (TypeScript, Kotlin) compress less because
-   the parser must preserve more of the expression structure to maintain
-   semantic accuracy.
+**TypeScript (2.3x)** has the lowest compaction among successfully parsed
+languages. TypeScript is already relatively compact as a language, and its
+type annotations -- interface declarations, generics, union types -- are
+structurally significant information that the AST representation must
+preserve rather than strip. The parser extracted 597 functions and 19
+classes from only 6 files (3,156 lines), indicating dense,
+information-rich source where the structural representation retains most of
+the meaningful content.
 
----
+### When Full Source Context Is Preferable
 
-## Context Window Utilization
+AST passing is not always the right choice. Full source is better when:
 
-Estimates for how much of a standard LLM context window each app's compact
-AST consumes (assuming a 200K token context window):
+- **Files are very short** (under ~50 lines). The overhead of AST
+  serialization format headers can approach the size of the source itself,
+  eliminating any compaction benefit.
+- **DSL-heavy or configuration code**. Files dominated by declarative
+  configuration (YAML-like structures, build scripts, SQL migrations) may
+  not parse well with language AST parsers and lose critical formatting
+  context.
+- **Inline comments carry essential context**. AST representations
+  typically strip comments. If function behavior depends heavily on
+  inline documentation, TODO annotations, or specification references,
+  full source preserves that context.
+- **Regex-heavy or template code**. Perl regex patterns, C/C++ preprocessor
+  macros, and Rust declarative macros contain domain-specific syntax that
+  the AST parser does not fully decompose. Full source preserves the actual
+  logic.
+- **Exact formatting matters**. Code review, diff generation, and
+  whitespace-sensitive languages (Python indentation, Makefile tabs)
+  require the original source.
+- **The task involves line-level edits**. When the LLM needs to produce
+  exact line-level patches or character-precise modifications, it needs the
+  original text, not a structural summary.
 
-| App              | Source Tokens | AST Tokens | % of 200K Window | Savings   |
-|------------------|--------------|------------|-------------------|-----------|
-| kotlin           | 41,180       | 13,745     | 6.9%              | 27,435    |
-| swift            | 38,549       | 7,124      | 3.6%              | 31,425    |
-| typescript       | 27,791       | 11,899     | 5.9%              | 15,892    |
-| java             | 26,611       | 9,424      | 4.7%              | 17,187    |
-| rust             | 25,845       | 2,570      | 1.3%              | 23,275    |
-| screensaver-macos| 25,147       | 4,752      | 2.4%              | 20,395    |
-| wasm             | 24,291       | 1,642      | 0.8%              | 22,649    |
-| php              | 22,138       | 2,138      | 1.1%              | 20,000    |
-| perl             | 20,076       | 6,056      | 3.0%              | 14,020    |
+## Recommendations
 
-**Key insight**: Even the least-compacting language (TypeScript at 2.3x) uses
-only 5.9% of a 200K context window for its compact AST, compared to 13.9% for
-raw source. For high-compaction languages like Rust and WASM, the compact AST
-uses around 1% of the context window, freeing the remaining 99% for
-conversation, instructions, and multi-file analysis.
+### When to Use AST Passing
 
-### Aggregate Project Analysis
+1. **Surveying large codebases** (10+ files). Pass AST summaries of all
+   modules to let the LLM identify relevant entry points, then follow up
+   with full source for targeted files. At 5--10x compaction, a 20-file
+   project that would consume 100k tokens as raw source fits in 10--20k
+   tokens as AST.
 
-Across all 14 applications with functioning parsers:
+2. **Agent-to-agent handoffs**. When a planning agent needs to communicate
+   project structure to an implementation agent, AST summaries provide the
+   architectural map without consuming the implementation agent's context
+   budget for the actual code it needs to write.
 
-- **Total source tokens**: ~397,000
-- **Total AST tokens**: ~77,000
-- **Overall compaction**: ~5.2x
-- **Context usage (all apps combined)**: 38.5% of 200K window for compact AST
-  vs. effectively impossible (198.5%) for raw source
+3. **Iterative multi-turn conversations**. Instead of re-sending full
+   source each turn, send the AST summary once and only include full source
+   for the specific file under discussion. This is especially effective for
+   PHP (10.1x) and Rust (9.8--14.3x) codebases where the savings are an
+   order of magnitude.
 
-This means the entire project's structural summary fits comfortably within a
-single context window when using compact AST, while raw source would exceed
-the window entirely.
+4. **Cross-language projects**. When an LLM needs to understand
+   interactions between components written in different languages (e.g., a
+   Rust backend and TypeScript frontend), AST summaries of both sides fit
+   where full source of both would not.
 
----
+### When to Use Full Source
 
-## Cases Where Full Source Context Works Better
+1. **Performing line-level edits or code review** on a specific file.
 
-AST passing is less efficient than full source in these scenarios:
+2. **Working with files under 100 lines** where compaction savings are
+   marginal.
 
-1. **Single-file debugging** -- When the issue is in one small file (< 200
-   lines), passing the full source provides more detail than the AST summary.
+3. **Debugging runtime errors** where stack traces reference specific line
+   numbers and the LLM needs to see the exact code at those locations.
 
-2. **Regex-heavy or DSL code** -- Perl regex patterns and WGSL shader code
-   contain domain-specific syntax that the AST parser does not fully
-   decompose. Full source preserves the actual logic.
+4. **The language parser is unavailable**. For C, C++, Go, and JavaScript
+   in environments without their native toolchains, fall back to full
+   source rather than sending empty AST results.
 
-3. **Heavily commented code** -- If comments contain design rationale that is
-   critical to understanding, the AST representation (which strips comments)
-   loses that context.
+### Hybrid Strategy (Recommended)
 
-4. **Template/macro-heavy code** -- C/C++ preprocessor macros and Rust macros
-   are opaque to the regex-based parsers. The expanded code is more useful
-   than the macro invocation node.
+The most effective approach combines both methods:
+
+1. Start with AST summaries of all project files to establish structural
+   context. For this project, the 9 successfully parsed apps produce a
+   combined AST representation of approximately 59,895 tokens -- about 30%
+   of a 200k context window.
+
+2. Request full source for the 1--3 files most relevant to the current
+   task.
+
+3. On subsequent turns, reference the AST summary for unchanged files and
+   only re-send full source for files that have been modified.
+
+This hybrid approach typically achieves 60--80% context window reduction
+compared to sending full source for all files, while preserving the detail
+needed for accurate code generation and modification.
