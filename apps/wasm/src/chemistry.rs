@@ -611,4 +611,62 @@ mod tests {
         assert_eq!(methane_formed, 1);
         assert_eq!(cs.molecules.len(), 3);
     }
+
+    #[test]
+    fn test_molecule_render_color_default() {
+        let mol = Molecule {
+            id: 1,
+            name: "salt".to_string(),
+            formula: "NaCl".to_string(),
+            atom_ids: vec![1, 2],
+            atom_positions: vec![[0.0; 3]; 2],
+            atom_atomic_numbers: vec![11, 17],
+            bonds: vec![(0, 1)],
+            position: [0.0; 3],
+            is_organic: false,
+        };
+        let color = mol.render_color();
+        assert_eq!(color.len(), 4);
+        // Default color: gray-ish
+        assert!(color[3] > 0.0, "Alpha should be positive");
+    }
+
+    #[test]
+    fn test_catalyzed_reaction_with_atoms() {
+        use rand::rngs::SmallRng;
+        use rand::SeedableRng;
+
+        let mut rng = SmallRng::seed_from_u64(42);
+        let mut cs = ChemicalSystem::new();
+        // Add plenty of atoms for amino acid and nucleotide formation
+        // Needs: 2C + 5H + 2O + 1N for amino acid
+        let mut atoms = make_atoms(&[(6, 20), (1, 40), (8, 20), (7, 10)]);
+        let mut total = 0;
+        for _ in 0..200 {
+            total += cs.catalyzed_reaction(&mut atoms, 5000.0, true, &mut rng);
+        }
+        assert!(total > 0, "Catalyzed reaction should produce at least 1 product over 200 tries");
+    }
+
+    #[test]
+    fn test_catalyzed_reaction_low_temp() {
+        use rand::rngs::SmallRng;
+        use rand::SeedableRng;
+
+        let mut rng = SmallRng::seed_from_u64(42);
+        let mut cs = ChemicalSystem::new();
+        let mut atoms = make_atoms(&[(6, 10), (1, 20), (8, 10), (7, 5)]);
+        // At very low temperature, thermal energy K_B * T is tiny so exp(-X/tiny) -> 0
+        let formed = cs.catalyzed_reaction(&mut atoms, 0.0001, false, &mut rng);
+        assert_eq!(formed, 0, "No products should form at near-zero temperature");
+    }
+
+    #[test]
+    fn test_form_ammonia_insufficient() {
+        let mut cs = ChemicalSystem::new();
+        // 1 N + 2 H: not enough hydrogen
+        let mut atoms = make_atoms(&[(7, 1), (1, 2)]);
+        let formed = cs.form_ammonia(&mut atoms);
+        assert_eq!(formed, 0);
+    }
 }

@@ -573,4 +573,92 @@ mod tests {
         // Iron should be visually larger than hydrogen
         assert!(fe.render_size() > h.render_size());
     }
+
+    #[test]
+    fn test_stellar_nucleosynthesis_low_temp() {
+        let mut rng = make_rng();
+        let mut sys = AtomicSystem::new();
+        for _ in 0..10 {
+            let id = sys.alloc_id();
+            sys.atoms.push(Atom::new(id, 2, [0.0; 3]));
+        }
+        let created = sys.stellar_nucleosynthesis(100.0, &mut rng);
+        assert_eq!(created, 0, "No fusion below 1e3 temperature");
+    }
+
+    #[test]
+    fn test_stellar_nucleosynthesis_creates_heavier_elements() {
+        let mut rng = make_rng();
+        let mut sys = AtomicSystem::new();
+        // Add many He atoms and try many rounds to overcome 0.01 probability
+        let mut carbon_formed = false;
+        for _ in 0..500 {
+            // Re-seed with He atoms to keep the pool fresh
+            if sys.atoms.iter().filter(|a| a.atomic_number == 2).count() < 10 {
+                for _ in 0..20 {
+                    let id = sys.alloc_id();
+                    let mut atom = Atom::new(id, 2, [0.0; 3]);
+                    atom.mass_number = 4;
+                    sys.atoms.push(atom);
+                }
+            }
+            let _created = sys.stellar_nucleosynthesis(1e7, &mut rng);
+            if sys.atoms.iter().any(|a| a.atomic_number == 6) {
+                carbon_formed = true;
+                break;
+            }
+        }
+        assert!(carbon_formed, "Triple-alpha should eventually produce carbon");
+    }
+
+    #[test]
+    fn test_recombination_above_threshold() {
+        let mut rng = make_rng();
+        let mut sys = AtomicSystem::new();
+        sys.temperature = T_RECOMBINATION * 2.0; // Too hot
+        let mut field = crate::quantum::QuantumField::new(1e6);
+        field.particles.push(crate::quantum::Particle {
+            id: 1,
+            particle_type: crate::quantum::ParticleType::Proton,
+            position: [0.0; 3],
+            momentum: [0.0; 3],
+            spin: crate::quantum::Spin::Up,
+            color: None,
+        });
+        let created = sys.recombination(&mut field, &mut rng);
+        assert_eq!(created, 0, "No recombination above threshold temperature");
+    }
+
+    #[test]
+    fn test_recombination_below_threshold() {
+        let mut rng = make_rng();
+        let mut sys = AtomicSystem::new();
+        sys.temperature = T_RECOMBINATION * 0.5; // Cold enough
+
+        let mut field = crate::quantum::QuantumField::new(1e3);
+        // Add protons and electrons
+        for i in 0..3u32 {
+            field.particles.push(crate::quantum::Particle {
+                id: i * 2 + 1,
+                particle_type: crate::quantum::ParticleType::Proton,
+                position: [0.0; 3],
+                momentum: [0.0; 3],
+                spin: crate::quantum::Spin::Up,
+                color: None,
+            });
+            field.particles.push(crate::quantum::Particle {
+                id: i * 2 + 2,
+                particle_type: crate::quantum::ParticleType::Electron,
+                position: [0.0; 3],
+                momentum: [0.0; 3],
+                spin: crate::quantum::Spin::Up,
+                color: None,
+            });
+        }
+
+        let created = sys.recombination(&mut field, &mut rng);
+        assert_eq!(created, 3, "Should form 3 hydrogen atoms from 3 protons + 3 electrons");
+        assert_eq!(sys.atoms.len(), 3);
+        assert!(sys.atoms.iter().all(|a| a.atomic_number == 1));
+    }
 }

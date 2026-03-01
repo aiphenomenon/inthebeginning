@@ -484,4 +484,68 @@ mod tests {
         // Some or all cells should have died
         assert!(bio.total_died > 0 || bio.cells.iter().any(|c| !c.alive));
     }
+
+    #[test]
+    fn test_cell_apply_mutations_high_uv() {
+        let mut rng = make_rng();
+        let mut cell = Cell::new(1, [0.0; 3], &mut rng);
+        let initial_mutations = cell.dna_mutation_count;
+
+        // Apply mutations with very high UV intensity to ensure mutations occur
+        for _ in 0..50 {
+            cell.apply_mutations(100.0, 0.0, &mut rng);
+        }
+        assert!(cell.dna_mutation_count > initial_mutations,
+            "High UV should cause mutations");
+    }
+
+    #[test]
+    fn test_cell_apply_mutations_cosmic_rays() {
+        let mut rng = make_rng();
+        let mut cell = Cell::new(1, [0.0; 3], &mut rng);
+        let initial_mutations = cell.dna_mutation_count;
+
+        // Use very high flux and many iterations to ensure at least one mutation
+        for _ in 0..500 {
+            cell.apply_mutations(0.0, 1000.0, &mut rng);
+        }
+        assert!(cell.dna_mutation_count > initial_mutations,
+            "High cosmic ray flux should cause mutations over 500 iterations");
+    }
+
+    #[test]
+    fn test_cell_gc_content_stays_in_bounds() {
+        let mut rng = make_rng();
+        let mut cell = Cell::new(1, [0.0; 3], &mut rng);
+
+        for _ in 0..200 {
+            cell.apply_mutations(10.0, 10.0, &mut rng);
+        }
+        assert!(cell.dna_gc_content >= 0.1 && cell.dna_gc_content <= 0.9,
+            "GC content {} should stay in [0.1, 0.9]", cell.dna_gc_content);
+    }
+
+    #[test]
+    fn test_biosphere_total_mutations_after_steps() {
+        let mut rng = make_rng();
+        let mut bio = Biosphere::new(5, &mut rng);
+
+        // Run several steps with high UV to cause mutations
+        for _ in 0..20 {
+            bio.step(10.0, 50.0, 10.0, 288.0, &mut rng);
+        }
+        assert!(bio.total_mutations() > 0,
+            "Should have accumulated mutations after many steps with high UV");
+    }
+
+    #[test]
+    fn test_biosphere_step_with_zero_initial_cells() {
+        let mut rng = make_rng();
+        let mut bio = Biosphere::new(0, &mut rng);
+        assert!(bio.cells.is_empty());
+
+        bio.step(10.0, 0.5, 0.1, 288.0, &mut rng);
+        assert_eq!(bio.generation, 1);
+        assert!(bio.cells.is_empty()); // No cells to evolve
+    }
 }

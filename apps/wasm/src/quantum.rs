@@ -859,4 +859,45 @@ mod tests {
         assert_eq!(qf.particles.len(), 3);
         assert_eq!(qf.proton_count(), 1);
     }
+
+    #[test]
+    fn test_vacuum_fluctuation_high_temperature() {
+        let mut rng = make_rng();
+        let mut qf = QuantumField::new(T_PLANCK);
+        let mut produced = false;
+        for _ in 0..100 {
+            if qf.vacuum_fluctuation(&mut rng) {
+                produced = true;
+                break;
+            }
+        }
+        assert!(produced, "Vacuum fluctuation should produce pairs at Planck temperature");
+    }
+
+    #[test]
+    fn test_vacuum_fluctuation_low_temperature() {
+        let mut rng = make_rng();
+        let mut qf = QuantumField::new(0.001);
+        let mut produced = 0;
+        for _ in 0..100 {
+            if qf.vacuum_fluctuation(&mut rng) {
+                produced += 1;
+            }
+        }
+        assert!(produced < 5, "Too many fluctuations at low temperature: {}", produced);
+    }
+
+    #[test]
+    fn test_particle_spin_variants() {
+        assert_eq!(Spin::Up as i32, 0);
+        assert_eq!(Spin::Down as i32, 1);
+    }
+
+    #[test]
+    fn test_color_charge_variants() {
+        // Verify all color charge variants exist
+        let _red = ColorCharge::Red;
+        let _green = ColorCharge::Green;
+        let _blue = ColorCharge::Blue;
+    }
 }

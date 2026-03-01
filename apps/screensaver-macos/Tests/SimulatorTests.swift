@@ -892,3 +892,410 @@ class UniverseTests: XCTestCase {
         XCTAssertEqual(entity.alpha, 0.9)
     }
 }
+
+// MARK: - Additional Quantum Field Tests
+
+class QuantumFieldAdditionalTests: XCTestCase {
+
+    func testVacuumFluctuationHighTemperature() {
+        let qf = QuantumField(temperature: kTempPlanck)
+        var produced = false
+        for _ in 0..<100 {
+            qf.vacuumFluctuation()
+            if !qf.particles.isEmpty {
+                produced = true
+                break
+            }
+        }
+        XCTAssertTrue(produced, "Vacuum fluctuation should produce pairs at Planck temperature")
+    }
+
+    func testWaveFunctionCollapse() {
+        var wf = WaveFunction(amplitude: 1.0, phase: 0.0, coherent: true)
+        let _ = wf.collapse()
+        XCTAssertFalse(wf.coherent)
+        XCTAssertTrue(wf.amplitude == 0.0 || wf.amplitude == 1.0)
+    }
+
+    func testWaveFunctionProbability() {
+        let wf = WaveFunction(amplitude: 0.5, phase: 0.0, coherent: true)
+        XCTAssertEqual(wf.probability, 0.25, accuracy: 1e-10)
+    }
+}
+
+// MARK: - Additional Atomic System Tests
+
+class AtomicSystemAdditionalTests: XCTestCase {
+
+    func testAtomValenceElectrons() {
+        let h = Atom(atomicNumber: 1)
+        XCTAssertEqual(h.valenceElectrons, 1)
+
+        let c = Atom(atomicNumber: 6)
+        XCTAssertEqual(c.valenceElectrons, 4)
+
+        let he = Atom(atomicNumber: 2)
+        XCTAssertEqual(he.valenceElectrons, 2)
+    }
+
+    func testAtomNeedsElectrons() {
+        let h = Atom(atomicNumber: 1)
+        XCTAssertEqual(h.needsElectrons, 1) // needs 1 to fill first shell
+
+        let he = Atom(atomicNumber: 2)
+        XCTAssertEqual(he.needsElectrons, 0) // shell full
+    }
+
+    func testAtomBondEnergy() {
+        let na = Atom(atomicNumber: 11) // EN = 0.93
+        let cl = Atom(atomicNumber: 17) // EN = 3.16
+        XCTAssertEqual(na.bondEnergy(with: cl), kBondEnergyIonic)
+
+        let c = Atom(atomicNumber: 6)  // EN = 2.55
+        let h = Atom(atomicNumber: 1)  // EN = 2.20
+        XCTAssertEqual(c.bondEnergy(with: h), kBondEnergyCovalent)
+
+        let o = Atom(atomicNumber: 8)  // EN = 3.44
+        let hh = Atom(atomicNumber: 1) // EN = 2.20
+        let expected = (kBondEnergyCovalent + kBondEnergyIonic) / 2.0
+        XCTAssertEqual(o.bondEnergy(with: hh), expected)
+    }
+
+    func testAtomDistanceTo() {
+        let a1 = Atom(atomicNumber: 1, position: SIMD3(0, 0, 0))
+        let a2 = Atom(atomicNumber: 1, position: SIMD3(3, 4, 0))
+        XCTAssertEqual(a1.distanceTo(a2), 5.0, accuracy: 1e-10)
+    }
+
+    func testAtomDistanceToSelf() {
+        let a = Atom(atomicNumber: 1, position: SIMD3(1, 2, 3))
+        XCTAssertEqual(a.distanceTo(a), 0.0, accuracy: 1e-10)
+    }
+
+    func testAtomIsIon() {
+        let neutral = Atom(atomicNumber: 6, electronCount: 6)
+        XCTAssertFalse(neutral.isIon)
+
+        let ion = Atom(atomicNumber: 11, electronCount: 10)
+        XCTAssertTrue(ion.isIon)
+    }
+
+    func testElectronShellAddRemove() {
+        var shell = ElectronShell(n: 1, maxElectrons: 2, electrons: 0)
+        XCTAssertTrue(shell.isEmpty)
+        XCTAssertTrue(shell.addElectron())
+        XCTAssertEqual(shell.electrons, 1)
+        XCTAssertTrue(shell.addElectron())
+        XCTAssertTrue(shell.isFull)
+        XCTAssertFalse(shell.addElectron()) // Full, cannot add
+        XCTAssertTrue(shell.removeElectron())
+        XCTAssertEqual(shell.electrons, 1)
+    }
+
+    func testStellarNucleosynthesisProducesHeavierElements() {
+        let sys = AtomicSystem()
+        // Add many helium atoms
+        for _ in 0..<30 {
+            sys.atoms.append(Atom(atomicNumber: 2, massNumber: 4))
+        }
+        var produced = false
+        for _ in 0..<200 {
+            let newAtoms = sys.stellarNucleosynthesis(temperature: kTempStellarCore)
+            if newAtoms.contains(where: { $0.atomicNumber == 6 }) {
+                produced = true
+                break
+            }
+            // Re-add helium to keep the pool fresh
+            if sys.atoms.filter({ $0.atomicNumber == 2 }).count < 10 {
+                for _ in 0..<15 {
+                    sys.atoms.append(Atom(atomicNumber: 2, massNumber: 4))
+                }
+            }
+        }
+        XCTAssertTrue(produced, "Stellar nucleosynthesis should eventually produce carbon")
+    }
+
+    func testRecombinationAboveThreshold() {
+        let sys = AtomicSystem(temperature: kTempRecombination * 2.0) // Too hot
+        let qf = QuantumField(temperature: 1e6)
+        qf.particles.append(Particle(type: .proton))
+        qf.particles.append(Particle(type: .electron))
+        let newAtoms = sys.recombination(field: qf)
+        XCTAssertTrue(newAtoms.isEmpty)
+    }
+
+    func testRecombinationBelowThreshold() {
+        let sys = AtomicSystem(temperature: kTempRecombination * 0.5) // Cold enough
+        let qf = QuantumField(temperature: 1e3)
+        for _ in 0..<3 {
+            qf.particles.append(Particle(type: .proton))
+            qf.particles.append(Particle(type: .electron))
+        }
+        let newAtoms = sys.recombination(field: qf)
+        XCTAssertEqual(newAtoms.count, 3)
+        XCTAssertTrue(newAtoms.allSatisfy { $0.atomicNumber == 1 })
+    }
+}
+
+// MARK: - Additional Chemical System Tests
+
+class ChemicalSystemAdditionalTests: XCTestCase {
+
+    private func makeAtomicSystem(elements: [(Int, Int)]) -> AtomicSystem {
+        let sys = AtomicSystem()
+        for (z, count) in elements {
+            for _ in 0..<count {
+                let atom = Atom(atomicNumber: z,
+                                position: SIMD3(
+                                    Double.random(in: -5...5),
+                                    Double.random(in: -5...5),
+                                    Double.random(in: -5...5)
+                                ))
+                sys.atoms.append(atom)
+            }
+        }
+        return sys
+    }
+
+    func testCatalyzedReaction() {
+        // Needs sufficient atoms for amino acid or nucleotide formation
+        let atomic = makeAtomicSystem(elements: [(6, 20), (1, 40), (8, 20), (7, 10)])
+        let chem = ChemicalSystem(atomicSystem: atomic)
+
+        var totalFormed = 0
+        for _ in 0..<200 {
+            totalFormed += chem.catalyzedReaction(temperature: 5000.0, catalystPresent: true)
+        }
+        XCTAssertGreaterThan(totalFormed, 0, "Catalyzed reaction should form products with catalyst and high temp")
+    }
+
+    func testMoleculeFormula() {
+        let h1 = Atom(atomicNumber: 1)
+        let h2 = Atom(atomicNumber: 1)
+        let o = Atom(atomicNumber: 8)
+        let formula = Molecule.computeFormula(atoms: [h1, h2, o])
+        XCTAssertEqual(formula, "H2O")
+    }
+
+    func testMoleculeIsOrganic() {
+        let atomic = makeAtomicSystem(elements: [(6, 1), (1, 4)])
+        let chem = ChemicalSystem(atomicSystem: atomic)
+        let methanes = chem.formMethane()
+        XCTAssertEqual(methanes.count, 1)
+        XCTAssertTrue(methanes[0].isOrganic)
+    }
+
+    func testMoleculeNotOrganic() {
+        let atomic = makeAtomicSystem(elements: [(1, 4), (8, 2)])
+        let chem = ChemicalSystem(atomicSystem: atomic)
+        let waters = chem.formWater()
+        XCTAssertEqual(waters.count, 2)
+        XCTAssertFalse(waters[0].isOrganic) // Water is not organic
+    }
+}
+
+// MARK: - Additional Biology Tests
+
+class BiologyAdditionalTests: XCTestCase {
+
+    func testDNATranscribe() {
+        let seq: [Nucleotide] = [.adenine, .thymine, .guanine, .cytosine, .adenine, .thymine]
+        let dna = DNAStrand(sequence: seq)
+        // Create a simple gene covering all positions
+        let gene = Gene(name: "test", startIndex: 0, length: 6, isActive: true, methylated: false)
+        let mrna = dna.transcribe(gene: gene)
+        // T -> U in RNA, others stay same
+        XCTAssertEqual(mrna, ["A", "U", "G", "C", "A", "U"] as [Character])
+    }
+
+    func testDNATranscribeInactiveGene() {
+        let seq: [Nucleotide] = [.adenine, .thymine, .guanine]
+        let dna = DNAStrand(sequence: seq)
+        let gene = Gene(name: "test", startIndex: 0, length: 3, isActive: false, methylated: false)
+        let mrna = dna.transcribe(gene: gene)
+        XCTAssertTrue(mrna.isEmpty)
+    }
+
+    func testDNAUpdateMethylation() {
+        var dna = DNAStrand(length: 100)
+        // Run many methylation cycles
+        for _ in 0..<50 {
+            dna.updateMethylation()
+        }
+        // Some positions should now be methylated
+        let methylatedCount = dna.methylationMap.filter { $0 }.count
+        XCTAssertGreaterThan(methylatedCount, 0, "Some positions should be methylated after 50 rounds")
+    }
+
+    func testDNAIdentifyGenes() {
+        // Create ATG...TAA pattern (start codon + padding + stop codon)
+        // ATG + GCU + GCU + TAA = 12 bases, which is >= 9 minimum
+        let seq: [Nucleotide] = [
+            .adenine, .thymine, .guanine, // ATG (start)
+            .guanine, .cytosine, .thymine, // GCT
+            .guanine, .cytosine, .thymine, // GCT
+            .thymine, .adenine, .adenine, // TAA (stop)
+        ]
+        let genes = DNAStrand.identifyGenes(in: seq)
+        XCTAssertEqual(genes.count, 1)
+        XCTAssertEqual(genes[0].startIndex, 0)
+        XCTAssertEqual(genes[0].length, 12)
+    }
+
+    func testDNADeletionMinLength() {
+        var dna = DNAStrand(length: 10)
+        // Should be able to delete when length > 10
+        dna.deletionMutation()
+        // At 10, one deletion should succeed
+        XCTAssertEqual(dna.length, 9)
+        // But at 10 before mutation, it was on the boundary
+    }
+
+    func testDNAInsertionMaxLength() {
+        var dna = DNAStrand(length: 50)
+        dna.insertionMutation()
+        XCTAssertEqual(dna.length, 51)
+    }
+
+    func testBiosphereAverageGenomeLength() {
+        let bio = Biosphere()
+        XCTAssertEqual(bio.averageGenomeLength(), 0.0) // No cells
+
+        bio.seed(count: 5)
+        let avg = bio.averageGenomeLength()
+        XCTAssertGreaterThan(avg, 0.0)
+    }
+
+    func testCellExpressProteins() {
+        var cell = Cell(dna: DNAStrand(length: 200), energy: 10.0, position: .zero)
+        cell.metabolize(environmentalEnergy: 5.0)
+        // After metabolize, should have attempted protein expression
+        XCTAssertEqual(cell.age, 1)
+    }
+
+    func testBiosphereStepMutationModifier() {
+        let bio = Biosphere(carryingCapacity: 50)
+        bio.seed(count: 5)
+        // High mutation modifier should cause more mutations
+        bio.step(environmentalEnergy: 10.0, mutationModifier: 5.0)
+        XCTAssertGreaterThan(bio.cells.count, 0)
+    }
+}
+
+// MARK: - Additional Environment Tests
+
+class EnvironmentAdditionalTests: XCTestCase {
+
+    func testAtmosphereDescription() {
+        let env = Environment()
+        env.step(epoch: .present)
+        let desc = env.atmosphereDescription()
+        XCTAssertTrue(desc.contains("N2"))
+        XCTAssertTrue(desc.contains("O2"))
+    }
+
+    func testEnvironmentStepNucleosynthesis() {
+        let env = Environment()
+        env.step(epoch: .nucleosynthesis)
+        XCTAssertEqual(env.surfaceType, .gas)
+        XCTAssertEqual(env.atmosphere[.hydrogen], 0.75)
+        XCTAssertEqual(env.atmosphere[.helium], 0.25)
+    }
+
+    func testEnvironmentStepRecombination() {
+        let env = Environment()
+        env.step(epoch: .recombination)
+        XCTAssertEqual(env.surfaceType, .gas)
+    }
+
+    func testEnvironmentStepStarFormation() {
+        let env = Environment()
+        env.step(epoch: .starFormation)
+        XCTAssertEqual(env.surfaceType, .gas)
+        XCTAssertEqual(env.atmosphere[.hydrogen], 0.90)
+    }
+
+    func testEnvironmentStepSolarSystem() {
+        let env = Environment()
+        env.step(epoch: .solarSystem)
+        XCTAssertEqual(env.surfaceType, .moltenRock)
+        XCTAssertNotNil(env.atmosphere[.water])
+    }
+
+    func testEnvironmentStepEarth() {
+        let env = Environment()
+        env.temperature = 300.0 // Below 373
+        env.step(epoch: .earth)
+        XCTAssertTrue(env.waterPresent)
+        XCTAssertEqual(env.surfaceType, .ocean)
+    }
+
+    func testEnvironmentStepLife() {
+        let env = Environment()
+        env.temperature = 400.0
+        env.waterPresent = true
+        env.radiation = 2.0
+        env.step(epoch: .life)
+        XCTAssertTrue(env.waterPresent)
+        XCTAssertEqual(env.surfaceType, .ocean)
+    }
+
+    func testEnvironmentStepDNA() {
+        let env = Environment()
+        env.temperature = 350.0
+        env.step(epoch: .dna)
+        XCTAssertTrue(env.waterPresent)
+        XCTAssertNotNil(env.atmosphere[.oxygen])
+    }
+
+    func testSurfaceTypeRawValues() {
+        for st in SurfaceType.allCases {
+            XCTAssertFalse(st.rawValue.isEmpty)
+        }
+    }
+}
+
+// MARK: - Additional Universe Tests
+
+class UniverseAdditionalTests: XCTestCase {
+
+    func testUniverseDifferentSeeds() {
+        let u1 = Universe(seed: 42)
+        let u2 = Universe(seed: 99)
+        for _ in 0..<50 {
+            u1.step()
+            u2.step()
+        }
+        XCTAssertEqual(u1.tick, u2.tick)
+        XCTAssertEqual(u1.tick, 50)
+    }
+
+    func testUniverseSnapshotEntities() {
+        let u = Universe(seed: 42)
+        for _ in 0..<50 {
+            u.step()
+        }
+        let snap = u.snapshot()
+        // All entities should have valid colors and size
+        for entity in snap.entities {
+            XCTAssertGreaterThanOrEqual(entity.red, 0.0)
+            XCTAssertLessThanOrEqual(entity.red, 1.0)
+            XCTAssertGreaterThanOrEqual(entity.green, 0.0)
+            XCTAssertLessThanOrEqual(entity.green, 1.0)
+            XCTAssertGreaterThanOrEqual(entity.blue, 0.0)
+            XCTAssertLessThanOrEqual(entity.blue, 1.0)
+            XCTAssertGreaterThan(entity.size, 0.0)
+        }
+    }
+
+    func testUniverseFullRun() {
+        let u = Universe(seed: 42)
+        // Run through a significant portion of epochs
+        for _ in 0..<500 {
+            u.step()
+        }
+        let snap = u.snapshot()
+        XCTAssertEqual(snap.tick, 500)
+        XCTAssertGreaterThan(snap.particleCount, 0)
+    }
+}

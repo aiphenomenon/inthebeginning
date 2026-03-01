@@ -1195,6 +1195,42 @@ function testBiology(): void
     assertTrue('Snapshot has generation', isset($snap['generation']));
     assertTrue('Snapshot has population', isset($snap['population']));
 
+    // --- Color enum ---
+    assertEqual('Color Red', 'r', Color::Red->value);
+    assertEqual('Color Green', 'g', Color::Green->value);
+    assertEqual('Color Blue', 'b', Color::Blue->value);
+    assertEqual('Color AntiRed', 'ar', Color::AntiRed->value);
+    assertEqual('Color AntiGreen', 'ag', Color::AntiGreen->value);
+    assertEqual('Color AntiBlue', 'ab', Color::AntiBlue->value);
+
+    // --- Gene::demethylate() ---
+    $gDm = new Gene('dm', ['A', 'T', 'G', 'C', 'A'], 0, 5);
+    $gDm->methylate(0);
+    $gDm->methylate(1);
+    assertTrue('Marks added before demethylate', count($gDm->epigeneticMarks) >= 2);
+    $gDm->demethylate(0);
+    $markAt0 = array_filter($gDm->epigeneticMarks, fn($m) => $m->position === 0 && $m->markType === 'methylation');
+    assertEqual('Methylation at position 0 removed', 0, count($markAt0));
+    // Remaining marks at position 1 should still exist
+    $markAt1 = array_filter($gDm->epigeneticMarks, fn($m) => $m->position === 1 && $m->markType === 'methylation');
+    assertTrue('Methylation at position 1 remains', count($markAt1) > 0);
+    // Demethylate position 1 too
+    $gDm->demethylate(1);
+    $methyMarks = array_filter($gDm->epigeneticMarks, fn($m) => $m->markType === 'methylation');
+    assertEqual('All methylation marks removed', 0, count($methyMarks));
+
+    // --- Cell::computeFitness() for dead cell ---
+    Cell::resetIdCounter();
+    $deadFitnessCell = new Cell();
+    $deadFitnessCell->alive = false;
+    assertApprox('Dead cell fitness = 0', 0.0, $deadFitnessCell->computeFitness(), 1e-10);
+
+    // --- Cell::divide() with low energy ---
+    Cell::resetIdCounter();
+    $lowEnergyCell = new Cell(energy: 10.0);
+    $lowDaughter = $lowEnergyCell->divide();
+    assertNull('Low energy cell cannot divide', $lowDaughter);
+
     // --- EpigeneticMark::toCompact() ---
     $markMethyl = new EpigeneticMark(position: 3, markType: 'methylation', active: true, generationAdded: 0);
     assertEqual('Methylation toCompact', 'M3+', $markMethyl->toCompact());

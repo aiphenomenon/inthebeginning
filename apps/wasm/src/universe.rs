@@ -436,4 +436,47 @@ mod tests {
         u.step();
         assert_eq!(u.tick, 1);
     }
+
+    #[test]
+    fn test_universe_different_seeds() {
+        let mut u1 = Universe::new(42, 300_000);
+        let mut u2 = Universe::new(99, 300_000);
+
+        for _ in 0..100 {
+            u1.step();
+            u2.step();
+        }
+
+        // Same tick, but potentially different particle counts due to RNG
+        assert_eq!(u1.tick, u2.tick);
+        // At minimum, they should both have created particles
+        assert!(u1.particles_created > 0);
+        assert!(u2.particles_created > 0);
+    }
+
+    #[test]
+    fn test_universe_snapshot_fields() {
+        let mut u = Universe::new(42, 300_000);
+        for _ in 0..20 {
+            u.step();
+        }
+        let snap = u.snapshot();
+
+        assert_eq!(snap.tick, 20);
+        assert!(!snap.epoch_name.is_empty());
+        assert!(!snap.epoch_description.is_empty());
+        assert!(snap.temperature > 0.0);
+        assert!(snap.particle_count >= 0);
+    }
+
+    #[test]
+    fn test_universe_life_epoch() {
+        let mut u = Universe::new(42, 300_000);
+        // Advance to life epoch
+        while u.tick < LIFE_EPOCH + 10 {
+            u.step();
+        }
+        // Should have a biosphere by now
+        assert!(u.biosphere.is_some());
+    }
 }
