@@ -1,0 +1,5505 @@
+{
+  "generate_ast_captures.py": [
+    {
+      "function": "main",
+      "line": 12,
+      "branches": 15,
+      "args": [],
+      "testable": true
+    }
+  ],
+  "run_demo.py": [
+    {
+      "function": "run_ast_demo",
+      "line": 26,
+      "branches": 12,
+      "args": [],
+      "testable": true
+    },
+    {
+      "function": "run_simulation",
+      "line": 128,
+      "branches": 1,
+      "args": [],
+      "testable": true
+    },
+    {
+      "function": "main",
+      "line": 151,
+      "branches": 3,
+      "args": [],
+      "testable": true
+    }
+  ],
+  "ast_dsl/c_ast.py": [
+    {
+      "function": "parse_c_source",
+      "line": 13,
+      "branches": 3,
+      "args": [
+        "source",
+        "filename"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_convert_pycparser_node",
+      "line": 36,
+      "branches": 8,
+      "args": [
+        "node"
+      ],
+      "testable": true
+    },
+    {
+      "function": "parse_cpp_with_clang",
+      "line": 76,
+      "branches": 2,
+      "args": [
+        "source",
+        "filename"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_parse_clang_dump",
+      "line": 97,
+      "branches": 10,
+      "args": [
+        "dump"
+      ],
+      "testable": true
+    },
+    {
+      "function": "find_c_symbols",
+      "line": 148,
+      "branches": 2,
+      "args": [
+        "source"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_compact",
+      "line": 163,
+      "branches": 0,
+      "args": [
+        "node"
+      ],
+      "testable": true
+    }
+  ],
+  "ast_dsl/core.py": [
+    {
+      "function": "to_dict",
+      "line": 46,
+      "branches": 4,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_compact",
+      "line": 64,
+      "branches": 4,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "walk",
+      "line": 79,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "find",
+      "line": 85,
+      "branches": 3,
+      "args": [
+        "self",
+        "node_type",
+        "name"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_dict",
+      "line": 106,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "from_dict",
+      "line": 110,
+      "branches": 0,
+      "args": [
+        "cls",
+        "d"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_dict",
+      "line": 127,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_dict",
+      "line": 141,
+      "branches": 4,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_compact",
+      "line": 161,
+      "branches": 4,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 181,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_measure",
+      "line": 187,
+      "branches": 0,
+      "args": [
+        "self",
+        "func"
+      ],
+      "testable": true
+    },
+    {
+      "function": "execute",
+      "line": 211,
+      "branches": 9,
+      "args": [
+        "self",
+        "query"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_get_python_ast",
+      "line": 263,
+      "branches": 2,
+      "args": [
+        "self",
+        "filepath"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_parse_python",
+      "line": 275,
+      "branches": 0,
+      "args": [
+        "self",
+        "source",
+        "filename"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_python_node_to_universal",
+      "line": 280,
+      "branches": 20,
+      "args": [
+        "self",
+        "node",
+        "source"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_action_parse",
+      "line": 360,
+      "branches": 3,
+      "args": [
+        "self",
+        "query"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_action_find",
+      "line": 376,
+      "branches": 0,
+      "args": [
+        "self",
+        "query"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_action_symbols",
+      "line": 383,
+      "branches": 2,
+      "args": [
+        "self",
+        "query"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_action_dependencies",
+      "line": 399,
+      "branches": 2,
+      "args": [
+        "self",
+        "query"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_action_callers",
+      "line": 413,
+      "branches": 2,
+      "args": [
+        "self",
+        "query"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_action_code_metrics",
+      "line": 427,
+      "branches": 5,
+      "args": [
+        "self",
+        "query"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_walk_depth",
+      "line": 437,
+      "branches": 5,
+      "args": [
+        "node",
+        "depth"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_action_transform",
+      "line": 462,
+      "branches": 3,
+      "args": [
+        "self",
+        "query"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_action_coverage_map",
+      "line": 474,
+      "branches": 4,
+      "args": [
+        "self",
+        "query"
+      ],
+      "testable": true
+    },
+    {
+      "function": "parse_file",
+      "line": 494,
+      "branches": 0,
+      "args": [
+        "self",
+        "filepath",
+        "language"
+      ],
+      "testable": true
+    },
+    {
+      "function": "find_symbols",
+      "line": 499,
+      "branches": 0,
+      "args": [
+        "self",
+        "filepath",
+        "language"
+      ],
+      "testable": true
+    },
+    {
+      "function": "get_dependencies",
+      "line": 504,
+      "branches": 0,
+      "args": [
+        "self",
+        "filepath",
+        "language"
+      ],
+      "testable": true
+    }
+  ],
+  "ast_dsl/java_ast.py": [
+    {
+      "function": "parse_java_source",
+      "line": 14,
+      "branches": 7,
+      "args": [
+        "source",
+        "filename"
+      ],
+      "testable": true
+    },
+    {
+      "function": "parse_java_with_javac",
+      "line": 94,
+      "branches": 4,
+      "args": [
+        "filepath"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_parse_javac_output",
+      "line": 111,
+      "branches": 5,
+      "args": [
+        "output",
+        "filename"
+      ],
+      "testable": true
+    },
+    {
+      "function": "find_java_symbols",
+      "line": 131,
+      "branches": 2,
+      "args": [
+        "source"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_compact",
+      "line": 145,
+      "branches": 0,
+      "args": [
+        "node"
+      ],
+      "testable": true
+    }
+  ],
+  "ast_dsl/perl_ast.py": [
+    {
+      "function": "parse_perl_source",
+      "line": 13,
+      "branches": 7,
+      "args": [
+        "source",
+        "filename"
+      ],
+      "testable": true
+    },
+    {
+      "function": "parse_perl_with_deparse",
+      "line": 78,
+      "branches": 4,
+      "args": [
+        "filepath"
+      ],
+      "testable": true
+    },
+    {
+      "function": "find_perl_symbols",
+      "line": 103,
+      "branches": 2,
+      "args": [
+        "source"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_compact",
+      "line": 117,
+      "branches": 0,
+      "args": [
+        "node"
+      ],
+      "testable": true
+    }
+  ],
+  "ast_dsl/php_ast.py": [
+    {
+      "function": "parse_php_source",
+      "line": 14,
+      "branches": 9,
+      "args": [
+        "source",
+        "filename"
+      ],
+      "testable": true
+    },
+    {
+      "function": "parse_php_with_tokenizer",
+      "line": 92,
+      "branches": 8,
+      "args": [
+        "filepath"
+      ],
+      "testable": true
+    },
+    {
+      "function": "find_php_symbols",
+      "line": 154,
+      "branches": 2,
+      "args": [
+        "source"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_compact",
+      "line": 168,
+      "branches": 0,
+      "args": [
+        "node"
+      ],
+      "testable": true
+    }
+  ],
+  "ast_dsl/python_ast.py": [
+    {
+      "function": "__init__",
+      "line": 15,
+      "branches": 0,
+      "args": [
+        "self",
+        "engine"
+      ],
+      "testable": true
+    },
+    {
+      "function": "analyze_scopes",
+      "line": 18,
+      "branches": 2,
+      "args": [
+        "self",
+        "source"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 24,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "visit_FunctionDef",
+      "line": 27,
+      "branches": 0,
+      "args": [
+        "self",
+        "node"
+      ],
+      "testable": true
+    },
+    {
+      "function": "visit_Name",
+      "line": 36,
+      "branches": 2,
+      "args": [
+        "self",
+        "node"
+      ],
+      "testable": true
+    },
+    {
+      "function": "extract_control_flow",
+      "line": 48,
+      "branches": 0,
+      "args": [
+        "self",
+        "source"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 54,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "visit_FunctionDef",
+      "line": 57,
+      "branches": 0,
+      "args": [
+        "self",
+        "node"
+      ],
+      "testable": true
+    },
+    {
+      "function": "visit_If",
+      "line": 65,
+      "branches": 0,
+      "args": [
+        "self",
+        "node"
+      ],
+      "testable": true
+    },
+    {
+      "function": "visit_For",
+      "line": 76,
+      "branches": 0,
+      "args": [
+        "self",
+        "node"
+      ],
+      "testable": true
+    },
+    {
+      "function": "visit_While",
+      "line": 85,
+      "branches": 0,
+      "args": [
+        "self",
+        "node"
+      ],
+      "testable": true
+    },
+    {
+      "function": "visit_Return",
+      "line": 94,
+      "branches": 0,
+      "args": [
+        "self",
+        "node"
+      ],
+      "testable": true
+    },
+    {
+      "function": "visit_Raise",
+      "line": 102,
+      "branches": 0,
+      "args": [
+        "self",
+        "node"
+      ],
+      "testable": true
+    },
+    {
+      "function": "visit_Try",
+      "line": 110,
+      "branches": 0,
+      "args": [
+        "self",
+        "node"
+      ],
+      "testable": true
+    },
+    {
+      "function": "find_dead_code",
+      "line": 122,
+      "branches": 3,
+      "args": [
+        "self",
+        "source"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_check_body",
+      "line": 128,
+      "branches": 3,
+      "args": [
+        "self",
+        "body"
+      ],
+      "testable": true
+    },
+    {
+      "function": "visit_FunctionDef",
+      "line": 140,
+      "branches": 0,
+      "args": [
+        "self",
+        "node"
+      ],
+      "testable": true
+    },
+    {
+      "function": "visit_If",
+      "line": 146,
+      "branches": 0,
+      "args": [
+        "self",
+        "node"
+      ],
+      "testable": true
+    },
+    {
+      "function": "generate_test_stubs",
+      "line": 154,
+      "branches": 2,
+      "args": [
+        "self",
+        "source",
+        "module_name"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 162,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "visit_ClassDef",
+      "line": 165,
+      "branches": 0,
+      "args": [
+        "self",
+        "node"
+      ],
+      "testable": true
+    },
+    {
+      "function": "visit_FunctionDef",
+      "line": 172,
+      "branches": 2,
+      "args": [
+        "self",
+        "node"
+      ],
+      "testable": true
+    }
+  ],
+  "ast_dsl/reactive.py": [
+    {
+      "function": "to_dict",
+      "line": 38,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_compact",
+      "line": 43,
+      "branches": 4,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "from_dict",
+      "line": 58,
+      "branches": 0,
+      "args": [
+        "cls",
+        "d"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_dict",
+      "line": 76,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_compact",
+      "line": 88,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 113,
+      "branches": 0,
+      "args": [
+        "self",
+        "session_id"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_next_seq",
+      "line": 122,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "process_cue",
+      "line": 126,
+      "branches": 1,
+      "args": [
+        "self",
+        "cue"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_handle_query",
+      "line": 155,
+      "branches": 4,
+      "args": [
+        "self",
+        "cue"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_handle_refine",
+      "line": 190,
+      "branches": 0,
+      "args": [
+        "self",
+        "cue"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_handle_transform",
+      "line": 194,
+      "branches": 1,
+      "args": [
+        "self",
+        "cue"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_handle_synthesize",
+      "line": 221,
+      "branches": 0,
+      "args": [
+        "self",
+        "cue"
+      ],
+      "testable": true
+    },
+    {
+      "function": "create_query_cue",
+      "line": 239,
+      "branches": 0,
+      "args": [
+        "self",
+        "action",
+        "target",
+        "language",
+        "filters"
+      ],
+      "testable": true
+    },
+    {
+      "function": "run_query",
+      "line": 254,
+      "branches": 0,
+      "args": [
+        "self",
+        "action",
+        "target",
+        "language",
+        "filters"
+      ],
+      "testable": true
+    },
+    {
+      "function": "get_session_log",
+      "line": 261,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    }
+  ],
+  "ast_dsl/rust_ast.py": [
+    {
+      "function": "parse_rust_source",
+      "line": 13,
+      "branches": 13,
+      "args": [
+        "source",
+        "filename"
+      ],
+      "testable": true
+    },
+    {
+      "function": "parse_rust_with_rustc",
+      "line": 121,
+      "branches": 3,
+      "args": [
+        "filepath"
+      ],
+      "testable": true
+    },
+    {
+      "function": "find_rust_symbols",
+      "line": 142,
+      "branches": 2,
+      "args": [
+        "source"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_compact",
+      "line": 156,
+      "branches": 0,
+      "args": [
+        "node"
+      ],
+      "testable": true
+    }
+  ],
+  "simulator/atomic.py": [
+    {
+      "function": "full",
+      "line": 54,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "empty",
+      "line": 58,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "add_electron",
+      "line": 61,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "remove_electron",
+      "line": 68,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__post_init__",
+      "line": 91,
+      "branches": 4,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_build_shells",
+      "line": 108,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_compute_ionization_energy",
+      "line": 123,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "symbol",
+      "line": 136,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "name",
+      "line": 141,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "electronegativity",
+      "line": 146,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "charge",
+      "line": 151,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "valence_electrons",
+      "line": 155,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "needs_electrons",
+      "line": 161,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "is_noble_gas",
+      "line": 169,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "is_ion",
+      "line": 175,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "ionize",
+      "line": 178,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "capture_electron",
+      "line": 187,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "can_bond_with",
+      "line": 194,
+      "branches": 2,
+      "args": [
+        "self",
+        "other"
+      ],
+      "testable": true
+    },
+    {
+      "function": "bond_type",
+      "line": 202,
+      "branches": 2,
+      "args": [
+        "self",
+        "other"
+      ],
+      "testable": true
+    },
+    {
+      "function": "bond_energy",
+      "line": 212,
+      "branches": 2,
+      "args": [
+        "self",
+        "other"
+      ],
+      "testable": true
+    },
+    {
+      "function": "distance_to",
+      "line": 222,
+      "branches": 0,
+      "args": [
+        "self",
+        "other"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_compact",
+      "line": 228,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 242,
+      "branches": 0,
+      "args": [
+        "self",
+        "temperature"
+      ],
+      "testable": true
+    },
+    {
+      "function": "recombination",
+      "line": 249,
+      "branches": 5,
+      "args": [
+        "self",
+        "field"
+      ],
+      "testable": true
+    },
+    {
+      "function": "nucleosynthesis",
+      "line": 280,
+      "branches": 2,
+      "args": [
+        "self",
+        "protons",
+        "neutrons"
+      ],
+      "testable": true
+    },
+    {
+      "function": "stellar_nucleosynthesis",
+      "line": 312,
+      "branches": 5,
+      "args": [
+        "self",
+        "temperature"
+      ],
+      "testable": true
+    },
+    {
+      "function": "attempt_bond",
+      "line": 376,
+      "branches": 4,
+      "args": [
+        "self",
+        "a1",
+        "a2"
+      ],
+      "testable": true
+    },
+    {
+      "function": "break_bond",
+      "line": 402,
+      "branches": 3,
+      "args": [
+        "self",
+        "a1",
+        "a2"
+      ],
+      "testable": true
+    },
+    {
+      "function": "cool",
+      "line": 419,
+      "branches": 0,
+      "args": [
+        "self",
+        "factor"
+      ],
+      "testable": true
+    },
+    {
+      "function": "element_counts",
+      "line": 423,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_compact",
+      "line": 431,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    }
+  ],
+  "simulator/biology.py": [
+    {
+      "function": "to_compact",
+      "line": 34,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "length",
+      "line": 52,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "is_silenced",
+      "line": 56,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "methylate",
+      "line": 64,
+      "branches": 1,
+      "args": [
+        "self",
+        "position",
+        "generation"
+      ],
+      "testable": true
+    },
+    {
+      "function": "demethylate",
+      "line": 74,
+      "branches": 0,
+      "args": [
+        "self",
+        "position"
+      ],
+      "testable": true
+    },
+    {
+      "function": "acetylate",
+      "line": 82,
+      "branches": 0,
+      "args": [
+        "self",
+        "position",
+        "generation"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_update_expression",
+      "line": 91,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "transcribe",
+      "line": 107,
+      "branches": 3,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "mutate",
+      "line": 119,
+      "branches": 2,
+      "args": [
+        "self",
+        "rate"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_compact",
+      "line": 130,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "length",
+      "line": 149,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "complementary_strand",
+      "line": 153,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gc_content",
+      "line": 157,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "random_strand",
+      "line": 164,
+      "branches": 2,
+      "args": [
+        "cls",
+        "length",
+        "num_genes"
+      ],
+      "testable": true
+    },
+    {
+      "function": "replicate",
+      "line": 188,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "apply_mutations",
+      "line": 221,
+      "branches": 3,
+      "args": [
+        "self",
+        "uv_intensity",
+        "cosmic_ray_flux"
+      ],
+      "testable": true
+    },
+    {
+      "function": "apply_epigenetic_changes",
+      "line": 243,
+      "branches": 8,
+      "args": [
+        "self",
+        "temperature",
+        "generation"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_compact",
+      "line": 280,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "translate_mrna",
+      "line": 289,
+      "branches": 5,
+      "args": [
+        "mrna"
+      ],
+      "testable": true
+    },
+    {
+      "function": "length",
+      "line": 322,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "fold",
+      "line": 325,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_compact",
+      "line": 334,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__post_init__",
+      "line": 354,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "transcribe_and_translate",
+      "line": 358,
+      "branches": 5,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "metabolize",
+      "line": 390,
+      "branches": 1,
+      "args": [
+        "self",
+        "environment_energy"
+      ],
+      "testable": true
+    },
+    {
+      "function": "divide",
+      "line": 405,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "compute_fitness",
+      "line": 424,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_compact",
+      "line": 454,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 464,
+      "branches": 1,
+      "args": [
+        "self",
+        "initial_cells",
+        "dna_length"
+      ],
+      "testable": true
+    },
+    {
+      "function": "step",
+      "line": 479,
+      "branches": 10,
+      "args": [
+        "self",
+        "environment_energy",
+        "uv_intensity",
+        "cosmic_ray_flux",
+        "temperature"
+      ],
+      "testable": true
+    },
+    {
+      "function": "average_fitness",
+      "line": 532,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "average_gc_content",
+      "line": 537,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "total_mutations",
+      "line": 542,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_compact",
+      "line": 545,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    }
+  ],
+  "simulator/chemistry.py": [
+    {
+      "function": "__post_init__",
+      "line": 33,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_compute_formula",
+      "line": 39,
+      "branches": 4,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "molecular_weight",
+      "line": 63,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "atom_count",
+      "line": 67,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_compact",
+      "line": 70,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 77,
+      "branches": 0,
+      "args": [
+        "self",
+        "reactants",
+        "products",
+        "activation_energy",
+        "delta_h",
+        "name"
+      ],
+      "testable": true
+    },
+    {
+      "function": "can_proceed",
+      "line": 87,
+      "branches": 1,
+      "args": [
+        "self",
+        "temperature"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_compact",
+      "line": 95,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 104,
+      "branches": 0,
+      "args": [
+        "self",
+        "atomic_system"
+      ],
+      "testable": true
+    },
+    {
+      "function": "form_water",
+      "line": 112,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "form_methane",
+      "line": 141,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "form_ammonia",
+      "line": 167,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "form_amino_acid",
+      "line": 193,
+      "branches": 3,
+      "args": [
+        "self",
+        "aa_type"
+      ],
+      "testable": true
+    },
+    {
+      "function": "form_nucleotide",
+      "line": 237,
+      "branches": 3,
+      "args": [
+        "self",
+        "base"
+      ],
+      "testable": true
+    },
+    {
+      "function": "catalyzed_reaction",
+      "line": 281,
+      "branches": 6,
+      "args": [
+        "self",
+        "temperature",
+        "catalyst_present"
+      ],
+      "testable": true
+    },
+    {
+      "function": "molecule_census",
+      "line": 310,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_compact",
+      "line": 318,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    }
+  ],
+  "simulator/constants.py": [],
+  "simulator/environment.py": [
+    {
+      "function": "to_compact",
+      "line": 32,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 39,
+      "branches": 0,
+      "args": [
+        "self",
+        "initial_temperature"
+      ],
+      "testable": true
+    },
+    {
+      "function": "update",
+      "line": 52,
+      "branches": 8,
+      "args": [
+        "self",
+        "epoch"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_generate_events",
+      "line": 118,
+      "branches": 4,
+      "args": [
+        "self",
+        "epoch"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_process_events",
+      "line": 156,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_apply_event",
+      "line": 169,
+      "branches": 4,
+      "args": [
+        "self",
+        "event"
+      ],
+      "testable": true
+    },
+    {
+      "function": "get_radiation_dose",
+      "line": 191,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "is_habitable",
+      "line": 195,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "thermal_energy",
+      "line": 203,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_compact",
+      "line": 213,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    }
+  ],
+  "simulator/quantum.py": [
+    {
+      "function": "probability",
+      "line": 87,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "evolve",
+      "line": 91,
+      "branches": 1,
+      "args": [
+        "self",
+        "dt",
+        "energy"
+      ],
+      "testable": true
+    },
+    {
+      "function": "collapse",
+      "line": 97,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "superpose",
+      "line": 104,
+      "branches": 0,
+      "args": [
+        "self",
+        "other"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_compact",
+      "line": 119,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__post_init__",
+      "line": 137,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "mass",
+      "line": 142,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "charge",
+      "line": 146,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "energy",
+      "line": 150,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "wavelength",
+      "line": 156,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_compact",
+      "line": 163,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "measure_a",
+      "line": 177,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 193,
+      "branches": 0,
+      "args": [
+        "self",
+        "temperature"
+      ],
+      "testable": true
+    },
+    {
+      "function": "pair_production",
+      "line": 201,
+      "branches": 2,
+      "args": [
+        "self",
+        "energy"
+      ],
+      "testable": true
+    },
+    {
+      "function": "annihilate",
+      "line": 245,
+      "branches": 2,
+      "args": [
+        "self",
+        "p1",
+        "p2"
+      ],
+      "testable": true
+    },
+    {
+      "function": "quark_confinement",
+      "line": 267,
+      "branches": 7,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "vacuum_fluctuation",
+      "line": 328,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "decohere",
+      "line": 337,
+      "branches": 2,
+      "args": [
+        "self",
+        "particle",
+        "environment_coupling"
+      ],
+      "testable": true
+    },
+    {
+      "function": "cool",
+      "line": 344,
+      "branches": 0,
+      "args": [
+        "self",
+        "factor"
+      ],
+      "testable": true
+    },
+    {
+      "function": "evolve",
+      "line": 348,
+      "branches": 4,
+      "args": [
+        "self",
+        "dt"
+      ],
+      "testable": true
+    },
+    {
+      "function": "particle_count",
+      "line": 364,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "total_energy",
+      "line": 372,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_compact",
+      "line": 376,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    }
+  ],
+  "simulator/terminal_ui.py": [
+    {
+      "function": "box",
+      "line": 46,
+      "branches": 2,
+      "args": [
+        "title",
+        "content",
+        "width",
+        "color"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_strip_ansi",
+      "line": 72,
+      "branches": 0,
+      "args": [
+        "s"
+      ],
+      "testable": true
+    },
+    {
+      "function": "progress_bar",
+      "line": 78,
+      "branches": 1,
+      "args": [
+        "value",
+        "max_val",
+        "width",
+        "color"
+      ],
+      "testable": true
+    },
+    {
+      "function": "sparkline",
+      "line": 92,
+      "branches": 3,
+      "args": [
+        "values",
+        "width"
+      ],
+      "testable": true
+    },
+    {
+      "function": "render_epoch_timeline",
+      "line": 115,
+      "branches": 1,
+      "args": [
+        "current_tick",
+        "max_ticks",
+        "epochs",
+        "width"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_get_current_epoch",
+      "line": 136,
+      "branches": 2,
+      "args": [
+        "tick",
+        "epochs"
+      ],
+      "testable": true
+    },
+    {
+      "function": "render_particle_counts",
+      "line": 144,
+      "branches": 2,
+      "args": [
+        "counts"
+      ],
+      "testable": true
+    },
+    {
+      "function": "render_element_counts",
+      "line": 157,
+      "branches": 2,
+      "args": [
+        "counts"
+      ],
+      "testable": true
+    },
+    {
+      "function": "render_biosphere",
+      "line": 170,
+      "branches": 3,
+      "args": [
+        "biosphere"
+      ],
+      "testable": true
+    },
+    {
+      "function": "render_environment",
+      "line": 197,
+      "branches": 2,
+      "args": [
+        "env"
+      ],
+      "testable": true
+    },
+    {
+      "function": "render_full_state",
+      "line": 218,
+      "branches": 3,
+      "args": [
+        "universe",
+        "width"
+      ],
+      "testable": true
+    },
+    {
+      "function": "clear_screen",
+      "line": 283,
+      "branches": 0,
+      "args": [],
+      "testable": true
+    },
+    {
+      "function": "render_final_report",
+      "line": 289,
+      "branches": 4,
+      "args": [
+        "universe"
+      ],
+      "testable": true
+    }
+  ],
+  "simulator/universe.py": [
+    {
+      "function": "to_dict",
+      "line": 79,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 97,
+      "branches": 0,
+      "args": [
+        "self",
+        "seed",
+        "max_ticks",
+        "step_size"
+      ],
+      "testable": true
+    },
+    {
+      "function": "set_callbacks",
+      "line": 125,
+      "branches": 0,
+      "args": [
+        "self",
+        "on_tick",
+        "on_epoch"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_get_epoch_name",
+      "line": 130,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_transition_epoch",
+      "line": 138,
+      "branches": 1,
+      "args": [
+        "self",
+        "new_epoch"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_seed_early_universe",
+      "line": 147,
+      "branches": 4,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "step",
+      "line": 183,
+      "branches": 26,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_snapshot",
+      "line": 327,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "run",
+      "line": 349,
+      "branches": 2,
+      "args": [
+        "self",
+        "progress_interval"
+      ],
+      "testable": true
+    },
+    {
+      "function": "state_compact",
+      "line": 376,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "summary",
+      "line": 390,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    }
+  ],
+  "tests/test_ast_dsl.py": [
+    {
+      "function": "test_basic_creation",
+      "line": 55,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_dict",
+      "line": 63,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_dict_no_optional_fields",
+      "line": 78,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_compact",
+      "line": 86,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_walk",
+      "line": 98,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_find",
+      "line": 108,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_find_both_criteria",
+      "line": 121,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_creation",
+      "line": 130,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_dict",
+      "line": 137,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_from_dict",
+      "line": 144,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_from_dict_extra_keys",
+      "line": 151,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_defaults",
+      "line": 158,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_dict",
+      "line": 163,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_success",
+      "line": 171,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_dict_with_node",
+      "line": 176,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_dict_with_list",
+      "line": 185,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_dict_error",
+      "line": 191,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_compact_with_node",
+      "line": 197,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_compact_with_list",
+      "line": 208,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_compact_error",
+      "line": 214,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_dict_with_non_node_data",
+      "line": 219,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_compact_with_empty_list",
+      "line": 224,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_dict_with_mixed_list",
+      "line": 229,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "setUp",
+      "line": 237,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "tearDown",
+      "line": 245,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_parse_file",
+      "line": 248,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_parse_string",
+      "line": 254,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_find_symbols",
+      "line": 259,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_get_dependencies",
+      "line": 269,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_code_metrics",
+      "line": 277,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_find_with_filters",
+      "line": 285,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_callers",
+      "line": 293,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_transform_rename",
+      "line": 301,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_coverage_map",
+      "line": 310,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_unknown_action",
+      "line": 318,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_unknown_language",
+      "line": 324,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_parse_caching",
+      "line": 330,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_source_hash",
+      "line": 335,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_token_approximation",
+      "line": 339,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_analyze_scopes",
+      "line": 346,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_extract_control_flow",
+      "line": 353,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_find_dead_code",
+      "line": 361,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_generate_test_stubs",
+      "line": 366,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_control_flow_return",
+      "line": 373,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_control_flow_raise",
+      "line": 380,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_control_flow_while",
+      "line": 387,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_control_flow_try",
+      "line": 394,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_dead_code_in_if",
+      "line": 401,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "setUp",
+      "line": 409,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "tearDown",
+      "line": 417,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_query_parse",
+      "line": 420,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_query_symbols",
+      "line": 428,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_query_dependencies",
+      "line": 435,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_refine_cue",
+      "line": 442,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_transform_cue",
+      "line": 454,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_synthesize_cue",
+      "line": 468,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_complete_cue",
+      "line": 478,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_invalid_query_payload",
+      "line": 483,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_invalid_transform_payload",
+      "line": 492,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_session_log",
+      "line": 501,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_agent_state",
+      "line": 508,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_create_query_cue",
+      "line": 516,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_cue_signal_serialization",
+      "line": 520,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_cue_compact_long_payload",
+      "line": 536,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_cue_compact_string_payload",
+      "line": 545,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_cue_with_parent",
+      "line": 554,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_query_with_ast_query_payload",
+      "line": 563,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_all_languages",
+      "line": 575,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    }
+  ],
+  "tests/test_atomic.py": [
+    {
+      "function": "test_creation",
+      "line": 19,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_add_electron",
+      "line": 25,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_add_electron_full",
+      "line": 31,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_remove_electron",
+      "line": 36,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_remove_electron_empty",
+      "line": 41,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_hydrogen",
+      "line": 47,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_helium",
+      "line": 55,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_carbon",
+      "line": 60,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_oxygen",
+      "line": 66,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_ionize",
+      "line": 70,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_ionize_empty",
+      "line": 76,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_capture_electron",
+      "line": 81,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_electronegativity",
+      "line": 87,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_unknown_element",
+      "line": 91,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_can_bond",
+      "line": 97,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_cannot_bond_noble_gas",
+      "line": 102,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_cannot_bond_max_bonds",
+      "line": 107,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_bond_type_ionic",
+      "line": 113,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_bond_type_covalent",
+      "line": 118,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_bond_energy",
+      "line": 124,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_distance_to",
+      "line": 130,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_compact",
+      "line": 135,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_compact_ion",
+      "line": 140,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_needs_electrons",
+      "line": 146,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_ionization_energy",
+      "line": 150,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_shell_building",
+      "line": 154,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_valence_electrons_no_shells",
+      "line": 161,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_creation",
+      "line": 170,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_nucleosynthesis",
+      "line": 174,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_nucleosynthesis_hydrogen_only",
+      "line": 182,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_recombination",
+      "line": 189,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_recombination_too_hot",
+      "line": 201,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_stellar_nucleosynthesis",
+      "line": 207,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_stellar_nucleosynthesis_cold",
+      "line": 217,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_attempt_bond",
+      "line": 222,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_attempt_bond_too_far",
+      "line": 236,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_break_bond",
+      "line": 242,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_break_bond_no_bond",
+      "line": 255,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_cool",
+      "line": 261,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_element_counts",
+      "line": 266,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_compact",
+      "line": 275,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_stellar_nucleosynthesis_carbon_to_oxygen",
+      "line": 280,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_stellar_nucleosynthesis_nitrogen",
+      "line": 293,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_hydrogen",
+      "line": 303,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_carbon",
+      "line": 306,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_iron",
+      "line": 309,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    }
+  ],
+  "tests/test_biology.py": [
+    {
+      "function": "test_creation",
+      "line": 18,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_compact",
+      "line": 23,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_inactive_compact",
+      "line": 28,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_phosphorylation",
+      "line": 35,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_creation",
+      "line": 42,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_methylate",
+      "line": 47,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_methylate_out_of_range",
+      "line": 53,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_demethylate",
+      "line": 58,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_acetylate",
+      "line": 66,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_silencing",
+      "line": 73,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_not_silenced",
+      "line": 80,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_transcribe",
+      "line": 85,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_transcribe_silenced",
+      "line": 90,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_mutate",
+      "line": 97,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_mutate_zero_rate",
+      "line": 103,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_expression_update",
+      "line": 108,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_compact",
+      "line": 115,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_compact_long",
+      "line": 121,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_random_strand",
+      "line": 129,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_complementary",
+      "line": 135,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_gc_content",
+      "line": 140,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_gc_content_empty",
+      "line": 146,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_replicate",
+      "line": 150,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_apply_mutations",
+      "line": 157,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_apply_mutations_no_radiation",
+      "line": 165,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_apply_epigenetic_changes",
+      "line": 170,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_compact",
+      "line": 181,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_complement_unknown_base",
+      "line": 187,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_simple_protein",
+      "line": 194,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_no_start_codon",
+      "line": 200,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_stop_codon",
+      "line": 205,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_short_mrna",
+      "line": 210,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_unknown_codon",
+      "line": 215,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_all_codons",
+      "line": 222,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_creation",
+      "line": 231,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_fold_success",
+      "line": 236,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_fold_too_short",
+      "line": 242,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_compact",
+      "line": 248,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_compact_long",
+      "line": 254,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_creation",
+      "line": 261,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_transcribe_and_translate",
+      "line": 268,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_metabolize",
+      "line": 274,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_metabolize_starve",
+      "line": 281,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_divide",
+      "line": 286,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_divide_insufficient_energy",
+      "line": 297,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_divide_dead",
+      "line": 301,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_compute_fitness",
+      "line": 305,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_compute_fitness_dead",
+      "line": 312,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_compute_fitness_silenced_essential",
+      "line": 317,
+      "branches": 3,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_compact",
+      "line": 327,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_energy_cap",
+      "line": 333,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_creation",
+      "line": 346,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_step",
+      "line": 352,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_multiple_steps",
+      "line": 363,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_average_fitness",
+      "line": 371,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_average_fitness_empty",
+      "line": 379,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_average_gc_content",
+      "line": 383,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_average_gc_empty",
+      "line": 390,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_total_mutations",
+      "line": 394,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_population_cap",
+      "line": 402,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_compact",
+      "line": 409,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    }
+  ],
+  "tests/test_chemistry.py": [
+    {
+      "function": "test_creation",
+      "line": 14,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_formula_computation",
+      "line": 19,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_formula_inorganic",
+      "line": 31,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_molecular_weight",
+      "line": 39,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_atom_count",
+      "line": 48,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_compact",
+      "line": 53,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_formula_water",
+      "line": 58,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_creation",
+      "line": 70,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_can_proceed_hot",
+      "line": 80,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_can_proceed_cold",
+      "line": 87,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_can_proceed_zero_temp",
+      "line": 96,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_compact",
+      "line": 103,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "setUp",
+      "line": 113,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_add_atoms",
+      "line": 116,
+      "branches": 1,
+      "args": [
+        "self",
+        "z",
+        "count"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_form_water",
+      "line": 120,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_form_water_insufficient_h",
+      "line": 128,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_form_methane",
+      "line": 135,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_form_methane_insufficient",
+      "line": 142,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_form_ammonia",
+      "line": 149,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_form_ammonia_insufficient",
+      "line": 156,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_form_amino_acid",
+      "line": 163,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_form_amino_acid_insufficient",
+      "line": 174,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_form_nucleotide",
+      "line": 180,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_form_nucleotide_insufficient",
+      "line": 190,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_catalyzed_reaction",
+      "line": 196,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_molecule_census",
+      "line": 210,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_compact",
+      "line": 218,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    }
+  ],
+  "tests/test_environment.py": [
+    {
+      "function": "test_creation",
+      "line": 16,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_compact",
+      "line": 26,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_creation",
+      "line": 38,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_update_early_universe",
+      "line": 43,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_update_pre_recombination",
+      "line": 49,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_update_post_recombination",
+      "line": 54,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_update_planet_era",
+      "line": 58,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_uv_intensity_before_stars",
+      "line": 66,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_uv_intensity_with_stars",
+      "line": 71,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_cosmic_ray_flux",
+      "line": 78,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_atmospheric_density",
+      "line": 83,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_water_availability",
+      "line": 88,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_is_habitable",
+      "line": 93,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_not_habitable_too_hot",
+      "line": 101,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_not_habitable_no_water",
+      "line": 107,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_not_habitable_radiation",
+      "line": 113,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_thermal_energy",
+      "line": 120,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_thermal_energy_extreme_cold",
+      "line": 127,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_thermal_energy_extreme_hot",
+      "line": 133,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_radiation_dose",
+      "line": 139,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_volcanic_event",
+      "line": 146,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_asteroid_event",
+      "line": 157,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_solar_flare_event",
+      "line": 168,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_ice_age_event",
+      "line": 179,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_event_expiration",
+      "line": 192,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_generate_events",
+      "line": 204,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_compact",
+      "line": 212,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_day_night_cycle",
+      "line": 220,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_season_cycle",
+      "line": 226,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    }
+  ],
+  "tests/test_language_asts.py": [
+    {
+      "function": "test_parse",
+      "line": 144,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_find_symbols",
+      "line": 148,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_package_detection",
+      "line": 155,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_import_detection",
+      "line": 161,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_interface_detection",
+      "line": 170,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_method_params",
+      "line": 177,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_compact",
+      "line": 184,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_parse",
+      "line": 191,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_find_symbols",
+      "line": 195,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_use_declarations",
+      "line": 202,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_mod_declarations",
+      "line": 207,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_struct_detection",
+      "line": 213,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_enum_detection",
+      "line": 220,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_trait_detection",
+      "line": 225,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_impl_detection",
+      "line": 230,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_async_fn",
+      "line": 235,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_compact",
+      "line": 242,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_parse",
+      "line": 249,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_find_symbols",
+      "line": 253,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_use_declarations",
+      "line": 258,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_package_detection",
+      "line": 263,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_sub_declarations",
+      "line": 269,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_var_declarations",
+      "line": 277,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_method_calls",
+      "line": 282,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_compact",
+      "line": 288,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_parse",
+      "line": 295,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_find_symbols",
+      "line": 299,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_namespace",
+      "line": 305,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_use_declarations",
+      "line": 311,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_class_detection",
+      "line": 316,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_interface_detection",
+      "line": 323,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_trait_detection",
+      "line": 329,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_function_return_type",
+      "line": 334,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_compact",
+      "line": 341,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_parse",
+      "line": 348,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_find_symbols",
+      "line": 352,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_compact",
+      "line": 357,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    }
+  ],
+  "tests/test_quantum.py": [
+    {
+      "function": "test_default",
+      "line": 18,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_probability",
+      "line": 24,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_evolve",
+      "line": 28,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_evolve_wraps",
+      "line": 33,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_evolve_incoherent",
+      "line": 38,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_collapse_detected",
+      "line": 43,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_collapse_zero_amplitude",
+      "line": 51,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_superpose",
+      "line": 57,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_superpose_destructive",
+      "line": 64,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_compact",
+      "line": 70,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_creation",
+      "line": 77,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_mass",
+      "line": 82,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_charge",
+      "line": 87,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_energy",
+      "line": 95,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_wavelength",
+      "line": 102,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_wavelength_zero_momentum",
+      "line": 110,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_compact",
+      "line": 114,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_quark_charges",
+      "line": 122,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_spin",
+      "line": 128,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_color",
+      "line": 133,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_entanglement_id",
+      "line": 140,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_creation",
+      "line": 149,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_measure",
+      "line": 155,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_creation",
+      "line": 171,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_pair_production_sufficient_energy",
+      "line": 176,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_pair_production_insufficient_energy",
+      "line": 185,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_pair_production_high_energy",
+      "line": 190,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_annihilate",
+      "line": 198,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_quark_confinement_too_hot",
+      "line": 217,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_quark_confinement_cool",
+      "line": 222,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_quark_confinement_neutron",
+      "line": 232,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_vacuum_fluctuation",
+      "line": 241,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_vacuum_fluctuation_cold",
+      "line": 252,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_decohere",
+      "line": 259,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_cool",
+      "line": 269,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_evolve",
+      "line": 274,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_evolve_massless",
+      "line": 285,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_particle_count",
+      "line": 296,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_total_energy",
+      "line": 305,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_compact",
+      "line": 313,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_all_types_have_mass",
+      "line": 321,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_all_types_have_charge",
+      "line": 325,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_photon_massless",
+      "line": 329,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_proton_heavier_than_electron",
+      "line": 332,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    }
+  ],
+  "tests/test_terminal_ui.py": [
+    {
+      "function": "test_plain",
+      "line": 19,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_colored",
+      "line": 22,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_bold",
+      "line": 25,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_basic",
+      "line": 30,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_empty_title",
+      "line": 35,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_long_content",
+      "line": 39,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_full",
+      "line": 45,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_empty",
+      "line": 49,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_zero_max",
+      "line": 53,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_half",
+      "line": 57,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_basic",
+      "line": 63,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_empty",
+      "line": 68,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_constant",
+      "line": 72,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_downsampling",
+      "line": 77,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_epoch_timeline",
+      "line": 84,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_get_current_epoch",
+      "line": 90,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_particle_counts",
+      "line": 96,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_particle_counts_empty",
+      "line": 101,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_element_counts",
+      "line": 105,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_element_counts_empty",
+      "line": 110,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_render_biosphere_none",
+      "line": 114,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_render_biosphere_with_data",
+      "line": 118,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_render_environment",
+      "line": 125,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_render_environment_with_events",
+      "line": 133,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_render_full_state",
+      "line": 146,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_render_final_report",
+      "line": 156,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_render_final_report_no_biosphere",
+      "line": 165,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    }
+  ],
+  "tests/test_universe.py": [
+    {
+      "function": "test_creation",
+      "line": 14,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_epochs_list",
+      "line": 20,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_epochs_ordered",
+      "line": 26,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_defaults",
+      "line": 34,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_dict",
+      "line": 39,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_creation",
+      "line": 50,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_step",
+      "line": 55,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_epoch_transition",
+      "line": 60,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_callbacks",
+      "line": 67,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "on_tick",
+      "line": 71,
+      "branches": 0,
+      "args": [
+        "tick",
+        "snap"
+      ],
+      "testable": true
+    },
+    {
+      "function": "on_epoch",
+      "line": 74,
+      "branches": 0,
+      "args": [
+        "tick",
+        "old",
+        "new"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_full_simulation_small",
+      "line": 83,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_full_simulation_standard",
+      "line": 89,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_state_compact",
+      "line": 95,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_summary",
+      "line": 103,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_snapshot",
+      "line": 111,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_get_epoch_name",
+      "line": 121,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_history_recorded",
+      "line": 130,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_run_with_progress",
+      "line": 135,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_biosphere_emerges",
+      "line": 140,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_chemical_system_emerges",
+      "line": 146,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    }
+  ]
+}

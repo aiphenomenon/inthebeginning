@@ -1,0 +1,8117 @@
+{
+  "generate_ast_captures.py": [
+    {
+      "type": "FunctionDef",
+      "name": "main",
+      "line": 12,
+      "attributes": {
+        "args": [],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "run_demo.py": [
+    {
+      "type": "FunctionDef",
+      "name": "run_ast_demo",
+      "line": 26,
+      "attributes": {
+        "args": [],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "run_simulation",
+      "line": 128,
+      "attributes": {
+        "args": [],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "main",
+      "line": 151,
+      "attributes": {
+        "args": [],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "ast_dsl/c_ast.py": [
+    {
+      "type": "FunctionDef",
+      "name": "parse_c_source",
+      "line": 13,
+      "attributes": {
+        "args": [
+          "source",
+          "filename"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_convert_pycparser_node",
+      "line": 36,
+      "attributes": {
+        "args": [
+          "node"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "parse_cpp_with_clang",
+      "line": 76,
+      "attributes": {
+        "args": [
+          "source",
+          "filename"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_parse_clang_dump",
+      "line": 97,
+      "attributes": {
+        "args": [
+          "dump"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "find_c_symbols",
+      "line": 148,
+      "attributes": {
+        "args": [
+          "source"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_compact",
+      "line": 163,
+      "attributes": {
+        "args": [
+          "node"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "ast_dsl/core.py": [
+    {
+      "type": "ClassDef",
+      "name": "Language",
+      "line": 21,
+      "attributes": {
+        "bases": [
+          "Enum"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "ASTNode",
+      "line": 34,
+      "attributes": {
+        "bases": [],
+        "decorators": 1
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_dict",
+      "line": 46,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_compact",
+      "line": 64,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "walk",
+      "line": 79,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "find",
+      "line": 85,
+      "attributes": {
+        "args": [
+          "self",
+          "node_type",
+          "name"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "ASTQuery",
+      "line": 98,
+      "attributes": {
+        "bases": [],
+        "decorators": 1
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_dict",
+      "line": 106,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "from_dict",
+      "line": 110,
+      "attributes": {
+        "args": [
+          "cls",
+          "d"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "PerformanceMetrics",
+      "line": 115,
+      "attributes": {
+        "bases": [],
+        "decorators": 1
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_dict",
+      "line": 127,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "ASTResult",
+      "line": 132,
+      "attributes": {
+        "bases": [],
+        "decorators": 1
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_dict",
+      "line": 141,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_compact",
+      "line": 161,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "ASTEngine",
+      "line": 178,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 181,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_measure",
+      "line": 187,
+      "attributes": {
+        "args": [
+          "self",
+          "func"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "execute",
+      "line": 211,
+      "attributes": {
+        "args": [
+          "self",
+          "query"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_get_python_ast",
+      "line": 263,
+      "attributes": {
+        "args": [
+          "self",
+          "filepath"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_parse_python",
+      "line": 275,
+      "attributes": {
+        "args": [
+          "self",
+          "source",
+          "filename"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_python_node_to_universal",
+      "line": 280,
+      "attributes": {
+        "args": [
+          "self",
+          "node",
+          "source"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_action_parse",
+      "line": 360,
+      "attributes": {
+        "args": [
+          "self",
+          "query"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_action_find",
+      "line": 376,
+      "attributes": {
+        "args": [
+          "self",
+          "query"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_action_symbols",
+      "line": 383,
+      "attributes": {
+        "args": [
+          "self",
+          "query"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_action_dependencies",
+      "line": 399,
+      "attributes": {
+        "args": [
+          "self",
+          "query"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_action_callers",
+      "line": 413,
+      "attributes": {
+        "args": [
+          "self",
+          "query"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_action_code_metrics",
+      "line": 427,
+      "attributes": {
+        "args": [
+          "self",
+          "query"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_walk_depth",
+      "line": 437,
+      "attributes": {
+        "args": [
+          "node",
+          "depth"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_action_transform",
+      "line": 462,
+      "attributes": {
+        "args": [
+          "self",
+          "query"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_action_coverage_map",
+      "line": 474,
+      "attributes": {
+        "args": [
+          "self",
+          "query"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "parse_file",
+      "line": 494,
+      "attributes": {
+        "args": [
+          "self",
+          "filepath",
+          "language"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "find_symbols",
+      "line": 499,
+      "attributes": {
+        "args": [
+          "self",
+          "filepath",
+          "language"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "get_dependencies",
+      "line": 504,
+      "attributes": {
+        "args": [
+          "self",
+          "filepath",
+          "language"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "ast_dsl/java_ast.py": [
+    {
+      "type": "FunctionDef",
+      "name": "parse_java_source",
+      "line": 14,
+      "attributes": {
+        "args": [
+          "source",
+          "filename"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "parse_java_with_javac",
+      "line": 94,
+      "attributes": {
+        "args": [
+          "filepath"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_parse_javac_output",
+      "line": 111,
+      "attributes": {
+        "args": [
+          "output",
+          "filename"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "find_java_symbols",
+      "line": 131,
+      "attributes": {
+        "args": [
+          "source"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_compact",
+      "line": 145,
+      "attributes": {
+        "args": [
+          "node"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "ast_dsl/perl_ast.py": [
+    {
+      "type": "FunctionDef",
+      "name": "parse_perl_source",
+      "line": 13,
+      "attributes": {
+        "args": [
+          "source",
+          "filename"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "parse_perl_with_deparse",
+      "line": 78,
+      "attributes": {
+        "args": [
+          "filepath"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "find_perl_symbols",
+      "line": 103,
+      "attributes": {
+        "args": [
+          "source"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_compact",
+      "line": 117,
+      "attributes": {
+        "args": [
+          "node"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "ast_dsl/php_ast.py": [
+    {
+      "type": "FunctionDef",
+      "name": "parse_php_source",
+      "line": 14,
+      "attributes": {
+        "args": [
+          "source",
+          "filename"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "parse_php_with_tokenizer",
+      "line": 92,
+      "attributes": {
+        "args": [
+          "filepath"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "find_php_symbols",
+      "line": 154,
+      "attributes": {
+        "args": [
+          "source"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_compact",
+      "line": 168,
+      "attributes": {
+        "args": [
+          "node"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "ast_dsl/python_ast.py": [
+    {
+      "type": "ClassDef",
+      "name": "PythonASTAnalyzer",
+      "line": 12,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 15,
+      "attributes": {
+        "args": [
+          "self",
+          "engine"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "analyze_scopes",
+      "line": 18,
+      "attributes": {
+        "args": [
+          "self",
+          "source"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "ScopeVisitor",
+      "line": 23,
+      "attributes": {
+        "bases": [
+          "NodeVisitor"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 24,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "visit_FunctionDef",
+      "line": 27,
+      "attributes": {
+        "args": [
+          "self",
+          "node"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "visit_Name",
+      "line": 36,
+      "attributes": {
+        "args": [
+          "self",
+          "node"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "extract_control_flow",
+      "line": 48,
+      "attributes": {
+        "args": [
+          "self",
+          "source"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "CFGVisitor",
+      "line": 53,
+      "attributes": {
+        "bases": [
+          "NodeVisitor"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 54,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "visit_FunctionDef",
+      "line": 57,
+      "attributes": {
+        "args": [
+          "self",
+          "node"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "visit_If",
+      "line": 65,
+      "attributes": {
+        "args": [
+          "self",
+          "node"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "visit_For",
+      "line": 76,
+      "attributes": {
+        "args": [
+          "self",
+          "node"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "visit_While",
+      "line": 85,
+      "attributes": {
+        "args": [
+          "self",
+          "node"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "visit_Return",
+      "line": 94,
+      "attributes": {
+        "args": [
+          "self",
+          "node"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "visit_Raise",
+      "line": 102,
+      "attributes": {
+        "args": [
+          "self",
+          "node"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "visit_Try",
+      "line": 110,
+      "attributes": {
+        "args": [
+          "self",
+          "node"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "find_dead_code",
+      "line": 122,
+      "attributes": {
+        "args": [
+          "self",
+          "source"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "DeadCodeVisitor",
+      "line": 127,
+      "attributes": {
+        "bases": [
+          "NodeVisitor"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_check_body",
+      "line": 128,
+      "attributes": {
+        "args": [
+          "self",
+          "body"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "visit_FunctionDef",
+      "line": 140,
+      "attributes": {
+        "args": [
+          "self",
+          "node"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "visit_If",
+      "line": 146,
+      "attributes": {
+        "args": [
+          "self",
+          "node"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "generate_test_stubs",
+      "line": 154,
+      "attributes": {
+        "args": [
+          "self",
+          "source",
+          "module_name"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "StubGen",
+      "line": 161,
+      "attributes": {
+        "bases": [
+          "NodeVisitor"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 162,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "visit_ClassDef",
+      "line": 165,
+      "attributes": {
+        "args": [
+          "self",
+          "node"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "visit_FunctionDef",
+      "line": 172,
+      "attributes": {
+        "args": [
+          "self",
+          "node"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "ast_dsl/reactive.py": [
+    {
+      "type": "ClassDef",
+      "name": "CueType",
+      "line": 18,
+      "attributes": {
+        "bases": [
+          "Enum"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "CueSignal",
+      "line": 29,
+      "attributes": {
+        "bases": [],
+        "decorators": 1
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_dict",
+      "line": 38,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_compact",
+      "line": 43,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "from_dict",
+      "line": 58,
+      "attributes": {
+        "args": [
+          "cls",
+          "d"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "AgentState",
+      "line": 65,
+      "attributes": {
+        "bases": [],
+        "decorators": 1
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_dict",
+      "line": 76,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_compact",
+      "line": 88,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "ReactiveProtocol",
+      "line": 98,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 113,
+      "attributes": {
+        "args": [
+          "self",
+          "session_id"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_next_seq",
+      "line": 122,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "process_cue",
+      "line": 126,
+      "attributes": {
+        "args": [
+          "self",
+          "cue"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_handle_query",
+      "line": 155,
+      "attributes": {
+        "args": [
+          "self",
+          "cue"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_handle_refine",
+      "line": 190,
+      "attributes": {
+        "args": [
+          "self",
+          "cue"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_handle_transform",
+      "line": 194,
+      "attributes": {
+        "args": [
+          "self",
+          "cue"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_handle_synthesize",
+      "line": 221,
+      "attributes": {
+        "args": [
+          "self",
+          "cue"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "create_query_cue",
+      "line": 239,
+      "attributes": {
+        "args": [
+          "self",
+          "action",
+          "target",
+          "language",
+          "filters"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "run_query",
+      "line": 254,
+      "attributes": {
+        "args": [
+          "self",
+          "action",
+          "target",
+          "language",
+          "filters"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "get_session_log",
+      "line": 261,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "ast_dsl/rust_ast.py": [
+    {
+      "type": "FunctionDef",
+      "name": "parse_rust_source",
+      "line": 13,
+      "attributes": {
+        "args": [
+          "source",
+          "filename"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "parse_rust_with_rustc",
+      "line": 121,
+      "attributes": {
+        "args": [
+          "filepath"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "find_rust_symbols",
+      "line": 142,
+      "attributes": {
+        "args": [
+          "source"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_compact",
+      "line": 156,
+      "attributes": {
+        "args": [
+          "node"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "simulator/atomic.py": [
+    {
+      "type": "ClassDef",
+      "name": "ElectronShell",
+      "line": 47,
+      "attributes": {
+        "bases": [],
+        "decorators": 1
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "full",
+      "line": 54,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "empty",
+      "line": 58,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "add_electron",
+      "line": 61,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "remove_electron",
+      "line": 68,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "Atom",
+      "line": 77,
+      "attributes": {
+        "bases": [],
+        "decorators": 1
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__post_init__",
+      "line": 91,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_build_shells",
+      "line": 108,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_compute_ionization_energy",
+      "line": 123,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "symbol",
+      "line": 136,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "name",
+      "line": 141,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "electronegativity",
+      "line": 146,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "charge",
+      "line": 151,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "valence_electrons",
+      "line": 155,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "needs_electrons",
+      "line": 161,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "is_noble_gas",
+      "line": 169,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "is_ion",
+      "line": 175,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "ionize",
+      "line": 178,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "capture_electron",
+      "line": 187,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "can_bond_with",
+      "line": 194,
+      "attributes": {
+        "args": [
+          "self",
+          "other"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "bond_type",
+      "line": 202,
+      "attributes": {
+        "args": [
+          "self",
+          "other"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "bond_energy",
+      "line": 212,
+      "attributes": {
+        "args": [
+          "self",
+          "other"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "distance_to",
+      "line": 222,
+      "attributes": {
+        "args": [
+          "self",
+          "other"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_compact",
+      "line": 228,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "AtomicSystem",
+      "line": 239,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 242,
+      "attributes": {
+        "args": [
+          "self",
+          "temperature"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "recombination",
+      "line": 249,
+      "attributes": {
+        "args": [
+          "self",
+          "field"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "nucleosynthesis",
+      "line": 280,
+      "attributes": {
+        "args": [
+          "self",
+          "protons",
+          "neutrons"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "stellar_nucleosynthesis",
+      "line": 312,
+      "attributes": {
+        "args": [
+          "self",
+          "temperature"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "attempt_bond",
+      "line": 376,
+      "attributes": {
+        "args": [
+          "self",
+          "a1",
+          "a2"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "break_bond",
+      "line": 402,
+      "attributes": {
+        "args": [
+          "self",
+          "a1",
+          "a2"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "cool",
+      "line": 419,
+      "attributes": {
+        "args": [
+          "self",
+          "factor"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "element_counts",
+      "line": 423,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_compact",
+      "line": 431,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "simulator/biology.py": [
+    {
+      "type": "ClassDef",
+      "name": "EpigeneticMark",
+      "line": 27,
+      "attributes": {
+        "bases": [],
+        "decorators": 1
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_compact",
+      "line": 34,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "Gene",
+      "line": 41,
+      "attributes": {
+        "bases": [],
+        "decorators": 1
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "length",
+      "line": 52,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "is_silenced",
+      "line": 56,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "methylate",
+      "line": 64,
+      "attributes": {
+        "args": [
+          "self",
+          "position",
+          "generation"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "demethylate",
+      "line": 74,
+      "attributes": {
+        "args": [
+          "self",
+          "position"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "acetylate",
+      "line": 82,
+      "attributes": {
+        "args": [
+          "self",
+          "position",
+          "generation"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_update_expression",
+      "line": 91,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "transcribe",
+      "line": 107,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "mutate",
+      "line": 119,
+      "attributes": {
+        "args": [
+          "self",
+          "rate"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_compact",
+      "line": 130,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "DNAStrand",
+      "line": 139,
+      "attributes": {
+        "bases": [],
+        "decorators": 1
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "length",
+      "line": 149,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "complementary_strand",
+      "line": 153,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gc_content",
+      "line": 157,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "random_strand",
+      "line": 164,
+      "attributes": {
+        "args": [
+          "cls",
+          "length",
+          "num_genes"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "replicate",
+      "line": 188,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "apply_mutations",
+      "line": 221,
+      "attributes": {
+        "args": [
+          "self",
+          "uv_intensity",
+          "cosmic_ray_flux"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "apply_epigenetic_changes",
+      "line": 243,
+      "attributes": {
+        "args": [
+          "self",
+          "temperature",
+          "generation"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_compact",
+      "line": 280,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "translate_mrna",
+      "line": 289,
+      "attributes": {
+        "args": [
+          "mrna"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "Protein",
+      "line": 313,
+      "attributes": {
+        "bases": [],
+        "decorators": 1
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "length",
+      "line": 322,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "fold",
+      "line": 325,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_compact",
+      "line": 334,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "Cell",
+      "line": 342,
+      "attributes": {
+        "bases": [],
+        "decorators": 1
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__post_init__",
+      "line": 354,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "transcribe_and_translate",
+      "line": 358,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "metabolize",
+      "line": 390,
+      "attributes": {
+        "args": [
+          "self",
+          "environment_energy"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "divide",
+      "line": 405,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "compute_fitness",
+      "line": 424,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_compact",
+      "line": 454,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "Biosphere",
+      "line": 461,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 464,
+      "attributes": {
+        "args": [
+          "self",
+          "initial_cells",
+          "dna_length"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "step",
+      "line": 479,
+      "attributes": {
+        "args": [
+          "self",
+          "environment_energy",
+          "uv_intensity",
+          "cosmic_ray_flux",
+          "temperature"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "average_fitness",
+      "line": 532,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "average_gc_content",
+      "line": 537,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "total_mutations",
+      "line": 542,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_compact",
+      "line": 545,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "simulator/chemistry.py": [
+    {
+      "type": "ClassDef",
+      "name": "Molecule",
+      "line": 20,
+      "attributes": {
+        "bases": [],
+        "decorators": 1
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__post_init__",
+      "line": 33,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_compute_formula",
+      "line": 39,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "molecular_weight",
+      "line": 63,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "atom_count",
+      "line": 67,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_compact",
+      "line": 70,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "ChemicalReaction",
+      "line": 74,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 77,
+      "attributes": {
+        "args": [
+          "self",
+          "reactants",
+          "products",
+          "activation_energy",
+          "delta_h",
+          "name"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "can_proceed",
+      "line": 87,
+      "attributes": {
+        "args": [
+          "self",
+          "temperature"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_compact",
+      "line": 95,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "ChemicalSystem",
+      "line": 101,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 104,
+      "attributes": {
+        "args": [
+          "self",
+          "atomic_system"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "form_water",
+      "line": 112,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "form_methane",
+      "line": 141,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "form_ammonia",
+      "line": 167,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "form_amino_acid",
+      "line": 193,
+      "attributes": {
+        "args": [
+          "self",
+          "aa_type"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "form_nucleotide",
+      "line": 237,
+      "attributes": {
+        "args": [
+          "self",
+          "base"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "catalyzed_reaction",
+      "line": 281,
+      "attributes": {
+        "args": [
+          "self",
+          "temperature",
+          "catalyst_present"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "molecule_census",
+      "line": 310,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_compact",
+      "line": 318,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "simulator/constants.py": [],
+  "simulator/environment.py": [
+    {
+      "type": "ClassDef",
+      "name": "EnvironmentalEvent",
+      "line": 24,
+      "attributes": {
+        "bases": [],
+        "decorators": 1
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_compact",
+      "line": 32,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "Environment",
+      "line": 36,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 39,
+      "attributes": {
+        "args": [
+          "self",
+          "initial_temperature"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "update",
+      "line": 52,
+      "attributes": {
+        "args": [
+          "self",
+          "epoch"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_generate_events",
+      "line": 118,
+      "attributes": {
+        "args": [
+          "self",
+          "epoch"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_process_events",
+      "line": 156,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_apply_event",
+      "line": 169,
+      "attributes": {
+        "args": [
+          "self",
+          "event"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "get_radiation_dose",
+      "line": 191,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "is_habitable",
+      "line": 195,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "thermal_energy",
+      "line": 203,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_compact",
+      "line": 213,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "simulator/quantum.py": [
+    {
+      "type": "ClassDef",
+      "name": "ParticleType",
+      "line": 22,
+      "attributes": {
+        "bases": [
+          "Enum"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "Spin",
+      "line": 40,
+      "attributes": {
+        "bases": [
+          "Enum"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "Color",
+      "line": 45,
+      "attributes": {
+        "bases": [
+          "Enum"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "WaveFunction",
+      "line": 80,
+      "attributes": {
+        "bases": [],
+        "decorators": 1
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "probability",
+      "line": 87,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "evolve",
+      "line": 91,
+      "attributes": {
+        "args": [
+          "self",
+          "dt",
+          "energy"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "collapse",
+      "line": 97,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "superpose",
+      "line": 104,
+      "attributes": {
+        "args": [
+          "self",
+          "other"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_compact",
+      "line": 119,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "Particle",
+      "line": 124,
+      "attributes": {
+        "bases": [],
+        "decorators": 1
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__post_init__",
+      "line": 137,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "mass",
+      "line": 142,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "charge",
+      "line": 146,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "energy",
+      "line": 150,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "wavelength",
+      "line": 156,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_compact",
+      "line": 163,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "EntangledPair",
+      "line": 171,
+      "attributes": {
+        "bases": [],
+        "decorators": 1
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "measure_a",
+      "line": 177,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "QuantumField",
+      "line": 190,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 193,
+      "attributes": {
+        "args": [
+          "self",
+          "temperature"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "pair_production",
+      "line": 201,
+      "attributes": {
+        "args": [
+          "self",
+          "energy"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "annihilate",
+      "line": 245,
+      "attributes": {
+        "args": [
+          "self",
+          "p1",
+          "p2"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "quark_confinement",
+      "line": 267,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "vacuum_fluctuation",
+      "line": 328,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "decohere",
+      "line": 337,
+      "attributes": {
+        "args": [
+          "self",
+          "particle",
+          "environment_coupling"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "cool",
+      "line": 344,
+      "attributes": {
+        "args": [
+          "self",
+          "factor"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "evolve",
+      "line": 348,
+      "attributes": {
+        "args": [
+          "self",
+          "dt"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "particle_count",
+      "line": 364,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "total_energy",
+      "line": 372,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_compact",
+      "line": 376,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "simulator/terminal_ui.py": [
+    {
+      "type": "FunctionDef",
+      "name": "box",
+      "line": 46,
+      "attributes": {
+        "args": [
+          "title",
+          "content",
+          "width",
+          "color"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_strip_ansi",
+      "line": 72,
+      "attributes": {
+        "args": [
+          "s"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "progress_bar",
+      "line": 78,
+      "attributes": {
+        "args": [
+          "value",
+          "max_val",
+          "width",
+          "color"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "sparkline",
+      "line": 92,
+      "attributes": {
+        "args": [
+          "values",
+          "width"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "render_epoch_timeline",
+      "line": 115,
+      "attributes": {
+        "args": [
+          "current_tick",
+          "max_ticks",
+          "epochs",
+          "width"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_get_current_epoch",
+      "line": 136,
+      "attributes": {
+        "args": [
+          "tick",
+          "epochs"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "render_particle_counts",
+      "line": 144,
+      "attributes": {
+        "args": [
+          "counts"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "render_element_counts",
+      "line": 157,
+      "attributes": {
+        "args": [
+          "counts"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "render_biosphere",
+      "line": 170,
+      "attributes": {
+        "args": [
+          "biosphere"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "render_environment",
+      "line": 197,
+      "attributes": {
+        "args": [
+          "env"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "render_full_state",
+      "line": 218,
+      "attributes": {
+        "args": [
+          "universe",
+          "width"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "clear_screen",
+      "line": 283,
+      "attributes": {
+        "args": [],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "render_final_report",
+      "line": 289,
+      "attributes": {
+        "args": [
+          "universe"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "simulator/universe.py": [
+    {
+      "type": "ClassDef",
+      "name": "EpochInfo",
+      "line": 27,
+      "attributes": {
+        "bases": [],
+        "decorators": 1
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "SimulationMetrics",
+      "line": 66,
+      "attributes": {
+        "bases": [],
+        "decorators": 1
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_dict",
+      "line": 79,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "Universe",
+      "line": 94,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 97,
+      "attributes": {
+        "args": [
+          "self",
+          "seed",
+          "max_ticks",
+          "step_size"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "set_callbacks",
+      "line": 125,
+      "attributes": {
+        "args": [
+          "self",
+          "on_tick",
+          "on_epoch"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_get_epoch_name",
+      "line": 130,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_transition_epoch",
+      "line": 138,
+      "attributes": {
+        "args": [
+          "self",
+          "new_epoch"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_seed_early_universe",
+      "line": 147,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "step",
+      "line": 183,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_snapshot",
+      "line": 327,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "run",
+      "line": 349,
+      "attributes": {
+        "args": [
+          "self",
+          "progress_interval"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "state_compact",
+      "line": 376,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "summary",
+      "line": 390,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "tests/test_ast_dsl.py": [
+    {
+      "type": "ClassDef",
+      "name": "TestASTNode",
+      "line": 54,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_basic_creation",
+      "line": 55,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_dict",
+      "line": 63,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_dict_no_optional_fields",
+      "line": 78,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_compact",
+      "line": 86,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_walk",
+      "line": 98,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_find",
+      "line": 108,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_find_both_criteria",
+      "line": 121,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestASTQuery",
+      "line": 129,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_creation",
+      "line": 130,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_dict",
+      "line": 137,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_from_dict",
+      "line": 144,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_from_dict_extra_keys",
+      "line": 151,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestPerformanceMetrics",
+      "line": 157,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_defaults",
+      "line": 158,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_dict",
+      "line": 163,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestASTResult",
+      "line": 170,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_success",
+      "line": 171,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_dict_with_node",
+      "line": 176,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_dict_with_list",
+      "line": 185,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_dict_error",
+      "line": 191,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_compact_with_node",
+      "line": 197,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_compact_with_list",
+      "line": 208,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_compact_error",
+      "line": 214,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_dict_with_non_node_data",
+      "line": 219,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_compact_with_empty_list",
+      "line": 224,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_dict_with_mixed_list",
+      "line": 229,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestASTEngine",
+      "line": 236,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "setUp",
+      "line": 237,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "tearDown",
+      "line": 245,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_parse_file",
+      "line": 248,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_parse_string",
+      "line": 254,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_find_symbols",
+      "line": 259,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_get_dependencies",
+      "line": 269,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_code_metrics",
+      "line": 277,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_find_with_filters",
+      "line": 285,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_callers",
+      "line": 293,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_transform_rename",
+      "line": 301,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_coverage_map",
+      "line": 310,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_unknown_action",
+      "line": 318,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_unknown_language",
+      "line": 324,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_parse_caching",
+      "line": 330,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_source_hash",
+      "line": 335,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_token_approximation",
+      "line": 339,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestPythonASTAnalyzer",
+      "line": 345,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_analyze_scopes",
+      "line": 346,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_extract_control_flow",
+      "line": 353,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_find_dead_code",
+      "line": 361,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_generate_test_stubs",
+      "line": 366,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_control_flow_return",
+      "line": 373,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_control_flow_raise",
+      "line": 380,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_control_flow_while",
+      "line": 387,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_control_flow_try",
+      "line": 394,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_dead_code_in_if",
+      "line": 401,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestReactiveProtocol",
+      "line": 408,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "setUp",
+      "line": 409,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "tearDown",
+      "line": 417,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_query_parse",
+      "line": 420,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_query_symbols",
+      "line": 428,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_query_dependencies",
+      "line": 435,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_refine_cue",
+      "line": 442,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_transform_cue",
+      "line": 454,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_synthesize_cue",
+      "line": 468,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_complete_cue",
+      "line": 478,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_invalid_query_payload",
+      "line": 483,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_invalid_transform_payload",
+      "line": 492,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_session_log",
+      "line": 501,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_agent_state",
+      "line": 508,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_create_query_cue",
+      "line": 516,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_cue_signal_serialization",
+      "line": 520,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_cue_compact_long_payload",
+      "line": 536,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_cue_compact_string_payload",
+      "line": 545,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_cue_with_parent",
+      "line": 554,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_query_with_ast_query_payload",
+      "line": 563,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestLanguageEnum",
+      "line": 574,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_all_languages",
+      "line": 575,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "tests/test_atomic.py": [
+    {
+      "type": "ClassDef",
+      "name": "TestElectronShell",
+      "line": 18,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_creation",
+      "line": 19,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_add_electron",
+      "line": 25,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_add_electron_full",
+      "line": 31,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_remove_electron",
+      "line": 36,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_remove_electron_empty",
+      "line": 41,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestAtom",
+      "line": 46,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_hydrogen",
+      "line": 47,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_helium",
+      "line": 55,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_carbon",
+      "line": 60,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_oxygen",
+      "line": 66,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_ionize",
+      "line": 70,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_ionize_empty",
+      "line": 76,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_capture_electron",
+      "line": 81,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_electronegativity",
+      "line": 87,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_unknown_element",
+      "line": 91,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_can_bond",
+      "line": 97,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_cannot_bond_noble_gas",
+      "line": 102,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_cannot_bond_max_bonds",
+      "line": 107,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_bond_type_ionic",
+      "line": 113,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_bond_type_covalent",
+      "line": 118,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_bond_energy",
+      "line": 124,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_distance_to",
+      "line": 130,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_compact",
+      "line": 135,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_compact_ion",
+      "line": 140,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_needs_electrons",
+      "line": 146,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_ionization_energy",
+      "line": 150,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_shell_building",
+      "line": 154,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_valence_electrons_no_shells",
+      "line": 161,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestAtomicSystem",
+      "line": 169,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_creation",
+      "line": 170,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_nucleosynthesis",
+      "line": 174,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_nucleosynthesis_hydrogen_only",
+      "line": 182,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_recombination",
+      "line": 189,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_recombination_too_hot",
+      "line": 201,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_stellar_nucleosynthesis",
+      "line": 207,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_stellar_nucleosynthesis_cold",
+      "line": 217,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_attempt_bond",
+      "line": 222,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_attempt_bond_too_far",
+      "line": 236,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_break_bond",
+      "line": 242,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_break_bond_no_bond",
+      "line": 255,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_cool",
+      "line": 261,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_element_counts",
+      "line": 266,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_compact",
+      "line": 275,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_stellar_nucleosynthesis_carbon_to_oxygen",
+      "line": 280,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_stellar_nucleosynthesis_nitrogen",
+      "line": 293,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestElements",
+      "line": 302,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_hydrogen",
+      "line": 303,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_carbon",
+      "line": 306,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_iron",
+      "line": 309,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "tests/test_biology.py": [
+    {
+      "type": "ClassDef",
+      "name": "TestEpigeneticMark",
+      "line": 17,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_creation",
+      "line": 18,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_compact",
+      "line": 23,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_inactive_compact",
+      "line": 28,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_phosphorylation",
+      "line": 35,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestGene",
+      "line": 41,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_creation",
+      "line": 42,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_methylate",
+      "line": 47,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_methylate_out_of_range",
+      "line": 53,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_demethylate",
+      "line": 58,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_acetylate",
+      "line": 66,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_silencing",
+      "line": 73,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_not_silenced",
+      "line": 80,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_transcribe",
+      "line": 85,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_transcribe_silenced",
+      "line": 90,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_mutate",
+      "line": 97,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_mutate_zero_rate",
+      "line": 103,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_expression_update",
+      "line": 108,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_compact",
+      "line": 115,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_compact_long",
+      "line": 121,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestDNAStrand",
+      "line": 128,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_random_strand",
+      "line": 129,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_complementary",
+      "line": 135,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_gc_content",
+      "line": 140,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_gc_content_empty",
+      "line": 146,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_replicate",
+      "line": 150,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_apply_mutations",
+      "line": 157,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_apply_mutations_no_radiation",
+      "line": 165,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_apply_epigenetic_changes",
+      "line": 170,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_compact",
+      "line": 181,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_complement_unknown_base",
+      "line": 187,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestTranslateMRNA",
+      "line": 193,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_simple_protein",
+      "line": 194,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_no_start_codon",
+      "line": 200,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_stop_codon",
+      "line": 205,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_short_mrna",
+      "line": 210,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_unknown_codon",
+      "line": 215,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_all_codons",
+      "line": 222,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestProtein",
+      "line": 230,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_creation",
+      "line": 231,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_fold_success",
+      "line": 236,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_fold_too_short",
+      "line": 242,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_compact",
+      "line": 248,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_compact_long",
+      "line": 254,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestCell",
+      "line": 260,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_creation",
+      "line": 261,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_transcribe_and_translate",
+      "line": 268,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_metabolize",
+      "line": 274,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_metabolize_starve",
+      "line": 281,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_divide",
+      "line": 286,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_divide_insufficient_energy",
+      "line": 297,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_divide_dead",
+      "line": 301,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_compute_fitness",
+      "line": 305,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_compute_fitness_dead",
+      "line": 312,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_compute_fitness_silenced_essential",
+      "line": 317,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_compact",
+      "line": 327,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_energy_cap",
+      "line": 333,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestBiosphere",
+      "line": 345,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_creation",
+      "line": 346,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_step",
+      "line": 352,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_multiple_steps",
+      "line": 363,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_average_fitness",
+      "line": 371,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_average_fitness_empty",
+      "line": 379,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_average_gc_content",
+      "line": 383,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_average_gc_empty",
+      "line": 390,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_total_mutations",
+      "line": 394,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_population_cap",
+      "line": 402,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_compact",
+      "line": 409,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "tests/test_chemistry.py": [
+    {
+      "type": "ClassDef",
+      "name": "TestMolecule",
+      "line": 13,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_creation",
+      "line": 14,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_formula_computation",
+      "line": 19,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_formula_inorganic",
+      "line": 31,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_molecular_weight",
+      "line": 39,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_atom_count",
+      "line": 48,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_compact",
+      "line": 53,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_formula_water",
+      "line": 58,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestChemicalReaction",
+      "line": 69,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_creation",
+      "line": 70,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_can_proceed_hot",
+      "line": 80,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_can_proceed_cold",
+      "line": 87,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_can_proceed_zero_temp",
+      "line": 96,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_compact",
+      "line": 103,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestChemicalSystem",
+      "line": 112,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "setUp",
+      "line": 113,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_add_atoms",
+      "line": 116,
+      "attributes": {
+        "args": [
+          "self",
+          "z",
+          "count"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_form_water",
+      "line": 120,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_form_water_insufficient_h",
+      "line": 128,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_form_methane",
+      "line": 135,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_form_methane_insufficient",
+      "line": 142,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_form_ammonia",
+      "line": 149,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_form_ammonia_insufficient",
+      "line": 156,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_form_amino_acid",
+      "line": 163,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_form_amino_acid_insufficient",
+      "line": 174,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_form_nucleotide",
+      "line": 180,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_form_nucleotide_insufficient",
+      "line": 190,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_catalyzed_reaction",
+      "line": 196,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_molecule_census",
+      "line": 210,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_compact",
+      "line": 218,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "tests/test_environment.py": [
+    {
+      "type": "ClassDef",
+      "name": "TestEnvironmentalEvent",
+      "line": 15,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_creation",
+      "line": 16,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_compact",
+      "line": 26,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestEnvironment",
+      "line": 37,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_creation",
+      "line": 38,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_update_early_universe",
+      "line": 43,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_update_pre_recombination",
+      "line": 49,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_update_post_recombination",
+      "line": 54,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_update_planet_era",
+      "line": 58,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_uv_intensity_before_stars",
+      "line": 66,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_uv_intensity_with_stars",
+      "line": 71,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_cosmic_ray_flux",
+      "line": 78,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_atmospheric_density",
+      "line": 83,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_water_availability",
+      "line": 88,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_is_habitable",
+      "line": 93,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_not_habitable_too_hot",
+      "line": 101,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_not_habitable_no_water",
+      "line": 107,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_not_habitable_radiation",
+      "line": 113,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_thermal_energy",
+      "line": 120,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_thermal_energy_extreme_cold",
+      "line": 127,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_thermal_energy_extreme_hot",
+      "line": 133,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_radiation_dose",
+      "line": 139,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_volcanic_event",
+      "line": 146,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_asteroid_event",
+      "line": 157,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_solar_flare_event",
+      "line": 168,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_ice_age_event",
+      "line": 179,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_event_expiration",
+      "line": 192,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_generate_events",
+      "line": 204,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_compact",
+      "line": 212,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_day_night_cycle",
+      "line": 220,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_season_cycle",
+      "line": 226,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "tests/test_language_asts.py": [
+    {
+      "type": "ClassDef",
+      "name": "TestJavaAST",
+      "line": 143,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_parse",
+      "line": 144,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_find_symbols",
+      "line": 148,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_package_detection",
+      "line": 155,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_import_detection",
+      "line": 161,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_interface_detection",
+      "line": 170,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_method_params",
+      "line": 177,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_compact",
+      "line": 184,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestRustAST",
+      "line": 190,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_parse",
+      "line": 191,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_find_symbols",
+      "line": 195,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_use_declarations",
+      "line": 202,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_mod_declarations",
+      "line": 207,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_struct_detection",
+      "line": 213,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_enum_detection",
+      "line": 220,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_trait_detection",
+      "line": 225,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_impl_detection",
+      "line": 230,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_async_fn",
+      "line": 235,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_compact",
+      "line": 242,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestPerlAST",
+      "line": 248,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_parse",
+      "line": 249,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_find_symbols",
+      "line": 253,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_use_declarations",
+      "line": 258,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_package_detection",
+      "line": 263,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_sub_declarations",
+      "line": 269,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_var_declarations",
+      "line": 277,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_method_calls",
+      "line": 282,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_compact",
+      "line": 288,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestPHPAST",
+      "line": 294,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_parse",
+      "line": 295,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_find_symbols",
+      "line": 299,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_namespace",
+      "line": 305,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_use_declarations",
+      "line": 311,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_class_detection",
+      "line": 316,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_interface_detection",
+      "line": 323,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_trait_detection",
+      "line": 329,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_function_return_type",
+      "line": 334,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_compact",
+      "line": 341,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestCAST",
+      "line": 347,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_parse",
+      "line": 348,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_find_symbols",
+      "line": 352,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_compact",
+      "line": 357,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "tests/test_quantum.py": [
+    {
+      "type": "ClassDef",
+      "name": "TestWaveFunction",
+      "line": 17,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_default",
+      "line": 18,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_probability",
+      "line": 24,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_evolve",
+      "line": 28,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_evolve_wraps",
+      "line": 33,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_evolve_incoherent",
+      "line": 38,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_collapse_detected",
+      "line": 43,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_collapse_zero_amplitude",
+      "line": 51,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_superpose",
+      "line": 57,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_superpose_destructive",
+      "line": 64,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_compact",
+      "line": 70,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestParticle",
+      "line": 76,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_creation",
+      "line": 77,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_mass",
+      "line": 82,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_charge",
+      "line": 87,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_energy",
+      "line": 95,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_wavelength",
+      "line": 102,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_wavelength_zero_momentum",
+      "line": 110,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_compact",
+      "line": 114,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_quark_charges",
+      "line": 122,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_spin",
+      "line": 128,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_color",
+      "line": 133,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_entanglement_id",
+      "line": 140,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestEntangledPair",
+      "line": 148,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_creation",
+      "line": 149,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_measure",
+      "line": 155,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestQuantumField",
+      "line": 170,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_creation",
+      "line": 171,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_pair_production_sufficient_energy",
+      "line": 176,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_pair_production_insufficient_energy",
+      "line": 185,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_pair_production_high_energy",
+      "line": 190,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_annihilate",
+      "line": 198,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_quark_confinement_too_hot",
+      "line": 217,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_quark_confinement_cool",
+      "line": 222,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_quark_confinement_neutron",
+      "line": 232,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_vacuum_fluctuation",
+      "line": 241,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_vacuum_fluctuation_cold",
+      "line": 252,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_decohere",
+      "line": 259,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_cool",
+      "line": 269,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_evolve",
+      "line": 274,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_evolve_massless",
+      "line": 285,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_particle_count",
+      "line": 296,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_total_energy",
+      "line": 305,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_compact",
+      "line": 313,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestParticleTypes",
+      "line": 320,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_all_types_have_mass",
+      "line": 321,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_all_types_have_charge",
+      "line": 325,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_photon_massless",
+      "line": 329,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_proton_heavier_than_electron",
+      "line": 332,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "tests/test_terminal_ui.py": [
+    {
+      "type": "ClassDef",
+      "name": "TestStripAnsi",
+      "line": 18,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_plain",
+      "line": 19,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_colored",
+      "line": 22,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_bold",
+      "line": 25,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestBox",
+      "line": 29,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_basic",
+      "line": 30,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_empty_title",
+      "line": 35,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_long_content",
+      "line": 39,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestProgressBar",
+      "line": 44,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_full",
+      "line": 45,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_empty",
+      "line": 49,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_zero_max",
+      "line": 53,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_half",
+      "line": 57,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestSparkline",
+      "line": 62,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_basic",
+      "line": 63,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_empty",
+      "line": 68,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_constant",
+      "line": 72,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_downsampling",
+      "line": 77,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestRenderFunctions",
+      "line": 83,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_epoch_timeline",
+      "line": 84,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_get_current_epoch",
+      "line": 90,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_particle_counts",
+      "line": 96,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_particle_counts_empty",
+      "line": 101,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_element_counts",
+      "line": 105,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_element_counts_empty",
+      "line": 110,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_render_biosphere_none",
+      "line": 114,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_render_biosphere_with_data",
+      "line": 118,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_render_environment",
+      "line": 125,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_render_environment_with_events",
+      "line": 133,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestFullRender",
+      "line": 145,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_render_full_state",
+      "line": 146,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_render_final_report",
+      "line": 156,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_render_final_report_no_biosphere",
+      "line": 165,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "tests/test_universe.py": [
+    {
+      "type": "ClassDef",
+      "name": "TestEpochInfo",
+      "line": 13,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_creation",
+      "line": 14,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_epochs_list",
+      "line": 20,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_epochs_ordered",
+      "line": 26,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestSimulationMetrics",
+      "line": 33,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_defaults",
+      "line": 34,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_dict",
+      "line": 39,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestUniverse",
+      "line": 49,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_creation",
+      "line": 50,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_step",
+      "line": 55,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_epoch_transition",
+      "line": 60,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_callbacks",
+      "line": 67,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "on_tick",
+      "line": 71,
+      "attributes": {
+        "args": [
+          "tick",
+          "snap"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "on_epoch",
+      "line": 74,
+      "attributes": {
+        "args": [
+          "tick",
+          "old",
+          "new"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_full_simulation_small",
+      "line": 83,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_full_simulation_standard",
+      "line": 89,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_state_compact",
+      "line": 95,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_summary",
+      "line": 103,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_snapshot",
+      "line": 111,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_get_epoch_name",
+      "line": 121,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_history_recorded",
+      "line": 130,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_run_with_progress",
+      "line": 135,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_biosphere_emerges",
+      "line": 140,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_chemical_system_emerges",
+      "line": 146,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ]
+}
