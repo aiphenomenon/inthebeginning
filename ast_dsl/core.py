@@ -28,6 +28,10 @@ class Language(Enum):
     RUST = "rust"
     PERL = "perl"
     PHP = "php"
+    WEBASSEMBLY = "webassembly"
+    TYPESCRIPT = "typescript"
+    SWIFT = "swift"
+    KOTLIN = "kotlin"
 
 
 @dataclass
