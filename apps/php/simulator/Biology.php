@@ -84,12 +84,23 @@ class Gene
         $this->epigeneticMarks = $epigeneticMarks;
     }
 
+    /**
+     * Get the length of this gene's sequence in bases.
+     *
+     * @return int Number of nucleotide bases.
+     */
     public function length(): int
     {
         return count($this->sequence);
     }
 
-    /** Gene is silenced if heavily methylated. */
+    /**
+     * Check if this gene is silenced by heavy methylation.
+     *
+     * A gene is silenced when active methylation marks exceed 30% of its length.
+     *
+     * @return bool True if the gene is epigenetically silenced.
+     */
     public function isSilenced(): bool
     {
         $methylCount = 0;
@@ -135,6 +146,11 @@ class Gene
         $this->updateExpression();
     }
 
+    /**
+     * Recalculate expression level based on current epigenetic marks.
+     *
+     * Methylation suppresses expression; acetylation activates it.
+     */
     public function updateExpression(): void
     {
         $methyl = 0;
@@ -188,8 +204,16 @@ class Gene
     }
 }
 
+/**
+ * A double-stranded DNA molecule containing genes.
+ *
+ * Supports complementary strand generation, GC content analysis,
+ * random strand generation, semi-conservative replication with mutations,
+ * environmental mutation, and epigenetic modification.
+ */
 class DNAStrand
 {
+    /** @var array<string, string> Watson-Crick base pairing rules. */
     private const COMPLEMENT = ['A' => 'T', 'T' => 'A', 'G' => 'C', 'C' => 'G'];
 
     /** @var string[] */
