@@ -51,5 +51,12 @@ let package = Package(
                 .process("Renderer/Shaders.metal"),
             ]
         ),
+
+        // Simulator tests
+        .testTarget(
+            name: "SimulatorTests",
+            dependencies: ["InTheBeginningSimulator"],
+            path: "Tests/SimulatorTests"
+        ),
     ]
 )

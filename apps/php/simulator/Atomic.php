@@ -384,11 +384,19 @@ class Atom
     }
 }
 
+/**
+ * The atomic system: manages a collection of atoms and their interactions.
+ *
+ * Handles recombination (proton + electron -> hydrogen), primordial and stellar
+ * nucleosynthesis (fusion of light elements into heavier ones), and chemical
+ * bond formation/breaking.
+ */
 class AtomicSystem
 {
-    /** @var Atom[] */
+    /** @var Atom[] Collection of atoms in the system. */
     public array $atoms = [];
 
+    /** @var float Current temperature of the atomic system in simulation Kelvin. */
     public float $temperature;
 
     /** @var Particle[] */
@@ -397,6 +405,11 @@ class AtomicSystem
     public int $bondsFormed = 0;
     public int $bondsBroken = 0;
 
+    /**
+     * Create a new atomic system.
+     *
+     * @param float $temperature Initial temperature (defaults to recombination temperature).
+     */
     public function __construct(float $temperature = T_RECOMBINATION)
     {
         $this->temperature = $temperature;

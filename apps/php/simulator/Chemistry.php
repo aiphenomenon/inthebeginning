@@ -13,12 +13,25 @@ require_once __DIR__ . '/Atomic.php';
  * Chemical reactions are driven by energy, catalysis, and concentration.
  */
 
+/**
+ * A molecule composed of bonded atoms.
+ *
+ * Tracks constituent atoms, molecular formula, weight, organic status,
+ * and functional groups. Molecules emerge from chemical reactions in
+ * the ChemicalSystem.
+ */
 class Molecule
 {
+    /** @var int Auto-incrementing counter for unique molecule IDs. */
     private static int $idCounter = 0;
 
+    /** @var int Unique identifier for this molecule instance. */
     public readonly int $moleculeId;
+
+    /** @var string Molecular formula string (e.g., 'H2O', 'CH4'). */
     public string $formula;
+
+    /** @var bool Whether this molecule is organic (contains both C and H). */
     public bool $isOrganic;
 
     /**
@@ -50,11 +63,17 @@ class Molecule
         }
     }
 
+    /**
+     * Reset the molecule ID counter (useful for testing).
+     */
     public static function resetIdCounter(): void
     {
         self::$idCounter = 0;
     }
 
+    /**
+     * Compute the molecular formula from constituent atoms using Hill system ordering.
+     */
     private function computeFormula(): void
     {
         $counts = [];
@@ -88,6 +107,11 @@ class Molecule
         $this->isOrganic = $hasC && $hasH;
     }
 
+    /**
+     * Calculate the molecular weight (sum of atomic mass numbers).
+     *
+     * @return float Total molecular weight in atomic mass units.
+     */
     public function molecularWeight(): float
     {
         $total = 0.0;
@@ -97,12 +121,23 @@ class Molecule
         return $total;
     }
 
+    /**
+     * Get the number of atoms in this molecule.
+     *
+     * @return int Atom count.
+     */
     public function atomCount(): int
     {
         return count($this->atoms);
     }
 }
 
+/**
+ * A chemical reaction with reactants, products, and thermodynamic parameters.
+ *
+ * Models activation energy barriers and temperature-dependent reaction rates
+ * using the Arrhenius equation.
+ */
 class ChemicalReaction
 {
     /**
@@ -134,9 +169,15 @@ class ChemicalReaction
     }
 }
 
+/**
+ * The chemical system: manages molecular formation from atoms.
+ *
+ * Builds water, methane, ammonia, amino acids, and nucleotides from available
+ * atoms in the atomic system. Tracks reaction counts and molecule inventories.
+ */
 class ChemicalSystem
 {
-    /** @var Molecule[] */
+    /** @var Molecule[] Collection of molecules formed in this system. */
     public array $molecules = [];
 
     public int $reactionsOccurred = 0;
