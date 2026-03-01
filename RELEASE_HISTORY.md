@@ -4,6 +4,60 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.5.1 — 2026-03-01 — Vectorized Mixing Pipeline + Parallel Encoding + AST Analysis
+
+### Summary
+
+Vectorized the audio mixing pipeline with numpy, achieving 5.2x rendering speedup.
+Added pipelined MP3 encoding via background threading. Generated 10-minute enhanced
+MP3 (13.7 MB, all epochs). Provided comprehensive AST utilization analysis.
+
+### Changes
+
+- **Vectorized mixing pipeline** in `apps/audio/generate.py`:
+  - Composer output mixing: numpy slice assignment replaces per-sample Python loop
+  - Pad mixing: vectorized array operations with numpy
+  - Silence detection: `np.mean(np.abs(...))` replaces generator comprehension
+  - Dark matter texture: fully vectorized with `np.sin`/`np.pi`
+  - Atomic sonification: vectorized with `np.exp`/`np.sin`
+- **Pipelined MP3 encoding**:
+  - Background thread feeds PCM chunks to ffmpeg concurrently
+  - `deque`-based queue with sentinel-based shutdown
+  - Hides ffmpeg encoding latency behind audio rendering
+- **Performance results**:
+  - 500 ticks: 10.1s → 1.95s (5.2x improvement)
+  - Projected 10-min render: ~30 min → ~19.5 min
+  - Combined with numpy synthesis (previous commit): total ~7.3x vs initial
+- **10-minute enhanced MP3** (`cosmic_simulation_enhanced.mp3`, 13.7 MB):
+  - Traverses all epochs: Hadron → Present
+  - 500 ticks/sec, seed 42, enhanced mode with world musical traditions
+- **AST utilization analysis**: Comprehensive assessment of AST-passing infrastructure
+  utilization, compression ratios, and recommendations for full adoption
+
+### Test Results
+
+- Python reference: 400 passed
+- Audio tests: 36 passed
+- Composer tests: 67 passed
+- Total: 503 passed, 0 failed
+
+### Agent Activity
+
+- Explore agent: AST utilization research (13 parsers, 17.9 MB captures, session logs)
+- Background render: 10-minute enhanced MP3 (~42 min render time, pre-numpy code)
+- Profiling: cProfile of render_chunk identified simulation (75%) vs composer (24%) split
+
+### Files Modified
+
+- `apps/audio/generate.py` — Vectorized mixing, pipelined encoding, numpy atomic sonification
+- `RELEASE_HISTORY.md` — This entry
+
+### Files Created
+
+- `cosmic_simulation_enhanced.mp3` — 10-minute enhanced cosmic simulation audio
+
+---
+
 ## v0.5.0 — 2026-03-01 — Enhanced Musical Composition Engine + AST Bug Prevention Steering
 
 ### Summary
