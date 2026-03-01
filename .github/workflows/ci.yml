@@ -1,0 +1,114 @@
+name: CI
+
+on:
+  push:
+    branches: [main, claude/*]
+  pull_request:
+    branches: [main]
+
+jobs:
+  python-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run tests
+        run: python -m pytest tests/ -v --tb=short
+
+  go-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+      - name: Build
+        working-directory: apps/go
+        run: go build ./cmd/simulator/
+      - name: Run
+        working-directory: apps/go
+        run: ./simulator 2>&1 | head -50
+
+  rust-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build
+        working-directory: apps/rust
+        run: cargo build --release
+      - name: Run
+        working-directory: apps/rust
+        run: ./target/release/inthebeginning-rust 2>&1 | head -50
+
+  c-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        working-directory: apps/c
+        run: make
+      - name: Run
+        working-directory: apps/c
+        run: ./inthebeginning 2>&1 | head -50
+
+  cpp-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        working-directory: apps/cpp
+        run: |
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release
+          make -j$(nproc)
+      - name: Run
+        working-directory: apps/cpp/build
+        run: ./inthebeginning 2>&1 | head -50
+
+  java-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Build
+        working-directory: apps/java
+        run: |
+          mkdir -p build/classes
+          javac -d build/classes src/main/java/com/inthebeginning/simulator/*.java
+          jar cfe build/inthebeginning.jar com.inthebeginning.simulator.SimulatorApp -C build/classes .
+      - name: Run
+        working-directory: apps/java
+        run: java -jar build/inthebeginning.jar 2>&1 | head -50
+
+  nodejs-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Run
+        working-directory: apps/nodejs
+        run: node index.js 2>&1 | head -50
+
+  typescript-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install and build
+        working-directory: apps/typescript
+        run: |
+          npm install
+          npx tsc
+      - name: Run
+        working-directory: apps/typescript
+        run: node dist/index.js 2>&1 | head -50

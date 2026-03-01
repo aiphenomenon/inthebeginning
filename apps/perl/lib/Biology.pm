@@ -49,6 +49,8 @@ sub to_compact {
 # Gene
 # ============================================================
 package Gene;
+use List::Util qw(min max);
+use Constants qw(@NUCLEOTIDE_BASES);
 
 sub new {
     my ($class, %args) = @_;
@@ -175,6 +177,12 @@ sub to_compact {
 # DNAStrand
 # ============================================================
 package DNAStrand;
+use List::Util qw(min max);
+use Constants qw(
+    @NUCLEOTIDE_BASES $UV_MUTATION_RATE $COSMIC_RAY_MUTATION_RATE
+    $METHYLATION_PROBABILITY $DEMETHYLATION_PROBABILITY
+    $HISTONE_ACETYLATION_PROB $HISTONE_DEACETYLATION_PROB
+);
 
 my %COMPLEMENT = ('A' => 'T', 'T' => 'A', 'G' => 'C', 'C' => 'G');
 
@@ -362,6 +370,7 @@ sub to_compact {
 # translate_mrna - free function
 # ============================================================
 package Biology;
+use Constants qw(%CODON_TABLE);
 
 sub translate_mrna {
     my (@mrna) = @_;
@@ -397,6 +406,7 @@ sub translate_mrna {
 # Protein
 # ============================================================
 package Protein;
+use List::Util qw(min);
 
 sub new {
     my ($class, %args) = @_;
@@ -441,6 +451,7 @@ sub to_compact {
 # Cell
 # ============================================================
 package Cell;
+use List::Util qw(min);
 
 my $_cell_id_counter = 0;
 
@@ -577,6 +588,7 @@ sub to_compact {
 # Biosphere
 # ============================================================
 package Biosphere;
+use List::Util qw(max);
 
 sub new {
     my ($class, %args) = @_;

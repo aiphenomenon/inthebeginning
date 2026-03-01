@@ -91,6 +91,8 @@ sub _gauss {
 # WaveFunction - simplified quantum wave function
 # ============================================================
 package WaveFunction;
+use POSIX qw(fmod);
+use Constants qw($HBAR $PI);
 
 sub new {
     my ($class, %args) = @_;
@@ -148,6 +150,7 @@ sub to_compact {
 # Particle
 # ============================================================
 package Particle;
+use Constants qw($C $PI $HBAR);
 
 my $_particle_id_counter = 0;
 
@@ -239,6 +242,7 @@ sub measure_a {
 # QuantumField
 # ============================================================
 package QuantumField;
+use Constants qw($T_PLANCK $T_QUARK_HADRON $M_ELECTRON $M_PROTON $C);
 
 sub new {
     my ($class, %args) = @_;
@@ -448,6 +452,17 @@ sub total_energy {
         $total += $p->energy();
     }
     return $total;
+}
+
+sub step {
+    my ($self, $temperature) = @_;
+    $self->{temperature} = $temperature if defined $temperature;
+    $self->vacuum_fluctuation();
+    $self->evolve_field(1.0);
+    for my $p (@{$self->{particles}}) {
+        $self->decohere($p, 0.01);
+    }
+    $self->quark_confinement();
 }
 
 sub to_compact {

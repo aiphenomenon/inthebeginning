@@ -94,6 +94,7 @@ sub to_compact {
 # ChemicalReaction
 # ============================================================
 package ChemicalReaction;
+use Constants qw($K_B);
 
 sub new {
     my ($class, %args) = @_;
@@ -126,6 +127,7 @@ sub to_compact {
 # ChemicalSystem
 # ============================================================
 package ChemicalSystem;
+use Constants qw($K_B @AMINO_ACIDS);
 
 sub new {
     my ($class, %args) = @_;
@@ -341,6 +343,14 @@ sub catalyzed_reaction {
     }
 
     return $formed;
+}
+
+sub step {
+    my ($self, $temperature) = @_;
+    $self->form_water();
+    $self->form_methane();
+    $self->form_ammonia();
+    $self->catalyzed_reaction($temperature, 0);
 }
 
 sub molecule_census {

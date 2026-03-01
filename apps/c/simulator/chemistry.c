@@ -4,6 +4,7 @@
  * Faithfully ports the Python ChemicalSystem logic.
  */
 #include "chemistry.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -240,9 +241,7 @@ static bool cs_form_nucleotide(ChemicalSystem *cs, const char *base)
     m.type = MOL_NUCLEOTIDE;
     m.atom_count = 19;
     m.is_organic = true;
-    char nm[32];
-    snprintf(nm, sizeof(nm), "nuc-%s", base);
-    strncpy(m.name, nm, sizeof(m.name) - 1);
+    snprintf(m.name, sizeof(m.name), "nuc-%s", base);
     cs_add_molecule(cs, &m);
     cs->nucleotide_count++;
     return true;

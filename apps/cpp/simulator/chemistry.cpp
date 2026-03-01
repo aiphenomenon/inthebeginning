@@ -6,7 +6,7 @@
 
 namespace sim {
 
-static thread_local std::mt19937& rng() {
+static std::mt19937& rng() {
     static thread_local std::mt19937 gen{456};
     return gen;
 }

@@ -79,6 +79,7 @@ sub remove_electron {
 # Atom
 # ============================================================
 package Atom;
+use Constants qw(@ELECTRON_SHELLS $BOND_ENERGY_COVALENT $BOND_ENERGY_IONIC);
 
 my $_atom_id_counter = 0;
 
@@ -258,6 +259,8 @@ sub to_compact {
 # AtomicSystem
 # ============================================================
 package AtomicSystem;
+use Constants qw($T_RECOMBINATION $K_B);
+use Quantum;
 
 sub new {
     my ($class, %args) = @_;
@@ -432,6 +435,19 @@ sub break_bond {
         }
     }
     return 0;
+}
+
+sub step {
+    my ($self, $temperature) = @_;
+    $self->{temperature} = $temperature if defined $temperature;
+    # Attempt bonds between nearby atoms
+    my @atoms = @{$self->{atoms}};
+    for my $i (0 .. $#atoms - 1) {
+        for my $j ($i + 1 .. $#atoms) {
+            last if $j > $i + 5;  # limit pairwise checks
+            $self->attempt_bond($atoms[$i], $atoms[$j]);
+        }
+    }
 }
 
 sub cool {

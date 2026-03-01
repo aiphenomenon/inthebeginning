@@ -73,7 +73,8 @@
 
 /* === Chemistry parameters === */
 #define ELECTRON_SHELL_COUNT    7
-static const int ELECTRON_SHELLS[ELECTRON_SHELL_COUNT] = {2, 8, 18, 32, 32, 18, 8};
+static const int ELECTRON_SHELLS[ELECTRON_SHELL_COUNT]
+    __attribute__((unused)) = {2, 8, 18, 32, 32, 18, 8};
 
 #define BOND_ENERGY_COVALENT        3.5
 #define BOND_ENERGY_IONIC           5.0
@@ -82,11 +83,14 @@ static const int ELECTRON_SHELLS[ELECTRON_SHELL_COUNT] = {2, 8, 18, 32, 32, 18, 
 
 /* === Biology parameters === */
 #define NUCLEOTIDE_BASE_COUNT  4
-static const char NUCLEOTIDE_BASES[NUCLEOTIDE_BASE_COUNT] = {'A', 'T', 'G', 'C'};
-static const char RNA_BASES[NUCLEOTIDE_BASE_COUNT]        = {'A', 'U', 'G', 'C'};
+static const char NUCLEOTIDE_BASES[NUCLEOTIDE_BASE_COUNT]
+    __attribute__((unused)) = {'A', 'T', 'G', 'C'};
+static const char RNA_BASES[NUCLEOTIDE_BASE_COUNT]
+    __attribute__((unused)) = {'A', 'U', 'G', 'C'};
 
 #define AMINO_ACID_COUNT  20
-static const char *AMINO_ACIDS[AMINO_ACID_COUNT] = {
+static const char *AMINO_ACIDS[AMINO_ACID_COUNT]
+    __attribute__((unused)) = {
     "Ala", "Arg", "Asn", "Asp", "Cys", "Gln", "Glu", "Gly",
     "His", "Ile", "Leu", "Lys", "Met", "Phe", "Pro", "Ser",
     "Thr", "Trp", "Tyr", "Val",

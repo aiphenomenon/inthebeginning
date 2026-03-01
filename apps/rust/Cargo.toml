@@ -5,10 +5,14 @@ edition = "2021"
 description = "In The Beginning — A cosmic simulation from the Big Bang through the emergence of life"
 license = "MIT"
 
+[features]
+default = []
+gui = ["dep:sdl2", "dep:gl"]
+
 [dependencies]
-sdl2 = { version = "0.37", features = ["bundled"] }
-gl = "0.14"
 rand = "0.8"
+sdl2 = { version = "0.37", features = ["bundled"], optional = true }
+gl = { version = "0.14", optional = true }
 
 [profile.release]
 opt-level = 3

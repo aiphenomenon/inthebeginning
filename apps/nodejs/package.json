@@ -3,9 +3,12 @@
   "version": "1.0.0",
   "description": "In The Beginning - Reality Simulator (Node.js port)",
   "type": "module",
-  "main": "simulator.js",
+  "main": "index.js",
+  "bin": {
+    "inthebeginning": "index.js"
+  },
   "scripts": {
-    "start": "node simulator.js",
+    "start": "node index.js",
     "test": "node --experimental-vm-modules test/test.js"
   },
   "keywords": [

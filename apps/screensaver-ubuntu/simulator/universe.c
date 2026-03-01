@@ -14,6 +14,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 /* ================================================================== */
 /*  Deterministic RNG (xorshift32) - avoids global rand() state       */
