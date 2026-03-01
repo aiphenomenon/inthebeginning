@@ -1,0 +1,38 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+application {
+    mainClass = 'com.inthebeginning.App'
+}
+
+repositories {
+    mavenCentral()
+}
+
+// No external dependencies - pure JDK (Swing, javax.sound)
+dependencies {
+}
+
+jar {
+    manifest {
+        attributes(
+            'Main-Class': 'com.inthebeginning.App'
+        )
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+run {
+    jvmArgs = ['-Xmx512m']
+}

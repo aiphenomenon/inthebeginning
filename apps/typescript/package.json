@@ -1,0 +1,12 @@
+{
+  "name": "inthebeginning-audio",
+  "version": "1.0.0",
+  "description": "Sonification of a universe physics simulator using Web Audio API",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "devDependencies": {
+    "typescript": "^5.4"
+  }
+}

@@ -1,0 +1,17 @@
+[package]
+name = "inthebeginning-rust"
+version = "0.1.0"
+edition = "2021"
+description = "In The Beginning — A cosmic simulation from the Big Bang through the emergence of life"
+license = "MIT"
+
+[dependencies]
+sdl2 = { version = "0.37", features = ["bundled"] }
+gl = "0.14"
+rand = "0.8"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
