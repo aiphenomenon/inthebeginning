@@ -70,6 +70,7 @@ public class TestUniverse {
         testRunToWithCallback();
         testEventLog();
         testSummary();
+        testGetTotalEnergy();
 
         System.out.println("    " + passed + " passed, " + failed + " failed");
         return new int[]{passed, failed};
@@ -265,5 +266,20 @@ public class TestUniverse {
         assertTrue("Summary contains tick", summary.contains("t="));
         assertTrue("Summary contains Epoch", summary.contains("Epoch"));
         assertTrue("Summary contains Temperature", summary.contains("Temperature"));
+    }
+
+    private static void testGetTotalEnergy() {
+        Universe u = new Universe(42L);
+        // Initially no particles, so total energy should be 0
+        assertApprox("Initial total energy = 0", 0.0, u.getTotalEnergy(), 1e-10);
+
+        // After stepping through inflation (which creates particles), total energy should update
+        for (int i = 0; i < ELECTROWEAK_EPOCH; i++) {
+            u.step();
+        }
+        // After inflation, particles exist, so totalEnergy = quantumField.totalEnergy()
+        assertTrue("Total energy > 0 after inflation", u.getTotalEnergy() > 0);
+        assertApprox("Total energy matches quantum field",
+                u.getQuantumField().totalEnergy(), u.getTotalEnergy(), 1e-10);
     }
 }

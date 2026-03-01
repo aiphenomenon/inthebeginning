@@ -271,4 +271,197 @@ final class ConstantsTests: XCTestCase {
     func testBatteryParticlesLessThanDefault() {
         XCTAssertLessThan(SimulationLimits.maxParticlesBattery, SimulationLimits.maxParticlesDefault)
     }
+
+    // MARK: - Additional ParticleMass Coverage
+
+    func testUpQuarkMass() {
+        XCTAssertEqual(ParticleMass.upQuark, 4.4)
+    }
+
+    func testDownQuarkMass() {
+        XCTAssertEqual(ParticleMass.downQuark, 9.4)
+    }
+
+    func testNeutrinoMass() {
+        XCTAssertEqual(ParticleMass.neutrino, 1e-6)
+    }
+
+    func testWBosonMass() {
+        XCTAssertEqual(ParticleMass.wBoson, 157_000.0)
+    }
+
+    func testZBosonMass() {
+        XCTAssertEqual(ParticleMass.zBoson, 178_000.0)
+    }
+
+    func testHiggsMass() {
+        XCTAssertEqual(ParticleMass.higgs, 245_000.0)
+    }
+
+    // MARK: - Additional ForceCoupling Coverage
+
+    func testWeakForceCoupling() {
+        XCTAssertEqual(ForceCoupling.weak, 1e-6)
+    }
+
+    func testGravityCoupling() {
+        XCTAssertEqual(ForceCoupling.gravity, 1e-38)
+    }
+
+    // MARK: - Additional NuclearParams Coverage
+
+    func testNuclearRadius() {
+        XCTAssertEqual(NuclearParams.radius, 0.01)
+    }
+
+    func testBindingEnergyDeuterium() {
+        XCTAssertEqual(NuclearParams.bindingEnergyDeuterium, 2.22)
+    }
+
+    func testBindingEnergyHelium4() {
+        XCTAssertEqual(NuclearParams.bindingEnergyHelium4, 28.3)
+    }
+
+    func testBindingEnergyCarbon12() {
+        XCTAssertEqual(NuclearParams.bindingEnergyCarbon12, 92.16)
+    }
+
+    func testBindingEnergyIron56() {
+        XCTAssertEqual(NuclearParams.bindingEnergyIron56, 492.26)
+    }
+
+    // MARK: - Additional EpigeneticParams Coverage
+
+    func testHistoneAcetylationProb() {
+        XCTAssertEqual(EpigeneticParams.histoneAcetylationProb, 0.02)
+        XCTAssertGreaterThan(EpigeneticParams.histoneAcetylationProb, 0.0)
+        XCTAssertLessThan(EpigeneticParams.histoneAcetylationProb, 1.0)
+    }
+
+    func testHistoneDeacetylationProb() {
+        XCTAssertEqual(EpigeneticParams.histoneDeacetylationProb, 0.015)
+        XCTAssertGreaterThan(EpigeneticParams.histoneDeacetylationProb, 0.0)
+        XCTAssertLessThan(EpigeneticParams.histoneDeacetylationProb, 1.0)
+    }
+
+    func testChromatinRemodelEnergy() {
+        XCTAssertEqual(EpigeneticParams.chromatinRemodelEnergy, 1.5)
+        XCTAssertGreaterThan(EpigeneticParams.chromatinRemodelEnergy, 0.0)
+    }
+
+    // MARK: - Additional EnvironmentParams Coverage
+
+    func testThermalFluctuation() {
+        XCTAssertEqual(EnvironmentParams.thermalFluctuation, 0.01)
+    }
+
+    func testRadiationDamageThreshold() {
+        XCTAssertEqual(EnvironmentParams.radiationDamageThreshold, 10.0)
+    }
+
+    // MARK: - Additional SimulationLimits Coverage
+
+    func testMaxParticlesLowPerf() {
+        XCTAssertEqual(SimulationLimits.maxParticlesLowPerf, 500)
+        XCTAssertLessThan(SimulationLimits.maxParticlesLowPerf, SimulationLimits.maxParticlesBattery)
+    }
+
+    func testFrameTimeBudgetMs() {
+        XCTAssertEqual(SimulationLimits.frameTimeBudgetMs, 20.0)
+        XCTAssertGreaterThan(SimulationLimits.frameTimeBudgetMs, 0.0)
+    }
+
+    // MARK: - Additional TemperatureScale Coverage
+
+    func testStellarCoreTemperature() {
+        XCTAssertEqual(TemperatureScale.stellarCore, 1.5e4)
+        XCTAssertGreaterThan(TemperatureScale.stellarCore, TemperatureScale.recombination)
+    }
+
+    func testQuarkHadronTemperature() {
+        XCTAssertEqual(TemperatureScale.quarkHadron, 1e6)
+    }
+
+    func testNucleosynthesisTemperature() {
+        XCTAssertEqual(TemperatureScale.nucleosynthesis, 1e4)
+    }
+
+    func testRecombinationTemperature() {
+        XCTAssertEqual(TemperatureScale.recombination, 3000.0)
+    }
+
+    func testElectroweakTemperature() {
+        XCTAssertEqual(TemperatureScale.electroweak, 1e8)
+    }
+
+    // MARK: - Additional ChemistryParams Coverage
+
+    func testBondEnergyCovalentValue() {
+        XCTAssertEqual(ChemistryParams.bondEnergyCovalent, 3.5)
+    }
+
+    func testBondEnergyIonicValue() {
+        XCTAssertEqual(ChemistryParams.bondEnergyIonic, 5.0)
+    }
+
+    func testBondEnergyHydrogenValue() {
+        XCTAssertEqual(ChemistryParams.bondEnergyHydrogen, 0.2)
+    }
+
+    func testBondEnergyVanDerWaalsValue() {
+        XCTAssertEqual(ChemistryParams.bondEnergyVanDerWaals, 0.01)
+    }
+
+    // MARK: - Additional Epoch Coverage
+
+    func testEpochDisplayNameAll() {
+        XCTAssertEqual(Epoch.electroweak.displayName, "Electroweak")
+        XCTAssertEqual(Epoch.quark.displayName, "Quark")
+        XCTAssertEqual(Epoch.hadron.displayName, "Hadron")
+        XCTAssertEqual(Epoch.nucleosynthesis.displayName, "Nucleosynthesis")
+        XCTAssertEqual(Epoch.recombination.displayName, "Recombination")
+        XCTAssertEqual(Epoch.starFormation.displayName, "Star Formation")
+        XCTAssertEqual(Epoch.solarSystem.displayName, "Solar System")
+        XCTAssertEqual(Epoch.earth.displayName, "Earth")
+        XCTAssertEqual(Epoch.life.displayName, "Life")
+        XCTAssertEqual(Epoch.dna.displayName, "DNA Era")
+    }
+
+    func testEpochCurrentForTickBoundaryValues() {
+        // At exact boundary
+        XCTAssertEqual(Epoch.current(forTick: 5000), .hadron)
+        XCTAssertEqual(Epoch.current(forTick: 10000), .nucleosynthesis)
+        XCTAssertEqual(Epoch.current(forTick: 50000), .recombination)
+        XCTAssertEqual(Epoch.current(forTick: 100000), .starFormation)
+        XCTAssertEqual(Epoch.current(forTick: 200000), .solarSystem)
+        XCTAssertEqual(Epoch.current(forTick: 210000), .earth)
+        XCTAssertEqual(Epoch.current(forTick: 250000), .life)
+        XCTAssertEqual(Epoch.current(forTick: 280000), .dna)
+    }
+
+    func testEpochCurrentForTickBeyondPresent() {
+        XCTAssertEqual(Epoch.current(forTick: 999999), .present)
+    }
+
+    // MARK: - BiologyParams Additional Coverage
+
+    func testCodonTableSize() {
+        // 64 codons, but our table has specific entries
+        XCTAssertGreaterThanOrEqual(BiologyParams.codonTable.count, 61)
+    }
+
+    func testCodonTableAminoAcidCodons() {
+        // Check specific amino acid codons
+        XCTAssertEqual(BiologyParams.codonTable["UUU"], "Phe")
+        XCTAssertEqual(BiologyParams.codonTable["UUC"], "Phe")
+        XCTAssertEqual(BiologyParams.codonTable["UUA"], "Leu")
+        XCTAssertEqual(BiologyParams.codonTable["GGG"], "Gly")
+        XCTAssertEqual(BiologyParams.codonTable["UGG"], "Trp")
+    }
+
+    func testRNABasesContent() {
+        XCTAssertTrue(BiologyParams.rnaBases.contains("A"))
+        XCTAssertTrue(BiologyParams.rnaBases.contains("G"))
+        XCTAssertTrue(BiologyParams.rnaBases.contains("C"))
+    }
 }

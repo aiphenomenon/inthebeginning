@@ -54,6 +54,10 @@ public class TestConstants {
         testCodonTable();
         testElements();
         testEpochList();
+        testEpigeneticParameters();
+        testEnvironmentalParameters();
+        testElementInfoRecord();
+        testEpochInfoRecord();
 
         System.out.println("    " + passed + " passed, " + failed + " failed");
         return new int[]{passed, failed};
@@ -180,5 +184,46 @@ public class TestConstants {
             assertTrue("Epoch " + i + " tick > epoch " + (i - 1),
                     EPOCHS.get(i).startTick() > EPOCHS.get(i - 1).startTick());
         }
+    }
+
+    private static void testEpigeneticParameters() {
+        assertTrue("Methylation probability > 0", METHYLATION_PROBABILITY > 0);
+        assertTrue("Demethylation probability > 0", DEMETHYLATION_PROBABILITY > 0);
+        assertTrue("Methylation > Demethylation", METHYLATION_PROBABILITY > DEMETHYLATION_PROBABILITY);
+        assertTrue("Histone acetylation prob > 0", HISTONE_ACETYLATION_PROB > 0);
+        assertTrue("Histone deacetylation prob > 0", HISTONE_DEACETYLATION_PROB > 0);
+        assertTrue("Chromatin remodel energy > 0", CHROMATIN_REMODEL_ENERGY > 0);
+    }
+
+    private static void testEnvironmentalParameters() {
+        assertTrue("UV mutation rate > 0", UV_MUTATION_RATE > 0);
+        assertTrue("Cosmic ray mutation rate > 0", COSMIC_RAY_MUTATION_RATE > 0);
+        assertTrue("UV rate > cosmic ray rate", UV_MUTATION_RATE > COSMIC_RAY_MUTATION_RATE);
+        assertTrue("Thermal fluctuation > 0", THERMAL_FLUCTUATION > 0);
+        assertTrue("Radiation damage threshold > 0", RADIATION_DAMAGE_THRESHOLD > 0);
+    }
+
+    private static void testElementInfoRecord() {
+        Constants.ElementInfo hydrogen = ELEMENTS.get(1);
+        assertEquals("Hydrogen group = 1", 1, hydrogen.group());
+        assertEquals("Hydrogen period = 1", 1, hydrogen.period());
+
+        Constants.ElementInfo carbon = ELEMENTS.get(6);
+        assertEquals("Carbon group = 14", 14, carbon.group());
+        assertEquals("Carbon period = 2", 2, carbon.period());
+
+        Constants.ElementInfo iron = ELEMENTS.get(26);
+        assertEquals("Iron group = 8", 8, iron.group());
+        assertEquals("Iron period = 4", 4, iron.period());
+        assertApprox("Iron electronegativity", 1.83, iron.electronegativity(), 0.01);
+    }
+
+    private static void testEpochInfoRecord() {
+        EpochInfo planck = EPOCHS.get(0);
+        assertTrue("Planck description not empty", planck.description() != null && !planck.description().isEmpty());
+        assertTrue("Planck description mentions forces", planck.description().contains("forces"));
+
+        EpochInfo present = EPOCHS.get(12);
+        assertTrue("Present description not empty", present.description() != null && !present.description().isEmpty());
     }
 }

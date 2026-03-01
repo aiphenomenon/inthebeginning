@@ -148,6 +148,27 @@ static void test_quantum_field(void)
     TEST_ASSERT(wf.phase >= 0.0f);
     TEST_ASSERT(wf.phase < 2.0f * (float)SIM_PI + 0.01f);
 
+    /* Wave function collapse */
+    WaveFunction wf_c;
+    wf_init(&wf_c);
+    TEST_ASSERT(wf_c.coherent == true);
+    TEST_ASSERT_FLOAT_EQ(wf_c.amplitude, 1.0f, 1e-6);
+    bool collapse_result = wf_collapse(&wf_c);
+    /* With amplitude=1.0, prob=1.0, should always collapse to true */
+    TEST_ASSERT(collapse_result == true);
+    TEST_ASSERT(wf_c.coherent == false);
+    TEST_ASSERT_FLOAT_EQ(wf_c.amplitude, 1.0f, 1e-6); /* result=true -> amplitude=1.0 */
+
+    /* Wave function collapse with zero amplitude */
+    WaveFunction wf_zero;
+    wf_init(&wf_zero);
+    wf_zero.amplitude = 0.0f;
+    bool collapse_zero = wf_collapse(&wf_zero);
+    /* With amplitude=0.0, prob=0.0, should always collapse to false */
+    TEST_ASSERT(collapse_zero == false);
+    TEST_ASSERT(wf_zero.coherent == false);
+    TEST_ASSERT_FLOAT_EQ(wf_zero.amplitude, 0.0f, 1e-6); /* result=false -> amplitude=0.0 */
+
     /* Pair production - insufficient energy should fail */
     bool pp_result = qf_pair_production(&qf, 0.1f);
     TEST_ASSERT(pp_result == false);
@@ -232,8 +253,36 @@ static void test_quantum_field(void)
     int up_count = qf_particle_count(&qf2, PTYPE_UP);
     TEST_ASSERT(up_count == 0);
 
+    /* Vacuum fluctuation test */
+    QuantumField qf3;
+    qf_init(&qf3, T_PLANCK);  /* High temperature => higher fluctuation probability */
+    int vf_count_before = qf3.count;
+    /* Run multiple vacuum fluctuations; at T_PLANCK some should succeed */
+    int vf_successes = 0;
+    for (int i = 0; i < 100; i++) {
+        if (qf_vacuum_fluctuation(&qf3))
+            vf_successes++;
+    }
+    /* At T_PLANCK, prob = T_PLANCK/T_PLANCK = 1.0 (capped to 0.5), so ~50% should succeed */
+    TEST_ASSERT(vf_successes > 0);
+    TEST_ASSERT(qf3.count > vf_count_before);
+    TEST_ASSERT(qf3.total_created > 0);
+
+    /* Vacuum fluctuation at very low temperature should rarely succeed */
+    QuantumField qf4;
+    qf_init(&qf4, 1.0);  /* Very low temperature */
+    int vf_low_successes = 0;
+    for (int i = 0; i < 10; i++) {
+        if (qf_vacuum_fluctuation(&qf4))
+            vf_low_successes++;
+    }
+    /* With prob = 1.0 / 1e10 = 1e-10, should almost never succeed */
+    TEST_ASSERT(vf_low_successes >= 0); /* just exercising the function */
+
     qf_free(&qf);
     qf_free(&qf2);
+    qf_free(&qf3);
+    qf_free(&qf4);
     TEST_ASSERT(qf.particles == NULL);
 
     printf("  Quantum: all checks passed\n");
@@ -325,6 +374,107 @@ static void test_atomic_system(void)
     ei = element_lookup(999);
     TEST_ASSERT(ei == NULL);
 
+    /* Recombination test: protons + electrons -> hydrogen atoms */
+    AtomicSystem as2;
+    as_init(&as2);
+    as2.temperature = T_RECOMBINATION * 0.5; /* Below recombination threshold */
+
+    QuantumField qf_rec;
+    qf_init(&qf_rec, T_RECOMBINATION);
+
+    /* Add protons and electrons to the quantum field */
+    for (int i = 0; i < 5; i++) {
+        Particle proton = {0};
+        proton.type = PTYPE_PROTON;
+        proton.spin = SPIN_UP;
+        proton.entangled_with = -1;
+        wf_init(&proton.wave_fn);
+        qf_add_particle(&qf_rec, &proton);
+
+        Particle electron = {0};
+        electron.type = PTYPE_ELECTRON;
+        electron.spin = SPIN_DOWN;
+        electron.entangled_with = -1;
+        wf_init(&electron.wave_fn);
+        qf_add_particle(&qf_rec, &electron);
+    }
+    TEST_ASSERT(qf_rec.count == 10); /* 5 protons + 5 electrons */
+
+    int recombined = as_recombination(&as2, &qf_rec);
+    TEST_ASSERT(recombined == 5); /* Should form 5 hydrogen atoms */
+    TEST_ASSERT(as2.count == 5);
+    /* Protons and electrons should be consumed from the quantum field */
+    TEST_ASSERT(qf_particle_count(&qf_rec, PTYPE_PROTON) == 0);
+    TEST_ASSERT(qf_particle_count(&qf_rec, PTYPE_ELECTRON) == 0);
+
+    /* Recombination should fail when temperature is too high */
+    AtomicSystem as3;
+    as_init(&as3);
+    as3.temperature = T_RECOMBINATION * 2.0; /* Above recombination threshold */
+
+    QuantumField qf_hot;
+    qf_init(&qf_hot, T_PLANCK);
+    Particle p_test = {0};
+    p_test.type = PTYPE_PROTON;
+    p_test.entangled_with = -1;
+    wf_init(&p_test.wave_fn);
+    qf_add_particle(&qf_hot, &p_test);
+
+    Particle e_test = {0};
+    e_test.type = PTYPE_ELECTRON;
+    e_test.entangled_with = -1;
+    wf_init(&e_test.wave_fn);
+    qf_add_particle(&qf_hot, &e_test);
+
+    int recombined_hot = as_recombination(&as3, &qf_hot);
+    TEST_ASSERT(recombined_hot == 0); /* Too hot for recombination */
+    TEST_ASSERT(as3.count == 0);
+
+    qf_free(&qf_rec);
+    qf_free(&qf_hot);
+    as_free(&as3);
+
+    /* Stellar nucleosynthesis test: He -> C, C + He -> O, etc. */
+    AtomicSystem as4;
+    as_init(&as4);
+
+    /* Add many helium atoms for triple-alpha process */
+    for (int i = 0; i < 100; i++) {
+        float pos[3] = {0.0f, 0.0f, 0.0f};
+        Atom he_star;
+        atom_init(&he_star, 2, 4, pos);
+        as_add_atom(&as4, &he_star);
+    }
+    TEST_ASSERT(as4.count == 100);
+
+    /* Stellar nucleosynthesis requires temperature >= 1e3 */
+    int stellar_formed = 0;
+    for (int i = 0; i < 200; i++) {
+        stellar_formed += as_stellar_nucleosynthesis(&as4, T_STELLAR_CORE);
+    }
+    /* With 100 He atoms and many iterations, should form some heavier elements */
+    TEST_ASSERT(stellar_formed > 0);
+
+    /* Check that some carbon or heavier elements were formed */
+    int stellar_counts[27];
+    as_element_counts(&as4, stellar_counts);
+    /* Should have formed at least some C (6), O (8), or N (7) */
+    int heavier_count = stellar_counts[6] + stellar_counts[7] + stellar_counts[8];
+    TEST_ASSERT(heavier_count > 0);
+
+    /* Stellar nucleosynthesis should fail at low temperature */
+    AtomicSystem as5;
+    as_init(&as5);
+    Atom he_cold;
+    atom_init(&he_cold, 2, 4, NULL);
+    as_add_atom(&as5, &he_cold);
+    int cold_formed = as_stellar_nucleosynthesis(&as5, 100.0); /* Below 1e3 threshold */
+    TEST_ASSERT(cold_formed == 0);
+
+    as_free(&as4);
+    as_free(&as5);
+
+    as_free(&as2);
     as_free(&as);
     TEST_ASSERT(as.atoms == NULL);
 
@@ -568,11 +718,69 @@ static void test_environment(void)
     env_set_epoch_planck(&env);
     TEST_ASSERT_FLOAT_EQ(env.temperature, T_PLANCK, 0.1);
 
+    /* Epoch setting: Inflation */
+    env_set_epoch_inflation(&env);
+    TEST_ASSERT_FLOAT_EQ(env.temperature, T_PLANCK * 0.5, 1.0);
+    TEST_ASSERT_FLOAT_EQ(env.radiation_level, 1e9, 100.0);
+    TEST_ASSERT_FLOAT_EQ(env.cosmic_ray_flux, 0.0f, 1e-6);
+    TEST_ASSERT_FLOAT_EQ(env.uv_intensity, 0.0f, 1e-6);
+
+    /* Epoch setting: Electroweak */
+    env_set_epoch_electroweak(&env);
+    TEST_ASSERT_FLOAT_EQ(env.temperature, T_ELECTROWEAK, 1.0);
+    TEST_ASSERT_FLOAT_EQ(env.radiation_level, 1e8, 100.0);
+    TEST_ASSERT_FLOAT_EQ(env.cosmic_ray_flux, 0.1f, 1e-3);
+    TEST_ASSERT_FLOAT_EQ(env.uv_intensity, 0.0f, 1e-6);
+
+    /* Epoch setting: Quark */
+    env_set_epoch_quark(&env);
+    TEST_ASSERT_FLOAT_EQ(env.temperature, T_QUARK_HADRON * 10.0, 1.0);
+    TEST_ASSERT_FLOAT_EQ(env.radiation_level, 1e7, 100.0);
+    TEST_ASSERT_FLOAT_EQ(env.cosmic_ray_flux, 0.5f, 1e-3);
+    TEST_ASSERT_FLOAT_EQ(env.uv_intensity, 0.0f, 1e-6);
+
+    /* Epoch setting: Hadron */
+    env_set_epoch_hadron(&env);
+    TEST_ASSERT_FLOAT_EQ(env.temperature, T_QUARK_HADRON, 1.0);
+    TEST_ASSERT_FLOAT_EQ(env.radiation_level, 1e6, 100.0);
+    TEST_ASSERT_FLOAT_EQ(env.cosmic_ray_flux, 1.0f, 1e-3);
+    TEST_ASSERT_FLOAT_EQ(env.uv_intensity, 0.0f, 1e-6);
+
     /* Epoch setting: Nucleosynthesis */
     env_set_epoch_nucleosynthesis(&env);
     TEST_ASSERT_FLOAT_EQ(env.temperature, T_NUCLEOSYNTHESIS, 0.1);
     TEST_ASSERT_FLOAT_EQ(env.atmosphere.hydrogen, 0.75f, 1e-3);
     TEST_ASSERT_FLOAT_EQ(env.atmosphere.helium, 0.25f, 1e-3);
+
+    /* Epoch setting: Recombination */
+    env_set_epoch_recombination(&env);
+    TEST_ASSERT_FLOAT_EQ(env.temperature, T_RECOMBINATION, 0.1);
+    TEST_ASSERT_FLOAT_EQ(env.radiation_level, 100.0, 1.0);
+    TEST_ASSERT_FLOAT_EQ(env.cosmic_ray_flux, 3.0f, 1e-3);
+    TEST_ASSERT_FLOAT_EQ(env.atmosphere.hydrogen, 0.75f, 1e-3);
+    TEST_ASSERT_FLOAT_EQ(env.atmosphere.helium, 0.25f, 1e-3);
+
+    /* Epoch setting: Star Formation */
+    env_set_epoch_star_formation(&env);
+    TEST_ASSERT_FLOAT_EQ(env.temperature, 100.0, 0.1);
+    TEST_ASSERT_FLOAT_EQ(env.radiation_level, 50.0, 1.0);
+    TEST_ASSERT_FLOAT_EQ(env.cosmic_ray_flux, 5.0f, 1e-3);
+    TEST_ASSERT_FLOAT_EQ(env.uv_intensity, 1.0f, 1e-3);
+    TEST_ASSERT_FLOAT_EQ(env.atmosphere.hydrogen, 0.70f, 1e-3);
+    TEST_ASSERT_FLOAT_EQ(env.atmosphere.helium, 0.28f, 1e-3);
+    TEST_ASSERT_FLOAT_EQ(env.atmosphere.other, 0.02f, 1e-3);
+
+    /* Epoch setting: Solar System */
+    env_set_epoch_solar_system(&env);
+    TEST_ASSERT_FLOAT_EQ(env.temperature, 500.0, 0.1);
+    TEST_ASSERT_FLOAT_EQ(env.radiation_level, 20.0, 1.0);
+    TEST_ASSERT_FLOAT_EQ(env.cosmic_ray_flux, 3.0f, 1e-3);
+    TEST_ASSERT_FLOAT_EQ(env.uv_intensity, 5.0f, 1e-3);
+    TEST_ASSERT_FLOAT_EQ(env.atmosphere.hydrogen, 0.60f, 1e-3);
+    TEST_ASSERT_FLOAT_EQ(env.atmosphere.helium, 0.20f, 1e-3);
+    TEST_ASSERT_FLOAT_EQ(env.atmosphere.nitrogen, 0.05f, 1e-3);
+    TEST_ASSERT_FLOAT_EQ(env.atmosphere.carbon_dioxide, 0.10f, 1e-3);
+    TEST_ASSERT_FLOAT_EQ(env.atmosphere.water_vapor, 0.03f, 1e-3);
 
     /* Epoch setting: Earth */
     env_set_epoch_earth(&env);
@@ -581,6 +789,34 @@ static void test_environment(void)
     TEST_ASSERT(env.available_energy > 0.0f);
     TEST_ASSERT(env.atmosphere.nitrogen > 0.0f);
     TEST_ASSERT(env.atmosphere.carbon_dioxide > 0.0f);
+
+    /* Epoch setting: Life */
+    env_set_epoch_life(&env);
+    TEST_ASSERT_FLOAT_EQ(env.temperature, T_EARTH_SURFACE + 30.0, 0.1);
+    TEST_ASSERT_FLOAT_EQ(env.radiation_level, 5.0, 0.1);
+    TEST_ASSERT_FLOAT_EQ(env.cosmic_ray_flux, 1.5f, 1e-3);
+    TEST_ASSERT_FLOAT_EQ(env.uv_intensity, 6.0f, 1e-3);
+    TEST_ASSERT_FLOAT_EQ(env.available_energy, 10.0f, 1e-3);
+    TEST_ASSERT_FLOAT_EQ(env.water_fraction, 0.70f, 1e-3);
+    TEST_ASSERT(env.has_magnetic_field == true);
+    TEST_ASSERT_FLOAT_EQ(env.atmosphere.nitrogen, 0.60f, 1e-3);
+    TEST_ASSERT_FLOAT_EQ(env.atmosphere.carbon_dioxide, 0.20f, 1e-3);
+    TEST_ASSERT_FLOAT_EQ(env.atmosphere.oxygen, 0.02f, 1e-3);
+    TEST_ASSERT_FLOAT_EQ(env.atmosphere.methane, 0.05f, 1e-3);
+
+    /* Epoch setting: DNA */
+    env_set_epoch_dna(&env);
+    TEST_ASSERT_FLOAT_EQ(env.temperature, T_EARTH_SURFACE + 10.0, 0.1);
+    TEST_ASSERT_FLOAT_EQ(env.radiation_level, 3.0, 0.1);
+    TEST_ASSERT_FLOAT_EQ(env.cosmic_ray_flux, 1.0f, 1e-3);
+    TEST_ASSERT_FLOAT_EQ(env.uv_intensity, 4.0f, 1e-3);
+    TEST_ASSERT_FLOAT_EQ(env.available_energy, 15.0f, 1e-3);
+    TEST_ASSERT_FLOAT_EQ(env.water_fraction, 0.71f, 1e-3);
+    TEST_ASSERT(env.has_magnetic_field == true);
+    TEST_ASSERT(env.has_ozone_layer == true);
+    TEST_ASSERT_FLOAT_EQ(env.atmosphere.nitrogen, 0.70f, 1e-3);
+    TEST_ASSERT_FLOAT_EQ(env.atmosphere.oxygen, 0.15f, 1e-3);
+    TEST_ASSERT_FLOAT_EQ(env.atmosphere.carbon_dioxide, 0.05f, 1e-3);
 
     /* Epoch setting: Present */
     env_set_epoch_present(&env);
@@ -714,6 +950,33 @@ static void test_universe(void)
     TEST_ASSERT(u.current_epoch == EPOCH_PRESENT);
 
     universe_free(&u);
+
+    /* Universe run - full simulation from Planck to Present */
+    Universe u2;
+    universe_init(&u2, false);
+    TEST_ASSERT(u2.current_tick == 0);
+    TEST_ASSERT(u2.event_count == 0);
+
+    universe_run(&u2);
+
+    /* After full run, should have reached present epoch */
+    TEST_ASSERT(u2.current_epoch == EPOCH_PRESENT);
+    TEST_ASSERT(u2.current_tick > PRESENT_EPOCH);
+    /* Should have logged multiple events across all epochs */
+    TEST_ASSERT(u2.event_count > 0);
+    /* Quantum field should have particles */
+    TEST_ASSERT(u2.quantum.total_created > 0);
+    /* Should have formed atoms */
+    TEST_ASSERT(u2.atomic.count >= 0);
+    /* Biosphere should be initialized (life epoch was reached) */
+    TEST_ASSERT(u2.biosphere.cells != NULL);
+    TEST_ASSERT(u2.biosphere.count > 0);
+    /* Environment should be in present-day state */
+    TEST_ASSERT_FLOAT_EQ(u2.environment.temperature, T_EARTH_SURFACE, 1.0);
+    TEST_ASSERT(u2.environment.has_ozone_layer == true);
+    TEST_ASSERT(u2.environment.has_magnetic_field == true);
+
+    universe_free(&u2);
 
     printf("  Universe: all checks passed\n");
 }

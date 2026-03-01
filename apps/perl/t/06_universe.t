@@ -1,9 +1,9 @@
 #!/usr/bin/env perl
-# Tests for Universe orchestrator
+# Comprehensive tests for Universe orchestrator
 
 use strict;
 use warnings;
-use Test::More tests => 8;
+use Test::More tests => 14;
 
 use lib 'apps/perl/lib';
 use Constants qw($PLANCK_EPOCH $NUCLEOSYNTHESIS_EPOCH $PRESENT_EPOCH);
@@ -19,6 +19,25 @@ use Universe;
     my $u = Universe->new();
     ok(defined $u, 'Universe created');
     is($u->{current_tick}, 0, 'Starts at tick 0');
+}
+
+# epoch_name
+{
+    my $u = Universe->new();
+    $u->{current_epoch} = 0;
+    is($u->epoch_name(), 'Planck', 'Epoch 0 is Planck');
+
+    $u->{current_epoch} = 1;
+    is($u->epoch_name(), 'Inflation', 'Epoch 1 is Inflation');
+
+    $u->{current_epoch} = 5;
+    is($u->epoch_name(), 'Nucleosynthesis', 'Epoch 5 is Nucleosynthesis');
+
+    $u->{current_epoch} = 12;
+    is($u->epoch_name(), 'Present Day', 'Epoch 12 is Present Day');
+
+    $u->{current_epoch} = 99;
+    is($u->epoch_name(), 'Unknown', 'Out-of-range epoch is Unknown');
 }
 
 # run_epoch
@@ -44,4 +63,12 @@ use Universe;
     my $results = $u->run();
     ok(ref $results eq 'ARRAY', 'run returns arrayref');
     is(scalar @$results, 13, 'Runs all 13 epochs');
+}
+
+# run with callback
+{
+    my $u = Universe->new(ticks_per_epoch => 5);
+    my $callback_count = 0;
+    $u->run(on_epoch_complete => sub { $callback_count++ });
+    is($callback_count, 13, 'Callback called for each of 13 epochs');
 }

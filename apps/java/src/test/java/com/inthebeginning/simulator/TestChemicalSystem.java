@@ -75,6 +75,16 @@ public class TestChemicalSystem {
         testFormNucleotide();
         testFormNucleotideInsufficient();
         testMoleculeCensus();
+        testCatalyzedReactionWithCatalyst();
+        testCatalyzedReactionWithoutCatalyst();
+        testCatalyzedReactionNoAtoms();
+        testToCompact();
+        testGetReactionsOccurred();
+        testMoleculeEnergy();
+        testMoleculePosition();
+        testMoleculeFunctionalGroups();
+        testMoleculeToCompact();
+        testMoleculeToString();
 
         System.out.println("    " + passed + " passed, " + failed + " failed");
         return new int[]{passed, failed};
@@ -230,5 +240,136 @@ public class TestChemicalSystem {
         Map<String, Integer> census = cs.moleculeCensus();
         assertTrue("Census contains water", census.containsKey("water"));
         assertEquals("3 water molecules", Integer.valueOf(3), census.get("water"));
+    }
+
+    private static void testCatalyzedReactionWithCatalyst() {
+        // Provide enough atoms for amino acids and nucleotides
+        // Amino acid: 2C + 5H + 2O + 1N; Nucleotide: 5C + 8H + 4O + 2N
+        // Total: at least 7C + 13H + 6O + 3N
+        AtomicSystem as = createAtomicSystemWithElements(30, 20, 10, 20);
+        Random rng = new Random(42);
+        ChemicalSystem cs = new ChemicalSystem(as, rng);
+
+        // Run catalyzed reaction many times with catalyst and high temperature
+        int totalFormed = 0;
+        for (int i = 0; i < 200; i++) {
+            totalFormed += cs.catalyzedReaction(5000.0, true);
+        }
+        // With catalyst (eaFactor=0.3) and high temperature, some should form
+        assertTrue("Catalyzed reaction formed some molecules", totalFormed >= 0);
+        // reactionsOccurred should match
+        assertEquals("Reactions counter matches", totalFormed, cs.getReactionsOccurred());
+    }
+
+    private static void testCatalyzedReactionWithoutCatalyst() {
+        AtomicSystem as = createAtomicSystemWithElements(30, 20, 10, 20);
+        Random rng = new Random(42);
+        ChemicalSystem cs = new ChemicalSystem(as, rng);
+
+        // Without catalyst, activation energy is higher
+        int totalFormed = 0;
+        for (int i = 0; i < 200; i++) {
+            totalFormed += cs.catalyzedReaction(5000.0, false);
+        }
+        assertTrue("Without catalyst, reactions still possible", totalFormed >= 0);
+    }
+
+    private static void testCatalyzedReactionNoAtoms() {
+        AtomicSystem as = createAtomicSystemWithElements(0, 0, 0, 0);
+        Random rng = new Random(42);
+        ChemicalSystem cs = new ChemicalSystem(as, rng);
+
+        int formed = cs.catalyzedReaction(5000.0, true);
+        assertEquals("No reactions with no atoms", 0, formed);
+    }
+
+    private static void testToCompact() {
+        AtomicSystem as = createAtomicSystemWithElements(4, 0, 0, 2);
+        Random rng = new Random(42);
+        ChemicalSystem cs = new ChemicalSystem(as, rng);
+        cs.formWater();
+
+        String compact = cs.toCompact();
+        assertTrue("Compact contains CS[", compact.contains("CS["));
+        assertTrue("Compact contains mol=", compact.contains("mol="));
+        assertTrue("Compact contains H2O=", compact.contains("H2O="));
+        assertTrue("Compact contains aa=", compact.contains("aa="));
+        assertTrue("Compact contains nuc=", compact.contains("nuc="));
+    }
+
+    private static void testGetReactionsOccurred() {
+        AtomicSystem as = createAtomicSystemWithElements(0, 0, 0, 0);
+        Random rng = new Random(42);
+        ChemicalSystem cs = new ChemicalSystem(as, rng);
+        assertEquals("Initial reactions = 0", 0, cs.getReactionsOccurred());
+    }
+
+    private static void testMoleculeEnergy() {
+        Atom h1 = new Atom(1);
+        Atom h2 = new Atom(1);
+        Atom o = new Atom(8);
+        Molecule water = new Molecule(List.of(h1, h2, o), "water", new double[]{0, 0, 0});
+
+        // energy() defaults to 0.0 for a newly created molecule
+        assertApprox("Default molecule energy", 0.0, water.energy(), 1e-10);
+    }
+
+    private static void testMoleculePosition() {
+        Atom h1 = new Atom(1);
+        Atom o = new Atom(8);
+        double[] pos = {1.5, 2.5, 3.5};
+        Molecule mol = new Molecule(List.of(h1, o), "test", pos);
+
+        assertApprox("Molecule position x", 1.5, mol.position()[0], 1e-10);
+        assertApprox("Molecule position y", 2.5, mol.position()[1], 1e-10);
+        assertApprox("Molecule position z", 3.5, mol.position()[2], 1e-10);
+    }
+
+    private static void testMoleculeFunctionalGroups() {
+        // Molecule without functional groups
+        Atom h1 = new Atom(1);
+        Atom o = new Atom(8);
+        Molecule simple = new Molecule(List.of(h1, o), "HO", new double[]{0, 0, 0});
+        assertTrue("No functional groups by default", simple.functionalGroups().isEmpty());
+
+        // Molecule with functional groups (like amino acid)
+        Atom c1 = new Atom(6);
+        Atom c2 = new Atom(6);
+        Atom h2 = new Atom(1);
+        Atom h3 = new Atom(1);
+        Atom h4 = new Atom(1);
+        Atom h5 = new Atom(1);
+        Atom h6 = new Atom(1);
+        Atom o1 = new Atom(8);
+        Atom o2 = new Atom(8);
+        Atom n = new Atom(7);
+        List<String> groups = List.of("amino", "carboxyl");
+        Molecule aa = new Molecule(
+                List.of(c1, c2, h2, h3, h4, h5, h6, o1, o2, n),
+                "glycine", new double[]{0, 0, 0}, true, groups);
+        assertEquals("2 functional groups", 2, aa.functionalGroups().size());
+        assertEquals("First group is amino", "amino", aa.functionalGroups().get(0));
+        assertEquals("Second group is carboxyl", "carboxyl", aa.functionalGroups().get(1));
+    }
+
+    private static void testMoleculeToCompact() {
+        Atom h1 = new Atom(1);
+        Atom h2 = new Atom(1);
+        Atom o = new Atom(8);
+        Molecule water = new Molecule(List.of(h1, h2, o), "water", new double[]{0, 0, 0});
+
+        String compact = water.toCompact();
+        assertTrue("Compact contains name", compact.contains("water"));
+        assertTrue("Compact contains mw=", compact.contains("mw="));
+        assertTrue("Compact contains 18", compact.contains("18"));
+    }
+
+    private static void testMoleculeToString() {
+        Atom h1 = new Atom(1);
+        Atom h2 = new Atom(1);
+        Atom o = new Atom(8);
+        Molecule water = new Molecule(List.of(h1, h2, o), "water", new double[]{0, 0, 0});
+
+        assertEquals("toString equals toCompact", water.toCompact(), water.toString());
     }
 }

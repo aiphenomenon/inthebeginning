@@ -62,6 +62,23 @@ public class TestAtomicSystem {
         testStellarNucleosynthesis();
         testElementCounts();
         testAtomicSystemTemperature();
+        testAtomConstructorWithPosition();
+        testAtomConstructorWithVelocity();
+        testAtomVelocity();
+        testAtomShells();
+        testIonizationEnergy();
+        testAtomToCompact();
+        testAtomToString();
+        testElectronShellAddRemove();
+        testUnknownElement();
+        testRecombination();
+        testRecombinationHighTemp();
+        testAttemptBond();
+        testBreakBond();
+        testAtomicSystemToCompact();
+        testDefaultConstructor();
+        testStellarNucleosynthesisLowTemp();
+        testAtomChargeIon();
 
         System.out.println("    " + passed + " passed, " + failed + " failed");
         return new int[]{passed, failed};
@@ -248,5 +265,213 @@ public class TestAtomicSystem {
         assertApprox("Initial temperature", 5000.0, as.getTemperature(), 1e-10);
         as.setTemperature(1000.0);
         assertApprox("Set temperature", 1000.0, as.getTemperature(), 1e-10);
+    }
+
+    private static void testAtomConstructorWithPosition() {
+        Atom a = new Atom(8, new double[]{1.0, 2.0, 3.0});
+        assertEquals("Atomic number", 8, a.atomicNumber());
+        assertApprox("Position x", 1.0, a.position()[0], 1e-10);
+        assertApprox("Position y", 2.0, a.position()[1], 1e-10);
+        assertApprox("Position z", 3.0, a.position()[2], 1e-10);
+        assertEquals("Mass number auto-computed", 16, a.massNumber());
+        assertEquals("Electron count = atomic number", 8, a.electronCount());
+    }
+
+    private static void testAtomConstructorWithVelocity() {
+        Atom a = new Atom(6, 12, new double[]{1, 2, 3}, new double[]{4, 5, 6});
+        assertEquals("Atomic number", 6, a.atomicNumber());
+        assertEquals("Mass number", 12, a.massNumber());
+        assertApprox("Velocity x", 4.0, a.velocity()[0], 1e-10);
+        assertApprox("Velocity y", 5.0, a.velocity()[1], 1e-10);
+        assertApprox("Velocity z", 6.0, a.velocity()[2], 1e-10);
+    }
+
+    private static void testAtomVelocity() {
+        Atom a = new Atom(1);
+        // Default velocity should be zero
+        assertApprox("Default velocity x", 0.0, a.velocity()[0], 1e-10);
+        assertApprox("Default velocity y", 0.0, a.velocity()[1], 1e-10);
+        assertApprox("Default velocity z", 0.0, a.velocity()[2], 1e-10);
+    }
+
+    private static void testAtomShells() {
+        Atom c = new Atom(6); // Carbon: 2 electrons in shell 1, 4 in shell 2
+        assertEquals("Carbon has 2 shells", 2, c.shells().size());
+        assertEquals("Shell 1 has 2 electrons", 2, c.shells().get(0).electrons);
+        assertEquals("Shell 2 has 4 electrons", 4, c.shells().get(1).electrons);
+        assertTrue("Shell 1 is full", c.shells().get(0).isFull());
+        assertTrue("Shell 2 is not full", !c.shells().get(1).isFull());
+    }
+
+    private static void testIonizationEnergy() {
+        Atom h = new Atom(1);
+        // Hydrogen: IE = 13.6 * Z_eff^2 / n^2 = 13.6 * 1^2 / 1^2 = 13.6
+        assertApprox("Hydrogen ionization energy", 13.6, h.ionizationEnergy(), 0.1);
+
+        Atom he = new Atom(2, 4, 0, new double[]{0, 0, 0});
+        assertTrue("Helium ionization energy > 0", he.ionizationEnergy() > 0);
+    }
+
+    private static void testAtomToCompact() {
+        Atom h = new Atom(1);
+        String compact = h.toCompact();
+        assertTrue("Compact contains H", compact.contains("H"));
+        assertTrue("Compact contains mass number", compact.contains("1"));
+        assertTrue("Compact contains shell info", compact.contains("["));
+    }
+
+    private static void testAtomToString() {
+        Atom h = new Atom(1);
+        assertEquals("toString equals toCompact", h.toCompact(), h.toString());
+    }
+
+    private static void testElectronShellAddRemove() {
+        Atom.ElectronShell shell = new Atom.ElectronShell(1, 2, 1);
+        assertTrue("Shell not full", !shell.isFull());
+        assertTrue("Shell not empty", !shell.isEmpty());
+
+        assertTrue("Add electron succeeds", shell.addElectron());
+        assertTrue("Shell now full", shell.isFull());
+        assertTrue("Cannot add when full", !shell.addElectron());
+
+        assertTrue("Remove electron succeeds", shell.removeElectron());
+        assertTrue("Shell no longer full", !shell.isFull());
+        assertTrue("Remove again succeeds", shell.removeElectron());
+        assertTrue("Shell now empty", shell.isEmpty());
+        assertTrue("Cannot remove when empty", !shell.removeElectron());
+    }
+
+    private static void testUnknownElement() {
+        // Element 99 is not in ELEMENTS map
+        Atom a = new Atom(99, 198, 0, new double[]{0, 0, 0});
+        assertEquals("Unknown element symbol", "E99", a.symbol());
+        assertEquals("Unknown element name", "Element-99", a.name());
+        assertApprox("Unknown element electronegativity", 1.0, a.electronegativity(), 1e-10);
+    }
+
+    private static void testRecombination() {
+        Random rng = new Random(42);
+        AtomicSystem as = new AtomicSystem(T_RECOMBINATION * 0.5, rng);
+
+        // Create a quantum field with protons and electrons
+        QuantumField qf = new QuantumField(T_RECOMBINATION * 0.5, rng);
+        Particle proton = new Particle(ParticleType.PROTON,
+                new double[]{0, 0, 0}, new double[]{0, 0, 0});
+        Particle electron = new Particle(ParticleType.ELECTRON,
+                new double[]{0, 0, 0}, new double[]{0, 0, 0});
+        qf.getParticles().add(proton);
+        qf.getParticles().add(electron);
+
+        List<Atom> atoms = as.recombination(qf);
+        assertEquals("1 hydrogen atom formed", 1, atoms.size());
+        assertEquals("Hydrogen atomic number", 1, atoms.get(0).atomicNumber());
+        long protonCount = qf.getParticles().stream()
+                .filter(p -> p.type() == ParticleType.PROTON).count();
+        assertTrue("Proton removed from field", protonCount == 0);
+    }
+
+    private static void testRecombinationHighTemp() {
+        Random rng = new Random(42);
+        AtomicSystem as = new AtomicSystem(T_RECOMBINATION * 2, rng);
+
+        QuantumField qf = new QuantumField(T_RECOMBINATION * 2, rng);
+        qf.getParticles().add(new Particle(ParticleType.PROTON));
+        qf.getParticles().add(new Particle(ParticleType.ELECTRON));
+
+        List<Atom> atoms = as.recombination(qf);
+        assertEquals("No recombination at high temperature", 0, atoms.size());
+    }
+
+    private static void testAttemptBond() {
+        Random rng = new Random(42);
+        // Use a high temperature so bonding probability is non-trivial
+        AtomicSystem as = new AtomicSystem(5000.0, rng);
+
+        Atom h1 = new Atom(1, 0, 0, new double[]{0, 0, 0});
+        Atom h2 = new Atom(1, 0, 0, new double[]{0.5, 0, 0});
+        as.getAtoms().add(h1);
+        as.getAtoms().add(h2);
+
+        // Try many times since bonding is probabilistic
+        boolean bonded = false;
+        for (int i = 0; i < 100; i++) {
+            if (as.attemptBond(h1, h2)) {
+                bonded = true;
+                break;
+            }
+        }
+        assertTrue("Bond eventually formed at high temp", bonded);
+        assertTrue("Bonds formed counter > 0", as.getBondsFormed() > 0);
+
+        // Check bond is recorded on both atoms
+        assertTrue("h1 has bond to h2", h1.bonds().contains(h2.atomId()));
+        assertTrue("h2 has bond to h1", h2.bonds().contains(h1.atomId()));
+    }
+
+    private static void testBreakBond() {
+        Random rng = new Random(42);
+        AtomicSystem as = new AtomicSystem(100000.0, rng); // very high temp for breaking
+
+        Atom h1 = new Atom(1, 0, 0, new double[]{0, 0, 0});
+        Atom h2 = new Atom(1, 0, 0, new double[]{0, 0, 0});
+        as.getAtoms().add(h1);
+        as.getAtoms().add(h2);
+
+        // Manually create a bond
+        h1.bonds().add(h2.atomId());
+        h2.bonds().add(h1.atomId());
+
+        // Try to break the bond
+        boolean broken = false;
+        for (int i = 0; i < 100; i++) {
+            if (as.breakBond(h1, h2)) {
+                broken = true;
+                break;
+            }
+        }
+        assertTrue("Bond eventually broken at high temp", broken);
+
+        // Try breaking a non-existent bond
+        Atom h3 = new Atom(1);
+        boolean result = as.breakBond(h1, h3);
+        assertTrue("Cannot break non-existent bond", !result);
+    }
+
+    private static void testAtomicSystemToCompact() {
+        Random rng = new Random(42);
+        AtomicSystem as = new AtomicSystem(3000.0, rng);
+        as.getAtoms().add(new Atom(1));
+        as.getAtoms().add(new Atom(2, 4, 0, new double[]{0, 0, 0}));
+
+        String compact = as.toCompact();
+        assertTrue("Compact contains AS[", compact.contains("AS["));
+        assertTrue("Compact contains T=", compact.contains("T="));
+        assertTrue("Compact contains n=", compact.contains("n="));
+    }
+
+    private static void testDefaultConstructor() {
+        Random rng = new Random(42);
+        AtomicSystem as = new AtomicSystem(rng);
+        assertApprox("Default temp is T_RECOMBINATION", T_RECOMBINATION, as.getTemperature(), 1e-10);
+    }
+
+    private static void testStellarNucleosynthesisLowTemp() {
+        Random rng = new Random(42);
+        AtomicSystem as = new AtomicSystem(rng);
+        as.getAtoms().add(new Atom(2, 4, 0, new double[]{0, 0, 0}));
+
+        // Temperature too low for stellar nucleosynthesis
+        List<Atom> result = as.stellarNucleosynthesis(500.0);
+        assertEquals("No elements formed at low temperature", 0, result.size());
+    }
+
+    private static void testAtomChargeIon() {
+        Atom h = new Atom(1);
+        assertEquals("Neutral charge", 0, h.charge());
+        h.ionize();
+        assertEquals("Positive charge after ionize", 1, h.charge());
+        h.captureElectron();
+        h.captureElectron();
+        assertEquals("Negative charge after extra capture", -1, h.charge());
     }
 }

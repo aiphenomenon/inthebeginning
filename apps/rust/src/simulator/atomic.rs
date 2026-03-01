@@ -884,4 +884,131 @@ mod tests {
         assert_eq!(atoms[0].atomic_number, 1);
         assert_eq!(field.particles.len(), 0); // consumed
     }
+
+    // -----------------------------------------------------------------------
+    // AtomicSystem::stellar_nucleosynthesis
+    // -----------------------------------------------------------------------
+
+    /// Stellar nucleosynthesis at low temperature does nothing.
+    #[test]
+    fn stellar_nucleosynthesis_low_temp_no_effect() {
+        let mut sys = AtomicSystem::new(500.0);
+        // Add some helium
+        for _ in 0..6 {
+            sys.atoms.push(Atom::new(2).with_mass_number(4));
+        }
+        let new_atoms = sys.stellar_nucleosynthesis(500.0); // below 1e3 threshold
+        assert!(new_atoms.is_empty());
+    }
+
+    /// Stellar nucleosynthesis requires at least 3 He for triple-alpha.
+    #[test]
+    fn stellar_nucleosynthesis_insufficient_helium() {
+        let mut sys = AtomicSystem::new(T_STELLAR_CORE);
+        // Only 2 helium -- not enough for triple alpha (needs 3)
+        sys.atoms.push(Atom::new(2).with_mass_number(4));
+        sys.atoms.push(Atom::new(2).with_mass_number(4));
+
+        // The triple-alpha also has a random chance (0.01), so even with 3 He
+        // it might not fire. With only 2 He it should never produce carbon.
+        let new_atoms = sys.stellar_nucleosynthesis(T_STELLAR_CORE);
+        let carbon_count = new_atoms.iter().filter(|a| a.atomic_number == 6).count();
+        assert_eq!(carbon_count, 0, "2 He should not produce carbon");
+    }
+
+    /// Stellar nucleosynthesis can produce carbon from 3+ helium (probabilistic).
+    #[test]
+    fn stellar_nucleosynthesis_triple_alpha_possible() {
+        // Since triple-alpha has a 1% chance per call, run many iterations.
+        let mut carbon_ever_produced = false;
+        for _ in 0..500 {
+            let mut sys = AtomicSystem::new(T_STELLAR_CORE);
+            for _ in 0..6 {
+                sys.atoms.push(Atom::new(2).with_mass_number(4));
+            }
+            let new_atoms = sys.stellar_nucleosynthesis(T_STELLAR_CORE);
+            if new_atoms.iter().any(|a| a.atomic_number == 6) {
+                carbon_ever_produced = true;
+                break;
+            }
+        }
+        assert!(carbon_ever_produced,
+            "triple-alpha should eventually produce carbon from 6 He over many tries");
+    }
+
+    // -----------------------------------------------------------------------
+    // AtomicSystem::attempt_bond
+    // -----------------------------------------------------------------------
+
+    /// attempt_bond fails when atoms cannot bond (e.g., noble gas).
+    #[test]
+    fn attempt_bond_noble_gas_fails() {
+        let mut sys = AtomicSystem::new(300.0);
+        sys.atoms.push(Atom::new(2)); // Helium (noble gas)
+        sys.atoms.push(Atom::new(1)); // Hydrogen
+        let result = sys.attempt_bond(0, 1);
+        assert!(!result, "noble gas should not bond");
+        assert_eq!(sys.bonds_formed, 0);
+    }
+
+    /// attempt_bond fails when atoms are too far apart.
+    #[test]
+    fn attempt_bond_too_far_apart() {
+        let mut sys = AtomicSystem::new(300.0);
+        sys.atoms.push(Atom::new(1).with_position([0.0, 0.0, 0.0]));
+        sys.atoms.push(Atom::new(1).with_position([100.0, 0.0, 0.0])); // very far
+        let result = sys.attempt_bond(0, 1);
+        assert!(!result, "atoms too far apart should not bond");
+    }
+
+    /// attempt_bond can succeed for close non-noble-gas atoms.
+    #[test]
+    fn attempt_bond_close_atoms() {
+        // With high temperature, the exponential probability exp(-E/kT) approaches 1.
+        let mut bonded = false;
+        for _ in 0..200 {
+            let mut sys = AtomicSystem::new(1e10); // very high temperature
+            sys.atoms.push(Atom::new(1).with_position([0.0, 0.0, 0.0]));
+            sys.atoms.push(Atom::new(1).with_position([0.1, 0.0, 0.0])); // very close
+            if sys.attempt_bond(0, 1) {
+                bonded = true;
+                assert_eq!(sys.bonds_formed, 1);
+                // Both atoms should reference each other
+                assert!(!sys.atoms[0].bonds.is_empty());
+                assert!(!sys.atoms[1].bonds.is_empty());
+                break;
+            }
+        }
+        assert!(bonded, "close atoms at high temperature should eventually bond");
+    }
+
+    /// attempt_bond with idx_a > idx_b works correctly (index order handling).
+    #[test]
+    fn attempt_bond_reversed_indices() {
+        let mut bonded = false;
+        for _ in 0..200 {
+            let mut sys = AtomicSystem::new(1e10);
+            sys.atoms.push(Atom::new(1).with_position([0.0, 0.0, 0.0]));
+            sys.atoms.push(Atom::new(1).with_position([0.1, 0.0, 0.0]));
+            // Pass indices in reverse order (1, 0 instead of 0, 1)
+            if sys.attempt_bond(1, 0) {
+                bonded = true;
+                assert_eq!(sys.bonds_formed, 1);
+                break;
+            }
+        }
+        assert!(bonded, "attempt_bond should work with reversed index order");
+    }
+
+    /// attempt_bond fails when atoms already have 4 bonds.
+    #[test]
+    fn attempt_bond_at_bond_limit() {
+        let mut sys = AtomicSystem::new(1e10);
+        let mut c = Atom::new(6); // Carbon
+        c.bonds = vec![100, 101, 102, 103]; // already 4 bonds
+        sys.atoms.push(c);
+        sys.atoms.push(Atom::new(1).with_position([0.1, 0.0, 0.0]));
+        let result = sys.attempt_bond(0, 1);
+        assert!(!result, "atom with 4 bonds should not form more");
+    }
 }

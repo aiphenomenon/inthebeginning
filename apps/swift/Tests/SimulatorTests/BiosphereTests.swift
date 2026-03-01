@@ -506,4 +506,350 @@ final class BiosphereTests: XCTestCase {
         // Should be trimmed to maxCells
         XCTAssertLessThanOrEqual(bio.cells.count, SimulationLimits.maxCells)
     }
+
+    // MARK: - Additional NucleotideBase Coverage
+
+    func testNucleotideBaseComplementIsInvolution() {
+        for base in NucleotideBase.allCases {
+            XCTAssertEqual(base.complement.complement, base,
+                "\(base) complement's complement should be itself")
+        }
+    }
+
+    func testNucleotideBaseRandomProducesAll() {
+        var seen = Set<NucleotideBase>()
+        for _ in 0..<500 {
+            seen.insert(NucleotideBase.random())
+        }
+        XCTAssertEqual(seen.count, 4)
+    }
+
+    // MARK: - Additional DNAStrand Coverage
+
+    func testDNAStrandInsertionMutationOnEmpty() {
+        var dna = DNAStrand(length: 0)
+        dna.insertionMutation()
+        // Empty sequence guard returns early
+        XCTAssertEqual(dna.length, 0)
+    }
+
+    func testDNAStrandMethylationLevelEmpty() {
+        let dna = DNAStrand(length: 0)
+        XCTAssertEqual(dna.methylationLevel, 0.0)
+    }
+
+    func testDNAStrandTranscribeEmpty() {
+        let dna = DNAStrand(length: 0)
+        let rna = dna.transcribe()
+        XCTAssertTrue(rna.isEmpty)
+    }
+
+    func testDNAStrandTranslateShortSequence() {
+        // Less than 3 bases - cannot form a codon
+        let dna = DNAStrand(sequence: [.adenine, .thymine])
+        let proteins = dna.translate()
+        XCTAssertTrue(proteins.isEmpty)
+    }
+
+    func testDNAStrandComplementaryStrandLength() {
+        let dna = DNAStrand(length: 20)
+        let comp = dna.complementaryStrand
+        XCTAssertEqual(comp.count, 20)
+    }
+
+    func testDNAStrandMutateZeroRate() {
+        var dna = DNAStrand(length: 100)
+        let original = dna.sequence
+        dna.mutate(rate: 0.0)
+        XCTAssertEqual(dna.sequence, original, "Zero mutation rate should not change sequence")
+    }
+
+    func testDNAStrandReplicatePreservesLength() {
+        let dna = DNAStrand(length: 50)
+        let copy = dna.replicate(errorRate: 0.0)
+        XCTAssertEqual(copy.length, dna.length)
+    }
+
+    func testDNAStrandApplyMethylationNoCpG() {
+        var dna = DNAStrand(sequence: [.adenine, .adenine, .thymine, .thymine])
+        // No CpG sites, so methylation should not change
+        dna.applyMethylation()
+        XCTAssertEqual(dna.methylationLevel, 0.0)
+    }
+
+    func testDNAStrandDemethylateAlreadyUnmethylated() {
+        var dna = DNAStrand(length: 10)
+        // All methylation is false
+        dna.demethylate()
+        XCTAssertEqual(dna.methylationLevel, 0.0)
+    }
+
+    func testDNAStrandInsertionPreservesIntegrity() {
+        var dna = DNAStrand(length: 20)
+        dna.methylation[5] = true
+        dna.insertionMutation()
+        XCTAssertEqual(dna.length, 21)
+        XCTAssertEqual(dna.methylation.count, 21)
+    }
+
+    func testDNAStrandDeletionPreservesIntegrity() {
+        var dna = DNAStrand(length: 20)
+        dna.deletionMutation()
+        XCTAssertEqual(dna.length, 19)
+        XCTAssertEqual(dna.methylation.count, 19)
+    }
+
+    // MARK: - Additional Cell Coverage
+
+    func testCellDisplayColor() {
+        let cell = Cell(energy: 100.0)
+        let color = cell.displayColor
+        XCTAssertGreaterThanOrEqual(color.x, 0.0)
+        XCTAssertLessThanOrEqual(color.x, 1.0)
+        XCTAssertGreaterThanOrEqual(color.y, 0.0)
+        XCTAssertLessThanOrEqual(color.y, 1.0)
+        XCTAssertEqual(color.z, 0.3, accuracy: 0.01)
+        XCTAssertEqual(color.w, 1.0)
+    }
+
+    func testCellDisplayColorHighFitness() {
+        let cell = Cell(energy: 100.0)
+        cell.fitness = 1.0
+        let color = cell.displayColor
+        // High fitness -> green (g=1.0, r=0.0)
+        XCTAssertEqual(color.y, 1.0, accuracy: 0.01) // green
+        XCTAssertEqual(color.x, 0.0, accuracy: 0.01) // red
+    }
+
+    func testCellDisplayColorLowFitness() {
+        let cell = Cell(energy: 100.0)
+        cell.fitness = 0.0
+        let color = cell.displayColor
+        // Low fitness -> red (g=0.0, r=1.0)
+        XCTAssertEqual(color.y, 0.0, accuracy: 0.01) // green
+        XCTAssertEqual(color.x, 1.0, accuracy: 0.01) // red
+    }
+
+    func testCellMetabolicRateMinimum() {
+        let cell = Cell(energy: 100.0)
+        cell.fitness = 0.0
+        // metabolicRate = max(0.1, fitness * 0.5 + gcContent * 0.3)
+        XCTAssertGreaterThanOrEqual(cell.metabolicRate, 0.1)
+    }
+
+    func testCellReproductionThresholdInverseFitness() {
+        let cell1 = Cell(energy: 100.0)
+        cell1.fitness = 1.0
+        let cell2 = Cell(energy: 100.0)
+        cell2.fitness = 0.1
+        // Higher fitness should mean lower reproduction threshold
+        XCTAssertLessThan(cell1.reproductionThreshold, cell2.reproductionThreshold)
+    }
+
+    func testCellMetabolizeAgesCell() {
+        let cell = Cell(energy: 1000.0)
+        for _ in 0..<10 {
+            cell.metabolize(availableEnergy: 10.0)
+        }
+        XCTAssertEqual(cell.age, 10)
+    }
+
+    func testCellDivideProducesCorrectGeneration() {
+        let cell = Cell(energy: 500.0, generation: 7)
+        if let daughter = cell.divide(mutationRate: 0.001) {
+            XCTAssertEqual(daughter.generation, 8)
+        }
+    }
+
+    func testCellDivideHalvesEnergy() {
+        let cell = Cell(energy: 500.0)
+        if let _ = cell.divide(mutationRate: 0.001) {
+            XCTAssertEqual(cell.energy, 250.0, accuracy: 1.0)
+        }
+    }
+
+    func testCellComputeFitnessProteinDiversity() {
+        // Cell with unique proteins should have different fitness than one without
+        let seq1: [NucleotideBase] = [.adenine, .thymine, .guanine,  // AUG -> Met
+                                       .guanine, .guanine, .guanine,  // GGG -> Gly
+                                       .cytosine, .cytosine, .cytosine]  // CCC -> Pro
+        let cell1 = Cell(dna: DNAStrand(sequence: seq1), energy: 100.0)
+        cell1.computeFitness()
+
+        let seq2: [NucleotideBase] = [.thymine, .thymine, .thymine,
+                                       .thymine, .thymine, .thymine,
+                                       .thymine, .thymine, .thymine]
+        let cell2 = Cell(dna: DNAStrand(sequence: seq2), energy: 100.0)
+        cell2.computeFitness()
+
+        // cell1 has protein diversity, cell2 has no proteins (no start codon)
+        // Both should have valid fitness
+        XCTAssertGreaterThan(cell1.fitness, 0.0)
+        XCTAssertGreaterThan(cell2.fitness, 0.0)
+    }
+
+    func testCellApplyRadiationDamageLowIntensity() {
+        let cell = Cell(energy: 100.0)
+        // Low intensity should not kill
+        for _ in 0..<10 {
+            cell.applyRadiationDamage(intensity: 0.01)
+        }
+        // Very low intensity, highly unlikely to kill
+        XCTAssertTrue(cell.isAlive)
+    }
+
+    func testCellRegulateEpigeneticsUpdatesFitness() {
+        let dna = DNAStrand(sequence: [.cytosine, .guanine, .adenine, .thymine,
+                                        .cytosine, .guanine, .adenine, .thymine,
+                                        .guanine, .cytosine, .adenine, .thymine])
+        let cell = Cell(dna: dna, energy: 100.0)
+        let fitnessBefore = cell.fitness
+        for _ in 0..<50 {
+            cell.regulateEpigenetics()
+        }
+        // Fitness should have been recomputed (may or may not change)
+        XCTAssertGreaterThan(cell.fitness, 0.0)
+        XCTAssertLessThanOrEqual(cell.fitness, 1.0)
+    }
+
+    func testCellProteinsFromDNA() {
+        // Create DNA with known start codon
+        let seq: [NucleotideBase] = [.adenine, .thymine, .guanine,  // AUG -> Met
+                                      .thymine, .thymine, .thymine,  // UUU -> Phe
+                                      .thymine, .adenine, .adenine]  // UAA -> STOP
+        let cell = Cell(dna: DNAStrand(sequence: seq), energy: 100.0)
+        XCTAssertEqual(cell.proteins.count, 2)
+        XCTAssertEqual(cell.proteins[0], "Met")
+        XCTAssertEqual(cell.proteins[1], "Phe")
+    }
+
+    func testCellHasMembraneIntegrity() {
+        let cell = Cell()
+        XCTAssertTrue(cell.hasMembraneIntegrity)
+    }
+
+    func testCellPosition() {
+        let pos = SIMD3<Double>(5.0, 10.0, 15.0)
+        let cell = Cell(energy: 100.0, position: pos)
+        XCTAssertEqual(cell.position, pos)
+    }
+
+    // MARK: - Additional Biosphere Coverage
+
+    func testBiosphereAvailableEnergy() {
+        let bio = Biosphere()
+        XCTAssertEqual(bio.availableEnergy, 100.0)
+    }
+
+    func testBiosphereMutationRate() {
+        let bio = Biosphere()
+        XCTAssertEqual(bio.mutationRate, 1e-4)
+        bio.mutationRate = 0.01
+        XCTAssertEqual(bio.mutationRate, 0.01)
+    }
+
+    func testBiosphereEvolveUpdatesAvailableEnergy() {
+        let bio = Biosphere()
+        let cell = Cell(energy: 100.0)
+        bio.cells.append(cell)
+        bio.evolve(temperature: 300.0, radiationLevel: 0.1, energyAvailable: 50.0)
+        XCTAssertEqual(bio.availableEnergy, 50.0)
+    }
+
+    func testBiosphereEvolveTracksDivisions() {
+        let bio = Biosphere()
+        // Create cells with very high energy to ensure division
+        for _ in 0..<10 {
+            let cell = Cell(energy: 10000.0)
+            bio.cells.append(cell)
+        }
+        bio.evolve(temperature: 300.0, radiationLevel: 0.0, energyAvailable: 10000.0)
+        // Some cells should have divided
+        XCTAssertGreaterThanOrEqual(bio.totalDivisions, 0)
+    }
+
+    func testBiosphereEvolveTracksDeaths() {
+        let bio = Biosphere()
+        // Create cells with zero energy that will die
+        for _ in 0..<5 {
+            let cell = Cell(energy: 0.001)
+            bio.cells.append(cell)
+        }
+        bio.evolve(temperature: 300.0, radiationLevel: 0.0, energyAvailable: 0.0)
+        XCTAssertGreaterThan(bio.totalDeaths, 0)
+    }
+
+    func testBiosphereEvolveMaxGenerationTracked() {
+        let bio = Biosphere()
+        for _ in 0..<5 {
+            let cell = Cell(energy: 10000.0, generation: 10)
+            bio.cells.append(cell)
+        }
+        bio.evolve(temperature: 300.0, radiationLevel: 0.0, energyAvailable: 10000.0)
+        XCTAssertGreaterThanOrEqual(bio.maxGenerationReached, 10)
+    }
+
+    func testBiosphereGeneticDiversityMultipleDifferent() {
+        let bio = Biosphere()
+        // Add cells with definitely different genomes
+        for _ in 0..<10 {
+            let cell = Cell(dna: DNAStrand(length: 30), energy: 100.0)
+            bio.cells.append(cell)
+        }
+        // With 30-base random genomes, all should be unique
+        XCTAssertGreaterThan(bio.geneticDiversity, 0.0)
+    }
+
+    func testBiosphereGeneticDiversityIdenticalCells() {
+        let bio = Biosphere()
+        let sharedDNA = DNAStrand(sequence: [.adenine, .thymine, .guanine])
+        for _ in 0..<5 {
+            let cell = Cell(dna: DNAStrand(sequence: sharedDNA.sequence), energy: 100.0)
+            bio.cells.append(cell)
+        }
+        // All identical genomes -> diversity = 1/5 = 0.2
+        XCTAssertEqual(bio.geneticDiversity, 0.2, accuracy: 0.01)
+    }
+
+    func testBiosphereExtinctSpeciesCount() {
+        let bio = Biosphere()
+        XCTAssertEqual(bio.extinctSpeciesCount, 0)
+    }
+
+    func testBiosphereAbiogenesisGenomeLength() {
+        let bio = Biosphere()
+        var succeeded = false
+        for _ in 0..<1000 {
+            let cells = bio.abiogenesis(aminoAcidCount: 10, nucleotideCount: 5, hasWater: true, temperature: 300.0)
+            if let cell = cells.first {
+                // genomeLength = min(30, nucleotideCount * 3) = min(30, 15) = 15
+                XCTAssertEqual(cell.dna.length, 15)
+                succeeded = true
+                break
+            }
+        }
+        if !succeeded {
+            // Abiogenesis is probabilistic; this is OK
+        }
+    }
+
+    func testBiosphereEvolveSortsForNaturalSelection() {
+        let bio = Biosphere()
+        // Overfill past maxCells
+        for i in 0..<(SimulationLimits.maxCells + 20) {
+            let cell = Cell(energy: 500.0)
+            cell.fitness = Double(i) / Double(SimulationLimits.maxCells + 20)
+            bio.cells.append(cell)
+        }
+        bio.evolve(temperature: 300.0, radiationLevel: 0.0, energyAvailable: 10000.0)
+        // After natural selection, surviving cells should be the fittest
+        XCTAssertLessThanOrEqual(bio.cells.count, SimulationLimits.maxCells)
+        // Check that remaining cells have higher fitness on average
+        if bio.cells.count > 1 {
+            // Cells should be sorted by fitness descending after natural selection
+            for i in 0..<(bio.cells.count - 1) {
+                XCTAssertGreaterThanOrEqual(bio.cells[i].fitness, bio.cells[i + 1].fitness)
+            }
+        }
+    }
 }

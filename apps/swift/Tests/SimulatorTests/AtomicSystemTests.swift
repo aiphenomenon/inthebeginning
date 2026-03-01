@@ -397,4 +397,277 @@ final class AtomicSystemTests: XCTestCase {
         let a2 = Atom(atomicNumber: 8)
         XCTAssertFalse(sys.breakBond(a1, a2))
     }
+
+    // MARK: - Additional ElementData Coverage
+
+    func testElementDataStruct() {
+        let e = ElementData(symbol: "X", name: "Xenium", group: 1, period: 1, electronegativity: 1.5)
+        XCTAssertEqual(e.symbol, "X")
+        XCTAssertEqual(e.name, "Xenium")
+        XCTAssertEqual(e.group, 1)
+        XCTAssertEqual(e.period, 1)
+        XCTAssertEqual(e.electronegativity, 1.5)
+    }
+
+    func testPeriodicTableAllElements() {
+        // Verify all expected elements exist
+        let expectedElements: [Int: String] = [
+            1: "H", 2: "He", 3: "Li", 4: "Be", 5: "B",
+            6: "C", 7: "N", 8: "O", 9: "F", 10: "Ne",
+            11: "Na", 12: "Mg", 13: "Al", 14: "Si", 15: "P",
+            16: "S", 17: "Cl", 18: "Ar", 19: "K", 20: "Ca", 26: "Fe"
+        ]
+        for (z, symbol) in expectedElements {
+            XCTAssertEqual(PeriodicTable.elements[z]?.symbol, symbol,
+                "Element \(z) should have symbol \(symbol)")
+        }
+    }
+
+    // MARK: - Additional Atom Coverage
+
+    func testAtomDisplayColorHydrogen() {
+        let h = Atom(atomicNumber: 1)
+        let color = h.displayColor
+        XCTAssertEqual(color.x, 1.0)
+        XCTAssertEqual(color.y, 1.0)
+        XCTAssertEqual(color.z, 1.0)
+        XCTAssertEqual(color.w, 1.0)
+    }
+
+    func testAtomDisplayColorHelium() {
+        let he = Atom(atomicNumber: 2)
+        let color = he.displayColor
+        XCTAssertEqual(color.x, 0.9, accuracy: 0.01)
+        XCTAssertEqual(color.y, 0.9, accuracy: 0.01)
+    }
+
+    func testAtomDisplayColorCarbon() {
+        let c = Atom(atomicNumber: 6)
+        let color = c.displayColor
+        XCTAssertEqual(color.x, 0.3, accuracy: 0.01)
+    }
+
+    func testAtomDisplayColorNitrogen() {
+        let n = Atom(atomicNumber: 7)
+        let color = n.displayColor
+        XCTAssertEqual(color.x, 0.2, accuracy: 0.01)
+    }
+
+    func testAtomDisplayColorOxygen() {
+        let o = Atom(atomicNumber: 8)
+        let color = o.displayColor
+        XCTAssertEqual(color.x, 1.0, accuracy: 0.01)
+        XCTAssertEqual(color.y, 0.2, accuracy: 0.01)
+    }
+
+    func testAtomDisplayColorPhosphorus() {
+        let p = Atom(atomicNumber: 15)
+        let color = p.displayColor
+        XCTAssertEqual(color.x, 1.0, accuracy: 0.01)
+    }
+
+    func testAtomDisplayColorIron() {
+        let fe = Atom(atomicNumber: 26)
+        let color = fe.displayColor
+        XCTAssertEqual(color.x, 0.7, accuracy: 0.01)
+    }
+
+    func testAtomDisplayColorDefault() {
+        // An element not in the switch statement (e.g., Lithium, atomic number 3)
+        let li = Atom(atomicNumber: 3)
+        let color = li.displayColor
+        XCTAssertEqual(color.x, 0.6, accuracy: 0.01)
+        XCTAssertEqual(color.y, 0.6, accuracy: 0.01)
+        XCTAssertEqual(color.z, 0.6, accuracy: 0.01)
+    }
+
+    func testAtomNeededElectrons() {
+        let h = Atom(atomicNumber: 1)
+        // H has 1 electron in shell with max 2
+        XCTAssertEqual(h.neededElectrons, 1)
+
+        let he = Atom(atomicNumber: 2)
+        // He has 2 electrons in shell with max 2
+        XCTAssertEqual(he.neededElectrons, 0)
+    }
+
+    func testAtomNeededElectronsNoShells() {
+        let h = Atom(atomicNumber: 1, electronCount: 0)
+        // With 0 electrons, no shells are built
+        XCTAssertEqual(h.neededElectrons, 0)
+    }
+
+    func testAtomSymbolUnknownElement() {
+        // Atom with atomic number not in the periodic table
+        let unknown = Atom(atomicNumber: 99)
+        XCTAssertEqual(unknown.symbol, "E99")
+    }
+
+    func testAtomNameUnknownElement() {
+        let unknown = Atom(atomicNumber: 99)
+        XCTAssertEqual(unknown.name, "Element-99")
+    }
+
+    func testAtomElectronegativityUnknownElement() {
+        let unknown = Atom(atomicNumber: 99)
+        XCTAssertEqual(unknown.electronegativity, 1.0)
+    }
+
+    func testAtomComputeIonizationEnergyNoElectrons() {
+        let h = Atom(atomicNumber: 1, electronCount: 0)
+        XCTAssertEqual(h.ionizationEnergy, 0.0)
+    }
+
+    func testAtomBondEnergyPolarCovalent() {
+        let h = Atom(atomicNumber: 1)
+        let o = Atom(atomicNumber: 8)
+        let energy = h.bondEnergy(with: o)
+        let expected = (ChemistryParams.bondEnergyCovalent + ChemistryParams.bondEnergyIonic) / 2.0
+        XCTAssertEqual(energy, expected, accuracy: 1e-10)
+    }
+
+    func testAtomDistanceZero() {
+        let a1 = Atom(atomicNumber: 1, position: .zero)
+        let a2 = Atom(atomicNumber: 1, position: .zero)
+        XCTAssertEqual(a1.distance(to: a2), 0.0, accuracy: 1e-10)
+    }
+
+    func testAtomDistance3D() {
+        let a1 = Atom(atomicNumber: 1, position: SIMD3<Double>(1, 2, 3))
+        let a2 = Atom(atomicNumber: 1, position: SIMD3<Double>(4, 6, 3))
+        // sqrt(9 + 16 + 0) = 5
+        XCTAssertEqual(a1.distance(to: a2), 5.0, accuracy: 1e-10)
+    }
+
+    func testAtomIsNotIonWhenNeutral() {
+        let c = Atom(atomicNumber: 6)
+        XCTAssertFalse(c.isIon)
+    }
+
+    func testAtomIonizeAndCaptureRoundTrip() {
+        let h = Atom(atomicNumber: 1)
+        XCTAssertEqual(h.charge, 0)
+        h.ionize()
+        XCTAssertEqual(h.charge, 1)
+        h.captureElectron()
+        XCTAssertEqual(h.charge, 0)
+    }
+
+    // MARK: - SIMD3 Extension Coverage
+
+    func testSIMD3RandomGaussian() {
+        let vec = SIMD3<Double>.randomGaussian(sigma: 10.0)
+        // Vector should be finite
+        XCTAssertTrue(vec.x.isFinite)
+        XCTAssertTrue(vec.y.isFinite)
+        XCTAssertTrue(vec.z.isFinite)
+    }
+
+    func testSIMD3RandomGaussianZeroSigma() {
+        let vec = SIMD3<Double>.randomGaussian(sigma: 0.0)
+        XCTAssertEqual(vec.x, 0.0)
+        XCTAssertEqual(vec.y, 0.0)
+        XCTAssertEqual(vec.z, 0.0)
+    }
+
+    // MARK: - Additional AtomicSystem Coverage
+
+    func testAtomicSystemFreeElectrons() {
+        let sys = AtomicSystem()
+        XCTAssertTrue(sys.freeElectrons.isEmpty)
+    }
+
+    func testBreakBondLowTemperature() {
+        let sys = AtomicSystem(temperature: 0.001)
+        let a1 = Atom(atomicNumber: 1, position: .zero)
+        let a2 = Atom(atomicNumber: 8, position: .zero)
+        a1.bondIDs.append(a2.id)
+        a2.bondIDs.append(a1.id)
+        sys.atoms.append(contentsOf: [a1, a2])
+
+        // At very low temperature, thermal energy < energyBarrier * 0.5
+        let broken = sys.breakBond(a1, a2)
+        XCTAssertFalse(broken, "Bond should not break at very low temperature")
+    }
+
+    func testNucleosynthesisNoNeutrons() {
+        let sys = AtomicSystem()
+        let newAtoms = sys.nucleosynthesis(protons: 5, neutrons: 0)
+        // All protons should become hydrogen
+        let hydrogens = newAtoms.filter { $0.atomicNumber == 1 }
+        XCTAssertEqual(hydrogens.count, 5)
+        let heliums = newAtoms.filter { $0.atomicNumber == 2 }
+        XCTAssertEqual(heliums.count, 0)
+    }
+
+    func testNucleosynthesisNoProtons() {
+        let sys = AtomicSystem()
+        let newAtoms = sys.nucleosynthesis(protons: 0, neutrons: 5)
+        // No atoms can form from just neutrons in this model
+        XCTAssertTrue(newAtoms.isEmpty)
+    }
+
+    func testRecombinationMultipleAtoms() {
+        let sys = AtomicSystem(temperature: TemperatureScale.recombination * 0.5)
+        let field = QuantumField()
+
+        for _ in 0..<5 {
+            field.particles.append(Particle(particleType: .proton))
+            field.particles.append(Particle(particleType: .electron))
+        }
+
+        let newAtoms = sys.recombination(field: field)
+        XCTAssertEqual(newAtoms.count, 5)
+    }
+
+    func testRecombinationMoreProtonsThanElectrons() {
+        let sys = AtomicSystem(temperature: TemperatureScale.recombination * 0.5)
+        let field = QuantumField()
+
+        for _ in 0..<5 {
+            field.particles.append(Particle(particleType: .proton))
+        }
+        for _ in 0..<2 {
+            field.particles.append(Particle(particleType: .electron))
+        }
+
+        let newAtoms = sys.recombination(field: field)
+        XCTAssertEqual(newAtoms.count, 2)
+        // 3 protons should remain
+        XCTAssertEqual(field.particles.filter { $0.particleType == .proton }.count, 3)
+    }
+
+    func testElementCountsEmpty() {
+        let sys = AtomicSystem()
+        let counts = sys.elementCounts()
+        XCTAssertTrue(counts.isEmpty)
+    }
+
+    func testElementCountsMultiple() {
+        let sys = AtomicSystem()
+        sys.atoms.append(Atom(atomicNumber: 1))
+        sys.atoms.append(Atom(atomicNumber: 1))
+        sys.atoms.append(Atom(atomicNumber: 6))
+        let counts = sys.elementCounts()
+        XCTAssertEqual(counts["H"], 2)
+        XCTAssertEqual(counts["C"], 1)
+    }
+
+    func testAttemptBondNobleGas() {
+        let sys = AtomicSystem(temperature: 300.0)
+        let he = Atom(atomicNumber: 2, position: .zero)
+        let h = Atom(atomicNumber: 1, position: SIMD3<Double>(0.5, 0, 0))
+        sys.atoms.append(contentsOf: [he, h])
+        let bonded = sys.attemptBond(he, h)
+        XCTAssertFalse(bonded)
+    }
+
+    func testStellarNucleosynthesisLowTemp() {
+        let sys = AtomicSystem()
+        for _ in 0..<10 {
+            sys.atoms.append(Atom(atomicNumber: 2, massNumber: 4))
+        }
+        let newAtoms = sys.stellarNucleosynthesis(temperature: 500.0)
+        XCTAssertTrue(newAtoms.isEmpty, "Should not synthesize below 1e3 temperature")
+    }
 }

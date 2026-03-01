@@ -649,4 +649,87 @@ mod tests {
         assert_eq!(ammonia, 1);
         assert_eq!(cs.molecules.len(), 3);
     }
+
+    // -----------------------------------------------------------------------
+    // ChemicalSystem::catalyzed_reaction
+    // -----------------------------------------------------------------------
+
+    /// Catalyzed reaction with insufficient atoms produces nothing.
+    #[test]
+    fn catalyzed_reaction_insufficient_atoms() {
+        let mut cs = ChemicalSystem::new();
+        let mut atoms = make_atoms(&[(1, 2)]); // only 2 hydrogen, not enough for anything
+        let formed = cs.catalyzed_reaction(&mut atoms, 300.0, true);
+        assert_eq!(formed, 0);
+    }
+
+    /// Catalyzed reaction with zero temperature produces nothing.
+    #[test]
+    fn catalyzed_reaction_zero_temp() {
+        let mut cs = ChemicalSystem::new();
+        // Plenty of atoms for amino acid (2C + 5H + 2O + 1N)
+        let mut atoms = make_atoms(&[(6, 10), (1, 50), (8, 10), (7, 10)]);
+        let formed = cs.catalyzed_reaction(&mut atoms, 0.0, true);
+        // thermal = K_B * 0 = 0, so condition thermal > 0 fails
+        assert_eq!(formed, 0);
+    }
+
+    /// Catalyzed reaction with catalyst can form amino acids or nucleotides.
+    #[test]
+    fn catalyzed_reaction_with_catalyst_produces_molecules() {
+        // With a catalyst, the activation energy factor is 0.3 (lower barrier).
+        // At high temperature, exp(-5 * 0.3 / (K_B * T)) approaches 1.
+        // We need lots of atoms (>10 for amino acid, >19 for nucleotide).
+        let mut total_formed = 0u64;
+        for _ in 0..100 {
+            let mut cs = ChemicalSystem::new();
+            // Provide plentiful CHON atoms
+            let mut atoms = make_atoms(&[(6, 20), (1, 80), (8, 20), (7, 20)]);
+            let formed = cs.catalyzed_reaction(&mut atoms, 1e6, true);
+            total_formed += formed;
+            if total_formed > 0 {
+                break;
+            }
+        }
+        assert!(total_formed > 0,
+            "catalyzed reaction with catalyst at high temp should eventually produce molecules");
+    }
+
+    /// Catalyzed reaction without catalyst has a higher activation barrier.
+    #[test]
+    fn catalyzed_reaction_without_catalyst() {
+        // Without catalyst, ea_factor = 1.0 (full barrier).
+        // At moderate temperature the probability is lower.
+        let mut cs = ChemicalSystem::new();
+        let mut atoms = make_atoms(&[(6, 20), (1, 80), (8, 20), (7, 20)]);
+        // At very high temperature, even without catalyst, reactions should occur.
+        let mut total_formed = 0u64;
+        for _ in 0..100 {
+            let formed = cs.catalyzed_reaction(&mut atoms, 1e8, false);
+            total_formed += formed;
+            if total_formed > 0 {
+                break;
+            }
+        }
+        // At extreme temperature, reactions should eventually happen
+        assert!(total_formed > 0,
+            "catalyzed reaction without catalyst at extreme temp should produce molecules");
+    }
+
+    /// Catalyzed reaction increments reactions_occurred.
+    #[test]
+    fn catalyzed_reaction_increments_counter() {
+        let mut total_reactions = 0u64;
+        for _ in 0..200 {
+            let mut cs = ChemicalSystem::new();
+            let mut atoms = make_atoms(&[(6, 20), (1, 80), (8, 20), (7, 20)]);
+            cs.catalyzed_reaction(&mut atoms, 1e6, true);
+            total_reactions += cs.reactions_occurred;
+            if total_reactions > 0 {
+                break;
+            }
+        }
+        assert!(total_reactions > 0,
+            "catalyzed reaction should increment reactions_occurred");
+    }
 }

@@ -26,7 +26,13 @@ public class AllTests {
         totalFailed += result[1];
         suitesRun++;
 
-        // 2. Quantum Field (WaveFunction, Particle, QuantumField)
+        // 2. Particle (Particle, ParticleType, Spin, Color)
+        result = TestParticle.runAll();
+        totalPassed += result[0];
+        totalFailed += result[1];
+        suitesRun++;
+
+        // 3. Quantum Field (QuantumField operations)
         result = TestQuantumField.runAll();
         totalPassed += result[0];
         totalFailed += result[1];
@@ -38,7 +44,13 @@ public class AllTests {
         totalFailed += result[1];
         suitesRun++;
 
-        // 4. Chemical System (Molecule, ChemicalSystem)
+        // 4a. Molecule
+        result = TestMolecule.runAll();
+        totalPassed += result[0];
+        totalFailed += result[1];
+        suitesRun++;
+
+        // 4b. Chemical System (ChemicalSystem)
         result = TestChemicalSystem.runAll();
         totalPassed += result[0];
         totalFailed += result[1];

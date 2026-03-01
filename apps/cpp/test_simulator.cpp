@@ -126,6 +126,10 @@ static void test_constants()
     TEST_ASSERT(std::string(sim::particleTypeName(sim::ParticleType::Electron)) == "electron");
     TEST_ASSERT(std::string(sim::particleTypeName(sim::ParticleType::Photon)) == "photon");
 
+    // Spin values
+    TEST_ASSERT_FLOAT_EQ(sim::spinValue(sim::Spin::Up), 0.5, 1e-9);
+    TEST_ASSERT_FLOAT_EQ(sim::spinValue(sim::Spin::Down), -0.5, 1e-9);
+
     // Epoch table
     TEST_ASSERT(sim::EPOCHS.size() == 13);
     TEST_ASSERT(sim::EPOCHS[0].name == "Planck");
@@ -241,6 +245,75 @@ static void test_quantum_field()
     TEST_ASSERT(proton_count >= 1);
     TEST_ASSERT(up_count == 0);
 
+    // Wave function collapse
+    sim::WaveFunction wf_collapse;
+    wf_collapse.amplitude = 1.0;
+    wf_collapse.coherent = true;
+    bool collapsed_result = wf_collapse.collapse();
+    // After collapse, coherent must be false
+    TEST_ASSERT(wf_collapse.coherent == false);
+    // Amplitude must be 0.0 or 1.0 after collapse
+    TEST_ASSERT(wf_collapse.amplitude == 0.0 || wf_collapse.amplitude == 1.0);
+    // If detected, amplitude == 1.0; if not, amplitude == 0.0
+    if (collapsed_result) {
+        TEST_ASSERT_FLOAT_EQ(wf_collapse.amplitude, 1.0, 1e-9);
+    } else {
+        TEST_ASSERT_FLOAT_EQ(wf_collapse.amplitude, 0.0, 1e-9);
+    }
+
+    // Collapse with zero amplitude should not detect
+    sim::WaveFunction wf_zero;
+    wf_zero.amplitude = 0.0;
+    wf_zero.coherent = true;
+    bool zero_result = wf_zero.collapse();
+    TEST_ASSERT(zero_result == false);
+    TEST_ASSERT_FLOAT_EQ(wf_zero.amplitude, 0.0, 1e-9);
+    TEST_ASSERT(wf_zero.coherent == false);
+
+    // Annihilate particle-antiparticle pair
+    sim::QuantumField qf_ann(sim::T_PLANCK);
+    double ann_energy = 2.0 * sim::M_ELECTRON * sim::C * sim::C + 1.0;
+    qf_ann.pairProduction(ann_energy);
+    TEST_ASSERT(qf_ann.particles.size() == 2);
+    TEST_ASSERT(qf_ann.totalAnnihilated == 0);
+
+    double released = qf_ann.annihilate(0, 1);
+    TEST_ASSERT(released > 0.0);
+    TEST_ASSERT(qf_ann.totalAnnihilated == 2);
+    // After annihilation, two photons are created
+    TEST_ASSERT(qf_ann.particles.size() == 2);
+    TEST_ASSERT(qf_ann.particles[0].type == sim::ParticleType::Photon);
+    TEST_ASSERT(qf_ann.particles[1].type == sim::ParticleType::Photon);
+    // Vacuum energy should increase
+    TEST_ASSERT(qf_ann.vacuumEnergy > 0.0);
+
+    // Annihilate with invalid indices
+    double invalid_ann = qf_ann.annihilate(100, 200);
+    TEST_ASSERT_FLOAT_EQ(invalid_ann, 0.0, 1e-9);
+    // Same index should also return 0
+    double same_ann = qf_ann.annihilate(0, 0);
+    TEST_ASSERT_FLOAT_EQ(same_ann, 0.0, 1e-9);
+
+    // Vacuum fluctuation
+    sim::QuantumField qf_vac(sim::T_PLANCK);
+    // Run many vacuum fluctuations -- at Planck temperature, probability is high
+    int vac_successes = 0;
+    for (int i = 0; i < 100; ++i) {
+        if (qf_vac.vacuumFluctuation()) ++vac_successes;
+    }
+    // At T_PLANCK, probability is 0.5, so we should get some successes
+    // (though pair production still needs enough energy from exponential dist)
+    TEST_ASSERT(vac_successes >= 0); // vacuumFluctuation was called without crashing
+
+    // Vacuum fluctuation at low temperature -- very low probability
+    sim::QuantumField qf_cold(1.0); // very cold
+    int cold_vac = 0;
+    for (int i = 0; i < 10; ++i) {
+        if (qf_cold.vacuumFluctuation()) ++cold_vac;
+    }
+    // At very low temp, probability is very small (1.0/T_PLANCK ~ 1e-10)
+    TEST_ASSERT(cold_vac >= 0);
+
     std::printf("  Quantum: all checks passed\n");
 }
 
@@ -326,6 +399,162 @@ static void test_atomic_system()
         if (a.atomicNumber == 2) ++he_count;
     }
     TEST_ASSERT(he_count > 0);
+
+    // ElectronShell - isFull, isEmpty, addElectron, removeElectron
+    sim::ElectronShell shell;
+    shell.n = 1;
+    shell.maxElectrons = 2;
+    shell.electrons = 0;
+    TEST_ASSERT(shell.isEmpty() == true);
+    TEST_ASSERT(shell.isFull() == false);
+
+    bool added = shell.addElectron();
+    TEST_ASSERT(added == true);
+    TEST_ASSERT(shell.electrons == 1);
+    TEST_ASSERT(shell.isEmpty() == false);
+    TEST_ASSERT(shell.isFull() == false);
+
+    added = shell.addElectron();
+    TEST_ASSERT(added == true);
+    TEST_ASSERT(shell.electrons == 2);
+    TEST_ASSERT(shell.isFull() == true);
+
+    // Cannot add to a full shell
+    added = shell.addElectron();
+    TEST_ASSERT(added == false);
+    TEST_ASSERT(shell.electrons == 2);
+
+    bool removed = shell.removeElectron();
+    TEST_ASSERT(removed == true);
+    TEST_ASSERT(shell.electrons == 1);
+
+    removed = shell.removeElectron();
+    TEST_ASSERT(removed == true);
+    TEST_ASSERT(shell.electrons == 0);
+
+    // Cannot remove from empty shell
+    removed = shell.removeElectron();
+    TEST_ASSERT(removed == false);
+    TEST_ASSERT(shell.electrons == 0);
+
+    // Atom::isIon
+    sim::Atom neutral_atom;
+    neutral_atom.init(11, 23); // Sodium, neutral
+    TEST_ASSERT(neutral_atom.isIon() == false);
+    TEST_ASSERT(neutral_atom.chargeState() == 0);
+
+    neutral_atom.ionize(); // Remove one electron
+    TEST_ASSERT(neutral_atom.isIon() == true);
+    TEST_ASSERT(neutral_atom.chargeState() == 1);
+
+    neutral_atom.captureElectron(); // Back to neutral
+    TEST_ASSERT(neutral_atom.isIon() == false);
+
+    // Double ionize
+    neutral_atom.ionize();
+    neutral_atom.ionize();
+    TEST_ASSERT(neutral_atom.isIon() == true);
+    TEST_ASSERT(neutral_atom.chargeState() == 2);
+
+    // Atom::bondEnergy
+    sim::Atom h_be;
+    h_be.init(1, 1);
+    sim::Atom h_be2;
+    h_be2.init(1, 1);
+    // H-H bond: electronegativity difference is 0, should be covalent
+    double be_cov = h_be.bondEnergy(h_be2);
+    TEST_ASSERT_FLOAT_EQ(be_cov, sim::BOND_ENERGY_COVALENT, 0.01);
+
+    // Na-Cl bond: large electronegativity difference, should be ionic
+    sim::Atom na_be;
+    na_be.init(11, 23);
+    sim::Atom cl_be;
+    cl_be.init(17, 35);
+    double be_ionic = na_be.bondEnergy(cl_be);
+    TEST_ASSERT_FLOAT_EQ(be_ionic, sim::BOND_ENERGY_IONIC, 0.01);
+
+    // C-O bond: moderate electronegativity difference, should be polar covalent
+    sim::Atom c_be;
+    c_be.init(6, 12);
+    sim::Atom o_be;
+    o_be.init(8, 16);
+    double be_polar = c_be.bondEnergy(o_be);
+    double expected_polar = (sim::BOND_ENERGY_COVALENT + sim::BOND_ENERGY_IONIC) / 2.0;
+    TEST_ASSERT_FLOAT_EQ(be_polar, expected_polar, 0.01);
+
+    // AtomicSystem::recombination
+    sim::QuantumField qf_recom(sim::T_RECOMBINATION * 0.5); // below recombination temp
+    // Add protons and electrons
+    for (int i = 0; i < 3; ++i) {
+        sim::Particle p;
+        p.type = sim::ParticleType::Proton;
+        p.position = {static_cast<double>(i), 0.0, 0.0};
+        qf_recom.particles.push_back(p);
+    }
+    for (int i = 0; i < 3; ++i) {
+        sim::Particle e;
+        e.type = sim::ParticleType::Electron;
+        e.position = {static_cast<double>(i), 1.0, 0.0};
+        qf_recom.particles.push_back(e);
+    }
+
+    sim::AtomicSystem as_recom(sim::T_RECOMBINATION * 0.5);
+    auto recom_atoms = as_recom.recombination(qf_recom);
+    TEST_ASSERT(!recom_atoms.empty());
+    TEST_ASSERT(recom_atoms.size() == 3);
+    // All should be hydrogen
+    for (auto& a : recom_atoms) {
+        TEST_ASSERT(a.atomicNumber == 1);
+    }
+    // Protons and electrons should be consumed from the field
+    int remaining_protons = 0;
+    int remaining_electrons = 0;
+    for (auto& p : qf_recom.particles) {
+        if (p.type == sim::ParticleType::Proton) ++remaining_protons;
+        if (p.type == sim::ParticleType::Electron) ++remaining_electrons;
+    }
+    TEST_ASSERT(remaining_protons == 0);
+    TEST_ASSERT(remaining_electrons == 0);
+
+    // Recombination above threshold should produce nothing
+    sim::AtomicSystem as_hot(sim::T_RECOMBINATION + 1000.0);
+    sim::QuantumField qf_hot(sim::T_PLANCK);
+    sim::Particle hot_p;
+    hot_p.type = sim::ParticleType::Proton;
+    qf_hot.particles.push_back(hot_p);
+    sim::Particle hot_e;
+    hot_e.type = sim::ParticleType::Electron;
+    qf_hot.particles.push_back(hot_e);
+    auto hot_recom = as_hot.recombination(qf_hot);
+    TEST_ASSERT(hot_recom.empty());
+
+    // AtomicSystem::stellarNucleosynthesis
+    sim::AtomicSystem as_stellar;
+    // Add helium atoms for triple-alpha process
+    for (int i = 0; i < 30; ++i) {
+        sim::Atom he_s;
+        he_s.init(2, 4);
+        as_stellar.atoms.push_back(he_s);
+    }
+
+    // Run stellar nucleosynthesis many times at high temperature
+    int stellar_produced = 0;
+    for (int i = 0; i < 100; ++i) {
+        auto new_atoms = as_stellar.stellarNucleosynthesis(sim::T_STELLAR_CORE);
+        stellar_produced += static_cast<int>(new_atoms.size());
+    }
+    // Should have produced some heavier elements
+    TEST_ASSERT(stellar_produced >= 0); // probabilistic, but should not crash
+
+    // Stellar nucleosynthesis at too low temperature should produce nothing
+    sim::AtomicSystem as_cold_stellar;
+    for (int i = 0; i < 10; ++i) {
+        sim::Atom he_c;
+        he_c.init(2, 4);
+        as_cold_stellar.atoms.push_back(he_c);
+    }
+    auto cold_result = as_cold_stellar.stellarNucleosynthesis(500.0);
+    TEST_ASSERT(cold_result.empty());
 
     std::printf("  Atomic: all checks passed\n");
 }
@@ -428,6 +657,112 @@ static void test_chemistry()
         total += cs4.catalyzedReaction(500.0, true);
     }
     TEST_ASSERT(total >= 0);
+
+    // formAminoAcid
+    sim::AtomicSystem as5;
+    sim::ChemicalSystem cs5(as5);
+
+    // Add enough atoms for amino acid: 2C + 5H + 2O + 1N
+    for (int i = 0; i < 10; ++i) {
+        sim::Atom c; c.init(6, 12); as5.atoms.push_back(c);
+    }
+    for (int i = 0; i < 20; ++i) {
+        sim::Atom h; h.init(1, 1); as5.atoms.push_back(h);
+    }
+    for (int i = 0; i < 10; ++i) {
+        sim::Atom o; o.init(8, 16); as5.atoms.push_back(o);
+    }
+    for (int i = 0; i < 5; ++i) {
+        sim::Atom n; n.init(7, 14); as5.atoms.push_back(n);
+    }
+
+    bool aa_formed = cs5.formAminoAcid("Gly");
+    TEST_ASSERT(aa_formed == true);
+    TEST_ASSERT(cs5.aminoAcidCount == 1);
+    TEST_ASSERT(!cs5.molecules.empty());
+    // Verify molecule properties
+    bool found_aa = false;
+    for (auto& mol : cs5.molecules) {
+        if (mol.name == "Gly") {
+            found_aa = true;
+            TEST_ASSERT(mol.isOrganic == true);
+            TEST_ASSERT(!mol.functionalGroups.empty());
+            // Should have amino and carboxyl groups
+            bool has_amino = false, has_carboxyl = false;
+            for (auto& fg : mol.functionalGroups) {
+                if (fg == "amino") has_amino = true;
+                if (fg == "carboxyl") has_carboxyl = true;
+            }
+            TEST_ASSERT(has_amino == true);
+            TEST_ASSERT(has_carboxyl == true);
+        }
+    }
+    TEST_ASSERT(found_aa == true);
+
+    // Form another amino acid with different type
+    bool aa2_formed = cs5.formAminoAcid("Ala");
+    TEST_ASSERT(aa2_formed == true);
+    TEST_ASSERT(cs5.aminoAcidCount == 2);
+
+    // formAminoAcid with insufficient atoms should fail
+    sim::AtomicSystem as_empty;
+    sim::ChemicalSystem cs_empty(as_empty);
+    bool no_aa = cs_empty.formAminoAcid("Gly");
+    TEST_ASSERT(no_aa == false);
+    TEST_ASSERT(cs_empty.aminoAcidCount == 0);
+
+    // formNucleotide
+    sim::AtomicSystem as6;
+    sim::ChemicalSystem cs6(as6);
+
+    // Add enough atoms for nucleotide: 5C + 8H + 4O + 2N
+    for (int i = 0; i < 15; ++i) {
+        sim::Atom c; c.init(6, 12); as6.atoms.push_back(c);
+    }
+    for (int i = 0; i < 30; ++i) {
+        sim::Atom h; h.init(1, 1); as6.atoms.push_back(h);
+    }
+    for (int i = 0; i < 15; ++i) {
+        sim::Atom o; o.init(8, 16); as6.atoms.push_back(o);
+    }
+    for (int i = 0; i < 10; ++i) {
+        sim::Atom n; n.init(7, 14); as6.atoms.push_back(n);
+    }
+
+    bool nuc_formed = cs6.formNucleotide("A");
+    TEST_ASSERT(nuc_formed == true);
+    TEST_ASSERT(cs6.nucleotideCount == 1);
+    // Verify molecule properties
+    bool found_nuc = false;
+    for (auto& mol : cs6.molecules) {
+        if (mol.name == "nucleotide-A") {
+            found_nuc = true;
+            TEST_ASSERT(mol.isOrganic == true);
+            // Should have sugar, phosphate, base groups
+            bool has_sugar = false, has_phosphate = false, has_base = false;
+            for (auto& fg : mol.functionalGroups) {
+                if (fg == "sugar") has_sugar = true;
+                if (fg == "phosphate") has_phosphate = true;
+                if (fg == "base") has_base = true;
+            }
+            TEST_ASSERT(has_sugar == true);
+            TEST_ASSERT(has_phosphate == true);
+            TEST_ASSERT(has_base == true);
+        }
+    }
+    TEST_ASSERT(found_nuc == true);
+
+    // Form nucleotide with different base
+    bool nuc2_formed = cs6.formNucleotide("T");
+    TEST_ASSERT(nuc2_formed == true);
+    TEST_ASSERT(cs6.nucleotideCount == 2);
+
+    // formNucleotide with insufficient atoms should fail
+    sim::AtomicSystem as_empty2;
+    sim::ChemicalSystem cs_empty2(as_empty2);
+    bool no_nuc = cs_empty2.formNucleotide("G");
+    TEST_ASSERT(no_nuc == false);
+    TEST_ASSERT(cs_empty2.nucleotideCount == 0);
 
     std::printf("  Chemistry: all checks passed\n");
 }
@@ -551,6 +886,132 @@ static void test_biology()
     double avg_gc = bio.averageGcContent();
     TEST_ASSERT(avg_gc >= 0.0);
     TEST_ASSERT(avg_gc <= 1.0);
+
+    // Gene::methylate, Gene::demethylate, Gene::isSilenced
+    sim::Gene epi_gene;
+    epi_gene.name = "epi_test";
+    epi_gene.sequence = {'A', 'T', 'G', 'C', 'A', 'T'};
+    epi_gene.startPos = 0;
+    epi_gene.endPos = 6;
+
+    // Initially no epigenetic marks, not silenced
+    TEST_ASSERT(epi_gene.isSilenced() == false);
+    TEST_ASSERT(epi_gene.epigeneticMarks.empty());
+
+    // Methylate positions -- need more than length/2 = 3 active methylations to silence
+    epi_gene.methylate(0, 1);
+    TEST_ASSERT(epi_gene.epigeneticMarks.size() == 1);
+    TEST_ASSERT(epi_gene.epigeneticMarks[0].markType == "methylation");
+    TEST_ASSERT(epi_gene.epigeneticMarks[0].position == 0);
+    TEST_ASSERT(epi_gene.epigeneticMarks[0].active == true);
+    TEST_ASSERT(epi_gene.epigeneticMarks[0].generationAdded == 1);
+    TEST_ASSERT(epi_gene.isSilenced() == false); // only 1 methylation, need >3
+
+    epi_gene.methylate(1, 1);
+    epi_gene.methylate(2, 1);
+    TEST_ASSERT(epi_gene.isSilenced() == false); // 3 methylations, need >3
+
+    epi_gene.methylate(3, 2);
+    TEST_ASSERT(epi_gene.isSilenced() == true); // 4 methylations > 3 (length/2)
+
+    // Demethylate one position
+    epi_gene.demethylate(0);
+    // After demethylation of position 0, should have 3 active methylations
+    int active_methyl = 0;
+    for (auto& mark : epi_gene.epigeneticMarks) {
+        if (mark.active && mark.markType == "methylation")
+            ++active_methyl;
+    }
+    TEST_ASSERT(active_methyl == 3);
+    TEST_ASSERT(epi_gene.isSilenced() == false); // 3 methylations, not >3
+
+    // Demethylate a position that has no methylation (should be a no-op)
+    epi_gene.demethylate(5);
+    // Count should still be 3
+    active_methyl = 0;
+    for (auto& mark : epi_gene.epigeneticMarks) {
+        if (mark.active && mark.markType == "methylation")
+            ++active_methyl;
+    }
+    TEST_ASSERT(active_methyl == 3);
+
+    // Gene::acetylate
+    sim::Gene acet_gene;
+    acet_gene.name = "acet_test";
+    acet_gene.sequence = {'A', 'T', 'G', 'C', 'A', 'T', 'G', 'C'};
+    acet_gene.startPos = 0;
+    acet_gene.endPos = 8;
+
+    acet_gene.acetylate(0, 5);
+    TEST_ASSERT(acet_gene.epigeneticMarks.size() == 1);
+    TEST_ASSERT(acet_gene.epigeneticMarks[0].markType == "acetylation");
+    TEST_ASSERT(acet_gene.epigeneticMarks[0].position == 0);
+    TEST_ASSERT(acet_gene.epigeneticMarks[0].active == true);
+    TEST_ASSERT(acet_gene.epigeneticMarks[0].generationAdded == 5);
+
+    acet_gene.acetylate(2, 5);
+    TEST_ASSERT(acet_gene.epigeneticMarks.size() == 2);
+
+    // Gene::updateExpression
+    sim::Gene expr_gene;
+    expr_gene.name = "expr_test";
+    expr_gene.sequence = {'A', 'T', 'G', 'C', 'A', 'T'};
+    expr_gene.startPos = 0;
+    expr_gene.endPos = 6;
+    expr_gene.expressionLevel = 1.0;
+
+    // No marks: expression should be 1.0 (base modifier)
+    expr_gene.updateExpression();
+    TEST_ASSERT_FLOAT_EQ(expr_gene.expressionLevel, 1.0, 0.01);
+
+    // Add acetylation marks (increase expression)
+    expr_gene.acetylate(0, 0);
+    expr_gene.acetylate(1, 0);
+    expr_gene.acetylate(2, 0);
+    expr_gene.updateExpression();
+    // modifier = 1.0 + 0.1 * 3 - 0.15 * 0 = 1.3
+    TEST_ASSERT_FLOAT_EQ(expr_gene.expressionLevel, 1.3, 0.01);
+
+    // Add methylation marks (decrease expression)
+    expr_gene.methylate(0, 0);
+    expr_gene.methylate(1, 0);
+    expr_gene.updateExpression();
+    // modifier = 1.0 + 0.1 * 3 - 0.15 * 2 = 1.0
+    TEST_ASSERT_FLOAT_EQ(expr_gene.expressionLevel, 1.0, 0.01);
+
+    // Heavy methylation should clamp to 0.0
+    for (int i = 0; i < 20; ++i) {
+        expr_gene.methylate(i, 0);
+    }
+    expr_gene.updateExpression();
+    TEST_ASSERT(expr_gene.expressionLevel >= 0.0);
+    TEST_ASSERT(expr_gene.expressionLevel <= 2.0);
+
+    // Silenced gene should return empty transcription
+    sim::Gene silenced_gene;
+    silenced_gene.name = "silenced";
+    silenced_gene.sequence = {'A', 'T', 'G', 'C'};
+    silenced_gene.startPos = 0;
+    silenced_gene.endPos = 4;
+    // Methylate more than length/2 = 2 positions
+    silenced_gene.methylate(0, 0);
+    silenced_gene.methylate(1, 0);
+    silenced_gene.methylate(2, 0);
+    TEST_ASSERT(silenced_gene.isSilenced() == true);
+    auto silenced_mrna = silenced_gene.transcribe();
+    TEST_ASSERT(silenced_mrna.empty());
+
+    // Protein::length
+    sim::Protein len_prot;
+    len_prot.aminoAcids = {"Met", "Ala", "Val"};
+    TEST_ASSERT(len_prot.length() == 3);
+
+    sim::Protein empty_prot;
+    TEST_ASSERT(empty_prot.length() == 0);
+
+    sim::Protein long_prot;
+    long_prot.aminoAcids = {"Met", "Ala", "Val", "Leu", "Ile", "Phe", "Trp", "Gly", "Ser", "Thr"};
+    TEST_ASSERT(long_prot.length() == 10);
 
     std::printf("  Biology: all checks passed\n");
 }

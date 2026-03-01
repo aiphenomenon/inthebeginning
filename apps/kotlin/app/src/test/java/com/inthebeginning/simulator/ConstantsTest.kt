@@ -139,4 +139,104 @@ class ConstantsTest {
         assertTrue(Constants.HISTONE_ACETYLATION_PROB > 0 && Constants.HISTONE_ACETYLATION_PROB < 1)
         assertTrue(Constants.HISTONE_DEACETYLATION_PROB > 0 && Constants.HISTONE_DEACETYLATION_PROB < 1)
     }
+
+    @Test
+    fun nuclearParameters() {
+        assertTrue(Constants.NUCLEAR_RADIUS > 0)
+        assertTrue(Constants.BINDING_ENERGY_DEUTERIUM > 0)
+        assertTrue(Constants.BINDING_ENERGY_HELIUM4 > 0)
+        assertTrue(Constants.BINDING_ENERGY_CARBON12 > 0)
+        assertTrue(Constants.BINDING_ENERGY_IRON56 > 0)
+    }
+
+    @Test
+    fun bosonMasses() {
+        assertEquals(157000.0, Constants.M_W_BOSON, 0.0)
+        assertEquals(178000.0, Constants.M_Z_BOSON, 0.0)
+        assertEquals(245000.0, Constants.M_HIGGS, 0.0)
+    }
+
+    @Test
+    fun stellarCoreTemperature() {
+        assertTrue(Constants.T_STELLAR_CORE > Constants.T_RECOMBINATION)
+    }
+
+    @Test
+    fun chromatinRemodelEnergy() {
+        assertTrue(Constants.CHROMATIN_REMODEL_ENERGY > 0)
+    }
+
+    @Test
+    fun environmentalParameters() {
+        assertTrue(Constants.UV_MUTATION_RATE > 0)
+        assertTrue(Constants.COSMIC_RAY_MUTATION_RATE > 0)
+        assertTrue(Constants.THERMAL_FLUCTUATION > 0)
+        assertTrue(Constants.RADIATION_DAMAGE_THRESHOLD > 0)
+    }
+
+    @Test
+    fun codonTableCoversAllStandardCodons() {
+        // There should be 64 possible codons; table has entries for most
+        assertTrue(Constants.CODON_TABLE.size > 50)
+        // Verify a few specific mappings
+        assertEquals("Phe", Constants.CODON_TABLE["UUU"])
+        assertEquals("Leu", Constants.CODON_TABLE["UUA"])
+        assertEquals("Ile", Constants.CODON_TABLE["AUU"])
+        assertEquals("Val", Constants.CODON_TABLE["GUU"])
+        assertEquals("Ser", Constants.CODON_TABLE["UCU"])
+        assertEquals("Pro", Constants.CODON_TABLE["CCU"])
+        assertEquals("Thr", Constants.CODON_TABLE["ACU"])
+        assertEquals("Ala", Constants.CODON_TABLE["GCU"])
+        assertEquals("Tyr", Constants.CODON_TABLE["UAU"])
+        assertEquals("His", Constants.CODON_TABLE["CAU"])
+        assertEquals("Gln", Constants.CODON_TABLE["CAA"])
+        assertEquals("Asn", Constants.CODON_TABLE["AAU"])
+        assertEquals("Lys", Constants.CODON_TABLE["AAA"])
+        assertEquals("Asp", Constants.CODON_TABLE["GAU"])
+        assertEquals("Glu", Constants.CODON_TABLE["GAA"])
+        assertEquals("Cys", Constants.CODON_TABLE["UGU"])
+        assertEquals("Trp", Constants.CODON_TABLE["UGG"])
+        assertEquals("Arg", Constants.CODON_TABLE["CGU"])
+        assertEquals("Gly", Constants.CODON_TABLE["GGU"])
+    }
+
+    @Test
+    fun epochInfoKeyEventsIsMutable() {
+        val epoch = EpochInfo("Test", 0, "Test epoch")
+        assertTrue(epoch.keyEvents.isEmpty())
+        epoch.keyEvents.add("Test event")
+        assertEquals(1, epoch.keyEvents.size)
+        assertEquals("Test event", epoch.keyEvents[0])
+    }
+
+    @Test
+    fun epochInfoFields() {
+        val epoch = EpochInfo("TestEpoch", 42, "A test description")
+        assertEquals("TestEpoch", epoch.name)
+        assertEquals(42, epoch.startTick)
+        assertEquals("A test description", epoch.description)
+    }
+
+    @Test
+    fun epochsDescriptionsNotEmpty() {
+        for (epoch in EPOCHS) {
+            assertTrue("Epoch ${epoch.name} has empty description", epoch.description.isNotEmpty())
+            assertTrue("Epoch ${epoch.name} has empty name", epoch.name.isNotEmpty())
+        }
+    }
+
+    @Test
+    fun electronShellsSum() {
+        // Sum of all possible electrons across shells
+        val total = Constants.ELECTRON_SHELLS.sum()
+        assertEquals(118, total) // Maximum electrons = sum of shell capacities
+    }
+
+    @Test
+    fun chemistryBondEnergies() {
+        assertEquals(3.5, Constants.BOND_ENERGY_COVALENT, 0.0)
+        assertEquals(5.0, Constants.BOND_ENERGY_IONIC, 0.0)
+        assertEquals(0.2, Constants.BOND_ENERGY_HYDROGEN, 0.0)
+        assertEquals(0.01, Constants.BOND_ENERGY_VAN_DER_WAALS, 0.0)
+    }
 }

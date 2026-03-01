@@ -307,4 +307,347 @@ final class ChemicalSystemTests: XCTestCase {
         let aas = chemSys.synthesizeAminoAcids(energyInput: 1000.0)
         XCTAssertTrue(aas.isEmpty)
     }
+
+    // MARK: - Additional BondType Coverage
+
+    func testBondTypeRawValues() {
+        XCTAssertEqual(BondType.covalent.rawValue, "covalent")
+        XCTAssertEqual(BondType.ionic.rawValue, "ionic")
+        XCTAssertEqual(BondType.polarCovalent.rawValue, "polar_covalent")
+        XCTAssertEqual(BondType.hydrogen.rawValue, "hydrogen")
+        XCTAssertEqual(BondType.vanDerWaals.rawValue, "van_der_waals")
+    }
+
+    // MARK: - Additional MoleculeType Coverage
+
+    func testMoleculeTypeDisplayNameAll() {
+        XCTAssertEqual(MoleculeType.carbonDioxide.displayName, "Carbon Dioxide")
+        XCTAssertEqual(MoleculeType.ammonia.displayName, "Ammonia")
+        XCTAssertEqual(MoleculeType.hydrogenCyanide.displayName, "Hydrogen Cyanide")
+        XCTAssertEqual(MoleculeType.formaldehyde.displayName, "Formaldehyde")
+        XCTAssertEqual(MoleculeType.aminoAcid.displayName, "Amino Acid")
+        XCTAssertEqual(MoleculeType.nucleotide.displayName, "Nucleotide")
+        XCTAssertEqual(MoleculeType.phospholipid.displayName, "Phospholipid")
+        XCTAssertEqual(MoleculeType.genericOrganic.displayName, "Organic Molecule")
+        XCTAssertEqual(MoleculeType.genericInorganic.displayName, "Inorganic Molecule")
+    }
+
+    func testMoleculeTypeRawValues() {
+        XCTAssertEqual(MoleculeType.water.rawValue, "H2O")
+        XCTAssertEqual(MoleculeType.carbonDioxide.rawValue, "CO2")
+        XCTAssertEqual(MoleculeType.methane.rawValue, "CH4")
+        XCTAssertEqual(MoleculeType.ammonia.rawValue, "NH3")
+        XCTAssertEqual(MoleculeType.hydrogenCyanide.rawValue, "HCN")
+        XCTAssertEqual(MoleculeType.formaldehyde.rawValue, "CH2O")
+        XCTAssertEqual(MoleculeType.aminoAcid.rawValue, "amino_acid")
+        XCTAssertEqual(MoleculeType.nucleotide.rawValue, "nucleotide")
+        XCTAssertEqual(MoleculeType.phospholipid.rawValue, "phospholipid")
+        XCTAssertEqual(MoleculeType.genericOrganic.rawValue, "organic")
+        XCTAssertEqual(MoleculeType.genericInorganic.rawValue, "inorganic")
+    }
+
+    func testMoleculeTypeDisplayColorAllTypes() {
+        for mType in MoleculeType.allCases {
+            let color = mType.displayColor
+            XCTAssertGreaterThanOrEqual(color.x, 0.0)
+            XCTAssertLessThanOrEqual(color.x, 1.0)
+            XCTAssertGreaterThanOrEqual(color.y, 0.0)
+            XCTAssertLessThanOrEqual(color.y, 1.0)
+            XCTAssertGreaterThanOrEqual(color.z, 0.0)
+            XCTAssertLessThanOrEqual(color.z, 1.0)
+            XCTAssertGreaterThan(color.w, 0.0)
+        }
+    }
+
+    // MARK: - Additional Molecule Coverage
+
+    func testMoleculeDisplayColorFromType() {
+        let water = Molecule(atomIDs: [1, 2, 3], formula: "H2O", moleculeType: .water)
+        XCTAssertEqual(water.displayColor, MoleculeType.water.displayColor)
+    }
+
+    func testMoleculeCustomProperties() {
+        let mol = Molecule(
+            atomIDs: [1, 2],
+            formula: "XY",
+            moleculeType: .genericInorganic,
+            position: SIMD3<Double>(1, 2, 3),
+            velocity: SIMD3<Double>(0.1, 0.2, 0.3),
+            energy: 5.0,
+            isStable: false
+        )
+        XCTAssertEqual(mol.position, SIMD3<Double>(1, 2, 3))
+        XCTAssertEqual(mol.velocity, SIMD3<Double>(0.1, 0.2, 0.3))
+        XCTAssertEqual(mol.energy, 5.0)
+        XCTAssertFalse(mol.isStable)
+    }
+
+    // MARK: - Nucleotide Synthesis Coverage
+
+    func testSynthesizeNucleotidesWithPrecursors() {
+        let chemSys = ChemicalSystem(temperature: 300.0)
+        chemSys.catalystPresent = true
+        // Need 2+ organics and 1+ water
+        var produced = false
+        for _ in 0..<300 {
+            // Reset precursors
+            let organic1 = Molecule(atomIDs: [1, 2, 3, 4, 5], formula: "CH4", moleculeType: .methane)
+            let organic2 = Molecule(atomIDs: [6, 7, 8, 9, 10], formula: "CH2O", moleculeType: .formaldehyde)
+            let water = Molecule(atomIDs: [11, 12, 13], formula: "H2O", moleculeType: .water)
+            chemSys.molecules.append(contentsOf: [organic1, organic2, water])
+
+            let nucs = chemSys.synthesizeNucleotides(energyInput: 5000.0)
+            if !nucs.isEmpty {
+                produced = true
+                break
+            }
+        }
+        XCTAssertTrue(produced, "Should eventually synthesize nucleotides with organics and energy")
+    }
+
+    func testSynthesizeNucleotidesNoPrecursors() {
+        let chemSys = ChemicalSystem()
+        let nucs = chemSys.synthesizeNucleotides(energyInput: 5000.0)
+        XCTAssertTrue(nucs.isEmpty)
+    }
+
+    func testSynthesizeNucleotidesInsufficientOrganics() {
+        let chemSys = ChemicalSystem()
+        let organic1 = Molecule(atomIDs: [1], formula: "CH4", moleculeType: .methane)
+        let water = Molecule(atomIDs: [2], formula: "H2O", moleculeType: .water)
+        chemSys.molecules.append(contentsOf: [organic1, water])
+        let nucs = chemSys.synthesizeNucleotides(energyInput: 5000.0)
+        XCTAssertTrue(nucs.isEmpty, "Should not synthesize with only 1 organic")
+    }
+
+    // MARK: - Phospholipid Synthesis Coverage
+
+    func testSynthesizePhospholipidsWithPrecursors() {
+        let chemSys = ChemicalSystem(temperature: 300.0)
+        chemSys.catalystPresent = true
+        var produced = false
+        for _ in 0..<300 {
+            let aa1 = Molecule(atomIDs: [1, 2], formula: "Gly", moleculeType: .aminoAcid)
+            let aa2 = Molecule(atomIDs: [3, 4], formula: "Ala", moleculeType: .aminoAcid)
+            let water = Molecule(atomIDs: [5, 6, 7], formula: "H2O", moleculeType: .water)
+            chemSys.molecules.append(contentsOf: [aa1, aa2, water])
+
+            let pls = chemSys.synthesizePhospholipids()
+            if !pls.isEmpty {
+                produced = true
+                break
+            }
+        }
+        XCTAssertTrue(produced, "Should eventually synthesize phospholipids with catalyst")
+    }
+
+    func testSynthesizePhospholipidsNoPrecursors() {
+        let chemSys = ChemicalSystem()
+        let pls = chemSys.synthesizePhospholipids()
+        XCTAssertTrue(pls.isEmpty)
+    }
+
+    func testSynthesizePhospholipidsInsufficientOrganics() {
+        let chemSys = ChemicalSystem()
+        let aa1 = Molecule(atomIDs: [1], formula: "Gly", moleculeType: .aminoAcid)
+        let water = Molecule(atomIDs: [2], formula: "H2O", moleculeType: .water)
+        chemSys.molecules.append(contentsOf: [aa1, water])
+        let pls = chemSys.synthesizePhospholipids()
+        XCTAssertTrue(pls.isEmpty)
+    }
+
+    // MARK: - Thermal Decomposition Coverage
+
+    func testThermalDecompositionAboveThreshold() {
+        let chemSys = ChemicalSystem(temperature: 5000.0) // Very high temp
+        for _ in 0..<20 {
+            let mol = Molecule(atomIDs: [1], formula: "X", moleculeType: .genericOrganic, isStable: false)
+            chemSys.molecules.append(mol)
+        }
+        var totalDecomposed = 0
+        for _ in 0..<100 {
+            totalDecomposed += chemSys.thermalDecomposition()
+            if totalDecomposed > 0 { break }
+            // Re-add molecules if all decomposed
+            if chemSys.molecules.isEmpty {
+                for _ in 0..<20 {
+                    chemSys.molecules.append(Molecule(atomIDs: [1], formula: "X", moleculeType: .genericOrganic, isStable: false))
+                }
+            }
+        }
+        XCTAssertGreaterThan(totalDecomposed, 0, "High temperature should decompose unstable molecules")
+    }
+
+    func testThermalDecompositionStableMolecules() {
+        let chemSys = ChemicalSystem(temperature: 600.0) // Just above threshold
+        let mol = Molecule(atomIDs: [1], formula: "X", moleculeType: .genericInorganic,
+                          bonds: [Bond(atomA: 1, atomB: 2, type: .covalent, energy: 100.0)],
+                          isStable: true)
+        chemSys.molecules.append(mol)
+        // May or may not decompose - just verify no crash
+        let _ = chemSys.thermalDecomposition()
+    }
+
+    // MARK: - Evolve Coverage
+
+    func testEvolveStabilityCheck() {
+        let chemSys = ChemicalSystem(temperature: 600.0)
+        let mol = Molecule(atomIDs: [1], formula: "X", moleculeType: .genericOrganic,
+                          velocity: SIMD3<Double>(1, 0, 0),
+                          isStable: true)
+        chemSys.molecules.append(mol)
+        chemSys.evolve(dt: 1.0)
+        // At 600 > 500, stability depends on bondEnergy vs temperature * kB
+        // With 0 bonds, bondEnergy = 0, so molecule should become unstable
+        XCTAssertFalse(mol.isStable)
+    }
+
+    func testEvolvePositionUpdate() {
+        let chemSys = ChemicalSystem(temperature: 0.001) // Very low temp for minimal Brownian motion
+        let mol = Molecule(atomIDs: [1], formula: "X", moleculeType: .water,
+                          velocity: SIMD3<Double>(10, 0, 0))
+        chemSys.molecules.append(mol)
+        chemSys.evolve(dt: 1.0)
+        // Position should have moved approximately 10 units in x
+        XCTAssertGreaterThan(mol.position.x, 5.0)
+    }
+
+    // MARK: - Statistics Additional Coverage
+
+    func testMoleculeCountsEmpty() {
+        let chemSys = ChemicalSystem()
+        let counts = chemSys.moleculeCounts()
+        XCTAssertTrue(counts.isEmpty)
+    }
+
+    func testMoleculeCountsMultipleSameType() {
+        let chemSys = ChemicalSystem()
+        chemSys.molecules.append(Molecule(atomIDs: [1], formula: "H2O", moleculeType: .water))
+        chemSys.molecules.append(Molecule(atomIDs: [2], formula: "H2O", moleculeType: .water))
+        chemSys.molecules.append(Molecule(atomIDs: [3], formula: "H2O", moleculeType: .water))
+        let counts = chemSys.moleculeCounts()
+        XCTAssertEqual(counts["H2O"], 3)
+    }
+
+    func testOrganicCountIncludesAllOrganicTypes() {
+        let chemSys = ChemicalSystem()
+        chemSys.molecules.append(Molecule(atomIDs: [1], formula: "CH4", moleculeType: .methane))
+        chemSys.molecules.append(Molecule(atomIDs: [2], formula: "HCN", moleculeType: .hydrogenCyanide))
+        chemSys.molecules.append(Molecule(atomIDs: [3], formula: "CH2O", moleculeType: .formaldehyde))
+        chemSys.molecules.append(Molecule(atomIDs: [4], formula: "nuc", moleculeType: .nucleotide))
+        chemSys.molecules.append(Molecule(atomIDs: [5], formula: "pl", moleculeType: .phospholipid))
+        chemSys.molecules.append(Molecule(atomIDs: [6], formula: "org", moleculeType: .genericOrganic))
+        XCTAssertEqual(chemSys.organicCount, 6)
+    }
+
+    // MARK: - Amino Acid Synthesis Additional Coverage
+
+    func testSynthesizeAminoAcidsWithCatalyst() {
+        let chemSys = ChemicalSystem(temperature: 300.0)
+        chemSys.catalystPresent = true
+        var produced = false
+        for _ in 0..<200 {
+            let methane = Molecule(atomIDs: [1, 2, 3, 4, 5], formula: "CH4", moleculeType: .methane)
+            let ammonia = Molecule(atomIDs: [6, 7, 8, 9], formula: "NH3", moleculeType: .ammonia)
+            let water = Molecule(atomIDs: [10, 11, 12], formula: "H2O", moleculeType: .water)
+            chemSys.molecules.append(contentsOf: [methane, ammonia, water])
+
+            let aas = chemSys.synthesizeAminoAcids(energyInput: 500.0)
+            if !aas.isEmpty {
+                produced = true
+                XCTAssertEqual(aas.first?.moleculeType, .aminoAcid)
+                break
+            }
+        }
+        XCTAssertTrue(produced, "Catalyst should boost amino acid synthesis")
+    }
+
+    func testSynthesizeAminoAcidsConsumesReactants() {
+        let chemSys = ChemicalSystem(temperature: 300.0)
+        let methane = Molecule(atomIDs: [1], formula: "CH4", moleculeType: .methane)
+        let ammonia = Molecule(atomIDs: [2], formula: "NH3", moleculeType: .ammonia)
+        let water = Molecule(atomIDs: [3], formula: "H2O", moleculeType: .water)
+        chemSys.molecules.append(contentsOf: [methane, ammonia, water])
+
+        // With very high energy, synthesis probability approaches 0.05
+        var consumed = false
+        for _ in 0..<300 {
+            let aas = chemSys.synthesizeAminoAcids(energyInput: 10000.0)
+            if !aas.isEmpty {
+                consumed = true
+                break
+            }
+            // Re-add if molecules were consumed
+            if chemSys.molecules.filter({ $0.moleculeType == .methane }).isEmpty {
+                chemSys.molecules.append(Molecule(atomIDs: [1], formula: "CH4", moleculeType: .methane))
+                chemSys.molecules.append(Molecule(atomIDs: [2], formula: "NH3", moleculeType: .ammonia))
+                chemSys.molecules.append(Molecule(atomIDs: [3], formula: "H2O", moleculeType: .water))
+            }
+        }
+        if consumed {
+            XCTAssertGreaterThan(chemSys.totalReactions, 0)
+        }
+    }
+
+    func testSynthesizeAminoAcidStability() {
+        let chemSys = ChemicalSystem(temperature: 300.0) // Below 400.0
+        chemSys.catalystPresent = true
+        var produced = false
+        for _ in 0..<300 {
+            let methane = Molecule(atomIDs: [1, 2, 3, 4, 5], formula: "CH4", moleculeType: .methane)
+            let ammonia = Molecule(atomIDs: [6, 7, 8, 9], formula: "NH3", moleculeType: .ammonia)
+            let water = Molecule(atomIDs: [10, 11, 12], formula: "H2O", moleculeType: .water)
+            chemSys.molecules.append(contentsOf: [methane, ammonia, water])
+
+            let aas = chemSys.synthesizeAminoAcids(energyInput: 1000.0)
+            if let aa = aas.first {
+                XCTAssertTrue(aa.isStable, "Amino acid should be stable below 400K")
+                produced = true
+                break
+            }
+        }
+    }
+
+    // MARK: - Form Water Additional Coverage
+
+    func testFormWaterMultiple() {
+        let atomSys = AtomicSystem()
+        for _ in 0..<6 {
+            atomSys.atoms.append(Atom(atomicNumber: 1, massNumber: 1))
+        }
+        for _ in 0..<3 {
+            atomSys.atoms.append(Atom(atomicNumber: 8, massNumber: 16))
+        }
+
+        let chemSys = ChemicalSystem()
+        let water = chemSys.formWater(atomicSystem: atomSys)
+        XCTAssertEqual(water.count, 3)
+        XCTAssertEqual(chemSys.waterCount, 3)
+    }
+
+    func testFormWaterBondProperties() {
+        let atomSys = AtomicSystem()
+        let h1 = Atom(atomicNumber: 1, massNumber: 1)
+        let h2 = Atom(atomicNumber: 1, massNumber: 1)
+        let o = Atom(atomicNumber: 8, massNumber: 16)
+        atomSys.atoms.append(contentsOf: [h1, h2, o])
+
+        let chemSys = ChemicalSystem()
+        let water = chemSys.formWater(atomicSystem: atomSys)
+        if let w = water.first {
+            XCTAssertEqual(w.bonds.count, 2)
+            XCTAssertEqual(w.bonds[0].type, .polarCovalent)
+            XCTAssertEqual(w.bonds[1].type, .polarCovalent)
+            XCTAssertEqual(w.atomIDs.count, 3)
+        }
+    }
+
+    // MARK: - pH Coverage
+
+    func testChemicalSystempH() {
+        let chemSys = ChemicalSystem()
+        XCTAssertEqual(chemSys.pH, 7.0)
+        chemSys.pH = 3.0
+        XCTAssertEqual(chemSys.pH, 3.0)
+    }
 }

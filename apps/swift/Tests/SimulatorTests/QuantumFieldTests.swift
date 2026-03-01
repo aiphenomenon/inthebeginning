@@ -408,4 +408,263 @@ final class QuantumFieldTests: XCTestCase {
         }
         XCTAssertTrue(produced, "Should produce virtual pairs at Planck temperature")
     }
+
+    // MARK: - Additional ParticleProperties Coverage
+
+    func testMassLookupAllTypes() {
+        XCTAssertEqual(ParticleProperties.mass(of: .up), ParticleMass.upQuark)
+        XCTAssertEqual(ParticleProperties.mass(of: .down), ParticleMass.downQuark)
+        XCTAssertEqual(ParticleProperties.mass(of: .positron), ParticleMass.electron)
+        XCTAssertEqual(ParticleProperties.mass(of: .neutrino), ParticleMass.neutrino)
+        XCTAssertEqual(ParticleProperties.mass(of: .gluon), ParticleMass.photon)
+        XCTAssertEqual(ParticleProperties.mass(of: .wBoson), ParticleMass.wBoson)
+        XCTAssertEqual(ParticleProperties.mass(of: .zBoson), ParticleMass.zBoson)
+        XCTAssertEqual(ParticleProperties.mass(of: .neutron), ParticleMass.neutron)
+    }
+
+    func testChargeLookupAllTypes() {
+        XCTAssertEqual(ParticleProperties.charge(of: .neutrino), 0.0)
+        XCTAssertEqual(ParticleProperties.charge(of: .gluon), 0.0)
+        XCTAssertEqual(ParticleProperties.charge(of: .wBoson), 1.0)
+        XCTAssertEqual(ParticleProperties.charge(of: .zBoson), 0.0)
+    }
+
+    func testDisplayColorAllTypes() {
+        // Verify that displayColor returns a valid SIMD4 for each type
+        for pType in ParticleType.allCases {
+            let color = ParticleProperties.displayColor(of: pType)
+            XCTAssertGreaterThanOrEqual(color.x, 0.0)
+            XCTAssertLessThanOrEqual(color.x, 1.0)
+            XCTAssertGreaterThanOrEqual(color.y, 0.0)
+            XCTAssertLessThanOrEqual(color.y, 1.0)
+            XCTAssertGreaterThanOrEqual(color.z, 0.0)
+            XCTAssertLessThanOrEqual(color.z, 1.0)
+            XCTAssertGreaterThan(color.w, 0.0)
+            XCTAssertLessThanOrEqual(color.w, 1.0)
+        }
+    }
+
+    func testDisplayColorDistinctForKeyTypes() {
+        let upColor = ParticleProperties.displayColor(of: .up)
+        let downColor = ParticleProperties.displayColor(of: .down)
+        let electronColor = ParticleProperties.displayColor(of: .electron)
+        // Colors should be distinct
+        XCTAssertNotEqual(upColor.x, downColor.x)
+        XCTAssertNotEqual(electronColor.x, upColor.x)
+    }
+
+    // MARK: - Additional QuarkColor Coverage
+
+    func testQuarkColorRawValues() {
+        XCTAssertEqual(QuarkColor.red.rawValue, "r")
+        XCTAssertEqual(QuarkColor.green.rawValue, "g")
+        XCTAssertEqual(QuarkColor.blue.rawValue, "b")
+        XCTAssertEqual(QuarkColor.antiRed.rawValue, "ar")
+        XCTAssertEqual(QuarkColor.antiGreen.rawValue, "ag")
+        XCTAssertEqual(QuarkColor.antiBlue.rawValue, "ab")
+    }
+
+    // MARK: - Additional WaveFunction Coverage
+
+    func testWaveFunctionPhaseWraps() {
+        var wf = WaveFunction(amplitude: 1.0, phase: 0.0)
+        // Evolve many times to accumulate phase beyond 2*pi
+        for _ in 0..<1000 {
+            wf.evolve(dt: 1.0, energy: 10.0)
+        }
+        // Phase should be within [0, 2*pi)
+        XCTAssertLessThan(abs(wf.phase), 2.0 * .pi)
+    }
+
+    func testWaveFunctionCollapseOutcomes() {
+        // With amplitude=1.0, collapse should always return true
+        var wf = WaveFunction(amplitude: 1.0, phase: 0.0)
+        let result = wf.collapse()
+        XCTAssertTrue(result)
+        XCTAssertEqual(wf.amplitude, 1.0)
+    }
+
+    func testWaveFunctionCollapseZeroAmplitude() {
+        var wf = WaveFunction(amplitude: 0.0, phase: 0.0)
+        let result = wf.collapse()
+        XCTAssertFalse(result)
+        XCTAssertEqual(wf.amplitude, 0.0)
+    }
+
+    func testSuperpositionDestructiveInterference() {
+        let wf1 = WaveFunction(amplitude: 0.5, phase: 0.0)
+        let wf2 = WaveFunction(amplitude: 0.5, phase: .pi)
+        let result = wf1.superposed(with: wf2)
+        // Opposite phases => destructive interference => lower amplitude
+        XCTAssertLessThan(result.amplitude, 0.5)
+    }
+
+    func testSuperpositionPhaseAverage() {
+        let wf1 = WaveFunction(amplitude: 0.5, phase: 0.0)
+        let wf2 = WaveFunction(amplitude: 0.5, phase: 1.0)
+        let result = wf1.superposed(with: wf2)
+        XCTAssertEqual(result.phase, 0.5, accuracy: 1e-10)
+    }
+
+    // MARK: - Additional Particle Coverage
+
+    func testParticleWithEntanglement() {
+        let p = Particle(particleType: .electron, entangledWithID: 42)
+        XCTAssertEqual(p.entangledWithID, 42)
+    }
+
+    func testParticleWithCustomWaveFunction() {
+        let wf = WaveFunction(amplitude: 0.5, phase: 1.0, coherent: false)
+        let p = Particle(particleType: .photon, waveFn: wf)
+        XCTAssertEqual(p.waveFn.amplitude, 0.5)
+        XCTAssertEqual(p.waveFn.phase, 1.0)
+        XCTAssertFalse(p.waveFn.coherent)
+    }
+
+    func testParticleEnergyRestMass() {
+        // Particle at rest: E = mc^2
+        let p = Particle(particleType: .electron, momentum: .zero)
+        let expectedEnergy = ParticleMass.electron * PhysicsConstants.c * PhysicsConstants.c
+        XCTAssertEqual(p.energy, expectedEnergy, accuracy: 1e-10)
+    }
+
+    func testPhotonWavelengthFinite() {
+        let photon = Particle(particleType: .photon, momentum: SIMD3<Double>(1.0, 0.0, 0.0))
+        XCTAssertTrue(photon.wavelength.isFinite)
+        XCTAssertGreaterThan(photon.wavelength, 0.0)
+    }
+
+    // MARK: - Additional EntangledPair Coverage
+
+    func testEntangledPairCustomBellState() {
+        let a = Particle(particleType: .electron)
+        let b = Particle(particleType: .positron)
+        let pair = EntangledPair(a: a, b: b, bellState: "psi-")
+        XCTAssertEqual(pair.bellState, "psi-")
+    }
+
+    func testEntangledPairMeasurementAnticorrelation() {
+        // Run measurement many times and verify anticorrelation
+        var upDownCount = 0
+        var downUpCount = 0
+        for _ in 0..<100 {
+            let a = Particle(particleType: .electron)
+            let b = Particle(particleType: .positron)
+            let pair = EntangledPair(a: a, b: b)
+            let spinA = pair.measureA()
+            if spinA == .up {
+                XCTAssertEqual(b.spin, .down)
+                upDownCount += 1
+            } else {
+                XCTAssertEqual(b.spin, .up)
+                downUpCount += 1
+            }
+        }
+        // Both outcomes should occur
+        XCTAssertGreaterThan(upDownCount, 0)
+        XCTAssertGreaterThan(downUpCount, 0)
+    }
+
+    // MARK: - Additional QuantumField Coverage
+
+    func testVacuumFluctuationAtLowTemp() {
+        let field = QuantumField(temperature: 1.0)
+        // At very low temperature, probability is very low
+        var produced = false
+        for _ in 0..<10 {
+            if field.vacuumFluctuation() != nil {
+                produced = true
+            }
+        }
+        // May or may not produce - we just verify no crash
+    }
+
+    func testDecoherentParticleStaysDecoherent() {
+        let field = QuantumField(temperature: 1000.0)
+        let p = Particle(particleType: .electron)
+        p.waveFn.coherent = false
+        let amplitudeBefore = p.waveFn.amplitude
+        field.decohere(p, environmentCoupling: 1.0)
+        // Should not change state of already decoherent particle
+        XCTAssertFalse(p.waveFn.coherent)
+    }
+
+    func testPairProductionHighEnergyQuarks() {
+        let field = QuantumField()
+        let protonThreshold = 2.0 * ParticleMass.proton * PhysicsConstants.c * PhysicsConstants.c
+        // High energy should sometimes produce quarks
+        var producedQuarks = false
+        for _ in 0..<200 {
+            let tempField = QuantumField()
+            if let (p1, p2) = tempField.pairProduction(energy: protonThreshold * 2.0) {
+                if p1.particleType == .up || p1.particleType == .down {
+                    producedQuarks = true
+                    break
+                }
+            }
+        }
+        XCTAssertTrue(producedQuarks, "High energy should sometimes produce quarks")
+    }
+
+    func testAnnihilateUpdatesVacuumEnergy() {
+        let field = QuantumField()
+        let energy = 2.0 * ParticleMass.electron * PhysicsConstants.c * PhysicsConstants.c * 10.0
+        guard let (p1, p2) = field.pairProduction(energy: energy) else {
+            XCTFail("Pair production failed")
+            return
+        }
+        let vacuumBefore = field.vacuumEnergy
+        _ = field.annihilate(p1, p2)
+        XCTAssertGreaterThan(field.vacuumEnergy, vacuumBefore)
+    }
+
+    func testQuarkConfinementMultipleHadrons() {
+        let field = QuantumField(temperature: TemperatureScale.quarkHadron * 0.5)
+        // Add enough quarks for 2 protons + 1 neutron (4u + 3d)
+        for _ in 0..<4 {
+            field.particles.append(Particle(particleType: .up))
+        }
+        for _ in 0..<3 {
+            field.particles.append(Particle(particleType: .down))
+        }
+
+        let hadrons = field.quarkConfinement()
+        // Should form at least some hadrons
+        XCTAssertFalse(hadrons.isEmpty)
+    }
+
+    func testEvolveMasslessParticle() {
+        let field = QuantumField()
+        let gluon = Particle(particleType: .gluon, momentum: SIMD3<Double>(0, 1.0, 0))
+        field.particles.append(gluon)
+        field.evolve(dt: 1.0)
+        // Gluon should move at speed of light
+        XCTAssertNotEqual(gluon.position, .zero)
+    }
+
+    func testParticleCountEmpty() {
+        let field = QuantumField()
+        let counts = field.particleCount()
+        XCTAssertTrue(counts.isEmpty)
+    }
+
+    func testParticleCountMultipleSameType() {
+        let field = QuantumField()
+        field.particles.append(Particle(particleType: .photon))
+        field.particles.append(Particle(particleType: .photon))
+        field.particles.append(Particle(particleType: .photon))
+        let counts = field.particleCount()
+        XCTAssertEqual(counts[.photon], 3)
+    }
+
+    // MARK: - IDGenerator Additional Coverage
+
+    func testIDGeneratorUniqueAcrossMany() {
+        let gen = IDGenerator()
+        var ids = Set<Int>()
+        for _ in 0..<1000 {
+            ids.insert(gen.next())
+        }
+        XCTAssertEqual(ids.count, 1000, "All generated IDs should be unique")
+    }
 }

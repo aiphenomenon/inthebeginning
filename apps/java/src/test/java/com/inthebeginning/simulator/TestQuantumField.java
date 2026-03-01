@@ -83,6 +83,15 @@ public class TestQuantumField {
         testFieldEvolution();
         testParticleCount();
         testTotalEnergy();
+        testSpinValue();
+        testParticleSetType();
+        testParticleSetSpin();
+        testParticleSetColor();
+        testParticleSetWfCoherent();
+        testParticleToCompact();
+        testParticleToString();
+        testQuantumFieldSetTemperature();
+        testQuantumFieldToCompact();
 
         System.out.println("    " + passed + " passed, " + failed + " failed");
         return new int[]{passed, failed};
@@ -323,5 +332,85 @@ public class TestQuantumField {
         Particle p = new Particle(ParticleType.ELECTRON);
         qf.getParticles().add(p);
         assertTrue("Field energy > 0 with particle", qf.totalEnergy() > 0);
+    }
+
+    private static void testSpinValue() {
+        assertApprox("Spin UP value = +0.5", 0.5, Particle.Spin.UP.value(), 1e-10);
+        assertApprox("Spin DOWN value = -0.5", -0.5, Particle.Spin.DOWN.value(), 1e-10);
+    }
+
+    private static void testParticleSetType() {
+        Particle p = new Particle(ParticleType.ELECTRON);
+        assertEquals("Initial type is ELECTRON", ParticleType.ELECTRON, p.type());
+        p.setType(ParticleType.PROTON);
+        assertEquals("Type changed to PROTON", ParticleType.PROTON, p.type());
+        assertApprox("Mass reflects PROTON", M_PROTON, p.mass(), 1e-10);
+    }
+
+    private static void testParticleSetSpin() {
+        Particle p = new Particle(ParticleType.ELECTRON);
+        assertEquals("Default spin is UP", Particle.Spin.UP, p.spin());
+        p.setSpin(Particle.Spin.DOWN);
+        assertEquals("Spin changed to DOWN", Particle.Spin.DOWN, p.spin());
+    }
+
+    private static void testParticleSetColor() {
+        Particle p = new Particle(ParticleType.UP);
+        assertNull("Default color is null", p.color());
+        p.setColor(Particle.Color.RED);
+        assertEquals("Color set to RED", Particle.Color.RED, p.color());
+        p.setColor(Particle.Color.ANTI_GREEN);
+        assertEquals("Color changed to ANTI_GREEN", Particle.Color.ANTI_GREEN, p.color());
+    }
+
+    private static void testParticleSetWfCoherent() {
+        Particle p = new Particle(ParticleType.ELECTRON);
+        assertTrue("Initially coherent", p.wfCoherent());
+        p.setWfCoherent(false);
+        assertTrue("Set to not coherent", !p.wfCoherent());
+        p.setWfCoherent(true);
+        assertTrue("Set back to coherent", p.wfCoherent());
+    }
+
+    private static void testParticleToCompact() {
+        Particle p = new Particle(ParticleType.ELECTRON,
+                new double[]{1.0, 2.0, 3.0}, new double[]{0, 0, 0},
+                Particle.Spin.UP, null);
+        String compact = p.toCompact();
+        assertTrue("Compact contains type label", compact.contains("electron"));
+        assertTrue("Compact contains position", compact.contains("1.0"));
+        assertTrue("Compact contains spin", compact.contains("0.5"));
+    }
+
+    private static void testParticleToString() {
+        Particle p = new Particle(ParticleType.PROTON,
+                new double[]{0, 0, 0}, new double[]{1, 0, 0},
+                Particle.Spin.DOWN, null);
+        String str = p.toString();
+        String compact = p.toCompact();
+        assertEquals("toString equals toCompact", compact, str);
+    }
+
+    private static void testQuantumFieldSetTemperature() {
+        Random rng = new Random(42);
+        QuantumField qf = new QuantumField(1000.0, rng);
+        assertApprox("Initial temperature", 1000.0, qf.getTemperature(), 1e-10);
+        qf.setTemperature(500.0);
+        assertApprox("Temperature after set", 500.0, qf.getTemperature(), 1e-10);
+        qf.setTemperature(0.0);
+        assertApprox("Temperature set to 0", 0.0, qf.getTemperature(), 1e-10);
+    }
+
+    private static void testQuantumFieldToCompact() {
+        Random rng = new Random(42);
+        QuantumField qf = new QuantumField(1000.0, rng);
+        qf.getParticles().add(new Particle(ParticleType.ELECTRON));
+        qf.getParticles().add(new Particle(ParticleType.PROTON));
+
+        String compact = qf.toCompact();
+        assertTrue("Compact contains QF", compact.contains("QF"));
+        assertTrue("Compact contains T=", compact.contains("T="));
+        assertTrue("Compact contains E=", compact.contains("E="));
+        assertTrue("Compact contains n=", compact.contains("n=2"));
     }
 }

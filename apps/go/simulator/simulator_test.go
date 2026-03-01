@@ -1597,3 +1597,863 @@ func TestCodonTable_StartCodon(t *testing.T) {
 		t.Errorf("AUG should map to Met, got %q (ok=%v)", aa, ok)
 	}
 }
+
+// ---------------------------------------------------------------------------
+// Biology: Gene functions
+// ---------------------------------------------------------------------------
+
+func TestNewGene(t *testing.T) {
+	t.Parallel()
+	seq := []string{"A", "T", "G", "C", "A"}
+	g := NewGene("myGene", seq, 10, 15, true)
+
+	if g.Name != "myGene" {
+		t.Errorf("gene name: got %q, want %q", g.Name, "myGene")
+	}
+	if len(g.Sequence) != 5 {
+		t.Errorf("gene sequence length: got %d, want 5", len(g.Sequence))
+	}
+	if g.StartPos != 10 {
+		t.Errorf("gene start pos: got %d, want 10", g.StartPos)
+	}
+	if g.EndPos != 15 {
+		t.Errorf("gene end pos: got %d, want 15", g.EndPos)
+	}
+	if !g.Essential {
+		t.Error("gene should be essential")
+	}
+	if !almostEqual(g.ExpressionLevel, 1.0, tolerance) {
+		t.Errorf("default expression level: got %v, want 1.0", g.ExpressionLevel)
+	}
+	if len(g.EpigeneticMarks) != 0 {
+		t.Errorf("new gene should have 0 epigenetic marks, got %d", len(g.EpigeneticMarks))
+	}
+}
+
+func TestGene_Length(t *testing.T) {
+	t.Parallel()
+	g := NewGene("test", []string{"A", "T", "G"}, 0, 3, false)
+	if g.Length() != 3 {
+		t.Errorf("gene length: got %d, want 3", g.Length())
+	}
+
+	empty := NewGene("empty", []string{}, 0, 0, false)
+	if empty.Length() != 0 {
+		t.Errorf("empty gene length: got %d, want 0", empty.Length())
+	}
+}
+
+func TestGene_IsSilenced(t *testing.T) {
+	t.Parallel()
+	seq := []string{"A", "T", "G", "C", "A", "T", "G", "C", "A", "T"}
+	g := NewGene("test", seq, 0, 10, false)
+
+	// Initially not silenced (no methylation marks).
+	if g.IsSilenced() {
+		t.Error("gene without methylation should not be silenced")
+	}
+
+	// Add heavy methylation (> 30% of length = > 3 marks for length 10).
+	for i := 0; i < 4; i++ {
+		g.Methylate(i, 1)
+	}
+	if !g.IsSilenced() {
+		t.Error("gene with heavy methylation should be silenced")
+	}
+}
+
+func TestGene_Methylate(t *testing.T) {
+	t.Parallel()
+	g := NewGene("test", []string{"A", "T", "G", "C"}, 0, 4, false)
+
+	g.Methylate(1, 5)
+	if len(g.EpigeneticMarks) != 1 {
+		t.Fatalf("expected 1 mark after methylation, got %d", len(g.EpigeneticMarks))
+	}
+	m := g.EpigeneticMarks[0]
+	if m.Position != 1 {
+		t.Errorf("methylation position: got %d, want 1", m.Position)
+	}
+	if m.MarkType != "methylation" {
+		t.Errorf("mark type: got %q, want %q", m.MarkType, "methylation")
+	}
+	if !m.Active {
+		t.Error("new methylation mark should be active")
+	}
+	if m.GenerationAdded != 5 {
+		t.Errorf("generation added: got %d, want 5", m.GenerationAdded)
+	}
+
+	// Out-of-bounds position should not add a mark.
+	g.Methylate(-1, 0)
+	g.Methylate(100, 0)
+	if len(g.EpigeneticMarks) != 1 {
+		t.Errorf("out-of-bounds methylation should not add marks, got %d", len(g.EpigeneticMarks))
+	}
+
+	// Methylation should reduce expression level.
+	if g.ExpressionLevel >= 1.0 {
+		t.Errorf("expression level should decrease after methylation, got %v", g.ExpressionLevel)
+	}
+}
+
+func TestGene_Demethylate(t *testing.T) {
+	t.Parallel()
+	g := NewGene("test", []string{"A", "T", "G", "C"}, 0, 4, false)
+
+	g.Methylate(0, 1)
+	g.Methylate(2, 1)
+	if len(g.EpigeneticMarks) != 2 {
+		t.Fatalf("expected 2 marks, got %d", len(g.EpigeneticMarks))
+	}
+
+	g.Demethylate(0)
+	// Only the methylation at position 0 should be removed.
+	if len(g.EpigeneticMarks) != 1 {
+		t.Errorf("expected 1 mark after demethylation, got %d", len(g.EpigeneticMarks))
+	}
+	if g.EpigeneticMarks[0].Position != 2 {
+		t.Errorf("remaining mark position: got %d, want 2", g.EpigeneticMarks[0].Position)
+	}
+
+	// Demethylate at position with no methylation -- should be a no-op.
+	g.Demethylate(99)
+	if len(g.EpigeneticMarks) != 1 {
+		t.Errorf("demethylating non-existent position should not change marks, got %d", len(g.EpigeneticMarks))
+	}
+}
+
+func TestGene_Acetylate(t *testing.T) {
+	t.Parallel()
+	g := NewGene("test", []string{"A", "T", "G", "C"}, 0, 4, false)
+
+	g.Acetylate(2, 3)
+	if len(g.EpigeneticMarks) != 1 {
+		t.Fatalf("expected 1 mark after acetylation, got %d", len(g.EpigeneticMarks))
+	}
+	m := g.EpigeneticMarks[0]
+	if m.Position != 2 {
+		t.Errorf("acetylation position: got %d, want 2", m.Position)
+	}
+	if m.MarkType != "acetylation" {
+		t.Errorf("mark type: got %q, want %q", m.MarkType, "acetylation")
+	}
+	if !m.Active {
+		t.Error("new acetylation mark should be active")
+	}
+	if m.GenerationAdded != 3 {
+		t.Errorf("generation added: got %d, want 3", m.GenerationAdded)
+	}
+
+	// Acetylation should increase expression level (or at minimum not decrease below 1.0).
+	// Since there is no methylation, acetylation increases expression.
+	if g.ExpressionLevel < 1.0 {
+		t.Errorf("acetylation without methylation should keep expression >= 1.0, got %v", g.ExpressionLevel)
+	}
+}
+
+func TestGene_Mutate(t *testing.T) {
+	t.Parallel()
+	rng := rand.New(rand.NewSource(42))
+	g := NewGene("test", []string{"A", "A", "A", "A", "A", "A", "A", "A", "A", "A"}, 0, 10, false)
+
+	// With rate 1.0, every base should mutate.
+	mutations := g.Mutate(1.0, rng)
+	if mutations != 10 {
+		t.Errorf("all bases should mutate with rate 1.0, got %d mutations", mutations)
+	}
+	// At least one base should differ from "A".
+	changed := false
+	for _, b := range g.Sequence {
+		if b != "A" {
+			changed = true
+			break
+		}
+	}
+	if !changed {
+		t.Error("at least one base should differ from original after full mutation")
+	}
+
+	// With rate 0.0, no bases should mutate.
+	g2 := NewGene("test2", []string{"G", "G", "G"}, 0, 3, false)
+	m := g2.Mutate(0.0, rng)
+	if m != 0 {
+		t.Errorf("no bases should mutate with rate 0.0, got %d", m)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Biology: DNAStrand functions
+// ---------------------------------------------------------------------------
+
+func TestDNAStrand_Length(t *testing.T) {
+	t.Parallel()
+	strand := &DNAStrand{Sequence: []string{"A", "T", "G", "C", "A"}}
+	if strand.Length() != 5 {
+		t.Errorf("strand length: got %d, want 5", strand.Length())
+	}
+
+	empty := &DNAStrand{}
+	if empty.Length() != 0 {
+		t.Errorf("empty strand length: got %d, want 0", empty.Length())
+	}
+}
+
+func TestRandomStrand(t *testing.T) {
+	t.Parallel()
+	rng := rand.New(rand.NewSource(42))
+	strand := RandomStrand(100, 3, rng)
+
+	if strand.Length() != 100 {
+		t.Errorf("strand length: got %d, want 100", strand.Length())
+	}
+	if len(strand.Genes) != 3 {
+		t.Errorf("number of genes: got %d, want 3", len(strand.Genes))
+	}
+
+	// All bases should be valid nucleotides.
+	validBases := map[string]bool{"A": true, "T": true, "G": true, "C": true}
+	for i, b := range strand.Sequence {
+		if !validBases[b] {
+			t.Errorf("invalid base at position %d: %q", i, b)
+		}
+	}
+
+	// First gene should be essential.
+	if !strand.Genes[0].Essential {
+		t.Error("first gene should be essential")
+	}
+	// Subsequent genes should not be essential.
+	for i := 1; i < len(strand.Genes); i++ {
+		if strand.Genes[i].Essential {
+			t.Errorf("gene %d should not be essential", i)
+		}
+	}
+}
+
+func TestDNAStrand_Replicate(t *testing.T) {
+	t.Parallel()
+	rng := rand.New(rand.NewSource(42))
+	original := RandomStrand(60, 2, rng)
+
+	// Add some epigenetic marks to test mark inheritance.
+	original.Genes[0].Methylate(0, 1)
+	original.Genes[0].Acetylate(1, 1)
+
+	daughter := original.Replicate(rng)
+
+	if daughter.Length() != original.Length() {
+		t.Errorf("replicated strand length: got %d, want %d", daughter.Length(), original.Length())
+	}
+	if daughter.Generation != original.Generation+1 {
+		t.Errorf("daughter generation: got %d, want %d", daughter.Generation, original.Generation+1)
+	}
+	if len(daughter.Genes) != len(original.Genes) {
+		t.Errorf("daughter gene count: got %d, want %d", len(daughter.Genes), len(original.Genes))
+	}
+
+	// Sequence should be copied (same content).
+	for i := range original.Sequence {
+		if daughter.Sequence[i] != original.Sequence[i] {
+			t.Errorf("replicated sequence differs at position %d: got %q, want %q",
+				i, daughter.Sequence[i], original.Sequence[i])
+			break
+		}
+	}
+}
+
+func TestDNAStrand_ApplyMutations(t *testing.T) {
+	t.Parallel()
+	rng := rand.New(rand.NewSource(42))
+	strand := RandomStrand(100, 3, rng)
+
+	initialMutations := strand.MutationCount
+	mutations := strand.ApplyMutations(1.0, 1.0, rng)
+
+	// With UV and cosmic ray intensity = 1.0, some mutations should occur.
+	if mutations < 0 {
+		t.Errorf("mutation count should be non-negative, got %d", mutations)
+	}
+	if strand.MutationCount != initialMutations+mutations {
+		t.Errorf("MutationCount: got %d, want %d", strand.MutationCount, initialMutations+mutations)
+	}
+
+	// With zero intensities, no mutations from environmental sources.
+	rng2 := rand.New(rand.NewSource(42))
+	strand2 := RandomStrand(100, 3, rng2)
+	zeroMut := strand2.ApplyMutations(0.0, 0.0, rng2)
+	if zeroMut != 0 {
+		t.Errorf("expected 0 mutations with zero intensities, got %d", zeroMut)
+	}
+}
+
+func TestDNAStrand_ApplyEpigeneticChanges(t *testing.T) {
+	t.Parallel()
+	rng := rand.New(rand.NewSource(42))
+	strand := RandomStrand(100, 3, rng)
+
+	// Count initial marks.
+	initialMarks := 0
+	for _, g := range strand.Genes {
+		initialMarks += len(g.EpigeneticMarks)
+	}
+
+	// Apply changes many times to increase probability of epigenetic modifications.
+	for i := 0; i < 50; i++ {
+		strand.ApplyEpigeneticChanges(300.0, i+1, rng)
+	}
+
+	totalMarks := 0
+	for _, g := range strand.Genes {
+		totalMarks += len(g.EpigeneticMarks)
+	}
+
+	// After 50 rounds, at least some epigenetic marks should have been added.
+	if totalMarks <= initialMarks {
+		t.Errorf("expected epigenetic marks to increase after 50 rounds, initial=%d, final=%d",
+			initialMarks, totalMarks)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Biology: Protein functions
+// ---------------------------------------------------------------------------
+
+func TestNewProtein(t *testing.T) {
+	t.Parallel()
+	aas := []string{"Met", "Ala", "Gly", "Phe"}
+	p := NewProtein(aas, "testProtein", "enzyme")
+
+	if p.Name != "testProtein" {
+		t.Errorf("protein name: got %q, want %q", p.Name, "testProtein")
+	}
+	if p.Function != "enzyme" {
+		t.Errorf("protein function: got %q, want %q", p.Function, "enzyme")
+	}
+	if !p.Active {
+		t.Error("new protein should be active")
+	}
+	if p.Folded {
+		t.Error("new protein should not be folded until Fold is called")
+	}
+	if len(p.AminoAcids) != 4 {
+		t.Errorf("amino acid count: got %d, want 4", len(p.AminoAcids))
+	}
+}
+
+func TestProtein_Length(t *testing.T) {
+	t.Parallel()
+	p := NewProtein([]string{"Met", "Ala", "Gly"}, "test", "structural")
+	if p.Length() != 3 {
+		t.Errorf("protein length: got %d, want 3", p.Length())
+	}
+
+	empty := NewProtein([]string{}, "empty", "signaling")
+	if empty.Length() != 0 {
+		t.Errorf("empty protein length: got %d, want 0", empty.Length())
+	}
+}
+
+func TestProtein_Fold(t *testing.T) {
+	t.Parallel()
+	rng := rand.New(rand.NewSource(42))
+
+	// Protein too short to fold (< 3 amino acids).
+	short := NewProtein([]string{"Met", "Ala"}, "short", "enzyme")
+	result := short.Fold(rng)
+	if result {
+		t.Error("protein with < 3 amino acids should not fold successfully")
+	}
+	if short.Folded {
+		t.Error("short protein should not be folded")
+	}
+
+	// Protein long enough to fold. Run multiple times to exercise stochastic branch.
+	foldCount := 0
+	for i := 0; i < 100; i++ {
+		p := NewProtein([]string{"Met", "Ala", "Gly", "Phe", "Leu", "Val", "Ile", "Pro"},
+			"long", "enzyme")
+		rngLocal := rand.New(rand.NewSource(int64(i)))
+		if p.Fold(rngLocal) {
+			foldCount++
+		}
+	}
+	// With length 8 and probability ~0.5+0.1*ln(9) ~ 0.72, many should fold.
+	if foldCount == 0 {
+		t.Error("at least some long proteins should fold successfully over 100 trials")
+	}
+	if foldCount == 100 {
+		t.Error("not all proteins should fold deterministically (stochastic process)")
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Biology: Cell functions
+// ---------------------------------------------------------------------------
+
+func TestNewCell(t *testing.T) {
+	t.Parallel()
+	rng := rand.New(rand.NewSource(42))
+	dna := RandomStrand(60, 3, rng)
+	cell := NewCell(dna, 5, rng)
+
+	if cell.DNA != dna {
+		t.Error("cell DNA should match provided DNA")
+	}
+	if cell.Generation != 5 {
+		t.Errorf("cell generation: got %d, want 5", cell.Generation)
+	}
+	if !cell.Alive {
+		t.Error("new cell should be alive")
+	}
+	if !almostEqual(cell.Fitness, 1.0, tolerance) {
+		t.Errorf("initial fitness: got %v, want 1.0", cell.Fitness)
+	}
+	if !almostEqual(cell.Energy, 100.0, tolerance) {
+		t.Errorf("initial energy: got %v, want 100.0", cell.Energy)
+	}
+	if cell.ID <= 0 {
+		t.Errorf("cell ID should be positive, got %d", cell.ID)
+	}
+	if len(cell.Proteins) != 0 {
+		t.Errorf("new cell should have 0 proteins, got %d", len(cell.Proteins))
+	}
+}
+
+func TestCell_TranscribeAndTranslate(t *testing.T) {
+	t.Parallel()
+	rng := rand.New(rand.NewSource(42))
+	// Create a strand with known sequence containing start codon.
+	// AUG in DNA is ATG; we need a gene whose Transcribe produces mRNA with AUG.
+	seq := []string{"A", "T", "G", "T", "T", "T", "T", "A", "A"} // ATG -> AUG (Met), TTT -> UUU (Phe), TAA -> UAA (STOP)
+	gene := NewGene("coding", seq, 0, 9, false)
+	strand := &DNAStrand{
+		Sequence: seq,
+		Genes:    []*Gene{gene},
+	}
+	cell := NewCell(strand, 0, rng)
+	proteins := cell.TranscribeAndTranslate()
+
+	// The gene should produce a protein with [Met, Phe].
+	// TranscribeAndTranslate has stochastic gating on expression level, so
+	// we run multiple cells if needed.
+	totalProteins := len(proteins)
+	if totalProteins > 0 {
+		if len(cell.Proteins) == 0 {
+			t.Error("cell.Proteins should be populated after TranscribeAndTranslate")
+		}
+	}
+
+	// Run with multiple seeds to confirm it produces at least one protein.
+	produced := false
+	for seed := int64(0); seed < 20; seed++ {
+		localRng := rand.New(rand.NewSource(seed))
+		gene2 := NewGene("coding2", seq, 0, 9, false)
+		strand2 := &DNAStrand{Sequence: seq, Genes: []*Gene{gene2}}
+		cell2 := NewCell(strand2, 0, localRng)
+		prots := cell2.TranscribeAndTranslate()
+		if len(prots) > 0 {
+			produced = true
+			break
+		}
+	}
+	if !produced {
+		t.Error("TranscribeAndTranslate should produce at least one protein across 20 seeds")
+	}
+}
+
+func TestCell_Metabolize(t *testing.T) {
+	t.Parallel()
+	rng := rand.New(rand.NewSource(42))
+	dna := RandomStrand(60, 3, rng)
+	cell := NewCell(dna, 0, rng)
+	initialEnergy := cell.Energy
+
+	cell.Metabolize(20.0)
+
+	// Energy should change: gain from environment * efficiency, lose basal cost.
+	if cell.Energy == initialEnergy {
+		t.Errorf("energy should change after metabolism, still %v", cell.Energy)
+	}
+
+	// With zero environment energy, energy should decrease (basal cost = 3.0).
+	cell2 := NewCell(dna, 0, rng)
+	cell2.Energy = 10.0
+	cell2.Metabolize(0.0)
+	if cell2.Energy >= 10.0 {
+		t.Errorf("energy should decrease with zero environment energy, got %v", cell2.Energy)
+	}
+
+	// Energy cap at 200.
+	cell3 := NewCell(dna, 0, rng)
+	cell3.Energy = 195.0
+	cell3.Metabolize(100.0)
+	if cell3.Energy > 200.0 {
+		t.Errorf("energy should be capped at 200, got %v", cell3.Energy)
+	}
+
+	// Cell dies if energy reaches 0.
+	cell4 := NewCell(dna, 0, rng)
+	cell4.Energy = 2.0 // basal cost is 3.0, so with 0 environment energy it dies.
+	cell4.Metabolize(0.0)
+	if cell4.Alive {
+		t.Error("cell should die when energy reaches 0")
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Biology: Biosphere functions
+// ---------------------------------------------------------------------------
+
+func TestBiosphere_AverageGCContent(t *testing.T) {
+	t.Parallel()
+	rng := rand.New(rand.NewSource(42))
+	bio := NewBiosphere(10, 60, rng)
+
+	gc := bio.AverageGCContent()
+	if gc < 0.0 || gc > 1.0 {
+		t.Errorf("average GC content should be in [0, 1], got %v", gc)
+	}
+	// With random sequences, GC content should be roughly 0.5 on average.
+	if gc < 0.2 || gc > 0.8 {
+		t.Errorf("average GC content with random sequences should be near 0.5, got %v", gc)
+	}
+
+	// Empty biosphere.
+	emptyBio := NewBiosphere(0, 60, rng)
+	if emptyBio.AverageGCContent() != 0.0 {
+		t.Errorf("empty biosphere GC content should be 0, got %v", emptyBio.AverageGCContent())
+	}
+}
+
+func TestBiosphere_TotalMutations(t *testing.T) {
+	t.Parallel()
+	rng := rand.New(rand.NewSource(42))
+	bio := NewBiosphere(5, 60, rng)
+
+	// Initially, no mutations.
+	if bio.TotalMutations() != 0 {
+		t.Errorf("initial total mutations should be 0, got %d", bio.TotalMutations())
+	}
+
+	// Run many steps with high UV and cosmic ray intensity to ensure mutations accumulate.
+	// The per-base mutation rate is UVMutationRate*uvIntensity + CosmicRayMutationRate*cosmicRayFlux,
+	// which at intensity 1.0 is ~1e-4, so we need many rounds or high intensity.
+	for i := 0; i < 20; i++ {
+		bio.Step(30.0, 10.0, 10.0, 300.0)
+	}
+
+	totalMut := bio.TotalMutations()
+	if totalMut < 0 {
+		t.Errorf("total mutations should be non-negative, got %d", totalMut)
+	}
+
+	// TotalMutations sums MutationCount across all living cells.
+	// Verify it returns correct sum by manually checking.
+	manualSum := 0
+	for _, c := range bio.Cells {
+		manualSum += c.DNA.MutationCount
+	}
+	if totalMut != manualSum {
+		t.Errorf("TotalMutations() = %d, manual sum = %d", totalMut, manualSum)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Atomic: Atom functions
+// ---------------------------------------------------------------------------
+
+func TestAtom_Symbol(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		atomicNumber int
+		wantSymbol   string
+	}{
+		{1, "H"},
+		{2, "He"},
+		{6, "C"},
+		{7, "N"},
+		{8, "O"},
+		{26, "Fe"},
+	}
+	for _, tt := range tests {
+		a := NewAtom(tt.atomicNumber, 0)
+		if a.Symbol() != tt.wantSymbol {
+			t.Errorf("Symbol for Z=%d: got %q, want %q", tt.atomicNumber, a.Symbol(), tt.wantSymbol)
+		}
+	}
+
+	// Unknown element returns "?".
+	unknown := NewAtom(99, 200)
+	if unknown.Symbol() != "?" {
+		t.Errorf("unknown element symbol: got %q, want %q", unknown.Symbol(), "?")
+	}
+}
+
+func TestAtom_Electronegativity(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		atomicNumber int
+		wantEN       float64
+	}{
+		{1, 2.20},
+		{6, 2.55},
+		{8, 3.44},
+		{9, 3.98},
+		{11, 0.93},
+	}
+	for _, tt := range tests {
+		a := NewAtom(tt.atomicNumber, 0)
+		if !almostEqual(a.Electronegativity(), tt.wantEN, 0.01) {
+			t.Errorf("electronegativity for Z=%d: got %v, want %v",
+				tt.atomicNumber, a.Electronegativity(), tt.wantEN)
+		}
+	}
+
+	// Unknown element returns 1.0 as default.
+	unknown := NewAtom(99, 200)
+	if !almostEqual(unknown.Electronegativity(), 1.0, tolerance) {
+		t.Errorf("unknown element electronegativity: got %v, want 1.0", unknown.Electronegativity())
+	}
+}
+
+func TestAtom_Charge(t *testing.T) {
+	t.Parallel()
+	// Neutral atom: charge = 0.
+	h := NewAtom(1, 1)
+	if h.Charge() != 0 {
+		t.Errorf("neutral hydrogen charge: got %d, want 0", h.Charge())
+	}
+
+	// Ion: remove an electron.
+	h.ElectronCount = 0
+	if h.Charge() != 1 {
+		t.Errorf("H+ charge: got %d, want 1", h.Charge())
+	}
+
+	// Add extra electron.
+	o := NewAtom(8, 16)
+	o.ElectronCount = 9
+	if o.Charge() != -1 {
+		t.Errorf("O- charge: got %d, want -1", o.Charge())
+	}
+}
+
+func TestAtomicSystem_StellarNucleosynthesis(t *testing.T) {
+	t.Parallel()
+	rng := rand.New(rand.NewSource(42))
+	as := NewAtomicSystem(rng)
+
+	// Add enough helium for triple-alpha process.
+	for i := 0; i < 20; i++ {
+		as.Atoms = append(as.Atoms, NewAtom(2, 4))
+	}
+
+	// Low temperature should produce no new atoms.
+	lowTempAtoms := as.StellarNucleosynthesis(100)
+	if len(lowTempAtoms) != 0 {
+		t.Errorf("stellar nucleosynthesis at low temperature should produce nothing, got %d atoms",
+			len(lowTempAtoms))
+	}
+
+	// High temperature should trigger fusion. Run multiple times for stochastic process.
+	totalNewAtoms := 0
+	for i := 0; i < 100; i++ {
+		localRng := rand.New(rand.NewSource(int64(i)))
+		localAS := NewAtomicSystem(localRng)
+		for j := 0; j < 30; j++ {
+			localAS.Atoms = append(localAS.Atoms, NewAtom(2, 4))
+		}
+		newAtoms := localAS.StellarNucleosynthesis(1e6)
+		totalNewAtoms += len(newAtoms)
+	}
+	if totalNewAtoms == 0 {
+		t.Error("stellar nucleosynthesis at high temperature should produce heavier elements over 100 trials")
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Chemistry: functions
+// ---------------------------------------------------------------------------
+
+func TestNewMolecule(t *testing.T) {
+	t.Parallel()
+	c := NewAtom(6, 12)
+	h := NewAtom(1, 1)
+	mol := NewMolecule([]*Atom{c, h}, "test_mol")
+
+	if mol.Name != "test_mol" {
+		t.Errorf("molecule name: got %q, want %q", mol.Name, "test_mol")
+	}
+	if len(mol.Atoms) != 2 {
+		t.Errorf("molecule atom count: got %d, want 2", len(mol.Atoms))
+	}
+	if mol.ID <= 0 {
+		t.Errorf("molecule ID should be positive, got %d", mol.ID)
+	}
+	// CH molecule should be organic (has both C and H).
+	if !mol.IsOrganic {
+		t.Error("molecule with C and H should be organic")
+	}
+	// Formula should contain C and H.
+	if mol.Formula == "" {
+		t.Error("molecule formula should not be empty")
+	}
+	if len(mol.FunctionalGroups) != 0 {
+		t.Errorf("new molecule should have no functional groups, got %d", len(mol.FunctionalGroups))
+	}
+
+	// Empty atoms should not panic.
+	emptyMol := NewMolecule([]*Atom{}, "empty")
+	if len(emptyMol.Atoms) != 0 {
+		t.Errorf("empty molecule atom count: got %d, want 0", len(emptyMol.Atoms))
+	}
+}
+
+func TestChemicalSystem_FormAminoAcid(t *testing.T) {
+	t.Parallel()
+	rng := rand.New(rand.NewSource(42))
+	as := NewAtomicSystem(rng)
+
+	// Add exactly the minimum atoms for glycine: 2C + 5H + 2O + 1N.
+	for i := 0; i < 2; i++ {
+		as.Atoms = append(as.Atoms, NewAtom(6, 12)) // C
+	}
+	for i := 0; i < 5; i++ {
+		as.Atoms = append(as.Atoms, NewAtom(1, 1)) // H
+	}
+	for i := 0; i < 2; i++ {
+		as.Atoms = append(as.Atoms, NewAtom(8, 16)) // O
+	}
+	as.Atoms = append(as.Atoms, NewAtom(7, 14)) // N
+
+	cs := NewChemicalSystem(as, rng)
+	aa := cs.FormAminoAcid("glycine")
+
+	if aa == nil {
+		t.Fatal("FormAminoAcid should succeed with sufficient atoms")
+	}
+	if aa.Name != "glycine" {
+		t.Errorf("amino acid name: got %q, want %q", aa.Name, "glycine")
+	}
+	if !aa.IsOrganic {
+		t.Error("amino acid should be organic")
+	}
+	if len(aa.FunctionalGroups) != 2 {
+		t.Errorf("amino acid should have 2 functional groups, got %d", len(aa.FunctionalGroups))
+	}
+	if cs.AminoAcidCount != 1 {
+		t.Errorf("amino acid count: got %d, want 1", cs.AminoAcidCount)
+	}
+
+	// Try forming a second amino acid -- should fail due to insufficient atoms.
+	aa2 := cs.FormAminoAcid("alanine")
+	if aa2 != nil {
+		t.Error("should not form amino acid with insufficient atoms")
+	}
+}
+
+func TestChemicalSystem_FormNucleotide(t *testing.T) {
+	t.Parallel()
+	rng := rand.New(rand.NewSource(42))
+	as := NewAtomicSystem(rng)
+
+	// Nucleotide requires C5 + H8 + O4 + N2.
+	for i := 0; i < 5; i++ {
+		as.Atoms = append(as.Atoms, NewAtom(6, 12)) // C
+	}
+	for i := 0; i < 8; i++ {
+		as.Atoms = append(as.Atoms, NewAtom(1, 1)) // H
+	}
+	for i := 0; i < 4; i++ {
+		as.Atoms = append(as.Atoms, NewAtom(8, 16)) // O
+	}
+	for i := 0; i < 2; i++ {
+		as.Atoms = append(as.Atoms, NewAtom(7, 14)) // N
+	}
+
+	cs := NewChemicalSystem(as, rng)
+	nuc := cs.FormNucleotide("A")
+
+	if nuc == nil {
+		t.Fatal("FormNucleotide should succeed with sufficient atoms")
+	}
+	if nuc.Name != "nucleotide-A" {
+		t.Errorf("nucleotide name: got %q, want %q", nuc.Name, "nucleotide-A")
+	}
+	if !nuc.IsOrganic {
+		t.Error("nucleotide should be organic")
+	}
+	if len(nuc.FunctionalGroups) != 3 {
+		t.Errorf("nucleotide should have 3 functional groups, got %d", len(nuc.FunctionalGroups))
+	}
+	if cs.NucleotideCount != 1 {
+		t.Errorf("nucleotide count: got %d, want 1", cs.NucleotideCount)
+	}
+
+	// Try forming another -- should fail.
+	nuc2 := cs.FormNucleotide("T")
+	if nuc2 != nil {
+		t.Error("should not form nucleotide with insufficient atoms")
+	}
+}
+
+func TestChemicalSystem_MoleculeCensus(t *testing.T) {
+	t.Parallel()
+	rng := rand.New(rand.NewSource(42))
+	as := NewAtomicSystem(rng)
+
+	// Add atoms for 2 water molecules + 1 methane.
+	for i := 0; i < 8; i++ {
+		as.Atoms = append(as.Atoms, NewAtom(1, 1)) // H
+	}
+	for i := 0; i < 2; i++ {
+		as.Atoms = append(as.Atoms, NewAtom(8, 16)) // O
+	}
+	as.Atoms = append(as.Atoms, NewAtom(6, 12)) // C
+
+	cs := NewChemicalSystem(as, rng)
+	cs.FormWater()
+	cs.FormMethane()
+
+	census := cs.MoleculeCensus()
+	if census["water"] != 2 {
+		t.Errorf("water census: got %d, want 2", census["water"])
+	}
+	if census["methane"] != 1 {
+		t.Errorf("methane census: got %d, want 1", census["methane"])
+	}
+
+	// Empty system should return empty census.
+	emptyAS := NewAtomicSystem(rng)
+	emptyCS := NewChemicalSystem(emptyAS, rng)
+	emptyCensus := emptyCS.MoleculeCensus()
+	if len(emptyCensus) != 0 {
+		t.Errorf("empty chemical system census should be empty, got %v", emptyCensus)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Environment: RadiationDose
+// ---------------------------------------------------------------------------
+
+func TestEnvironment_RadiationDose(t *testing.T) {
+	t.Parallel()
+	rng := rand.New(rand.NewSource(42))
+	env := NewEnvironment(300, rng)
+	env.UVIntensity = 2.0
+	env.CosmicRayFlux = 1.5
+	env.StellarWind = 0.5
+
+	dose := env.RadiationDose()
+	expected := 2.0 + 1.5 + 0.5
+	if !almostEqual(dose, expected, tolerance) {
+		t.Errorf("radiation dose: got %v, want %v", dose, expected)
+	}
+
+	// Zero radiation.
+	env2 := NewEnvironment(300, rng)
+	if env2.RadiationDose() != 0.0 {
+		t.Errorf("zero radiation dose: got %v, want 0.0", env2.RadiationDose())
+	}
+}
