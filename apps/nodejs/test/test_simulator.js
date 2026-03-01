@@ -494,12 +494,13 @@ describe('Atom', () => {
     });
 
     it('charge is 0 for neutral atom', () => {
-        const h = new Atom({ atomicNumber: 1 });
+        const h = new Atom({ atomicNumber: 1, electronCount: 1 });
         assert.equal(h.charge, 0);
     });
 
     it('charge is +1 for ionized hydrogen', () => {
-        const h = new Atom({ atomicNumber: 1, electronCount: 0 });
+        const h = new Atom({ atomicNumber: 1, electronCount: 1 });
+        h.ionize();
         assert.equal(h.charge, 1);
     });
 
@@ -527,14 +528,14 @@ describe('Atom', () => {
     });
 
     it('isIon detects ionized atoms', () => {
-        const h = new Atom({ atomicNumber: 1 });
+        const h = new Atom({ atomicNumber: 1, electronCount: 1 });
         assert.equal(h.isIon, false);
-        const hIon = new Atom({ atomicNumber: 1, electronCount: 0 });
-        assert.equal(hIon.isIon, true);
+        h.ionize();
+        assert.equal(h.isIon, true);
     });
 
     it('ionize removes electron', () => {
-        const h = new Atom({ atomicNumber: 1 });
+        const h = new Atom({ atomicNumber: 1, electronCount: 1 });
         assert.equal(h.ionize(), true);
         assert.equal(h.electronCount, 0);
         assert.equal(h.isIon, true);
@@ -542,8 +543,10 @@ describe('Atom', () => {
     });
 
     it('captureElectron adds electron', () => {
-        const h = new Atom({ atomicNumber: 1, electronCount: 0 });
+        const h = new Atom({ atomicNumber: 1, electronCount: 1 });
+        h.ionize();
         assert.equal(h.isIon, true);
+        assert.equal(h.electronCount, 0);
         h.captureElectron();
         assert.equal(h.electronCount, 1);
         assert.equal(h.isIon, false);
@@ -667,12 +670,12 @@ describe('AtomicSystem', () => {
     });
 
     it('attemptBond can form bond between nearby atoms', () => {
-        const as = new AtomicSystem(300);
-        const h1 = new Atom({ atomicNumber: 1, position: [0, 0, 0] });
-        const h2 = new Atom({ atomicNumber: 1, position: [0.5, 0, 0] });
+        const as = new AtomicSystem(1e8);
+        const h1 = new Atom({ atomicNumber: 1, electronCount: 1, position: [0, 0, 0] });
+        const h2 = new Atom({ atomicNumber: 1, electronCount: 1, position: [0.5, 0, 0] });
         as.atoms.push(h1, h2);
         let bonded = false;
-        for (let i = 0; i < 1000; i++) {
+        for (let i = 0; i < 100; i++) {
             if (as.attemptBond(h1, h2)) {
                 bonded = true;
                 break;
@@ -931,6 +934,261 @@ describe('ChemicalSystem', () => {
 // ============================================================
 // Biology Module
 // ============================================================
+describe('EpigeneticMark', () => {
+    it('toCompact returns formatted string', () => {
+        const mark = new EpigeneticMark(3, 'methylation', true, 0);
+        assert.equal(mark.toCompact(), 'M3+');
+
+        const mark2 = new EpigeneticMark(7, 'acetylation', false, 1);
+        assert.equal(mark2.toCompact(), 'A7-');
+
+        const mark3 = new EpigeneticMark(0, 'phosphorylation', true, 5);
+        assert.equal(mark3.toCompact(), 'P0+');
+    });
+});
+
+
+describe('Gene', () => {
+    it('length returns sequence length', () => {
+        const g = new Gene({ name: 'test', sequence: ['A', 'T', 'G'] });
+        assert.equal(g.length, 3);
+    });
+
+    it('transcribe converts T to U', () => {
+        const g = new Gene({ name: 'test', sequence: ['A', 'T', 'G', 'C'] });
+        const rna = g.transcribe();
+        assert.deepEqual(rna, ['A', 'U', 'G', 'C']);
+    });
+
+    it('isSilenced returns true when heavily methylated', () => {
+        const g = new Gene({ name: 'test', sequence: ['A', 'T', 'G', 'C', 'A', 'T', 'G', 'C', 'A', 'T'] });
+        assert.equal(g.isSilenced, false);
+        for (let i = 0; i < 5; i++) {
+            g.methylate(i);
+        }
+        assert.equal(g.isSilenced, true);
+        assert.deepEqual(g.transcribe(), []);
+    });
+
+    it('demethylate removes methylation marks', () => {
+        const g = new Gene({ name: 'test', sequence: ['A', 'T', 'G', 'C', 'A'] });
+        g.methylate(0);
+        g.methylate(1);
+        assert.ok(g.epigeneticMarks.length >= 2);
+        g.demethylate(0);
+        const methylAt0 = g.epigeneticMarks.filter(m => m.position === 0 && m.markType === 'methylation');
+        assert.equal(methylAt0.length, 0);
+    });
+
+    it('acetylate increases expression', () => {
+        const g = new Gene({ name: 'test', sequence: ['A', 'T', 'G', 'C', 'A'] });
+        g.methylate(0);
+        g.methylate(1);
+        const exprAfterMethyl = g.expressionLevel;
+        g.acetylate(0);
+        g.acetylate(1);
+        g.acetylate(2);
+        assert.ok(g.expressionLevel >= exprAfterMethyl);
+    });
+
+    it('mutate changes bases at given rate', () => {
+        const g = new Gene({ name: 'test', sequence: Array(100).fill('A') });
+        const mutations = g.mutate(0.5);
+        assert.ok(mutations > 0);
+    });
+
+    it('toCompact returns formatted string', () => {
+        const g = new Gene({ name: 'myGene', sequence: ['A', 'T', 'G'] });
+        const compact = g.toCompact();
+        assert.ok(compact.includes('myGene'));
+        assert.ok(compact.includes('e='));
+    });
+});
+
+
+describe('DNAStrand', () => {
+    it('length returns sequence length', () => {
+        const dna = new DNAStrand({ sequence: ['A', 'T', 'G', 'C', 'A', 'T'] });
+        assert.equal(dna.length, 6);
+    });
+
+    it('complementaryStrand returns correct pairs', () => {
+        const dna = new DNAStrand({ sequence: ['A', 'T', 'G', 'C'] });
+        assert.deepEqual(dna.complementaryStrand, ['T', 'A', 'C', 'G']);
+    });
+
+    it('gcContent computes correctly', () => {
+        const allGC = new DNAStrand({ sequence: ['G', 'C', 'G', 'C'] });
+        assert.ok(Math.abs(allGC.gcContent - 1.0) < 1e-10);
+
+        const allAT = new DNAStrand({ sequence: ['A', 'T', 'A', 'T'] });
+        assert.ok(Math.abs(allAT.gcContent - 0.0) < 1e-10);
+
+        const mixed = new DNAStrand({ sequence: ['A', 'G', 'C', 'T'] });
+        assert.ok(Math.abs(mixed.gcContent - 0.5) < 1e-10);
+
+        const empty = new DNAStrand({ sequence: [] });
+        assert.equal(empty.gcContent, 0.0);
+    });
+
+    it('randomStrand generates correct length and genes', () => {
+        const strand = DNAStrand.randomStrand(100, 3);
+        assert.equal(strand.length, 100);
+        assert.equal(strand.genes.length, 3);
+    });
+
+    it('replicate produces copy with incremented generation', () => {
+        const strand = DNAStrand.randomStrand(50, 2);
+        const copy = strand.replicate();
+        assert.equal(copy.length, strand.length);
+        assert.equal(copy.generation, strand.generation + 1);
+    });
+
+    it('applyMutations causes mutations with high radiation', () => {
+        const strand = DNAStrand.randomStrand(200, 3);
+        const mutations = strand.applyMutations(100.0, 100.0);
+        assert.ok(mutations > 0);
+        assert.equal(strand.mutationCount, mutations);
+    });
+
+    it('applyMutations causes zero mutations with zero radiation', () => {
+        const strand = DNAStrand.randomStrand(50, 2);
+        const mutations = strand.applyMutations(0.0, 0.0);
+        assert.equal(mutations, 0);
+    });
+
+    it('applyEpigeneticChanges adds marks to genes', () => {
+        const strand = DNAStrand.randomStrand(100, 3);
+        let initialMarks = 0;
+        for (const g of strand.genes) initialMarks += g.epigeneticMarks.length;
+        for (let i = 0; i < 100; i++) {
+            strand.applyEpigeneticChanges(300.0, i);
+        }
+        let finalMarks = 0;
+        for (const g of strand.genes) finalMarks += g.epigeneticMarks.length;
+        assert.ok(finalMarks > initialMarks);
+    });
+
+    it('toCompact returns formatted string', () => {
+        const strand = DNAStrand.randomStrand(50, 2);
+        const compact = strand.toCompact();
+        assert.ok(compact.includes('DNA['));
+        assert.ok(compact.includes('gen='));
+        assert.ok(compact.includes('gc='));
+    });
+});
+
+
+describe('translateMrna', () => {
+    it('translates AUG-UUU-UAA to Met-Phe', () => {
+        const mrna = ['A', 'U', 'G', 'U', 'U', 'U', 'U', 'A', 'A'];
+        const protein = translateMrna(mrna);
+        assert.equal(protein.length, 2);
+        assert.equal(protein[0], 'Met');
+        assert.equal(protein[1], 'Phe');
+    });
+
+    it('returns empty array when no start codon', () => {
+        const mrna = ['U', 'U', 'U', 'U', 'U', 'U'];
+        const protein = translateMrna(mrna);
+        assert.equal(protein.length, 0);
+    });
+});
+
+
+describe('Protein', () => {
+    it('length returns amino acid count', () => {
+        const p = new Protein({ aminoAcids: ['Met', 'Phe', 'Gly'] });
+        assert.equal(p.length, 3);
+    });
+
+    it('fold fails for short proteins', () => {
+        const p = new Protein({ aminoAcids: ['Met', 'Phe'] });
+        const result = p.fold();
+        assert.equal(result, false);
+        assert.equal(p.folded, false);
+    });
+
+    it('fold runs for long proteins', () => {
+        const p = new Protein({ aminoAcids: Array(20).fill('Ala'), name: 'long' });
+        p.fold();
+        // Result is probabilistic, just verify it runs
+        assert.equal(typeof p.folded, 'boolean');
+    });
+
+    it('toCompact returns formatted string', () => {
+        const p = new Protein({ aminoAcids: ['Met', 'Phe'], name: 'myProt' });
+        const compact = p.toCompact();
+        assert.ok(compact.includes('myProt'));
+        assert.ok(compact.includes('f='));
+    });
+});
+
+
+describe('Cell', () => {
+    it('transcribeAndTranslate runs central dogma', () => {
+        const gene = new Gene({
+            name: 'known',
+            sequence: ['A', 'T', 'G', 'T', 'T', 'T', 'T', 'A', 'A'],
+            startPos: 0, endPos: 9, expressionLevel: 1.0,
+        });
+        const dna = new DNAStrand({ sequence: ['A', 'T', 'G', 'T', 'T', 'T', 'T', 'A', 'A'], genes: [gene] });
+        const cell = new Cell({ dna });
+        cell.proteins = [];
+        const newProteins = cell.transcribeAndTranslate();
+        // Result is probabilistic due to expressionLevel check
+        assert.ok(Array.isArray(newProteins));
+    });
+
+    it('metabolize adjusts energy', () => {
+        const cell = new Cell({ energy: 100.0 });
+        cell.metabolize(20.0);
+        assert.ok(cell.alive);
+        assert.ok(cell.energy > 0);
+    });
+
+    it('divide creates daughter cell', () => {
+        const cell = new Cell({ energy: 100.0 });
+        const daughter = cell.divide();
+        assert.ok(daughter !== null);
+        assert.equal(daughter.generation, cell.generation + 1);
+        assert.ok(daughter.alive);
+    });
+
+    it('divide returns null for dead cell', () => {
+        const cell = new Cell();
+        cell.alive = false;
+        assert.equal(cell.divide(), null);
+    });
+
+    it('divide returns null for low energy cell', () => {
+        const cell = new Cell({ energy: 10.0 });
+        assert.equal(cell.divide(), null);
+    });
+
+    it('computeFitness returns value between 0 and 1', () => {
+        const cell = new Cell();
+        const fitness = cell.computeFitness();
+        assert.ok(fitness >= 0.0);
+        assert.ok(fitness <= 1.0);
+    });
+
+    it('computeFitness returns 0 for dead cell', () => {
+        const cell = new Cell();
+        cell.alive = false;
+        assert.equal(cell.computeFitness(), 0.0);
+    });
+
+    it('toCompact returns formatted string', () => {
+        const cell = new Cell();
+        const compact = cell.toCompact();
+        assert.ok(compact.includes('Cell#'));
+        assert.ok(compact.includes('gen='));
+        assert.ok(compact.includes('alive'));
+    });
+});
+
+
 describe('Biosphere', () => {
     it('initializes with cells', () => {
         const bio = new Biosphere(5, 50);
@@ -939,10 +1197,10 @@ describe('Biosphere', () => {
 
     it('step advances the biosphere', () => {
         const bio = new Biosphere(3, 50);
-        const initialCount = bio.cells.length;
         bio.step(1.0, 0.1, 0.01, 300);
         // Population should still exist
         assert.ok(bio.cells.length > 0);
+        assert.equal(bio.generation, 1);
     });
 
     it('averageFitness returns a number', () => {
@@ -951,12 +1209,51 @@ describe('Biosphere', () => {
         assert.equal(typeof fitness, 'number');
         assert.ok(fitness >= 0 && fitness <= 1);
     });
+
+    it('averageGcContent returns value between 0 and 1', () => {
+        const bio = new Biosphere(3, 50);
+        const gc = bio.averageGcContent();
+        assert.equal(typeof gc, 'number');
+        assert.ok(gc >= 0 && gc <= 1);
+    });
+
+    it('totalMutations returns 0 initially', () => {
+        const bio = new Biosphere(3, 60);
+        assert.equal(bio.totalMutations(), 0);
+    });
+
+    it('totalMutations increases after UV exposure', () => {
+        const bio = new Biosphere(5, 200);
+        for (const cell of bio.cells) {
+            cell.dna.applyMutations(1000.0, 1000.0);
+        }
+        assert.ok(bio.totalMutations() > 0);
+    });
+
+    it('toCompact returns formatted string', () => {
+        const bio = new Biosphere(3, 50);
+        const compact = bio.toCompact();
+        assert.ok(compact.includes('Bio['));
+        assert.ok(compact.includes('gen='));
+        assert.ok(compact.includes('pop='));
+    });
 });
 
 
 // ============================================================
 // Environment Module
 // ============================================================
+describe('EnvironmentalEvent', () => {
+    it('toCompact returns formatted string', () => {
+        const ev = new EnvironmentalEvent('volcanic', 0.75, 30, [1, 2, 3], 42);
+        assert.equal(ev.toCompact(), 'Ev:volcanic(i=0.75,d=30)');
+
+        const ev2 = new EnvironmentalEvent('impact', 1.0, 100);
+        assert.equal(ev2.toCompact(), 'Ev:impact(i=1.00,d=100)');
+    });
+});
+
+
 describe('Environment', () => {
     it('initializes with high temperature', () => {
         const env = new Environment(T_PLANCK);
@@ -974,6 +1271,28 @@ describe('Environment', () => {
         const env = new Environment(T_PLANCK);
         env.update(PRESENT_EPOCH);
         assert.ok(env.isHabitable());
+    });
+
+    it('getRadiationDose returns a positive number', () => {
+        const env = new Environment(T_PLANCK);
+        const dose = env.getRadiationDose();
+        assert.ok(typeof dose === 'number');
+        assert.ok(dose >= 0);
+    });
+
+    it('thermalEnergy returns a positive number', () => {
+        const env = new Environment(T_PLANCK);
+        const energy = env.thermalEnergy();
+        assert.ok(typeof energy === 'number');
+        assert.ok(energy > 0);
+    });
+
+    it('toCompact returns formatted string', () => {
+        const env = new Environment(T_PLANCK);
+        const compact = env.toCompact();
+        assert.equal(typeof compact, 'string');
+        assert.ok(compact.includes('Env'));
+        assert.ok(compact.includes('T='));
     });
 });
 
