@@ -276,3 +276,290 @@ impl Environment {
         )
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // -----------------------------------------------------------------------
+    // Atmosphere
+    // -----------------------------------------------------------------------
+
+    /// Early Earth atmosphere has no free oxygen.
+    #[test]
+    fn early_earth_no_oxygen() {
+        let atm = Atmosphere::early_earth();
+        assert_eq!(atm.oxygen, 0.0);
+    }
+
+    /// Early Earth atmosphere sums to approximately 1.0.
+    #[test]
+    fn early_earth_sums_to_one() {
+        let atm = Atmosphere::early_earth();
+        let total = atm.hydrogen + atm.helium + atm.nitrogen + atm.oxygen
+            + atm.carbon_dioxide + atm.methane + atm.water_vapor;
+        assert!((total - 1.0).abs() < 1e-10);
+    }
+
+    /// Primordial atmosphere is mostly hydrogen and helium.
+    #[test]
+    fn primordial_mostly_h_he() {
+        let atm = Atmosphere::primordial();
+        assert!(atm.hydrogen > 0.5);
+        assert!(atm.helium > 0.1);
+        assert_eq!(atm.oxygen, 0.0);
+    }
+
+    /// Primordial atmosphere sums to approximately 1.0.
+    #[test]
+    fn primordial_sums_to_one() {
+        let atm = Atmosphere::primordial();
+        let total = atm.hydrogen + atm.helium + atm.nitrogen + atm.oxygen
+            + atm.carbon_dioxide + atm.methane + atm.water_vapor;
+        assert!((total - 1.0).abs() < 1e-10);
+    }
+
+    /// Evolve with photosynthesis converts CO2 to O2.
+    #[test]
+    fn atmosphere_evolve_photosynthesis() {
+        let mut atm = Atmosphere::early_earth();
+        let initial_co2 = atm.carbon_dioxide;
+        let initial_o2 = atm.oxygen;
+        atm.evolve(100.0, 0.0); // high photosynthesis, no volcanism
+        assert!(atm.oxygen > initial_o2, "oxygen should increase");
+        assert!(atm.carbon_dioxide < initial_co2, "CO2 should decrease");
+    }
+
+    /// Evolve normalizes the total to 1.0.
+    #[test]
+    fn atmosphere_evolve_normalizes() {
+        let mut atm = Atmosphere::early_earth();
+        atm.evolve(10.0, 0.5);
+        let total = atm.hydrogen + atm.helium + atm.nitrogen + atm.oxygen
+            + atm.carbon_dioxide + atm.methane + atm.water_vapor;
+        assert!((total - 1.0).abs() < 1e-6);
+    }
+
+    /// Not oxygenated when oxygen < 5%.
+    #[test]
+    fn atmosphere_not_oxygenated_low_o2() {
+        let atm = Atmosphere::early_earth();
+        assert!(!atm.is_oxygenated());
+    }
+
+    /// Oxygenated when oxygen > 5%.
+    #[test]
+    fn atmosphere_oxygenated_high_o2() {
+        let mut atm = Atmosphere::early_earth();
+        atm.oxygen = 0.10;
+        assert!(atm.is_oxygenated());
+    }
+
+    /// Greenhouse factor is >= 1.0.
+    #[test]
+    fn greenhouse_factor_at_least_one() {
+        let atm = Atmosphere::early_earth();
+        assert!(atm.greenhouse_factor() >= 1.0);
+    }
+
+    /// Higher CO2 means higher greenhouse factor.
+    #[test]
+    fn greenhouse_increases_with_co2() {
+        let mut atm1 = Atmosphere::primordial();
+        let mut atm2 = Atmosphere::primordial();
+        atm1.carbon_dioxide = 0.01;
+        atm2.carbon_dioxide = 0.30;
+        assert!(atm2.greenhouse_factor() > atm1.greenhouse_factor());
+    }
+
+    /// Compact representation includes all gas fractions.
+    #[test]
+    fn atmosphere_compact_format() {
+        let atm = Atmosphere::early_earth();
+        let compact = atm.to_compact();
+        assert!(compact.starts_with("ATM["));
+        assert!(compact.contains("O2="));
+        assert!(compact.contains("N2="));
+    }
+
+    // -----------------------------------------------------------------------
+    // Environment
+    // -----------------------------------------------------------------------
+
+    /// Interstellar environment is at CMB temperature.
+    #[test]
+    fn interstellar_temperature() {
+        let env = Environment::interstellar();
+        assert_eq!(env.temperature, T_CMB);
+    }
+
+    /// Interstellar environment is not habitable.
+    #[test]
+    fn interstellar_not_habitable() {
+        let env = Environment::interstellar();
+        assert!(!env.is_habitable());
+    }
+
+    /// Early Earth is hot (400 K).
+    #[test]
+    fn early_earth_temperature() {
+        let env = Environment::early_earth();
+        assert_eq!(env.temperature, 400.0);
+    }
+
+    /// Early Earth has partial ocean coverage.
+    #[test]
+    fn early_earth_has_ocean() {
+        let env = Environment::early_earth();
+        assert!(env.ocean_coverage > 0.0);
+    }
+
+    /// Early Earth has high volcanism.
+    #[test]
+    fn early_earth_volcanism() {
+        let env = Environment::early_earth();
+        assert!(env.volcanism > 0.5);
+    }
+
+    /// make_habitable sets appropriate conditions.
+    #[test]
+    fn make_habitable_conditions() {
+        let mut env = Environment::interstellar();
+        env.make_habitable();
+        assert_eq!(env.temperature, T_EARTH_SURFACE);
+        assert_eq!(env.ocean_coverage, 0.7);
+        assert_eq!(env.land_coverage, 0.3);
+        assert_eq!(env.resources, 1.0);
+        assert_eq!(env.day_length, 24.0);
+    }
+
+    /// Habitable environment is reported as habitable.
+    #[test]
+    fn habitable_after_make_habitable() {
+        let mut env = Environment::interstellar();
+        env.make_habitable();
+        assert!(env.is_habitable());
+    }
+
+    /// is_habitable requires temperature in [250, 400].
+    #[test]
+    fn habitability_temperature_range() {
+        let mut env = Environment::early_earth();
+        env.ocean_coverage = 0.5;
+        env.resources = 0.5;
+
+        env.temperature = 200.0; // too cold
+        assert!(!env.is_habitable());
+
+        env.temperature = 300.0; // just right
+        assert!(env.is_habitable());
+
+        env.temperature = 450.0; // too hot
+        assert!(!env.is_habitable());
+    }
+
+    /// is_habitable requires ocean coverage > 0.1.
+    #[test]
+    fn habitability_requires_ocean() {
+        let mut env = Environment::early_earth();
+        env.temperature = 300.0;
+        env.resources = 0.5;
+        env.ocean_coverage = 0.05;
+        assert!(!env.is_habitable());
+    }
+
+    /// is_habitable requires resources > 0.1.
+    #[test]
+    fn habitability_requires_resources() {
+        let mut env = Environment::early_earth();
+        env.temperature = 300.0;
+        env.ocean_coverage = 0.5;
+        env.resources = 0.05;
+        assert!(!env.is_habitable());
+    }
+
+    /// Tick evolves the atmosphere via photosynthesis.
+    #[test]
+    fn environment_tick_evolves_atmosphere() {
+        let mut env = Environment::early_earth();
+        env.make_habitable();
+        let initial_o2 = env.atmosphere.oxygen;
+        // Tick with a large population to trigger photosynthesis
+        for _ in 0..100 {
+            env.tick(1000);
+        }
+        assert!(env.atmosphere.oxygen > initial_o2,
+            "oxygen should increase with large population");
+    }
+
+    /// Volcanism slowly decreases over time.
+    #[test]
+    fn environment_volcanism_decreases() {
+        let mut env = Environment::early_earth();
+        let initial_volcanism = env.volcanism;
+        for _ in 0..10000 {
+            env.tick(0);
+        }
+        // Volcanism decays by 0.9999 each tick, so over 10k ticks
+        // it should be noticeably lower
+        assert!(env.volcanism < initial_volcanism,
+            "volcanism {} should decrease from {}",
+            env.volcanism, initial_volcanism);
+    }
+
+    /// Radiation decreases when oxygen is present.
+    #[test]
+    fn environment_radiation_decreases_with_oxygen() {
+        let mut env = Environment::early_earth();
+        env.atmosphere.oxygen = 0.10;
+        let initial_rad = env.radiation_level;
+        for _ in 0..100 {
+            env.tick(0);
+        }
+        assert!(env.radiation_level < initial_rad);
+    }
+
+    /// Radiation has a floor of 0.5.
+    #[test]
+    fn environment_radiation_floor() {
+        let mut env = Environment::early_earth();
+        env.atmosphere.oxygen = 0.20;
+        env.radiation_level = 0.51;
+        for _ in 0..10000 {
+            env.tick(0);
+        }
+        assert!(env.radiation_level >= 0.5);
+    }
+
+    /// Day length slowly increases.
+    #[test]
+    fn environment_day_length_increases() {
+        let mut env = Environment::early_earth();
+        let initial = env.day_length;
+        for _ in 0..1000 {
+            env.tick(0);
+        }
+        assert!(env.day_length > initial);
+    }
+
+    /// Compact representation includes habitability.
+    #[test]
+    fn environment_compact_format() {
+        let env = Environment::early_earth();
+        let compact = env.to_compact();
+        assert!(compact.starts_with("ENV["));
+        assert!(compact.contains("hab="));
+    }
+
+    /// make_habitable normalizes atmosphere to sum to ~1.
+    #[test]
+    fn make_habitable_atmosphere_normalized() {
+        let mut env = Environment::interstellar();
+        env.make_habitable();
+        let atm = &env.atmosphere;
+        let total = atm.hydrogen + atm.helium + atm.nitrogen + atm.oxygen
+            + atm.carbon_dioxide + atm.methane + atm.water_vapor;
+        assert!((total - 1.0).abs() < 1e-6,
+            "atmosphere total {} should be ~1.0", total);
+    }
+}

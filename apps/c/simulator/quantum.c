@@ -160,8 +160,10 @@ static void qf_ensure_capacity(QuantumField *qf, int needed)
     int new_cap = qf->capacity * 2;
     while (new_cap < qf->count + needed) new_cap *= 2;
     if (new_cap > MAX_PARTICLES) new_cap = MAX_PARTICLES;
-    qf->particles = (Particle *)realloc(qf->particles,
+    Particle *tmp = (Particle *)realloc(qf->particles,
                                         (size_t)new_cap * sizeof(Particle));
+    if (!tmp) return;
+    qf->particles = tmp;
     qf->capacity = new_cap;
 }
 

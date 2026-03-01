@@ -38,3 +38,15 @@ apps/screensaver-ubuntu/simulator/*.o
 
 # Large generated files
 ast_captures/full_ast.json
+
+# Generated documentation
+apps/c/docs/
+apps/cpp/docs/
+
+# Sensitive files (should never be committed)
+.env
+*.key
+*.pem
+credentials.*
+apps/kotlin/.gradle/
+apps/screensaver-ubuntu/test_simulator

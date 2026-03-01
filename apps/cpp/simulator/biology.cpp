@@ -518,7 +518,11 @@ void Biosphere::step(double environmentEnergy, double uvIntensity,
     constexpr int maxPop = 100;
     if (static_cast<int>(cells.size()) > maxPop) {
         std::sort(cells.begin(), cells.end(),
-            [](const Cell& a, const Cell& b) { return a.fitness > b.fitness; });
+            [](const Cell& a, const Cell& b) {
+                if (std::isnan(a.fitness)) return false;
+                if (std::isnan(b.fitness)) return true;
+                return a.fitness > b.fitness;
+            });
         int excess = static_cast<int>(cells.size()) - maxPop;
         totalDied += excess;
         cells.resize(static_cast<size_t>(maxPop));

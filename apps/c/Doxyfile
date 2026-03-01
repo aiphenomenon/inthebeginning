@@ -1,0 +1,11 @@
+PROJECT_NAME           = "In The Beginning - C Simulator"
+PROJECT_BRIEF          = "Cosmic physics simulator in C"
+OUTPUT_DIRECTORY       = docs
+INPUT                  = simulator
+FILE_PATTERNS          = *.c *.h
+RECURSIVE              = NO
+EXTRACT_ALL            = YES
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+OPTIMIZE_OUTPUT_FOR_C  = YES
+QUIET                  = YES

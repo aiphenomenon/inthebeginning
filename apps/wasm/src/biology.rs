@@ -260,3 +260,228 @@ fn gauss(rng: &mut impl Rng, mean: f64, std: f64) -> f64 {
     let u2: f64 = rng.gen::<f64>();
     mean + std * (-2.0 * u1.ln()).sqrt() * (2.0 * crate::constants::PI * u2).cos()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rand::rngs::SmallRng;
+    use rand::SeedableRng;
+
+    fn make_rng() -> SmallRng {
+        SmallRng::seed_from_u64(42)
+    }
+
+    // --- Cell tests ---
+
+    #[test]
+    fn test_cell_new() {
+        let mut rng = make_rng();
+        let cell = Cell::new(1, [0.0, 0.0, 0.0], &mut rng);
+        assert_eq!(cell.id, 1);
+        assert!(cell.alive);
+        assert_eq!(cell.fitness, 1.0);
+        assert_eq!(cell.energy, 100.0);
+        assert_eq!(cell.generation, 0);
+        assert_eq!(cell.dna_mutation_count, 0);
+        // GC content should be between 0.4 and 0.6
+        assert!(cell.dna_gc_content >= 0.4 && cell.dna_gc_content <= 0.6);
+        // Protein count should be 1..3
+        assert!(cell.protein_count >= 1 && cell.protein_count <= 3);
+    }
+
+    #[test]
+    fn test_cell_metabolize_gains_energy() {
+        let mut rng = make_rng();
+        let mut cell = Cell::new(1, [0.0; 3], &mut rng);
+        cell.energy = 50.0;
+
+        cell.metabolize(20.0);
+        // Energy should increase from environment input minus basal cost
+        // efficiency = 0.3 + 0.15 * protein_count; gain = 20 * efficiency - 3
+        assert!(cell.alive);
+    }
+
+    #[test]
+    fn test_cell_metabolize_death() {
+        let mut rng = make_rng();
+        let mut cell = Cell::new(1, [0.0; 3], &mut rng);
+        cell.energy = 1.0;
+
+        cell.metabolize(0.0);
+        // Basal cost (3.0) should kill the cell
+        assert!(!cell.alive);
+    }
+
+    #[test]
+    fn test_cell_metabolize_energy_cap() {
+        let mut rng = make_rng();
+        let mut cell = Cell::new(1, [0.0; 3], &mut rng);
+        cell.energy = 199.0;
+
+        cell.metabolize(100.0);
+        // Energy should be capped at 200
+        assert!(cell.energy <= 200.0);
+    }
+
+    #[test]
+    fn test_cell_compute_fitness_alive() {
+        let mut rng = make_rng();
+        let mut cell = Cell::new(1, [0.0; 3], &mut rng);
+        cell.energy = 100.0;
+        cell.protein_count = 3;
+        cell.dna_gc_content = 0.5;
+
+        let fitness = cell.compute_fitness();
+        assert!(fitness > 0.0);
+        assert!(fitness <= 1.0);
+    }
+
+    #[test]
+    fn test_cell_compute_fitness_dead() {
+        let mut rng = make_rng();
+        let mut cell = Cell::new(1, [0.0; 3], &mut rng);
+        cell.alive = false;
+
+        let fitness = cell.compute_fitness();
+        assert_eq!(fitness, 0.0);
+    }
+
+    #[test]
+    fn test_cell_divide_success() {
+        let mut rng = make_rng();
+        let mut cell = Cell::new(1, [0.0; 3], &mut rng);
+        cell.energy = 100.0;
+
+        let daughter = cell.divide(2, &mut rng);
+        assert!(daughter.is_some());
+        let daughter = daughter.unwrap();
+
+        assert_eq!(daughter.id, 2);
+        assert_eq!(daughter.generation, 1);
+        assert!(daughter.alive);
+        // Parent energy should be halved
+        assert!((cell.energy - 50.0).abs() < 1e-10);
+        // Daughter gets parent's halved energy
+        assert!((daughter.energy - 50.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_cell_divide_insufficient_energy() {
+        let mut rng = make_rng();
+        let mut cell = Cell::new(1, [0.0; 3], &mut rng);
+        cell.energy = 30.0;
+
+        let daughter = cell.divide(2, &mut rng);
+        assert!(daughter.is_none());
+    }
+
+    #[test]
+    fn test_cell_divide_dead_cell() {
+        let mut rng = make_rng();
+        let mut cell = Cell::new(1, [0.0; 3], &mut rng);
+        cell.alive = false;
+        cell.energy = 100.0;
+
+        let daughter = cell.divide(2, &mut rng);
+        assert!(daughter.is_none());
+    }
+
+    #[test]
+    fn test_cell_render_color() {
+        let mut rng = make_rng();
+        let cell = Cell::new(1, [0.0; 3], &mut rng);
+        let color = cell.render_color();
+        assert_eq!(color.len(), 4);
+        // Cells should be greenish
+        assert!(color[1] > color[0]);
+    }
+
+    #[test]
+    fn test_cell_render_size() {
+        let mut rng = make_rng();
+        let mut cell = Cell::new(1, [0.0; 3], &mut rng);
+
+        cell.fitness = 0.0;
+        let size_low = cell.render_size();
+
+        cell.fitness = 1.0;
+        let size_high = cell.render_size();
+
+        assert!(size_high > size_low);
+    }
+
+    // --- Biosphere tests ---
+
+    #[test]
+    fn test_biosphere_new() {
+        let mut rng = make_rng();
+        let bio = Biosphere::new(5, &mut rng);
+        assert_eq!(bio.cells.len(), 5);
+        assert_eq!(bio.total_born, 5);
+        assert_eq!(bio.total_died, 0);
+        assert_eq!(bio.generation, 0);
+    }
+
+    #[test]
+    fn test_biosphere_step() {
+        let mut rng = make_rng();
+        let mut bio = Biosphere::new(5, &mut rng);
+
+        bio.step(10.0, 0.5, 0.1, 288.0, &mut rng);
+        assert_eq!(bio.generation, 1);
+        // Cells should still be alive with adequate energy
+        assert!(!bio.cells.is_empty());
+    }
+
+    #[test]
+    fn test_biosphere_average_fitness() {
+        let mut rng = make_rng();
+        let bio = Biosphere::new(5, &mut rng);
+        let avg = bio.average_fitness();
+        // Initial fitness is 1.0 for all cells
+        assert!((avg - 1.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_biosphere_average_fitness_empty() {
+        let mut rng = make_rng();
+        let bio = Biosphere::new(0, &mut rng);
+        assert_eq!(bio.average_fitness(), 0.0);
+    }
+
+    #[test]
+    fn test_biosphere_population_cap() {
+        let mut rng = make_rng();
+        let mut bio = Biosphere::new(50, &mut rng);
+
+        // Run several steps with high energy to encourage division
+        for _ in 0..20 {
+            bio.step(50.0, 0.1, 0.01, 288.0, &mut rng);
+        }
+        // Population should be capped at 100
+        assert!(bio.cells.len() <= 100);
+    }
+
+    #[test]
+    fn test_biosphere_total_mutations() {
+        let mut rng = make_rng();
+        let bio = Biosphere::new(3, &mut rng);
+        // No mutations initially
+        assert_eq!(bio.total_mutations(), 0);
+    }
+
+    #[test]
+    fn test_biosphere_starvation() {
+        let mut rng = make_rng();
+        let mut bio = Biosphere::new(5, &mut rng);
+        // Set all cells to low energy
+        for cell in &mut bio.cells {
+            cell.energy = 1.0;
+        }
+
+        // Step with zero environmental energy
+        bio.step(0.0, 0.0, 0.0, 288.0, &mut rng);
+        // Some or all cells should have died
+        assert!(bio.total_died > 0 || bio.cells.iter().any(|c| !c.alive));
+    }
+}

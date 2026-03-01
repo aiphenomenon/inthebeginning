@@ -1,6 +1,7 @@
 package com.inthebeginning.simulator;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.inthebeginning.simulator.Constants.*;
 
@@ -116,7 +117,7 @@ public class BiologicalSystem {
 
     /** A simple lifeform with a genome and fitness. */
     public static class Lifeform {
-        private static int idCounter = 0;
+        private static final AtomicInteger idCounter = new AtomicInteger(0);
 
         private final int lifeformId;
         private final String species;
@@ -127,7 +128,7 @@ public class BiologicalSystem {
         private final List<String> proteins;
 
         public Lifeform(String species, DNA genome) {
-            this.lifeformId = ++idCounter;
+            this.lifeformId = idCounter.incrementAndGet();
             this.species = species;
             this.genome = genome;
             this.fitness = 1.0;

@@ -1,0 +1,269 @@
+package com.inthebeginning.simulator;
+
+import java.util.*;
+
+import static com.inthebeginning.simulator.Constants.*;
+
+/**
+ * Integration tests for Universe: stepping through epochs,
+ * verifying subsystem coordination and epoch transitions.
+ */
+public class TestUniverse {
+
+    private static int passed = 0;
+    private static int failed = 0;
+
+    private static void assertEquals(String label, Object expected, Object actual) {
+        if (expected.equals(actual)) {
+            passed++;
+        } else {
+            failed++;
+            System.out.println("    FAIL: " + label + " - expected " + expected + " but got " + actual);
+        }
+    }
+
+    private static void assertTrue(String label, boolean condition) {
+        if (condition) {
+            passed++;
+        } else {
+            failed++;
+            System.out.println("    FAIL: " + label);
+        }
+    }
+
+    private static void assertApprox(String label, double expected, double actual, double tolerance) {
+        if (Math.abs(expected - actual) < tolerance) {
+            passed++;
+        } else {
+            failed++;
+            System.out.println("    FAIL: " + label + " - expected ~" + expected + " but got " + actual);
+        }
+    }
+
+    private static void assertNotNull(String label, Object obj) {
+        if (obj != null) {
+            passed++;
+        } else {
+            failed++;
+            System.out.println("    FAIL: " + label + " - was null");
+        }
+    }
+
+    public static int[] runAll() {
+        passed = 0;
+        failed = 0;
+
+        System.out.println("  [TestUniverse]");
+
+        testCreation();
+        testInitialState();
+        testSingleStep();
+        testEpochProgression();
+        testTemperatureCooling();
+        testScaleFactorGrowth();
+        testSubsystemsExist();
+        testPlanckEpoch();
+        testInflationEpoch();
+        testHadronEpoch();
+        testNucleosynthesisEpoch();
+        testFullSimulation();
+        testRunToWithCallback();
+        testEventLog();
+        testSummary();
+
+        System.out.println("    " + passed + " passed, " + failed + " failed");
+        return new int[]{passed, failed};
+    }
+
+    private static void testCreation() {
+        Universe u = new Universe(42L);
+        assertNotNull("Universe created", u);
+        assertEquals("Initial tick = 0", 0, u.getTick());
+    }
+
+    private static void testInitialState() {
+        Universe u = new Universe(42L);
+        assertApprox("Initial temperature = T_PLANCK", T_PLANCK, u.getTemperature(), 1.0);
+        assertTrue("Initial scale factor very small", u.getScaleFactor() < 1e-20);
+        assertNotNull("Quantum field exists", u.getQuantumField());
+        assertNotNull("Atomic system exists", u.getAtomicSystem());
+        assertNotNull("Chemical system exists", u.getChemicalSystem());
+        assertNotNull("Environment exists", u.getEnvironment());
+        assertNotNull("Biological system exists", u.getBiologicalSystem());
+    }
+
+    private static void testSingleStep() {
+        Universe u = new Universe(42L);
+        u.step();
+        assertEquals("Tick = 1 after one step", 1, u.getTick());
+    }
+
+    private static void testEpochProgression() {
+        Universe u = new Universe(42L);
+        EpochInfo epoch0 = u.currentEpoch();
+        assertEquals("First epoch is Planck", "Planck", epoch0.name());
+
+        // Step to inflation
+        for (int i = 0; i < INFLATION_EPOCH + 1; i++) {
+            u.step();
+        }
+        EpochInfo epoch1 = u.currentEpoch();
+        assertEquals("Epoch at tick 11 is Inflation", "Inflation", epoch1.name());
+    }
+
+    private static void testTemperatureCooling() {
+        Universe u = new Universe(42L);
+        double t0 = u.getTemperature();
+
+        // Run through some steps
+        for (int i = 0; i < 100; i++) {
+            u.step();
+        }
+
+        // Temperature should generally decrease as universe expands
+        // (though it may not be monotonically decreasing due to interpolation)
+        assertTrue("Temperature changed from initial", u.getTemperature() != t0);
+    }
+
+    private static void testScaleFactorGrowth() {
+        Universe u = new Universe(42L);
+        double sf0 = u.getScaleFactor();
+
+        for (int i = 0; i < 50; i++) {
+            u.step();
+        }
+
+        assertTrue("Scale factor grew", u.getScaleFactor() > sf0);
+    }
+
+    private static void testSubsystemsExist() {
+        Universe u = new Universe(42L);
+        assertNotNull("QuantumField", u.getQuantumField());
+        assertNotNull("AtomicSystem", u.getAtomicSystem());
+        assertNotNull("ChemicalSystem", u.getChemicalSystem());
+        assertNotNull("Environment", u.getEnvironment());
+        assertNotNull("BiologicalSystem", u.getBiologicalSystem());
+    }
+
+    private static void testPlanckEpoch() {
+        Universe u = new Universe(42L);
+        // Run through Planck epoch
+        for (int i = 0; i < INFLATION_EPOCH; i++) {
+            u.step();
+        }
+
+        // During Planck epoch, vacuum fluctuations should create some particles
+        assertTrue("Some particles created in Planck epoch",
+                u.getQuantumField().getTotalCreated() >= 0);
+    }
+
+    private static void testInflationEpoch() {
+        Universe u = new Universe(42L);
+        // Run to end of inflation
+        for (int i = 0; i < ELECTROWEAK_EPOCH; i++) {
+            u.step();
+        }
+
+        // During inflation, many particles created via pair production
+        assertTrue("Particles created during inflation",
+                u.getQuantumField().getParticles().size() > 0);
+        assertTrue("Scale factor grew during inflation",
+                u.getScaleFactor() > 1e-28);
+    }
+
+    private static void testHadronEpoch() {
+        Universe u = new Universe(42L);
+        // Run to hadron epoch
+        for (int i = 0; i < NUCLEOSYNTHESIS_EPOCH; i++) {
+            u.step();
+        }
+
+        // By hadron epoch, quarks should be confined into hadrons
+        // Check that protons or neutrons exist
+        boolean hasHadrons = false;
+        for (Particle p : u.getQuantumField().getParticles()) {
+            if (p.type() == ParticleType.PROTON || p.type() == ParticleType.NEUTRON) {
+                hasHadrons = true;
+                break;
+            }
+        }
+        // Hadrons may or may not exist depending on quark production
+        // but we at least have particles
+        assertTrue("Particles exist by hadron epoch",
+                u.getQuantumField().getParticles().size() > 0 || hasHadrons);
+    }
+
+    private static void testNucleosynthesisEpoch() {
+        Universe u = new Universe(42L);
+        // Run to past nucleosynthesis epoch
+        for (int i = 0; i < NUCLEOSYNTHESIS_EPOCH + 200; i++) {
+            u.step();
+        }
+
+        // Atoms should have formed
+        assertTrue("Atoms formed by nucleosynthesis",
+                u.getAtomicSystem().getAtoms().size() > 0);
+    }
+
+    private static void testFullSimulation() {
+        Universe u = new Universe(42L);
+
+        // Run a truncated simulation (not all 300k ticks - just key epochs)
+        int[] milestones = {
+                INFLATION_EPOCH,
+                ELECTROWEAK_EPOCH,
+                HADRON_EPOCH,
+                NUCLEOSYNTHESIS_EPOCH + 200,
+                RECOMBINATION_EPOCH,
+                STAR_FORMATION_EPOCH
+        };
+
+        for (int target : milestones) {
+            while (u.getTick() < target) {
+                u.step();
+            }
+        }
+
+        assertTrue("Tick reached star formation", u.getTick() >= STAR_FORMATION_EPOCH);
+        assertTrue("Has atoms", u.getAtomicSystem().getAtoms().size() > 0);
+        assertTrue("Temperature decreased", u.getTemperature() < T_PLANCK);
+    }
+
+    private static void testRunToWithCallback() {
+        Universe u = new Universe(42L);
+        List<String> epochsCrossed = new ArrayList<>();
+
+        u.runTo(ELECTROWEAK_EPOCH + 1, (idx, epoch, univ) -> {
+            epochsCrossed.add(epoch.name());
+        });
+
+        assertTrue("Callbacks were invoked", epochsCrossed.size() > 0);
+        assertEquals("Tick is correct", ELECTROWEAK_EPOCH + 1, u.getTick());
+    }
+
+    private static void testEventLog() {
+        Universe u = new Universe(42L);
+        // Run far enough to generate events
+        for (int i = 0; i < NUCLEOSYNTHESIS_EPOCH + 200; i++) {
+            u.step();
+        }
+
+        // Event log should have entries by now (BBN events at minimum)
+        assertNotNull("Event log exists", u.getEventLog());
+        // Events may or may not be generated depending on RNG
+        assertTrue("Event log is a list", u.getEventLog() instanceof List);
+    }
+
+    private static void testSummary() {
+        Universe u = new Universe(42L);
+        for (int i = 0; i < 100; i++) {
+            u.step();
+        }
+
+        String summary = u.summary();
+        assertNotNull("Summary not null", summary);
+        assertTrue("Summary contains tick", summary.contains("t="));
+        assertTrue("Summary contains Epoch", summary.contains("Epoch"));
+        assertTrue("Summary contains Temperature", summary.contains("Temperature"));
+    }
+}

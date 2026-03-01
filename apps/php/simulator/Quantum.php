@@ -11,6 +11,13 @@ require_once __DIR__ . '/Constants.php';
  * entanglement (simplified), and the quark-hadron transition.
  */
 
+/**
+ * Enumeration of fundamental and composite particle types.
+ *
+ * Includes quarks (up, down), leptons (electron, positron, neutrino),
+ * gauge bosons (photon, gluon, W, Z), and composite hadrons (proton, neutron).
+ * Each case provides its mass and electric charge in simulation units.
+ */
 enum ParticleType: string
 {
     // Quarks
@@ -29,6 +36,11 @@ enum ParticleType: string
     case Proton = 'proton';
     case Neutron = 'neutron';
 
+    /**
+     * Get the rest mass of this particle type in simulation units.
+     *
+     * @return float The particle mass (0.0 for massless particles like photons).
+     */
     public function mass(): float
     {
         return match ($this) {
@@ -46,6 +58,11 @@ enum ParticleType: string
         };
     }
 
+    /**
+     * Get the electric charge of this particle type in units of the elementary charge.
+     *
+     * @return float The charge (-1.0 for electron, +1.0 for proton, etc.).
+     */
     public function charge(): float
     {
         return match ($this) {
@@ -64,11 +81,21 @@ enum ParticleType: string
     }
 }
 
+/**
+ * Spin quantum number for fermions.
+ *
+ * Represents the intrinsic angular momentum projection: +1/2 (Up) or -1/2 (Down).
+ */
 enum Spin: string
 {
     case Up = 'up';
     case Down = 'down';
 
+    /**
+     * Get the numerical spin value.
+     *
+     * @return float +0.5 for Up, -0.5 for Down.
+     */
     public function value(): float
     {
         return match ($this) {
@@ -78,6 +105,12 @@ enum Spin: string
     }
 }
 
+/**
+ * Color charge for quarks and gluons in the strong interaction.
+ *
+ * Quarks carry one of three colors (red, green, blue); antiquarks carry anti-colors.
+ * Color-neutral (white) combinations form observable hadrons.
+ */
 enum Color: string
 {
     case Red = 'r';
@@ -88,8 +121,21 @@ enum Color: string
     case AntiBlue = 'ab';
 }
 
+/**
+ * Quantum mechanical wave function representation.
+ *
+ * Models the probability amplitude, phase, and coherence of a quantum state.
+ * Supports time evolution, measurement collapse, and superposition of states.
+ */
 class WaveFunction
 {
+    /**
+     * Create a new wave function.
+     *
+     * @param float $amplitude Probability amplitude (0.0 to 1.0).
+     * @param float $phase     Phase angle in radians.
+     * @param bool  $coherent  Whether the state maintains quantum coherence.
+     */
     public function __construct(
         public float $amplitude = 1.0,
         public float $phase = 0.0,
@@ -136,6 +182,11 @@ class WaveFunction
         );
     }
 
+    /**
+     * Serialize the wave function to an associative array.
+     *
+     * @return array{amplitude: float, phase: float, coherent: bool}
+     */
     public function toArray(): array
     {
         return [
@@ -146,10 +197,18 @@ class WaveFunction
     }
 }
 
+/**
+ * A quantum particle with position, momentum, spin, color charge, and wave function.
+ *
+ * Represents fundamental particles (quarks, leptons, bosons) and composite hadrons.
+ * Each particle has a unique ID, relativistic energy, and de Broglie wavelength.
+ */
 class Particle
 {
+    /** @var int Auto-incrementing counter for unique particle IDs. */
     private static int $idCounter = 0;
 
+    /** @var int Unique identifier for this particle instance. */
     public readonly int $particleId;
 
     /** @var float[] */
@@ -163,6 +222,17 @@ class Particle
     public WaveFunction $waveFn;
     public ?int $entangledWith;
 
+    /**
+     * Create a new particle.
+     *
+     * @param ParticleType      $particleType  The type of particle (electron, proton, etc.).
+     * @param float[]|null      $position      3D position vector [x, y, z] in simulation units.
+     * @param float[]|null      $momentum      3D momentum vector [px, py, pz].
+     * @param Spin|null         $spin          Spin state (Up or Down); defaults to Up.
+     * @param Color|null        $color         Color charge for quarks; null for non-colored particles.
+     * @param WaveFunction|null $waveFn        Wave function; defaults to unit amplitude coherent state.
+     * @param int|null          $entangledWith Particle ID of the entangled partner, or null.
+     */
     public function __construct(
         public readonly ParticleType $particleType,
         ?array $position = null,
@@ -182,16 +252,29 @@ class Particle
         $this->entangledWith = $entangledWith;
     }
 
+    /**
+     * Reset the particle ID counter (useful for testing).
+     */
     public static function resetIdCounter(): void
     {
         self::$idCounter = 0;
     }
 
+    /**
+     * Get the rest mass of this particle.
+     *
+     * @return float The mass in simulation units.
+     */
     public function mass(): float
     {
         return $this->particleType->mass();
     }
 
+    /**
+     * Get the electric charge of this particle.
+     *
+     * @return float The charge in units of the elementary charge.
+     */
     public function charge(): float
     {
         return $this->particleType->charge();
@@ -222,8 +305,21 @@ class Particle
     }
 }
 
+/**
+ * An entangled pair of particles sharing a Bell state.
+ *
+ * Measuring one particle's spin instantly determines the other's spin,
+ * modeling the EPR correlation in a simplified form.
+ */
 class EntangledPair
 {
+    /**
+     * Create an entangled pair.
+     *
+     * @param Particle $particleA First particle in the pair.
+     * @param Particle $particleB Second particle in the pair.
+     * @param string   $bellState The Bell state label (e.g., 'phi+').
+     */
     public function __construct(
         public readonly Particle $particleA,
         public readonly Particle $particleB,
@@ -246,8 +342,15 @@ class EntangledPair
     }
 }
 
+/**
+ * The quantum field: a thermal bath of particles and vacuum energy.
+ *
+ * Manages particle creation (pair production), annihilation, quark confinement
+ * into hadrons, vacuum fluctuations, decoherence, cooling, and time evolution.
+ */
 class QuantumField
 {
+    /** @var float Current temperature of the field in simulation Kelvin. */
     public float $temperature;
 
     /** @var Particle[] */
@@ -260,6 +363,11 @@ class QuantumField
     public int $totalCreated = 0;
     public int $totalAnnihilated = 0;
 
+    /**
+     * Create a new quantum field at the given temperature.
+     *
+     * @param float $temperature Initial field temperature (defaults to Planck temperature).
+     */
     public function __construct(float $temperature = T_PLANCK)
     {
         $this->temperature = $temperature;
@@ -535,6 +643,11 @@ class QuantumField
         return -log(max(1e-10, $this->rand())) / $lambda;
     }
 
+    /**
+     * Create a snapshot of the current field state for reporting.
+     *
+     * @return array{temperature: float, particle_count: int, particles_by_type: array, total_energy: float, vacuum_energy: float, total_created: int, total_annihilated: int}
+     */
     public function toSnapshot(): array
     {
         return [

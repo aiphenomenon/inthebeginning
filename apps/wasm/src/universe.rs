@@ -265,3 +265,175 @@ impl Universe {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_universe_new() {
+        let u = Universe::new(42, 300_000);
+        assert_eq!(u.tick, 0);
+        assert_eq!(u.max_ticks, 300_000);
+        assert_eq!(u.current_epoch_name, "Void");
+        assert!(u.quantum_field.particles.is_empty());
+        assert!(u.atomic_system.atoms.is_empty());
+        assert!(u.chemical_system.is_none());
+        assert!(u.biosphere.is_none());
+    }
+
+    #[test]
+    fn test_universe_is_complete() {
+        let mut u = Universe::new(42, 100);
+        assert!(!u.is_complete());
+        u.tick = 100;
+        assert!(u.is_complete());
+        u.tick = 101;
+        assert!(u.is_complete());
+    }
+
+    #[test]
+    fn test_universe_step_advances_tick() {
+        let mut u = Universe::new(42, 300_000);
+        u.step();
+        assert_eq!(u.tick, 1);
+        u.step();
+        assert_eq!(u.tick, 2);
+    }
+
+    #[test]
+    fn test_universe_epoch_transitions() {
+        let mut u = Universe::new(42, 300_000);
+
+        // Advance to Planck epoch
+        u.step();
+        assert_eq!(u.current_epoch_name, "Planck");
+
+        // Advance to Inflation epoch
+        while u.tick < INFLATION_EPOCH {
+            u.step();
+        }
+        assert_eq!(u.current_epoch_name, "Inflation");
+
+        // Advance to Quark epoch
+        while u.tick < QUARK_EPOCH {
+            u.step();
+        }
+        assert_eq!(u.current_epoch_name, "Quark");
+    }
+
+    #[test]
+    fn test_universe_creates_particles() {
+        let mut u = Universe::new(42, 300_000);
+
+        // Run through early universe
+        for _ in 0..100 {
+            u.step();
+        }
+        // Should have created particles by now
+        assert!(u.quantum_field.particles.len() > 0);
+        assert!(u.particles_created > 0);
+    }
+
+    #[test]
+    fn test_universe_hadron_formation() {
+        let mut u = Universe::new(42, 300_000);
+
+        // Advance past hadron epoch
+        while u.tick <= HADRON_EPOCH + 1 {
+            u.step();
+        }
+        // Should have formed some hadrons
+        assert!(u.hadron_done);
+    }
+
+    #[test]
+    fn test_universe_nucleosynthesis() {
+        let mut u = Universe::new(42, 300_000);
+
+        // Advance through nucleosynthesis epoch
+        while u.tick < NUCLEOSYNTHESIS_EPOCH + 100 {
+            u.step();
+        }
+        // Should have formed some atoms
+        assert!(u.atoms_formed > 0 || u.atomic_system.atoms.len() > 0);
+    }
+
+    #[test]
+    fn test_universe_snapshot_initial() {
+        let u = Universe::new(42, 300_000);
+        let snap = u.snapshot();
+
+        assert_eq!(snap.tick, 0);
+        assert_eq!(snap.epoch_name, "Void");
+        assert_eq!(snap.particle_count, 0);
+        assert_eq!(snap.atom_count, 0);
+        assert_eq!(snap.molecule_count, 0);
+        assert_eq!(snap.cell_count, 0);
+        assert_eq!(snap.generation, 0);
+        assert_eq!(snap.total_mutations, 0);
+    }
+
+    #[test]
+    fn test_universe_snapshot_after_steps() {
+        let mut u = Universe::new(42, 300_000);
+
+        for _ in 0..50 {
+            u.step();
+        }
+        let snap = u.snapshot();
+        assert_eq!(snap.tick, 50);
+        assert!(snap.particle_count > 0);
+    }
+
+    #[test]
+    fn test_universe_chemistry_epoch() {
+        let mut u = Universe::new(42, 300_000);
+
+        // Advance to Earth epoch where chemistry starts
+        while u.tick < EARTH_EPOCH + 10 {
+            u.step();
+        }
+        assert!(u.chemical_system.is_some());
+        assert!(u.earth_seeded);
+    }
+
+    #[test]
+    fn test_universe_deterministic() {
+        // Two universes with the same seed should produce identical results
+        let mut u1 = Universe::new(42, 300_000);
+        let mut u2 = Universe::new(42, 300_000);
+
+        for _ in 0..200 {
+            u1.step();
+            u2.step();
+        }
+
+        assert_eq!(u1.tick, u2.tick);
+        assert_eq!(u1.quantum_field.particles.len(), u2.quantum_field.particles.len());
+        assert_eq!(u1.particles_created, u2.particles_created);
+        assert_eq!(u1.atoms_formed, u2.atoms_formed);
+    }
+
+    #[test]
+    fn test_universe_full_run_small() {
+        // Run a small universe to completion
+        let mut u = Universe::new(42, 1000);
+
+        while !u.is_complete() {
+            u.step();
+        }
+        assert!(u.tick >= 1000);
+        let snap = u.snapshot();
+        assert!(snap.tick >= 1000);
+    }
+
+    #[test]
+    fn test_universe_step_size() {
+        let mut u = Universe::new(42, 300_000);
+        assert_eq!(u.step_size, 1);
+        // The step size should advance tick by 1 each step
+        u.step();
+        assert_eq!(u.tick, 1);
+    }
+}

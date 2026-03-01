@@ -1,6 +1,7 @@
 package com.inthebeginning.simulator;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A molecule: a collection of bonded atoms.
@@ -8,7 +9,7 @@ import java.util.*;
  */
 public class Molecule {
 
-    private static int idCounter = 0;
+    private static final AtomicInteger idCounter = new AtomicInteger(0);
 
     private final int moleculeId;
     private final List<Atom> atoms;
@@ -25,7 +26,7 @@ public class Molecule {
 
     public Molecule(List<Atom> atoms, String name, double[] position,
                     boolean organic, List<String> functionalGroups) {
-        this.moleculeId = ++idCounter;
+        this.moleculeId = idCounter.incrementAndGet();
         this.atoms = new ArrayList<>(atoms);
         this.name = name;
         this.position = position.clone();

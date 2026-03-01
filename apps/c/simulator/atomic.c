@@ -207,7 +207,9 @@ static void as_ensure_capacity(AtomicSystem *as, int needed)
     int new_cap = as->capacity * 2;
     while (new_cap < as->count + needed) new_cap *= 2;
     if (new_cap > MAX_ATOMS) new_cap = MAX_ATOMS;
-    as->atoms = (Atom *)realloc(as->atoms, (size_t)new_cap * sizeof(Atom));
+    Atom *tmp = (Atom *)realloc(as->atoms, (size_t)new_cap * sizeof(Atom));
+    if (!tmp) return;
+    as->atoms = tmp;
     as->capacity = new_cap;
 }
 

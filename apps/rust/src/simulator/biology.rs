@@ -446,7 +446,7 @@ impl BiologicalSystem {
         // Population cap: keep the fittest
         if self.population.len() > self.max_population {
             self.population
-                .sort_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
+                .sort_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap_or(std::cmp::Ordering::Equal));
             let died = self.population.len() - self.max_population;
             self.population.truncate(self.max_population);
             self.total_died += died as u64;
@@ -490,5 +490,454 @@ impl BiologicalSystem {
             self.average_genome_length(),
             self.species_count(),
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Helper: create a deterministic genome with known bases.
+    fn make_genome(bases: &[char]) -> Genome {
+        Genome {
+            bases: bases.to_vec(),
+            methylation: vec![false; bases.len()],
+            generation: 0,
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Genome
+    // -----------------------------------------------------------------------
+
+    /// Genome::random produces the requested length.
+    #[test]
+    fn genome_random_length() {
+        let g = Genome::random(100);
+        assert_eq!(g.len(), 100);
+        assert_eq!(g.methylation.len(), 100);
+        assert_eq!(g.generation, 0);
+    }
+
+    /// All bases in a random genome are valid nucleotides.
+    #[test]
+    fn genome_random_valid_bases() {
+        let g = Genome::random(200);
+        for &b in &g.bases {
+            assert!(
+                b == 'A' || b == 'T' || b == 'G' || b == 'C',
+                "invalid base: {}", b
+            );
+        }
+    }
+
+    /// Transcription replaces T with U, leaves others unchanged.
+    #[test]
+    fn genome_transcribe() {
+        let g = make_genome(&['A', 'T', 'G', 'C', 'T', 'A']);
+        let rna = g.transcribe();
+        assert_eq!(rna, vec!['A', 'U', 'G', 'C', 'U', 'A']);
+    }
+
+    /// Translation of AUG-UUU-UAA produces [Met, Phe].
+    #[test]
+    fn genome_translate_simple() {
+        // DNA: ATG TTT TAA => RNA: AUG UUU UAA
+        let g = make_genome(&['A', 'T', 'G', 'T', 'T', 'T', 'T', 'A', 'A']);
+        let protein = g.translate();
+        assert_eq!(protein, vec!["Met", "Phe"]);
+    }
+
+    /// Translation without a start codon yields an empty protein.
+    #[test]
+    fn genome_translate_no_start() {
+        let g = make_genome(&['T', 'T', 'T', 'T', 'T', 'T']); // UUU UUU
+        let protein = g.translate();
+        assert!(protein.is_empty());
+    }
+
+    /// Translation stops at a stop codon.
+    #[test]
+    fn genome_translate_stops() {
+        // DNA: ATG TTT TAA GGG => RNA: AUG UUU UAA GGG
+        let dna: Vec<char> = "ATGTTTTAAGGG".chars().collect();
+        let g = make_genome(&dna);
+        let protein = g.translate();
+        // Should produce [Met, Phe], then stop at UAA
+        assert_eq!(protein, vec!["Met", "Phe"]);
+    }
+
+    /// Replication increments the generation.
+    #[test]
+    fn genome_replicate_increments_generation() {
+        let g = make_genome(&['A', 'T', 'G', 'C']);
+        let child = g.replicate(0.0); // zero error rate
+        assert_eq!(child.generation, 1);
+    }
+
+    /// Replication with zero error rate produces an identical copy.
+    #[test]
+    fn genome_replicate_zero_error() {
+        let g = make_genome(&['A', 'T', 'G', 'C', 'A', 'T']);
+        let child = g.replicate(0.0);
+        assert_eq!(child.bases, g.bases);
+    }
+
+    /// Base composition counts each base correctly.
+    #[test]
+    fn genome_base_composition() {
+        let g = make_genome(&['A', 'A', 'T', 'G', 'G', 'C']);
+        let comp = g.base_composition();
+        assert_eq!(*comp.get(&'A').unwrap(), 2);
+        assert_eq!(*comp.get(&'T').unwrap(), 1);
+        assert_eq!(*comp.get(&'G').unwrap(), 2);
+        assert_eq!(*comp.get(&'C').unwrap(), 1);
+    }
+
+    /// GC content is computed correctly.
+    #[test]
+    fn genome_gc_content() {
+        let g = make_genome(&['G', 'C', 'G', 'C', 'A', 'T']); // 4 GC out of 6
+        let gc = g.gc_content();
+        assert!((gc - 4.0 / 6.0).abs() < 1e-10);
+    }
+
+    /// GC content of all-AT genome is 0.
+    #[test]
+    fn genome_gc_content_zero() {
+        let g = make_genome(&['A', 'T', 'A', 'T']);
+        assert_eq!(g.gc_content(), 0.0);
+    }
+
+    /// GC content of all-GC genome is 1.
+    #[test]
+    fn genome_gc_content_one() {
+        let g = make_genome(&['G', 'C', 'G', 'C']);
+        assert_eq!(g.gc_content(), 1.0);
+    }
+
+    /// Methylation level is 0 when no bases are methylated.
+    #[test]
+    fn genome_methylation_level_zero() {
+        let g = make_genome(&['A', 'T', 'G', 'C']);
+        assert_eq!(g.methylation_level(), 0.0);
+    }
+
+    /// Methylation level reflects the fraction of methylated bases.
+    #[test]
+    fn genome_methylation_level_fraction() {
+        let mut g = make_genome(&['A', 'T', 'G', 'C']);
+        g.methylation[0] = true;
+        g.methylation[2] = true;
+        assert!((g.methylation_level() - 0.5).abs() < 1e-10);
+    }
+
+    /// Methylated bases have a reduced effective mutation rate.
+    #[test]
+    fn genome_methylated_bases_reduce_mutation() {
+        // We test this indirectly: with very high mutation rate,
+        // an all-methylated genome should mutate less than an unmethylated one.
+        // With mutation_rate = 1.0, effective rate for methylated = 0.1
+        let original = vec!['A'; 1000];
+        let mut g_unmethylated = make_genome(&original);
+        let mut g_methylated = make_genome(&original);
+        g_methylated.methylation = vec![true; 1000];
+
+        // Mutate both with rate 1.0
+        g_unmethylated.mutate(1.0);
+        g_methylated.mutate(1.0);
+
+        let unmeth_changes = g_unmethylated.bases.iter()
+            .zip(original.iter())
+            .filter(|(a, b)| a != b)
+            .count();
+        let meth_changes = g_methylated.bases.iter()
+            .zip(original.iter())
+            .filter(|(a, b)| a != b)
+            .count();
+
+        // Methylated should have fewer mutations
+        assert!(meth_changes < unmeth_changes,
+            "methylated changes ({}) should be less than unmethylated ({})",
+            meth_changes, unmeth_changes);
+    }
+
+    // -----------------------------------------------------------------------
+    // decode_traits
+    // -----------------------------------------------------------------------
+
+    /// Short genomes (< 12 bases) produce no traits.
+    #[test]
+    fn decode_traits_short_genome() {
+        let g = make_genome(&['A'; 11]);
+        let traits = decode_traits(&g);
+        assert!(traits.is_empty());
+    }
+
+    /// A 12-base genome produces exactly 1 trait (heat_resistance).
+    #[test]
+    fn decode_traits_one_trait() {
+        let g = make_genome(&['A'; 12]);
+        let traits = decode_traits(&g);
+        assert_eq!(traits.len(), 1);
+        assert_eq!(traits[0].name, "heat_resistance");
+    }
+
+    /// A 24-base genome produces 2 traits.
+    #[test]
+    fn decode_traits_two_traits() {
+        let g = make_genome(&['A'; 24]);
+        let traits = decode_traits(&g);
+        assert_eq!(traits.len(), 2);
+        assert_eq!(traits[1].name, "metabolic_efficiency");
+    }
+
+    /// A 36+ base genome produces 3 traits.
+    #[test]
+    fn decode_traits_three_traits() {
+        let g = make_genome(&['G'; 36]);
+        let traits = decode_traits(&g);
+        assert_eq!(traits.len(), 3);
+        assert_eq!(traits[2].name, "reproduction_rate");
+    }
+
+    /// Trait values are bounded in [0, 1].
+    #[test]
+    fn decode_traits_bounded() {
+        let g = Genome::random(48);
+        let traits = decode_traits(&g);
+        for t in &traits {
+            assert!(t.value >= 0.0 && t.value <= 1.0,
+                "trait {} = {} out of range", t.name, t.value);
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Lifeform
+    // -----------------------------------------------------------------------
+
+    /// New lifeform has expected initial state.
+    #[test]
+    fn lifeform_new_initial_state() {
+        let lf = Lifeform::new(36);
+        assert_eq!(lf.genome.len(), 36);
+        assert_eq!(lf.fitness, 0.5);
+        assert_eq!(lf.energy, 100.0);
+        assert_eq!(lf.age, 0);
+        assert!(lf.alive);
+    }
+
+    /// Lifeform from genome preserves the genome.
+    #[test]
+    fn lifeform_from_genome() {
+        let g = make_genome(&['A', 'T', 'G', 'C', 'A', 'T', 'G', 'C',
+                              'A', 'T', 'G', 'C', 'A', 'T', 'G', 'C',
+                              'A', 'T', 'G', 'C', 'A', 'T', 'G', 'C',
+                              'A', 'T', 'G', 'C', 'A', 'T', 'G', 'C',
+                              'A', 'T', 'G', 'C']);
+        let lf = Lifeform::from_genome(g.clone());
+        assert_eq!(lf.genome.bases, g.bases);
+        assert_eq!(lf.traits.len(), 3); // 36 bases => 3 traits
+    }
+
+    /// trait_value returns the trait or default 0.5.
+    #[test]
+    fn lifeform_trait_value() {
+        let lf = Lifeform::new(36);
+        // Should have heat_resistance trait
+        let hr = lf.trait_value("heat_resistance");
+        assert!(hr >= 0.0 && hr <= 1.0);
+        // Nonexistent trait defaults to 0.5
+        let unknown = lf.trait_value("nonexistent");
+        assert_eq!(unknown, 0.5);
+    }
+
+    /// Fitness evaluation produces values in [0, 1].
+    #[test]
+    fn lifeform_evaluate_fitness_bounded() {
+        let mut lf = Lifeform::new(36);
+        lf.evaluate_fitness(288.0, 1.0);
+        assert!(lf.fitness >= 0.0 && lf.fitness <= 1.0);
+    }
+
+    /// Fitness is higher near optimal temperature.
+    #[test]
+    fn lifeform_fitness_optimal_temp() {
+        let mut lf1 = Lifeform::new(36);
+        let mut lf2 = lf1.clone();
+
+        lf1.evaluate_fitness(300.0, 1.0);  // near optimal
+        lf2.evaluate_fitness(1000.0, 1.0); // far from optimal
+
+        assert!(lf1.fitness > lf2.fitness,
+            "near-optimal fitness {} should exceed far-from-optimal {}",
+            lf1.fitness, lf2.fitness);
+    }
+
+    /// Tick ages the lifeform and consumes energy.
+    #[test]
+    fn lifeform_tick_ages() {
+        let mut lf = Lifeform::new(36);
+        let initial_energy = lf.energy;
+        let alive = lf.tick();
+        assert!(alive);
+        assert_eq!(lf.age, 1);
+        assert!(lf.energy < initial_energy);
+    }
+
+    /// Lifeform dies when energy reaches zero.
+    #[test]
+    fn lifeform_dies_no_energy() {
+        let mut lf = Lifeform::new(36);
+        lf.energy = 0.5; // very low
+        let alive = lf.tick();
+        assert!(!alive);
+        assert!(!lf.alive);
+    }
+
+    /// Dead lifeform stays dead on tick.
+    #[test]
+    fn lifeform_dead_stays_dead() {
+        let mut lf = Lifeform::new(36);
+        lf.alive = false;
+        assert!(!lf.tick());
+    }
+
+    /// Reproduce succeeds when alive and has enough energy.
+    #[test]
+    fn lifeform_reproduce_success() {
+        let lf = Lifeform::new(36);
+        // energy = 100 >= 50
+        let child = lf.reproduce(0.0);
+        assert!(child.is_some());
+        let child = child.unwrap();
+        assert!(child.alive);
+        assert_eq!(child.energy, 100.0 * 0.4);
+    }
+
+    /// Reproduce fails when energy is too low.
+    #[test]
+    fn lifeform_reproduce_insufficient_energy() {
+        let mut lf = Lifeform::new(36);
+        lf.energy = 30.0;
+        assert!(lf.reproduce(0.0).is_none());
+    }
+
+    /// Reproduce fails when dead.
+    #[test]
+    fn lifeform_reproduce_dead() {
+        let mut lf = Lifeform::new(36);
+        lf.alive = false;
+        assert!(lf.reproduce(0.0).is_none());
+    }
+
+    /// Protein returns a vector of amino acid names.
+    #[test]
+    fn lifeform_protein() {
+        let g = make_genome(&"ATGTTTTAA".chars().collect::<Vec<_>>());
+        let lf = Lifeform::from_genome(g);
+        let protein = lf.protein();
+        assert_eq!(protein, vec!["Met", "Phe"]);
+    }
+
+    // -----------------------------------------------------------------------
+    // BiologicalSystem
+    // -----------------------------------------------------------------------
+
+    /// New BiologicalSystem is empty.
+    #[test]
+    fn biological_system_new_empty() {
+        let bs = BiologicalSystem::new();
+        assert_eq!(bs.population.len(), 0);
+        assert_eq!(bs.generation, 0);
+        assert_eq!(bs.max_population, 200);
+    }
+
+    /// Abiogenesis fails with insufficient precursors.
+    #[test]
+    fn abiogenesis_insufficient_precursors() {
+        let mut bs = BiologicalSystem::new();
+        let chem = ChemicalSystem::new(); // no nucleotides or amino acids
+        let created = bs.abiogenesis(&chem);
+        assert_eq!(created, 0);
+    }
+
+    /// Abiogenesis creates lifeforms when precursors are available.
+    #[test]
+    fn abiogenesis_with_precursors() {
+        let mut bs = BiologicalSystem::new();
+        let mut chem = ChemicalSystem::new();
+        chem.nucleotide_count = 100;
+        chem.amino_acid_count = 100;
+
+        let created = bs.abiogenesis(&chem);
+        assert!(created > 0);
+        assert!(!bs.population.is_empty());
+        assert_eq!(bs.total_born, created as u64);
+    }
+
+    /// Average fitness of empty population is 0.
+    #[test]
+    fn average_fitness_empty() {
+        let bs = BiologicalSystem::new();
+        assert_eq!(bs.average_fitness(), 0.0);
+    }
+
+    /// Average genome length of empty population is 0.
+    #[test]
+    fn average_genome_length_empty() {
+        let bs = BiologicalSystem::new();
+        assert_eq!(bs.average_genome_length(), 0.0);
+    }
+
+    /// Species count returns unique species IDs.
+    #[test]
+    fn species_count_unique() {
+        let mut bs = BiologicalSystem::new();
+        bs.population.push(Lifeform::new(36));
+        bs.population.push(Lifeform::new(36));
+        // Each Lifeform::new gets a unique species_id
+        assert_eq!(bs.species_count(), 2);
+    }
+
+    /// Tick with empty population is a no-op.
+    #[test]
+    fn tick_empty_population() {
+        let mut bs = BiologicalSystem::new();
+        bs.tick(288.0, 1.0, 0.0);
+        assert_eq!(bs.generation, 0); // no increment
+    }
+
+    /// Tick increments generation when population is present.
+    #[test]
+    fn tick_increments_generation() {
+        let mut bs = BiologicalSystem::new();
+        bs.population.push(Lifeform::new(36));
+        bs.tick(288.0, 1.0, 0.0);
+        assert_eq!(bs.generation, 1);
+    }
+
+    /// Population is capped at max_population.
+    #[test]
+    fn population_cap() {
+        let mut bs = BiologicalSystem::new();
+        bs.max_population = 5;
+        for _ in 0..10 {
+            let mut lf = Lifeform::new(36);
+            lf.energy = 200.0;
+            bs.population.push(lf);
+        }
+        bs.tick(288.0, 1.0, 0.0);
+        assert!(bs.population.len() <= 5);
+    }
+
+    /// Compact representation includes population stats.
+    #[test]
+    fn biological_system_compact() {
+        let mut bs = BiologicalSystem::new();
+        bs.population.push(Lifeform::new(36));
+        let compact = bs.to_compact();
+        assert!(compact.starts_with("BIO["));
+        assert!(compact.contains("pop=1"));
     }
 }

@@ -493,9 +493,10 @@ class Biosphere:
                 cell.dna.apply_mutations(uv_intensity, cosmic_ray_flux)
                 cell.dna.apply_epigenetic_changes(temperature, self.generation)
 
-        # Transcribe/translate
+        # Transcribe/translate (clear old proteins to prevent unbounded growth)
         for cell in self.cells:
             if cell.alive:
+                cell.proteins.clear()
                 cell.transcribe_and_translate()
 
         # Compute fitness

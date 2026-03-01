@@ -72,8 +72,10 @@ static int cs_add_molecule(ChemicalSystem *cs, const Molecule *m)
     if (cs->count >= cs->capacity) {
         int new_cap = cs->capacity * 2;
         if (new_cap > MAX_MOLECULES) new_cap = MAX_MOLECULES;
-        cs->molecules = (Molecule *)realloc(cs->molecules,
+        Molecule *tmp = (Molecule *)realloc(cs->molecules,
                                             (size_t)new_cap * sizeof(Molecule));
+        if (!tmp) return -1;
+        cs->molecules = tmp;
         cs->capacity = new_cap;
     }
     int idx = cs->count;

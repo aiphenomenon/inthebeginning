@@ -287,3 +287,380 @@ pub fn element_data(z: u32) -> Option<(&'static str, &'static str, u32, u32, f64
         _  => None,
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // -----------------------------------------------------------------------
+    // Fundamental constants
+    // -----------------------------------------------------------------------
+
+    /// Speed of light should be 1.0 in simulation units.
+    #[test]
+    fn speed_of_light_is_unity() {
+        assert_eq!(C, 1.0);
+    }
+
+    /// Fine-structure constant should be approximately 1/137.
+    #[test]
+    fn fine_structure_constant_value() {
+        let expected = 1.0 / 137.0;
+        assert!((ALPHA - expected).abs() < 1e-10);
+    }
+
+    /// EM coupling equals the fine-structure constant.
+    #[test]
+    fn em_coupling_equals_alpha() {
+        assert_eq!(EM_COUPLING, ALPHA);
+    }
+
+    /// Force couplings are ordered: gravity < weak < EM < strong.
+    #[test]
+    fn force_coupling_ordering() {
+        assert!(GRAVITY_COUPLING < WEAK_COUPLING);
+        assert!(WEAK_COUPLING < EM_COUPLING);
+        assert!(EM_COUPLING < STRONG_COUPLING);
+    }
+
+    // -----------------------------------------------------------------------
+    // Particle masses
+    // -----------------------------------------------------------------------
+
+    /// Photon is massless.
+    #[test]
+    fn photon_is_massless() {
+        assert_eq!(M_PHOTON, 0.0);
+    }
+
+    /// Neutrino mass is very small but nonzero.
+    #[test]
+    fn neutrino_mass_tiny() {
+        assert!(M_NEUTRINO > 0.0);
+        assert!(M_NEUTRINO < M_ELECTRON);
+    }
+
+    /// Proton and neutron masses are close but neutron is heavier.
+    #[test]
+    fn neutron_heavier_than_proton() {
+        assert!(M_NEUTRON > M_PROTON);
+    }
+
+    /// Proton mass is approximately 1836 times the electron mass.
+    #[test]
+    fn proton_electron_mass_ratio() {
+        assert_eq!(M_PROTON / M_ELECTRON, 1836.0);
+    }
+
+    /// Higgs boson is the heaviest particle.
+    #[test]
+    fn higgs_is_heaviest() {
+        assert!(M_HIGGS > M_W_BOSON);
+        assert!(M_HIGGS > M_Z_BOSON);
+        assert!(M_HIGGS > M_PROTON);
+    }
+
+    // -----------------------------------------------------------------------
+    // Binding energies
+    // -----------------------------------------------------------------------
+
+    /// Binding energies increase with nuclear size up to iron.
+    #[test]
+    fn binding_energy_ordering() {
+        assert!(BINDING_ENERGY_DEUTERIUM < BINDING_ENERGY_HELIUM4);
+        assert!(BINDING_ENERGY_HELIUM4 < BINDING_ENERGY_CARBON12);
+        assert!(BINDING_ENERGY_CARBON12 < BINDING_ENERGY_IRON56);
+    }
+
+    // -----------------------------------------------------------------------
+    // Cosmic timeline -- epoch ordering
+    // -----------------------------------------------------------------------
+
+    /// All epoch start ticks are strictly increasing.
+    #[test]
+    fn epoch_ticks_strictly_increasing() {
+        let ticks = [
+            PLANCK_EPOCH,
+            INFLATION_EPOCH,
+            ELECTROWEAK_EPOCH,
+            QUARK_EPOCH,
+            HADRON_EPOCH,
+            NUCLEOSYNTHESIS_EPOCH,
+            RECOMBINATION_EPOCH,
+            STAR_FORMATION_EPOCH,
+            SOLAR_SYSTEM_EPOCH,
+            EARTH_EPOCH,
+            LIFE_EPOCH,
+            DNA_EPOCH,
+            PRESENT_EPOCH,
+        ];
+        for w in ticks.windows(2) {
+            assert!(w[0] < w[1], "epoch {} should precede {}", w[0], w[1]);
+        }
+    }
+
+    /// The EPOCHS table has exactly 13 entries.
+    #[test]
+    fn epochs_table_count() {
+        assert_eq!(EPOCHS.len(), 13);
+    }
+
+    /// EPOCHS table start ticks match the individual constants.
+    #[test]
+    fn epochs_table_matches_constants() {
+        assert_eq!(EPOCHS[0].start_tick, PLANCK_EPOCH);
+        assert_eq!(EPOCHS[5].start_tick, NUCLEOSYNTHESIS_EPOCH);
+        assert_eq!(EPOCHS[12].start_tick, PRESENT_EPOCH);
+    }
+
+    /// The present epoch ends the simulation at tick 300,000.
+    #[test]
+    fn present_epoch_is_300k() {
+        assert_eq!(PRESENT_EPOCH, 300_000);
+    }
+
+    // -----------------------------------------------------------------------
+    // Temperature scale
+    // -----------------------------------------------------------------------
+
+    /// Temperatures decrease from the Planck era to CMB.
+    #[test]
+    fn temperature_scale_decreasing() {
+        assert!(T_PLANCK > T_ELECTROWEAK);
+        assert!(T_ELECTROWEAK > T_QUARK_HADRON);
+        assert!(T_QUARK_HADRON > T_NUCLEOSYNTHESIS);
+        assert!(T_NUCLEOSYNTHESIS > T_RECOMBINATION);
+        assert!(T_RECOMBINATION > T_CMB);
+    }
+
+    /// Earth surface temperature is reasonable (~288 K).
+    #[test]
+    fn earth_surface_temperature() {
+        assert!((T_EARTH_SURFACE - 288.0).abs() < 1e-10);
+    }
+
+    /// CMB temperature is approximately 2.725 K.
+    #[test]
+    fn cmb_temperature() {
+        assert!((T_CMB - 2.725).abs() < 1e-10);
+    }
+
+    // -----------------------------------------------------------------------
+    // Chemistry parameters
+    // -----------------------------------------------------------------------
+
+    /// Electron shell capacities start with 2 and sum correctly.
+    #[test]
+    fn electron_shells_first_is_two() {
+        assert_eq!(ELECTRON_SHELLS[0], 2);
+    }
+
+    /// Bond energies are ordered: van der Waals < hydrogen < covalent < ionic.
+    #[test]
+    fn bond_energy_ordering() {
+        assert!(BOND_ENERGY_VAN_DER_WAALS < BOND_ENERGY_HYDROGEN);
+        assert!(BOND_ENERGY_HYDROGEN < BOND_ENERGY_COVALENT);
+        assert!(BOND_ENERGY_COVALENT < BOND_ENERGY_IONIC);
+    }
+
+    // -----------------------------------------------------------------------
+    // Biology parameters
+    // -----------------------------------------------------------------------
+
+    /// DNA uses four nucleotide bases: A, T, G, C.
+    #[test]
+    fn nucleotide_bases_are_atgc() {
+        assert_eq!(NUCLEOTIDE_BASES, &['A', 'T', 'G', 'C']);
+    }
+
+    /// RNA replaces T with U.
+    #[test]
+    fn rna_bases_are_augc() {
+        assert_eq!(RNA_BASES, &['A', 'U', 'G', 'C']);
+    }
+
+    /// There are exactly 20 standard amino acids.
+    #[test]
+    fn twenty_amino_acids() {
+        assert_eq!(AMINO_ACIDS.len(), 20);
+    }
+
+    // -----------------------------------------------------------------------
+    // Codon table
+    // -----------------------------------------------------------------------
+
+    /// AUG is the start codon (methionine).
+    #[test]
+    fn aug_is_start_codon() {
+        assert_eq!(codon_to_amino_acid("AUG"), Some("Met"));
+    }
+
+    /// Stop codons return "STOP".
+    #[test]
+    fn stop_codons() {
+        assert_eq!(codon_to_amino_acid("UAA"), Some("STOP"));
+        assert_eq!(codon_to_amino_acid("UAG"), Some("STOP"));
+        assert_eq!(codon_to_amino_acid("UGA"), Some("STOP"));
+    }
+
+    /// Invalid codons return None.
+    #[test]
+    fn invalid_codon_returns_none() {
+        assert_eq!(codon_to_amino_acid("XYZ"), None);
+        assert_eq!(codon_to_amino_acid(""), None);
+    }
+
+    /// Known codon-to-amino-acid mappings.
+    #[test]
+    fn known_codon_mappings() {
+        assert_eq!(codon_to_amino_acid("UUU"), Some("Phe"));
+        assert_eq!(codon_to_amino_acid("UUC"), Some("Phe"));
+        assert_eq!(codon_to_amino_acid("GGG"), Some("Gly"));
+        assert_eq!(codon_to_amino_acid("UGG"), Some("Trp"));
+    }
+
+    /// Synonymous codons encode the same amino acid (degeneracy).
+    #[test]
+    fn codon_degeneracy() {
+        // Leucine has 6 codons
+        let leu_codons = ["UUA", "UUG", "CUU", "CUC", "CUA", "CUG"];
+        for codon in &leu_codons {
+            assert_eq!(codon_to_amino_acid(codon), Some("Leu"));
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // ParticleType
+    // -----------------------------------------------------------------------
+
+    /// Every ParticleType has a non-empty label.
+    #[test]
+    fn particle_type_labels_non_empty() {
+        let types = [
+            ParticleType::Up, ParticleType::Down, ParticleType::Electron,
+            ParticleType::Positron, ParticleType::Neutrino, ParticleType::Photon,
+            ParticleType::Gluon, ParticleType::WBoson, ParticleType::ZBoson,
+            ParticleType::Proton, ParticleType::Neutron,
+        ];
+        for pt in &types {
+            assert!(!pt.label().is_empty());
+        }
+    }
+
+    /// Particle masses match the mass constants.
+    #[test]
+    fn particle_type_mass_matches_constants() {
+        assert_eq!(ParticleType::Electron.mass(), M_ELECTRON);
+        assert_eq!(ParticleType::Proton.mass(), M_PROTON);
+        assert_eq!(ParticleType::Neutron.mass(), M_NEUTRON);
+        assert_eq!(ParticleType::Photon.mass(), M_PHOTON);
+    }
+
+    /// Proton charge is +1, electron charge is -1, neutron is 0.
+    #[test]
+    fn particle_charges() {
+        assert_eq!(ParticleType::Proton.charge(), 1.0);
+        assert_eq!(ParticleType::Electron.charge(), -1.0);
+        assert_eq!(ParticleType::Neutron.charge(), 0.0);
+        assert_eq!(ParticleType::Photon.charge(), 0.0);
+    }
+
+    /// Up quark charge is +2/3, down quark charge is -1/3.
+    #[test]
+    fn quark_charges() {
+        assert!((ParticleType::Up.charge() - 2.0 / 3.0).abs() < 1e-10);
+        assert!((ParticleType::Down.charge() - (-1.0 / 3.0)).abs() < 1e-10);
+    }
+
+    /// Positron has opposite charge to electron.
+    #[test]
+    fn positron_charge() {
+        assert_eq!(ParticleType::Positron.charge(), -ParticleType::Electron.charge());
+    }
+
+    /// All render colors have 4 components in [0, 1].
+    #[test]
+    fn render_colors_valid_range() {
+        let types = [
+            ParticleType::Up, ParticleType::Down, ParticleType::Electron,
+            ParticleType::Positron, ParticleType::Neutrino, ParticleType::Photon,
+            ParticleType::Gluon, ParticleType::WBoson, ParticleType::ZBoson,
+            ParticleType::Proton, ParticleType::Neutron,
+        ];
+        for pt in &types {
+            let c = pt.render_color();
+            for val in &c {
+                assert!(*val >= 0.0 && *val <= 1.0, "{:?} has out-of-range color", pt);
+            }
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Spin
+    // -----------------------------------------------------------------------
+
+    /// Spin up is +0.5, spin down is -0.5.
+    #[test]
+    fn spin_values() {
+        assert_eq!(Spin::Up.value(), 0.5);
+        assert_eq!(Spin::Down.value(), -0.5);
+    }
+
+    // -----------------------------------------------------------------------
+    // Element data
+    // -----------------------------------------------------------------------
+
+    /// Hydrogen is element 1 with symbol "H".
+    #[test]
+    fn hydrogen_element_data() {
+        let (sym, name, group, period, en) = element_data(1).unwrap();
+        assert_eq!(sym, "H");
+        assert_eq!(name, "Hydrogen");
+        assert_eq!(group, 1);
+        assert_eq!(period, 1);
+        assert!((en - 2.20).abs() < 1e-10);
+    }
+
+    /// Iron is element 26.
+    #[test]
+    fn iron_element_data() {
+        let (sym, name, _, _, _) = element_data(26).unwrap();
+        assert_eq!(sym, "Fe");
+        assert_eq!(name, "Iron");
+    }
+
+    /// Unknown elements return None.
+    #[test]
+    fn unknown_element_returns_none() {
+        assert!(element_data(0).is_none());
+        assert!(element_data(99).is_none());
+    }
+
+    /// Noble gases have electronegativity 0.
+    #[test]
+    fn noble_gas_electronegativity_zero() {
+        let (_, _, _, _, en) = element_data(2).unwrap();  // He
+        assert_eq!(en, 0.0);
+        let (_, _, _, _, en) = element_data(10).unwrap(); // Ne
+        assert_eq!(en, 0.0);
+        let (_, _, _, _, en) = element_data(18).unwrap(); // Ar
+        assert_eq!(en, 0.0);
+    }
+
+    // -----------------------------------------------------------------------
+    // Epigenetic / environmental parameter sanity
+    // -----------------------------------------------------------------------
+
+    /// Methylation probability is greater than demethylation probability
+    /// (methylation accumulates over time).
+    #[test]
+    fn methylation_accumulates() {
+        assert!(METHYLATION_PROBABILITY > DEMETHYLATION_PROBABILITY);
+    }
+
+    /// UV mutation rate is higher than cosmic ray mutation rate.
+    #[test]
+    fn uv_mutation_rate_dominates() {
+        assert!(UV_MUTATION_RATE > COSMIC_RAY_MUTATION_RATE);
+    }
+}

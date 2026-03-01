@@ -515,3 +515,310 @@ impl Universe {
         on_epoch(&self.stats());
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // -----------------------------------------------------------------------
+    // current_epoch / epoch_index
+    // -----------------------------------------------------------------------
+
+    /// Tick 1 is in the Planck epoch.
+    #[test]
+    fn current_epoch_planck() {
+        let e = current_epoch(1);
+        assert_eq!(e.name, "Planck");
+    }
+
+    /// Tick at inflation boundary is in Inflation epoch.
+    #[test]
+    fn current_epoch_inflation() {
+        let e = current_epoch(INFLATION_EPOCH);
+        assert_eq!(e.name, "Inflation");
+    }
+
+    /// Tick at present boundary is in Present epoch.
+    #[test]
+    fn current_epoch_present() {
+        let e = current_epoch(PRESENT_EPOCH);
+        assert_eq!(e.name, "Present");
+    }
+
+    /// epoch_index at tick 0 is 0 (before Planck, defaults to Planck).
+    #[test]
+    fn epoch_index_zero() {
+        // tick 0 < PLANCK_EPOCH(1), so no epoch matches => stays at 0
+        // Actually, the loop starts at EPOCHS[0].start_tick = 1, so tick 0
+        // won't match any epoch: idx stays 0 because it's initialized to 0.
+        let idx = epoch_index(0);
+        assert_eq!(idx, 0);
+    }
+
+    /// epoch_index advances correctly through epochs.
+    #[test]
+    fn epoch_index_progression() {
+        assert_eq!(epoch_index(PLANCK_EPOCH), 0);
+        assert_eq!(epoch_index(INFLATION_EPOCH), 1);
+        assert_eq!(epoch_index(ELECTROWEAK_EPOCH), 2);
+        assert_eq!(epoch_index(QUARK_EPOCH), 3);
+        assert_eq!(epoch_index(HADRON_EPOCH), 4);
+        assert_eq!(epoch_index(NUCLEOSYNTHESIS_EPOCH), 5);
+        assert_eq!(epoch_index(RECOMBINATION_EPOCH), 6);
+        assert_eq!(epoch_index(STAR_FORMATION_EPOCH), 7);
+        assert_eq!(epoch_index(SOLAR_SYSTEM_EPOCH), 8);
+        assert_eq!(epoch_index(EARTH_EPOCH), 9);
+        assert_eq!(epoch_index(LIFE_EPOCH), 10);
+        assert_eq!(epoch_index(DNA_EPOCH), 11);
+        assert_eq!(epoch_index(PRESENT_EPOCH), 12);
+    }
+
+    /// Ticks between boundaries belong to the earlier epoch.
+    #[test]
+    fn epoch_index_between_boundaries() {
+        assert_eq!(epoch_index(INFLATION_EPOCH + 5), 1);
+        assert_eq!(epoch_index(ELECTROWEAK_EPOCH - 1), 1);
+    }
+
+    // -----------------------------------------------------------------------
+    // target_temperature (tested indirectly via Universe)
+    // -----------------------------------------------------------------------
+
+    /// Temperature at tick 1 equals T_PLANCK.
+    #[test]
+    fn target_temp_planck() {
+        let t = target_temperature(PLANCK_EPOCH);
+        assert!((t - T_PLANCK).abs() < 1e-5);
+    }
+
+    /// Temperature at the present epoch equals T_EARTH_SURFACE.
+    #[test]
+    fn target_temp_present() {
+        let t = target_temperature(PRESENT_EPOCH);
+        assert!((t - T_EARTH_SURFACE).abs() < 1e-5);
+    }
+
+    /// Temperature decreases monotonically across epoch boundaries.
+    #[test]
+    fn target_temp_monotonically_decreasing() {
+        let ticks = [
+            PLANCK_EPOCH,
+            INFLATION_EPOCH,
+            ELECTROWEAK_EPOCH,
+            QUARK_EPOCH,
+            HADRON_EPOCH,
+            NUCLEOSYNTHESIS_EPOCH,
+            RECOMBINATION_EPOCH,
+            STAR_FORMATION_EPOCH,
+            SOLAR_SYSTEM_EPOCH,
+            EARTH_EPOCH,
+            LIFE_EPOCH,
+        ];
+        for w in ticks.windows(2) {
+            let t0 = target_temperature(w[0]);
+            let t1 = target_temperature(w[1]);
+            assert!(t0 >= t1,
+                "temperature at tick {} ({}) should >= tick {} ({})",
+                w[0], t0, w[1], t1);
+        }
+    }
+
+    /// Temperature is interpolated between anchors (not just step functions).
+    #[test]
+    fn target_temp_interpolated() {
+        let midpoint = (PLANCK_EPOCH + INFLATION_EPOCH) / 2;
+        let t_mid = target_temperature(midpoint);
+        let t_start = target_temperature(PLANCK_EPOCH);
+        let t_end = target_temperature(INFLATION_EPOCH);
+        assert!(t_mid < t_start && t_mid > t_end,
+            "midpoint temp {} should be between {} and {}",
+            t_mid, t_start, t_end);
+    }
+
+    // -----------------------------------------------------------------------
+    // Universe
+    // -----------------------------------------------------------------------
+
+    /// New Universe starts at tick 0 with Planck-era temperature.
+    #[test]
+    fn universe_new_initial_state() {
+        let u = Universe::new();
+        assert_eq!(u.tick, 0);
+        assert_eq!(u.quantum_field.temperature, T_PLANCK);
+        assert_eq!(u.scale_factor, 1.0);
+        assert!(!u.nucleosynthesis_done);
+        assert!(!u.recombination_done);
+        assert!(!u.earth_initialized);
+    }
+
+    /// First step advances tick to 1.
+    #[test]
+    fn universe_step_advances_tick() {
+        let mut u = Universe::new();
+        u.step();
+        assert_eq!(u.tick, 1);
+    }
+
+    /// First step returns true (new epoch: Planck).
+    #[test]
+    fn universe_first_step_new_epoch() {
+        let mut u = Universe::new();
+        let new_epoch = u.step();
+        // Tick goes from 0 to 1; epoch_index(1) = 0, last_epoch_index was 0,
+        // so no change => false
+        // Actually, last_epoch_index starts at 0 and epoch_index(1) = 0,
+        // so new_epoch is false.
+        assert!(!new_epoch);
+    }
+
+    /// Step detects epoch transitions.
+    #[test]
+    fn universe_step_detects_epoch_transition() {
+        let mut u = Universe::new();
+        // Advance to just before inflation
+        for _ in 0..INFLATION_EPOCH - 1 {
+            u.step();
+        }
+        // Now at tick INFLATION_EPOCH - 1, epoch_index = 0 (Planck)
+        let new_epoch = u.step();
+        // tick is now INFLATION_EPOCH, epoch_index = 1 (Inflation)
+        assert!(new_epoch, "should detect transition to Inflation");
+    }
+
+    /// Temperature cools as the universe evolves.
+    #[test]
+    fn universe_temperature_cools() {
+        let mut u = Universe::new();
+        let initial_temp = u.quantum_field.temperature;
+        for _ in 0..100 {
+            u.step();
+        }
+        assert!(u.quantum_field.temperature < initial_temp,
+            "temperature should cool from {} to {}",
+            initial_temp, u.quantum_field.temperature);
+    }
+
+    /// Stats snapshot reflects current state.
+    #[test]
+    fn universe_stats_reflect_state() {
+        let mut u = Universe::new();
+        u.step();
+        let stats = u.stats();
+        assert_eq!(stats.tick, 1);
+        assert_eq!(stats.epoch_name, "Planck");
+        assert!(stats.temperature > 0.0);
+    }
+
+    /// Advancing through inflation creates particles.
+    #[test]
+    fn universe_inflation_creates_particles() {
+        let mut u = Universe::new();
+        // Run through the inflation epoch
+        while u.tick < ELECTROWEAK_EPOCH {
+            u.step();
+        }
+        assert!(u.quantum_field.particles.len() > 0,
+            "inflation should create particles");
+    }
+
+    /// Advancing through hadron epoch creates hadrons.
+    #[test]
+    fn universe_hadron_epoch_creates_hadrons() {
+        let mut u = Universe::new();
+        while u.tick < NUCLEOSYNTHESIS_EPOCH {
+            u.step();
+        }
+        let counts = u.quantum_field.particle_count();
+        let has_hadrons = counts.get(&ParticleType::Proton).copied().unwrap_or(0) > 0
+            || counts.get(&ParticleType::Neutron).copied().unwrap_or(0) > 0;
+        // Hadrons might have formed during the hadron epoch
+        // or been consumed by nucleosynthesis
+        let has_atoms = !u.atomic_system.atoms.is_empty();
+        assert!(has_hadrons || has_atoms,
+            "hadron/nucleosynthesis epoch should produce hadrons or atoms");
+    }
+
+    /// Nucleosynthesis creates atoms from hadrons.
+    #[test]
+    fn universe_nucleosynthesis_creates_atoms() {
+        let mut u = Universe::new();
+        while u.tick < RECOMBINATION_EPOCH {
+            u.step();
+        }
+        // After nucleosynthesis, we should have atoms
+        assert!(!u.atomic_system.atoms.is_empty(),
+            "nucleosynthesis should create atoms");
+    }
+
+    /// Star formation seeds heavier elements.
+    #[test]
+    fn universe_star_formation_seeds_elements() {
+        let mut u = Universe::new();
+        while u.tick < SOLAR_SYSTEM_EPOCH {
+            u.step();
+        }
+        let counts = u.atomic_system.element_counts();
+        // Should have carbon, nitrogen, oxygen from stellar nucleosynthesis
+        assert!(counts.contains_key("C"), "should have carbon");
+        assert!(counts.contains_key("N"), "should have nitrogen");
+        assert!(counts.contains_key("O"), "should have oxygen");
+    }
+
+    /// Earth epoch initializes the environment.
+    #[test]
+    fn universe_earth_initializes_environment() {
+        let mut u = Universe::new();
+        while u.tick < LIFE_EPOCH {
+            u.step();
+        }
+        assert!(u.earth_initialized);
+        // Environment should be approaching habitable
+        assert!(u.environment.ocean_coverage > 0.0);
+    }
+
+    /// SimStats fields are populated correctly.
+    #[test]
+    fn sim_stats_fields() {
+        let u = Universe::new();
+        let stats = u.stats();
+        assert_eq!(stats.tick, 0);
+        assert_eq!(stats.particle_count, 0);
+        assert_eq!(stats.atom_count, 0);
+        assert_eq!(stats.molecule_count, 0);
+        assert_eq!(stats.water_count, 0);
+        assert_eq!(stats.amino_acid_count, 0);
+        assert_eq!(stats.nucleotide_count, 0);
+        assert_eq!(stats.population, 0);
+        assert_eq!(stats.generation, 0);
+    }
+
+    /// Run executes from tick 0 to PRESENT_EPOCH.
+    #[test]
+    fn universe_run_completes() {
+        let mut u = Universe::new();
+        let mut epoch_count = 0u32;
+        let mut tick_count = 0u32;
+        u.run(
+            |_stats| { epoch_count += 1; },
+            |_stats| { tick_count += 1; },
+        );
+        assert_eq!(u.tick, PRESENT_EPOCH);
+        // At least 13 epoch callbacks (one per epoch + initial + final)
+        assert!(epoch_count >= 13,
+            "should have at least 13 epoch reports, got {}", epoch_count);
+    }
+
+    /// After a full run, the simulation has molecules and life.
+    #[test]
+    fn universe_full_run_has_molecules_and_life() {
+        let mut u = Universe::new();
+        u.run(|_| {}, |_| {});
+
+        let stats = u.stats();
+        assert!(stats.molecule_count > 0, "should have molecules");
+        assert!(stats.water_count > 0, "should have water");
+        // Life may or may not emerge depending on random seed,
+        // but atoms and molecules should exist.
+        assert!(stats.atom_count > 0, "should have atoms");
+    }
+}

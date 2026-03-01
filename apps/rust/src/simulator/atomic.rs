@@ -513,3 +513,375 @@ impl AtomicSystem {
         )
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // -----------------------------------------------------------------------
+    // ElectronShell
+    // -----------------------------------------------------------------------
+
+    /// A new shell with 0 electrons is empty.
+    #[test]
+    fn shell_empty() {
+        let shell = ElectronShell { n: 1, max_electrons: 2, electrons: 0 };
+        assert!(shell.empty());
+        assert!(!shell.full());
+    }
+
+    /// A full shell rejects additional electrons.
+    #[test]
+    fn shell_full_rejects_add() {
+        let mut shell = ElectronShell { n: 1, max_electrons: 2, electrons: 2 };
+        assert!(shell.full());
+        assert!(!shell.add_electron());
+    }
+
+    /// Adding an electron increments the count.
+    #[test]
+    fn shell_add_electron() {
+        let mut shell = ElectronShell { n: 1, max_electrons: 2, electrons: 0 };
+        assert!(shell.add_electron());
+        assert_eq!(shell.electrons, 1);
+    }
+
+    /// Removing an electron decrements the count.
+    #[test]
+    fn shell_remove_electron() {
+        let mut shell = ElectronShell { n: 1, max_electrons: 2, electrons: 1 };
+        assert!(shell.remove_electron());
+        assert_eq!(shell.electrons, 0);
+    }
+
+    /// Cannot remove from an empty shell.
+    #[test]
+    fn shell_remove_from_empty_fails() {
+        let mut shell = ElectronShell { n: 1, max_electrons: 2, electrons: 0 };
+        assert!(!shell.remove_electron());
+    }
+
+    // -----------------------------------------------------------------------
+    // Atom
+    // -----------------------------------------------------------------------
+
+    /// Hydrogen has atomic number 1 and mass number 1.
+    #[test]
+    fn hydrogen_atom() {
+        let h = Atom::new(1);
+        assert_eq!(h.atomic_number, 1);
+        assert_eq!(h.mass_number, 1); // special case for H
+        assert_eq!(h.electron_count, 1);
+        assert_eq!(h.symbol(), "H");
+        assert_eq!(h.name(), "Hydrogen");
+    }
+
+    /// Carbon has atomic number 6, default mass number 12.
+    #[test]
+    fn carbon_atom() {
+        let c = Atom::new(6);
+        assert_eq!(c.atomic_number, 6);
+        assert_eq!(c.mass_number, 12); // 6*2
+        assert_eq!(c.symbol(), "C");
+        assert_eq!(c.name(), "Carbon");
+    }
+
+    /// Builder methods: with_mass_number, with_position, with_velocity.
+    #[test]
+    fn atom_builder() {
+        let a = Atom::new(8)
+            .with_mass_number(16)
+            .with_position([1.0, 2.0, 3.0])
+            .with_velocity([0.1, 0.2, 0.3]);
+        assert_eq!(a.mass_number, 16);
+        assert_eq!(a.position, [1.0, 2.0, 3.0]);
+        assert_eq!(a.velocity, [0.1, 0.2, 0.3]);
+    }
+
+    /// Atom IDs are unique.
+    #[test]
+    fn atom_ids_unique() {
+        let a1 = Atom::new(1);
+        let a2 = Atom::new(1);
+        assert_ne!(a1.atom_id, a2.atom_id);
+    }
+
+    /// Hydrogen has one shell with 1 electron, max 2.
+    #[test]
+    fn hydrogen_shells() {
+        let h = Atom::new(1);
+        assert_eq!(h.shells.len(), 1);
+        assert_eq!(h.shells[0].n, 1);
+        assert_eq!(h.shells[0].max_electrons, 2);
+        assert_eq!(h.shells[0].electrons, 1);
+    }
+
+    /// Helium has one full shell.
+    #[test]
+    fn helium_is_noble_gas() {
+        let he = Atom::new(2);
+        assert!(he.is_noble_gas());
+        assert_eq!(he.valence_electrons(), 2);
+        assert_eq!(he.needs_electrons(), 0);
+    }
+
+    /// Carbon needs 4 electrons to fill its outer shell.
+    #[test]
+    fn carbon_needs_electrons() {
+        let c = Atom::new(6);
+        // Shell 1: 2 electrons (full)
+        // Shell 2: 4 electrons out of 8
+        assert_eq!(c.valence_electrons(), 4);
+        assert_eq!(c.needs_electrons(), 4);
+    }
+
+    /// Neutral atom has zero charge.
+    #[test]
+    fn neutral_atom_charge() {
+        let a = Atom::new(8);
+        assert_eq!(a.charge(), 0);
+        assert!(!a.is_ion());
+    }
+
+    /// Ionized atom has positive charge.
+    #[test]
+    fn ionize_creates_cation() {
+        let mut a = Atom::new(11); // Sodium
+        assert!(a.ionize());
+        assert_eq!(a.charge(), 1);
+        assert!(a.is_ion());
+    }
+
+    /// Cannot ionize past zero electrons.
+    #[test]
+    fn ionize_hydrogen_once() {
+        let mut h = Atom::new(1);
+        assert!(h.ionize());    // Remove the 1 electron
+        assert!(!h.ionize());   // No electrons left
+        assert_eq!(h.electron_count, 0);
+    }
+
+    /// Capture electron makes ion neutral.
+    #[test]
+    fn capture_electron_neutralizes() {
+        let mut a = Atom::new(1);
+        a.ionize();
+        assert_eq!(a.charge(), 1);
+        a.capture_electron();
+        assert_eq!(a.charge(), 0);
+    }
+
+    /// Electronegativity for known elements.
+    #[test]
+    fn electronegativity_values() {
+        let f = Atom::new(9);
+        assert!((f.electronegativity() - 3.98).abs() < 1e-10);
+        let na = Atom::new(11);
+        assert!((na.electronegativity() - 0.93).abs() < 1e-10);
+    }
+
+    /// Noble gases cannot bond.
+    #[test]
+    fn noble_gas_cannot_bond() {
+        let he = Atom::new(2);
+        let h = Atom::new(1);
+        assert!(!he.can_bond_with(&h));
+        assert!(!h.can_bond_with(&he));
+    }
+
+    /// Atoms with fewer than 4 bonds can bond.
+    #[test]
+    fn can_bond_when_under_limit() {
+        let h1 = Atom::new(1);
+        let h2 = Atom::new(1);
+        assert!(h1.can_bond_with(&h2));
+    }
+
+    /// Atoms with 4 bonds cannot bond further.
+    #[test]
+    fn cannot_bond_at_limit() {
+        let mut c = Atom::new(6);
+        c.bonds = vec![100, 101, 102, 103]; // 4 bonds
+        let h = Atom::new(1);
+        assert!(!c.can_bond_with(&h));
+    }
+
+    /// Bond type depends on electronegativity difference.
+    #[test]
+    fn bond_type_classification() {
+        let na = Atom::new(11); // EN = 0.93
+        let cl = Atom::new(17); // EN = 3.16
+        // diff = 2.23 > 1.7 => ionic
+        assert_eq!(na.bond_type(&cl), "ionic");
+
+        let c = Atom::new(6);   // EN = 2.55
+        let o = Atom::new(8);   // EN = 3.44
+        // diff = 0.89, in (0.4, 1.7] => polar covalent
+        assert_eq!(c.bond_type(&o), "polar_covalent");
+
+        let c1 = Atom::new(6);
+        let c2 = Atom::new(6);
+        // diff = 0 < 0.4 => covalent
+        assert_eq!(c1.bond_type(&c2), "covalent");
+    }
+
+    /// Bond energy reflects bond type.
+    #[test]
+    fn bond_energy_values() {
+        let na = Atom::new(11);
+        let cl = Atom::new(17);
+        assert_eq!(na.bond_energy(&cl), BOND_ENERGY_IONIC);
+
+        let c = Atom::new(6);
+        let c2 = Atom::new(6);
+        assert_eq!(c.bond_energy(&c2), BOND_ENERGY_COVALENT);
+    }
+
+    /// Distance between atoms at the same position is zero.
+    #[test]
+    fn distance_same_position() {
+        let a = Atom::new(1).with_position([1.0, 2.0, 3.0]);
+        let b = Atom::new(1).with_position([1.0, 2.0, 3.0]);
+        assert!((a.distance_to(&b)).abs() < 1e-10);
+    }
+
+    /// Distance is computed as Euclidean norm.
+    #[test]
+    fn distance_euclidean() {
+        let a = Atom::new(1).with_position([0.0, 0.0, 0.0]);
+        let b = Atom::new(1).with_position([3.0, 4.0, 0.0]);
+        assert!((a.distance_to(&b) - 5.0).abs() < 1e-10);
+    }
+
+    /// Ionization energy is positive for non-empty shells.
+    #[test]
+    fn ionization_energy_positive() {
+        let h = Atom::new(1);
+        assert!(h.ionization_energy > 0.0);
+    }
+
+    /// Ionization energy follows 13.6 * Z_eff^2 / n^2 formula.
+    #[test]
+    fn ionization_energy_hydrogen() {
+        let h = Atom::new(1);
+        // Z_eff = 1 (no inner electrons), n = 1
+        let expected = 13.6 * 1.0 * 1.0 / (1.0 * 1.0);
+        assert!((h.ionization_energy - expected).abs() < 1e-10);
+    }
+
+    /// Render color returns valid RGBA for various elements.
+    #[test]
+    fn render_color_valid() {
+        let elements = [1, 2, 6, 7, 8, 15, 26, 14];
+        for z in &elements {
+            let a = Atom::new(*z);
+            let c = a.render_color();
+            for val in &c {
+                assert!(*val >= 0.0 && *val <= 1.0, "element {} has out-of-range color", z);
+            }
+        }
+    }
+
+    /// Unknown element symbol returns "??".
+    #[test]
+    fn unknown_element_symbol() {
+        let a = Atom::new(99);
+        assert_eq!(a.symbol(), "??");
+        assert_eq!(a.name(), "Unknown");
+    }
+
+    // -----------------------------------------------------------------------
+    // AtomicSystem
+    // -----------------------------------------------------------------------
+
+    /// New AtomicSystem is empty.
+    #[test]
+    fn atomic_system_new_empty() {
+        let sys = AtomicSystem::new(1000.0);
+        assert_eq!(sys.atoms.len(), 0);
+        assert_eq!(sys.bonds_formed, 0);
+    }
+
+    /// Nucleosynthesis forms helium from protons and neutrons.
+    #[test]
+    fn nucleosynthesis_forms_helium() {
+        let mut sys = AtomicSystem::new(T_NUCLEOSYNTHESIS);
+        let atoms = sys.nucleosynthesis(4, 4);
+        // 4p + 4n => 2 He-4
+        let he_count = atoms.iter().filter(|a| a.atomic_number == 2).count();
+        assert_eq!(he_count, 2);
+    }
+
+    /// Nucleosynthesis with no neutrons produces only hydrogen.
+    #[test]
+    fn nucleosynthesis_protons_only() {
+        let mut sys = AtomicSystem::new(T_NUCLEOSYNTHESIS);
+        let atoms = sys.nucleosynthesis(5, 0);
+        // 5 protons, 0 neutrons => 5 hydrogen atoms
+        assert_eq!(atoms.len(), 5);
+        for a in &atoms {
+            assert_eq!(a.atomic_number, 1);
+        }
+    }
+
+    /// Nucleosynthesis: remaining protons become hydrogen.
+    #[test]
+    fn nucleosynthesis_remainder_hydrogen() {
+        let mut sys = AtomicSystem::new(T_NUCLEOSYNTHESIS);
+        let atoms = sys.nucleosynthesis(5, 2);
+        // 2p+2n => 1 He, remaining 3p => 3 H
+        let he_count = atoms.iter().filter(|a| a.atomic_number == 2).count();
+        let h_count = atoms.iter().filter(|a| a.atomic_number == 1).count();
+        assert_eq!(he_count, 1);
+        assert_eq!(h_count, 3);
+    }
+
+    /// Element counts reflect the atomic composition.
+    #[test]
+    fn element_counts_correct() {
+        let mut sys = AtomicSystem::new(1000.0);
+        sys.atoms.push(Atom::new(1));
+        sys.atoms.push(Atom::new(1));
+        sys.atoms.push(Atom::new(6));
+        let counts = sys.element_counts();
+        assert_eq!(*counts.get("H").unwrap(), 2);
+        assert_eq!(*counts.get("C").unwrap(), 1);
+    }
+
+    /// Compact representation includes temperature and atom count.
+    #[test]
+    fn atomic_system_compact() {
+        let mut sys = AtomicSystem::new(1000.0);
+        sys.atoms.push(Atom::new(1));
+        let compact = sys.to_compact();
+        assert!(compact.starts_with("AS["));
+        assert!(compact.contains("n=1"));
+    }
+
+    /// Recombination at high temperature does nothing.
+    #[test]
+    fn recombination_high_temp_no_effect() {
+        let mut sys = AtomicSystem::new(T_RECOMBINATION * 2.0);
+        let mut field = QuantumField::new(T_RECOMBINATION * 2.0);
+        field.particles.push(Particle::new(ParticleType::Proton));
+        field.particles.push(Particle::new(ParticleType::Electron));
+
+        let atoms = sys.recombination(&mut field);
+        assert!(atoms.is_empty());
+        assert_eq!(field.particles.len(), 2); // unchanged
+    }
+
+    /// Recombination below threshold converts protons+electrons to hydrogen.
+    #[test]
+    fn recombination_forms_hydrogen() {
+        let mut sys = AtomicSystem::new(T_RECOMBINATION * 0.5);
+        let mut field = QuantumField::new(T_RECOMBINATION * 0.5);
+        field.particles.push(Particle::new(ParticleType::Proton));
+        field.particles.push(Particle::new(ParticleType::Electron));
+
+        let atoms = sys.recombination(&mut field);
+        assert_eq!(atoms.len(), 1);
+        assert_eq!(atoms[0].atomic_number, 1);
+        assert_eq!(field.particles.len(), 0); // consumed
+    }
+}

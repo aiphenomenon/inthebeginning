@@ -1,0 +1,10 @@
+PROJECT_NAME           = "In The Beginning - C++ Simulator"
+PROJECT_BRIEF          = "Cosmic physics simulator in C++"
+OUTPUT_DIRECTORY       = docs
+INPUT                  = simulator
+FILE_PATTERNS          = *.cpp *.hpp
+RECURSIVE              = NO
+EXTRACT_ALL            = YES
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+QUIET                  = YES

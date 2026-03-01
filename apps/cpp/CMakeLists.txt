@@ -43,6 +43,27 @@ if(UNIX AND NOT APPLE)
 endif()
 
 # =============================================================
+# Test target: test_simulator
+# =============================================================
+enable_testing()
+
+add_executable(test_simulator
+    test_simulator.cpp
+    ${SIMULATOR_SOURCES}
+)
+
+target_include_directories(test_simulator PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/simulator
+)
+
+if(UNIX AND NOT APPLE)
+    target_link_libraries(test_simulator PRIVATE m pthread)
+endif()
+
+add_test(NAME SimulatorTests COMMAND test_simulator)
+
+# =============================================================
 # GUI target: inthebeginning-gui (requires SDL2 + OpenGL)
 # =============================================================
 if(BUILD_GUI)

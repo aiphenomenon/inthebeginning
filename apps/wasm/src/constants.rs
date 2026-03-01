@@ -230,3 +230,155 @@ pub fn epoch_background_color(tick: u64) -> [f32; 3] {
         [0.05 + f * 0.1, 0.22 + f * 0.08, 0.25 - f * 0.1]
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_fundamental_constants() {
+        assert_eq!(C, 1.0);
+        assert_eq!(HBAR, 0.01);
+        assert_eq!(K_B, 0.001);
+        assert!((ALPHA - 1.0 / 137.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_particle_masses_ordering() {
+        // Electron is lightest massive particle
+        assert!(M_ELECTRON < M_UP_QUARK);
+        assert!(M_UP_QUARK < M_DOWN_QUARK);
+        assert!(M_DOWN_QUARK < M_PROTON);
+        assert!(M_PROTON < M_NEUTRON);
+        assert_eq!(M_PHOTON, 0.0);
+        // Proton mass should be approximately 1836 electron masses
+        assert_eq!(M_PROTON, 1836.0);
+    }
+
+    #[test]
+    fn test_force_coupling_hierarchy() {
+        // Strong > EM > Weak > Gravity
+        assert!(STRONG_COUPLING > EM_COUPLING);
+        assert!(EM_COUPLING > WEAK_COUPLING);
+        assert!(WEAK_COUPLING > GRAVITY_COUPLING);
+    }
+
+    #[test]
+    fn test_epoch_ordering() {
+        assert!(PLANCK_EPOCH < INFLATION_EPOCH);
+        assert!(INFLATION_EPOCH < ELECTROWEAK_EPOCH);
+        assert!(ELECTROWEAK_EPOCH < QUARK_EPOCH);
+        assert!(QUARK_EPOCH < HADRON_EPOCH);
+        assert!(HADRON_EPOCH < NUCLEOSYNTHESIS_EPOCH);
+        assert!(NUCLEOSYNTHESIS_EPOCH < RECOMBINATION_EPOCH);
+        assert!(RECOMBINATION_EPOCH < STAR_FORMATION_EPOCH);
+        assert!(STAR_FORMATION_EPOCH < SOLAR_SYSTEM_EPOCH);
+        assert!(SOLAR_SYSTEM_EPOCH < EARTH_EPOCH);
+        assert!(EARTH_EPOCH < LIFE_EPOCH);
+        assert!(LIFE_EPOCH < DNA_EPOCH);
+        assert!(DNA_EPOCH < PRESENT_EPOCH);
+    }
+
+    #[test]
+    fn test_temperature_ordering() {
+        // Universe cools over time
+        assert!(T_PLANCK > T_ELECTROWEAK);
+        assert!(T_ELECTROWEAK > T_QUARK_HADRON);
+        assert!(T_QUARK_HADRON > T_NUCLEOSYNTHESIS);
+        assert!(T_NUCLEOSYNTHESIS > T_RECOMBINATION);
+        assert!(T_RECOMBINATION > T_CMB);
+    }
+
+    #[test]
+    fn test_electron_shells() {
+        assert_eq!(ELECTRON_SHELLS[0], 2);  // 1s
+        assert_eq!(ELECTRON_SHELLS[1], 8);  // 2s2p
+        assert_eq!(ELECTRON_SHELLS.len(), 7);
+    }
+
+    #[test]
+    fn test_epoch_name_for_tick() {
+        assert_eq!(epoch_name_for_tick(0), "Void");
+        assert_eq!(epoch_name_for_tick(1), "Planck");
+        assert_eq!(epoch_name_for_tick(5), "Planck");
+        assert_eq!(epoch_name_for_tick(10), "Inflation");
+        assert_eq!(epoch_name_for_tick(100), "Electroweak");
+        assert_eq!(epoch_name_for_tick(1000), "Quark");
+        assert_eq!(epoch_name_for_tick(5000), "Hadron");
+        assert_eq!(epoch_name_for_tick(10_000), "Nucleosynthesis");
+        assert_eq!(epoch_name_for_tick(50_000), "Recombination");
+        assert_eq!(epoch_name_for_tick(100_000), "Star Formation");
+        assert_eq!(epoch_name_for_tick(200_000), "Solar System");
+        assert_eq!(epoch_name_for_tick(210_000), "Earth");
+        assert_eq!(epoch_name_for_tick(250_000), "Life");
+        assert_eq!(epoch_name_for_tick(280_000), "DNA Era");
+        assert_eq!(epoch_name_for_tick(300_000), "Present");
+    }
+
+    #[test]
+    fn test_epoch_description_for_tick() {
+        let desc = epoch_description_for_tick(0);
+        assert_eq!(desc, "Before time itself");
+
+        let desc = epoch_description_for_tick(PLANCK_EPOCH);
+        assert!(desc.contains("unified"));
+
+        let desc = epoch_description_for_tick(LIFE_EPOCH);
+        assert!(desc.contains("self-replicating"));
+    }
+
+    #[test]
+    fn test_epoch_background_color_early() {
+        let color = epoch_background_color(0);
+        // Before inflation: hot white
+        assert_eq!(color, [1.0, 1.0, 1.0]);
+    }
+
+    #[test]
+    fn test_epoch_background_color_ranges() {
+        // Colors should always be in valid range [0, 1]
+        let test_ticks = [0, 5, 50, 500, 3000, 7000, 25000, 75000, 150000, 205000, 230000, 290000];
+        for &tick in &test_ticks {
+            let color = epoch_background_color(tick);
+            for &c in &color {
+                assert!(c >= 0.0, "Color component negative at tick {}: {:?}", tick, color);
+                assert!(c <= 1.0, "Color component > 1 at tick {}: {:?}", tick, color);
+            }
+        }
+    }
+
+    #[test]
+    fn test_epochs_array_completeness() {
+        assert_eq!(EPOCHS.len(), 13);
+        // First epoch should be Planck
+        assert_eq!(EPOCHS[0].name, "Planck");
+        // Last epoch should be Present
+        assert_eq!(EPOCHS[EPOCHS.len() - 1].name, "Present");
+    }
+
+    #[test]
+    fn test_binding_energies_ordering() {
+        // Heavier nuclei should have higher binding energy
+        assert!(BINDING_ENERGY_DEUTERIUM < BINDING_ENERGY_HELIUM4);
+        assert!(BINDING_ENERGY_HELIUM4 < BINDING_ENERGY_CARBON12);
+        assert!(BINDING_ENERGY_CARBON12 < BINDING_ENERGY_IRON56);
+    }
+
+    #[test]
+    fn test_biology_probabilities_valid() {
+        assert!(METHYLATION_PROBABILITY > 0.0 && METHYLATION_PROBABILITY < 1.0);
+        assert!(DEMETHYLATION_PROBABILITY > 0.0 && DEMETHYLATION_PROBABILITY < 1.0);
+        assert!(HISTONE_ACETYLATION_PROB > 0.0 && HISTONE_ACETYLATION_PROB < 1.0);
+        assert!(HISTONE_DEACETYLATION_PROB > 0.0 && HISTONE_DEACETYLATION_PROB < 1.0);
+        assert!(UV_MUTATION_RATE > 0.0 && UV_MUTATION_RATE < 1.0);
+        assert!(COSMIC_RAY_MUTATION_RATE > 0.0 && COSMIC_RAY_MUTATION_RATE < 1.0);
+    }
+
+    #[test]
+    fn test_bond_energies_ordering() {
+        // Van der Waals < hydrogen bond < covalent < ionic
+        assert!(BOND_ENERGY_VAN_DER_WAALS < BOND_ENERGY_HYDROGEN);
+        assert!(BOND_ENERGY_HYDROGEN < BOND_ENERGY_COVALENT);
+        assert!(BOND_ENERGY_COVALENT < BOND_ENERGY_IONIC);
+    }
+}

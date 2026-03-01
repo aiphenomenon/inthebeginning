@@ -8,7 +8,7 @@ use rand::Rng;
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use super::atomic::{Atom, AtomicSystem};
+use super::atomic::Atom;
 use super::constants::*;
 
 static MOLECULE_ID_COUNTER: AtomicU64 = AtomicU64::new(0);
@@ -420,5 +420,233 @@ impl ChemicalSystem {
             self.reactions_occurred,
             parts.join(",")
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Helper: create a set of unbonded atoms of the given elements.
+    fn make_atoms(elements: &[(u32, usize)]) -> Vec<Atom> {
+        let mut atoms = Vec::new();
+        for &(z, count) in elements {
+            for _ in 0..count {
+                atoms.push(Atom::new(z));
+            }
+        }
+        atoms
+    }
+
+    // -----------------------------------------------------------------------
+    // Molecule
+    // -----------------------------------------------------------------------
+
+    /// New molecule has correct name and atom count.
+    #[test]
+    fn molecule_new() {
+        let mol = Molecule::new("water", vec![1, 2, 3], [0.0; 3], 18.0);
+        assert_eq!(mol.name, "water");
+        assert_eq!(mol.atom_count(), 3);
+        assert_eq!(mol.molecular_weight, 18.0);
+    }
+
+    /// Builder methods chain correctly.
+    #[test]
+    fn molecule_builder() {
+        let mol = Molecule::new("test", vec![1], [0.0; 3], 10.0)
+            .with_formula("X2")
+            .with_organic(true)
+            .with_functional_groups(vec!["amino", "carboxyl"]);
+        assert_eq!(mol.formula, "X2");
+        assert!(mol.is_organic);
+        assert_eq!(mol.functional_groups.len(), 2);
+    }
+
+    /// Molecule IDs are unique.
+    #[test]
+    fn molecule_ids_unique() {
+        let m1 = Molecule::new("a", vec![1], [0.0; 3], 1.0);
+        let m2 = Molecule::new("b", vec![2], [0.0; 3], 2.0);
+        assert_ne!(m1.molecule_id, m2.molecule_id);
+    }
+
+    // -----------------------------------------------------------------------
+    // ChemicalSystem
+    // -----------------------------------------------------------------------
+
+    /// New ChemicalSystem is empty.
+    #[test]
+    fn chemical_system_new_empty() {
+        let cs = ChemicalSystem::new();
+        assert_eq!(cs.molecules.len(), 0);
+        assert_eq!(cs.water_count, 0);
+        assert_eq!(cs.amino_acid_count, 0);
+        assert_eq!(cs.nucleotide_count, 0);
+        assert_eq!(cs.reactions_occurred, 0);
+    }
+
+    /// form_water creates water from 2H + O.
+    #[test]
+    fn form_water_basic() {
+        let mut cs = ChemicalSystem::new();
+        let mut atoms = make_atoms(&[(1, 4), (8, 2)]); // 4H + 2O => 2 H2O
+        let count = cs.form_water(&mut atoms);
+        assert_eq!(count, 2);
+        assert_eq!(cs.water_count, 2);
+        assert_eq!(cs.molecules.len(), 2);
+        assert_eq!(cs.molecules[0].name, "water");
+        assert_eq!(cs.molecules[0].formula, "H2O");
+    }
+
+    /// form_water returns 0 when insufficient atoms.
+    #[test]
+    fn form_water_insufficient_hydrogen() {
+        let mut cs = ChemicalSystem::new();
+        let mut atoms = make_atoms(&[(1, 1), (8, 1)]); // only 1H
+        let count = cs.form_water(&mut atoms);
+        assert_eq!(count, 0);
+    }
+
+    /// form_water returns 0 when no oxygen available.
+    #[test]
+    fn form_water_no_oxygen() {
+        let mut cs = ChemicalSystem::new();
+        let mut atoms = make_atoms(&[(1, 10)]);
+        let count = cs.form_water(&mut atoms);
+        assert_eq!(count, 0);
+    }
+
+    /// form_water does not consume bonded hydrogen atoms.
+    #[test]
+    fn form_water_skips_bonded_atoms() {
+        let mut cs = ChemicalSystem::new();
+        let mut atoms = make_atoms(&[(1, 2), (8, 1)]);
+        // Bond one hydrogen
+        atoms[0].bonds.push(999);
+        let count = cs.form_water(&mut atoms);
+        // Only 1 unbonded H available, need 2
+        assert_eq!(count, 0);
+    }
+
+    /// form_methane creates CH4 from C + 4H.
+    #[test]
+    fn form_methane_basic() {
+        let mut cs = ChemicalSystem::new();
+        let mut atoms = make_atoms(&[(6, 1), (1, 4)]); // C + 4H
+        let count = cs.form_methane(&mut atoms);
+        assert_eq!(count, 1);
+        assert_eq!(cs.molecules.len(), 1);
+        assert_eq!(cs.molecules[0].formula, "CH4");
+    }
+
+    /// form_methane needs at least 4 unbonded hydrogens.
+    #[test]
+    fn form_methane_insufficient_hydrogen() {
+        let mut cs = ChemicalSystem::new();
+        let mut atoms = make_atoms(&[(6, 1), (1, 3)]); // only 3H
+        let count = cs.form_methane(&mut atoms);
+        assert_eq!(count, 0);
+    }
+
+    /// form_ammonia creates NH3 from N + 3H.
+    #[test]
+    fn form_ammonia_basic() {
+        let mut cs = ChemicalSystem::new();
+        let mut atoms = make_atoms(&[(7, 1), (1, 3)]); // N + 3H
+        let count = cs.form_ammonia(&mut atoms);
+        assert_eq!(count, 1);
+        assert_eq!(cs.molecules.len(), 1);
+        assert_eq!(cs.molecules[0].formula, "NH3");
+    }
+
+    /// form_ammonia returns 0 when insufficient atoms.
+    #[test]
+    fn form_ammonia_insufficient() {
+        let mut cs = ChemicalSystem::new();
+        let mut atoms = make_atoms(&[(7, 1), (1, 2)]); // only 2H
+        let count = cs.form_ammonia(&mut atoms);
+        assert_eq!(count, 0);
+    }
+
+    /// form_amino_acid needs 2C + 5H + 2O + 1N minimum.
+    #[test]
+    fn form_amino_acid_success() {
+        let mut cs = ChemicalSystem::new();
+        let mut atoms = make_atoms(&[(6, 2), (1, 5), (8, 2), (7, 1)]);
+        let result = cs.form_amino_acid(&mut atoms, "Gly");
+        assert!(result);
+        assert_eq!(cs.amino_acid_count, 1);
+        assert_eq!(cs.molecules.len(), 1);
+        assert!(cs.molecules[0].is_organic);
+        assert!(cs.molecules[0].functional_groups.contains(&"amino".to_string()));
+    }
+
+    /// form_amino_acid fails with insufficient carbons.
+    #[test]
+    fn form_amino_acid_insufficient_carbon() {
+        let mut cs = ChemicalSystem::new();
+        let mut atoms = make_atoms(&[(6, 1), (1, 5), (8, 2), (7, 1)]);
+        let result = cs.form_amino_acid(&mut atoms, "Gly");
+        assert!(!result);
+        assert_eq!(cs.amino_acid_count, 0);
+    }
+
+    /// form_nucleotide needs 5C + 8H + 4O + 2N minimum.
+    #[test]
+    fn form_nucleotide_success() {
+        let mut cs = ChemicalSystem::new();
+        let mut atoms = make_atoms(&[(6, 5), (1, 8), (8, 4), (7, 2)]);
+        let result = cs.form_nucleotide(&mut atoms, "A");
+        assert!(result);
+        assert_eq!(cs.nucleotide_count, 1);
+        assert_eq!(cs.molecules.len(), 1);
+        assert!(cs.molecules[0].name.contains("nucleotide"));
+        assert!(cs.molecules[0].is_organic);
+    }
+
+    /// form_nucleotide fails with insufficient nitrogen.
+    #[test]
+    fn form_nucleotide_insufficient_nitrogen() {
+        let mut cs = ChemicalSystem::new();
+        let mut atoms = make_atoms(&[(6, 5), (1, 8), (8, 4), (7, 1)]); // only 1 N
+        let result = cs.form_nucleotide(&mut atoms, "A");
+        assert!(!result);
+    }
+
+    /// molecule_census counts molecules by type.
+    #[test]
+    fn molecule_census_counts() {
+        let mut cs = ChemicalSystem::new();
+        let mut atoms = make_atoms(&[(1, 4), (8, 2)]);
+        cs.form_water(&mut atoms);
+        let census = cs.molecule_census();
+        assert_eq!(*census.get("water").unwrap(), 2);
+    }
+
+    /// Compact representation includes molecule counts.
+    #[test]
+    fn chemical_system_compact() {
+        let mut cs = ChemicalSystem::new();
+        let mut atoms = make_atoms(&[(1, 2), (8, 1)]);
+        cs.form_water(&mut atoms);
+        let compact = cs.to_compact();
+        assert!(compact.starts_with("CS["));
+        assert!(compact.contains("H2O=1"));
+    }
+
+    /// Multiple molecule types can coexist.
+    #[test]
+    fn multiple_molecule_types() {
+        let mut cs = ChemicalSystem::new();
+        // 2H + O for water, C + 4H for methane, N + 3H for ammonia
+        let mut atoms = make_atoms(&[(1, 9), (8, 1), (6, 1), (7, 1)]);
+        let water = cs.form_water(&mut atoms);
+        let methane = cs.form_methane(&mut atoms);
+        let ammonia = cs.form_ammonia(&mut atoms);
+        assert_eq!(water, 1);
+        assert_eq!(methane, 1);
+        assert_eq!(ammonia, 1);
+        assert_eq!(cs.molecules.len(), 3);
     }
 }

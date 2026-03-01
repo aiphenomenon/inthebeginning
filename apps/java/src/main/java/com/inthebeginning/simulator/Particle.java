@@ -1,6 +1,7 @@
 package com.inthebeginning.simulator;
 
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.inthebeginning.simulator.Constants.*;
 
@@ -23,7 +24,7 @@ public class Particle {
         RED, GREEN, BLUE, ANTI_RED, ANTI_GREEN, ANTI_BLUE
     }
 
-    private static int idCounter = 0;
+    private static final AtomicInteger idCounter = new AtomicInteger(0);
 
     private final int particleId;
     private ParticleType type;
@@ -49,7 +50,7 @@ public class Particle {
 
     public Particle(ParticleType type, double[] position, double[] momentum,
                      Spin spin, Color color) {
-        this.particleId = ++idCounter;
+        this.particleId = idCounter.incrementAndGet();
         this.type = type;
         this.position = position.clone();
         this.momentum = momentum.clone();

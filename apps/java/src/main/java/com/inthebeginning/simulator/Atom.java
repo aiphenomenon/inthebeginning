@@ -2,6 +2,7 @@ package com.inthebeginning.simulator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.inthebeginning.simulator.Constants.*;
 
@@ -38,7 +39,7 @@ public class Atom {
         }
     }
 
-    private static int idCounter = 0;
+    private static final AtomicInteger idCounter = new AtomicInteger(0);
 
     private final int atomId;
     private final int atomicNumber;
@@ -59,7 +60,7 @@ public class Atom {
     }
 
     public Atom(int atomicNumber, int massNumber, int electronCount, double[] position) {
-        this.atomId = ++idCounter;
+        this.atomId = idCounter.incrementAndGet();
         this.atomicNumber = atomicNumber;
         this.position = position.clone();
         this.velocity = new double[]{0, 0, 0};
@@ -78,7 +79,7 @@ public class Atom {
 
     // Extra constructor for full control
     public Atom(int atomicNumber, int massNumber, double[] position, double[] velocity) {
-        this.atomId = ++idCounter;
+        this.atomId = idCounter.incrementAndGet();
         this.atomicNumber = atomicNumber;
         this.position = position.clone();
         this.velocity = velocity.clone();

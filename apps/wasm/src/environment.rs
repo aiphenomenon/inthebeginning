@@ -126,3 +126,168 @@ fn gauss(rng: &mut impl Rng, mean: f64, std: f64) -> f64 {
     let u2: f64 = rng.gen::<f64>();
     mean + std * (-2.0 * u1.ln()).sqrt() * (2.0 * PI * u2).cos()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rand::rngs::SmallRng;
+    use rand::SeedableRng;
+
+    fn make_rng() -> SmallRng {
+        SmallRng::seed_from_u64(42)
+    }
+
+    #[test]
+    fn test_environment_new() {
+        let env = Environment::new(T_PLANCK);
+        assert_eq!(env.temperature, T_PLANCK);
+        assert_eq!(env.uv_intensity, 0.0);
+        assert_eq!(env.cosmic_ray_flux, 0.0);
+        assert_eq!(env.atmospheric_density, 0.0);
+        assert_eq!(env.water_availability, 0.0);
+    }
+
+    #[test]
+    fn test_environment_early_universe_cooling() {
+        let mut rng = make_rng();
+        let mut env = Environment::new(T_PLANCK);
+        let initial_temp = env.temperature;
+
+        env.update(500, &mut rng);
+        // Temperature should decrease in early universe
+        assert!(env.temperature < initial_temp);
+    }
+
+    #[test]
+    fn test_environment_no_uv_before_stars() {
+        let mut rng = make_rng();
+        let mut env = Environment::new(T_PLANCK);
+
+        env.update(50_000, &mut rng);
+        // No UV before star formation (tick 100_000)
+        assert_eq!(env.uv_intensity, 0.0);
+    }
+
+    #[test]
+    fn test_environment_cosmic_rays_early() {
+        let mut rng = make_rng();
+        let mut env = Environment::new(T_PLANCK);
+
+        env.update(5_000, &mut rng);
+        // Before tick 10_000: cosmic ray flux = 1.0
+        assert_eq!(env.cosmic_ray_flux, 1.0);
+    }
+
+    #[test]
+    fn test_environment_cosmic_rays_later() {
+        let mut rng = make_rng();
+        let mut env = Environment::new(T_PLANCK);
+
+        env.update(15_000, &mut rng);
+        // After tick 10_000: cosmic ray flux should be recalculated
+        assert!(env.cosmic_ray_flux > 0.0);
+    }
+
+    #[test]
+    fn test_environment_atmosphere_earth() {
+        let mut rng = make_rng();
+        let mut env = Environment::new(T_PLANCK);
+
+        env.update(215_000, &mut rng);
+        // Atmospheric density should be non-zero after Earth epoch (210_000)
+        assert!(env.atmospheric_density > 0.0);
+    }
+
+    #[test]
+    fn test_environment_water_availability() {
+        let mut rng = make_rng();
+        let mut env = Environment::new(T_PLANCK);
+
+        env.update(225_000, &mut rng);
+        // Water should be available after tick 220_000
+        assert!(env.water_availability > 0.0);
+    }
+
+    #[test]
+    fn test_environment_is_habitable() {
+        let mut env = Environment::new(T_PLANCK);
+        // Create habitable conditions manually
+        env.temperature = 300.0;
+        env.water_availability = 0.5;
+        env.uv_intensity = 1.0;
+        env.cosmic_ray_flux = 1.0;
+
+        assert!(env.is_habitable());
+    }
+
+    #[test]
+    fn test_environment_not_habitable_too_hot() {
+        let mut env = Environment::new(T_PLANCK);
+        env.temperature = 500.0; // Too hot
+        env.water_availability = 0.5;
+        env.uv_intensity = 1.0;
+        env.cosmic_ray_flux = 1.0;
+
+        assert!(!env.is_habitable());
+    }
+
+    #[test]
+    fn test_environment_not_habitable_no_water() {
+        let mut env = Environment::new(T_PLANCK);
+        env.temperature = 300.0;
+        env.water_availability = 0.05; // Too little water
+        env.uv_intensity = 1.0;
+        env.cosmic_ray_flux = 1.0;
+
+        assert!(!env.is_habitable());
+    }
+
+    #[test]
+    fn test_environment_not_habitable_too_much_radiation() {
+        let mut env = Environment::new(T_PLANCK);
+        env.temperature = 300.0;
+        env.water_availability = 0.5;
+        env.uv_intensity = 8.0;
+        env.cosmic_ray_flux = 5.0;
+        // Total radiation = 13.0 > threshold 10.0
+
+        assert!(!env.is_habitable());
+    }
+
+    #[test]
+    fn test_get_radiation_dose() {
+        let mut env = Environment::new(T_PLANCK);
+        env.uv_intensity = 3.0;
+        env.cosmic_ray_flux = 2.0;
+
+        assert_eq!(env.get_radiation_dose(), 5.0);
+    }
+
+    #[test]
+    fn test_thermal_energy() {
+        let mut env = Environment::new(T_PLANCK);
+
+        env.temperature = 50.0; // Too cold
+        assert_eq!(env.thermal_energy(), 0.1);
+
+        env.temperature = 600.0; // Too hot
+        assert_eq!(env.thermal_energy(), 0.1);
+
+        env.temperature = 300.0; // Goldilocks
+        assert_eq!(env.thermal_energy(), 30.0); // 300 * 0.1
+    }
+
+    #[test]
+    fn test_environment_earth_surface_temp() {
+        let mut rng = make_rng();
+        let mut env = Environment::new(T_PLANCK);
+
+        // Run many updates at Earth epoch
+        for _ in 0..100 {
+            env.update(250_000, &mut rng);
+        }
+        // Temperature should be near Earth surface temperature
+        assert!(env.temperature > 200.0 && env.temperature < 400.0,
+                "Temperature {} should be near Earth surface temp", env.temperature);
+    }
+}

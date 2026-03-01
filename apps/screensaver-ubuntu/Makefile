@@ -8,7 +8,11 @@ OBJS    = $(SRCS:.c=.o)
 
 PREFIX  ?= /usr/local
 
-.PHONY: all clean install uninstall
+TEST_TARGET = test_simulator
+TEST_SRCS   = test_simulator.c simulator/universe.c
+TEST_OBJS   = $(TEST_SRCS:.c=.o)
+
+.PHONY: all clean install uninstall test
 
 all: $(TARGET)
 
@@ -26,5 +30,11 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/libexec/xscreensaver/$(TARGET)
 	rm -f $(DESTDIR)$(PREFIX)/share/applications/screensavers/inthebeginning.desktop
 
+test: $(TEST_TARGET)
+	./$(TEST_TARGET)
+
+$(TEST_TARGET): $(TEST_SRCS)
+	$(CC) $(CFLAGS) -o $@ $(TEST_SRCS) -lm
+
 clean:
-	rm -f $(TARGET) $(OBJS)
+	rm -f $(TARGET) $(OBJS) $(TEST_TARGET) $(TEST_OBJS)

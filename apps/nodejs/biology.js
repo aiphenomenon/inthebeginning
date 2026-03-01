@@ -579,9 +579,10 @@ export class Biosphere {
             }
         }
 
-        // Transcribe/translate
+        // Transcribe/translate (clear old proteins to prevent unbounded growth)
         for (const cell of this.cells) {
             if (cell.alive) {
+                cell.proteins = [];
                 cell.transcribeAndTranslate();
             }
         }

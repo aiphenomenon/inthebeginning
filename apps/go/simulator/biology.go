@@ -583,9 +583,10 @@ func (bio *Biosphere) Step(environmentEnergy, uvIntensity, cosmicRayFlux, temper
 		}
 	}
 
-	// Transcribe/translate
+	// Transcribe/translate (clear old proteins to prevent unbounded growth)
 	for _, cell := range bio.Cells {
 		if cell.Alive {
+			cell.Proteins = cell.Proteins[:0]
 			cell.TranscribeAndTranslate()
 		}
 	}

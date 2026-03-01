@@ -430,3 +430,185 @@ impl ChemicalSystem {
         formed
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::atomic::Atom;
+
+    fn make_atoms(elements: &[(u32, usize)]) -> Vec<Atom> {
+        let mut atoms = Vec::new();
+        let mut next_id = 1u32;
+        for &(z, count) in elements {
+            for _ in 0..count {
+                atoms.push(Atom::new(next_id, z, [0.0, 0.0, 0.0]));
+                next_id += 1;
+            }
+        }
+        atoms
+    }
+
+    // --- Molecule tests ---
+
+    #[test]
+    fn test_molecule_render_color_water() {
+        let mol = Molecule {
+            id: 1,
+            name: "water".to_string(),
+            formula: "H2O".to_string(),
+            atom_ids: vec![1, 2, 3],
+            atom_positions: vec![[0.0; 3]; 3],
+            atom_atomic_numbers: vec![1, 1, 8],
+            bonds: vec![(0, 2), (1, 2)],
+            position: [0.0; 3],
+            is_organic: false,
+        };
+        let color = mol.render_color();
+        // Water should be blue
+        assert!(color[2] > color[0], "Water should be more blue than red");
+    }
+
+    #[test]
+    fn test_molecule_render_color_organic() {
+        let mol = Molecule {
+            id: 1,
+            name: "methane".to_string(),
+            formula: "CH4".to_string(),
+            atom_ids: vec![],
+            atom_positions: vec![],
+            atom_atomic_numbers: vec![],
+            bonds: vec![],
+            position: [0.0; 3],
+            is_organic: true,
+        };
+        let color = mol.render_color();
+        // Organic should be green
+        assert!(color[1] > color[0], "Organic should be more green than red");
+    }
+
+    // --- ChemicalSystem tests ---
+
+    #[test]
+    fn test_chemical_system_new() {
+        let cs = ChemicalSystem::new();
+        assert!(cs.molecules.is_empty());
+        assert_eq!(cs.water_count, 0);
+        assert_eq!(cs.amino_acid_count, 0);
+        assert_eq!(cs.nucleotide_count, 0);
+        assert_eq!(cs.reactions_occurred, 0);
+    }
+
+    #[test]
+    fn test_form_water() {
+        let mut cs = ChemicalSystem::new();
+        // 2 H + 1 O -> H2O
+        let mut atoms = make_atoms(&[(1, 4), (8, 2)]);
+        let formed = cs.form_water(&mut atoms);
+        assert_eq!(formed, 2);
+        assert_eq!(cs.water_count, 2);
+        assert_eq!(cs.molecules.len(), 2);
+        assert_eq!(cs.molecules[0].name, "water");
+        assert_eq!(cs.molecules[0].formula, "H2O");
+        assert!(!cs.molecules[0].is_organic);
+    }
+
+    #[test]
+    fn test_form_water_insufficient() {
+        let mut cs = ChemicalSystem::new();
+        // 1 H + 1 O: not enough hydrogen
+        let mut atoms = make_atoms(&[(1, 1), (8, 1)]);
+        let formed = cs.form_water(&mut atoms);
+        assert_eq!(formed, 0);
+    }
+
+    #[test]
+    fn test_form_methane() {
+        let mut cs = ChemicalSystem::new();
+        // 1 C + 4 H -> CH4
+        let mut atoms = make_atoms(&[(6, 1), (1, 4)]);
+        let formed = cs.form_methane(&mut atoms);
+        assert_eq!(formed, 1);
+        assert_eq!(cs.molecules.len(), 1);
+        assert_eq!(cs.molecules[0].name, "methane");
+        assert_eq!(cs.molecules[0].formula, "CH4");
+        assert!(cs.molecules[0].is_organic);
+    }
+
+    #[test]
+    fn test_form_methane_insufficient() {
+        let mut cs = ChemicalSystem::new();
+        // 1 C + 3 H: not enough hydrogen
+        let mut atoms = make_atoms(&[(6, 1), (1, 3)]);
+        let formed = cs.form_methane(&mut atoms);
+        assert_eq!(formed, 0);
+    }
+
+    #[test]
+    fn test_form_ammonia() {
+        let mut cs = ChemicalSystem::new();
+        // 1 N + 3 H -> NH3
+        let mut atoms = make_atoms(&[(7, 1), (1, 3)]);
+        let formed = cs.form_ammonia(&mut atoms);
+        assert_eq!(formed, 1);
+        assert_eq!(cs.molecules.len(), 1);
+        assert_eq!(cs.molecules[0].name, "ammonia");
+        assert_eq!(cs.molecules[0].formula, "NH3");
+    }
+
+    #[test]
+    fn test_form_amino_acid() {
+        let mut cs = ChemicalSystem::new();
+        // Needs: 2C + 5H + 2O + 1N
+        let mut atoms = make_atoms(&[(6, 2), (1, 5), (8, 2), (7, 1)]);
+        let result = cs.form_amino_acid(&mut atoms, "Gly");
+        assert!(result);
+        assert_eq!(cs.amino_acid_count, 1);
+        assert_eq!(cs.reactions_occurred, 1);
+        assert!(cs.molecules[0].is_organic);
+    }
+
+    #[test]
+    fn test_form_amino_acid_insufficient() {
+        let mut cs = ChemicalSystem::new();
+        // Missing nitrogen
+        let mut atoms = make_atoms(&[(6, 2), (1, 5), (8, 2)]);
+        let result = cs.form_amino_acid(&mut atoms, "Gly");
+        assert!(!result);
+        assert_eq!(cs.amino_acid_count, 0);
+    }
+
+    #[test]
+    fn test_form_nucleotide() {
+        let mut cs = ChemicalSystem::new();
+        // Needs: 5C + 8H + 4O + 2N
+        let mut atoms = make_atoms(&[(6, 5), (1, 8), (8, 4), (7, 2)]);
+        let result = cs.form_nucleotide(&mut atoms, "A");
+        assert!(result);
+        assert_eq!(cs.nucleotide_count, 1);
+        assert_eq!(cs.reactions_occurred, 1);
+        assert!(cs.molecules[0].is_organic);
+        assert!(cs.molecules[0].name.contains("nucleotide"));
+    }
+
+    #[test]
+    fn test_form_nucleotide_insufficient() {
+        let mut cs = ChemicalSystem::new();
+        // Not enough atoms
+        let mut atoms = make_atoms(&[(6, 3), (1, 4), (8, 2), (7, 1)]);
+        let result = cs.form_nucleotide(&mut atoms, "G");
+        assert!(!result);
+        assert_eq!(cs.nucleotide_count, 0);
+    }
+
+    #[test]
+    fn test_multiple_molecule_formation() {
+        let mut cs = ChemicalSystem::new();
+        // Enough for 2 water + 1 methane
+        let mut atoms = make_atoms(&[(1, 8), (8, 2), (6, 1)]);
+        let water_formed = cs.form_water(&mut atoms);
+        let methane_formed = cs.form_methane(&mut atoms);
+        assert_eq!(water_formed, 2);
+        assert_eq!(methane_formed, 1);
+        assert_eq!(cs.molecules.len(), 3);
+    }
+}

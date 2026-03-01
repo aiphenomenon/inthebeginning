@@ -359,3 +359,218 @@ fn gauss(rng: &mut impl Rng, mean: f64, std: f64) -> f64 {
     let u2: f64 = rng.gen::<f64>();
     mean + std * (-2.0 * u1.ln()).sqrt() * (2.0 * PI * u2).cos()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rand::rngs::SmallRng;
+    use rand::SeedableRng;
+
+    fn make_rng() -> SmallRng {
+        SmallRng::seed_from_u64(42)
+    }
+
+    // --- ElementInfo tests ---
+
+    #[test]
+    fn test_element_info_hydrogen() {
+        let info = element_info(1);
+        assert_eq!(info.symbol, "H");
+        assert_eq!(info.name, "Hydrogen");
+        assert!((info.electronegativity - 2.20).abs() < 0.01);
+    }
+
+    #[test]
+    fn test_element_info_helium() {
+        let info = element_info(2);
+        assert_eq!(info.symbol, "He");
+        assert_eq!(info.name, "Helium");
+        assert_eq!(info.electronegativity, 0.0); // Noble gas
+    }
+
+    #[test]
+    fn test_element_info_carbon() {
+        let info = element_info(6);
+        assert_eq!(info.symbol, "C");
+        assert_eq!(info.name, "Carbon");
+        assert!((info.electronegativity - 2.55).abs() < 0.01);
+    }
+
+    #[test]
+    fn test_element_info_unknown() {
+        let info = element_info(99);
+        assert_eq!(info.symbol, "?");
+        assert_eq!(info.name, "Unknown");
+    }
+
+    // --- Atom tests ---
+
+    #[test]
+    fn test_atom_new_hydrogen() {
+        let atom = Atom::new(1, 1, [0.0, 0.0, 0.0]);
+        assert_eq!(atom.atomic_number, 1);
+        assert_eq!(atom.mass_number, 1);
+        assert_eq!(atom.electron_count, 1);
+        assert_eq!(atom.symbol(), "H");
+        assert!(atom.bonds.is_empty());
+    }
+
+    #[test]
+    fn test_atom_new_helium() {
+        let atom = Atom::new(1, 2, [0.0, 0.0, 0.0]);
+        assert_eq!(atom.atomic_number, 2);
+        assert_eq!(atom.mass_number, 4); // Non-hydrogen: z * 2
+    }
+
+    #[test]
+    fn test_atom_valence_electrons_hydrogen() {
+        let atom = Atom::new(1, 1, [0.0, 0.0, 0.0]);
+        // H has 1 electron in first shell (max 2)
+        assert_eq!(atom.valence_electrons(), 1);
+    }
+
+    #[test]
+    fn test_atom_valence_electrons_helium() {
+        let atom = Atom::new(1, 2, [0.0, 0.0, 0.0]);
+        // He has 2 electrons filling first shell
+        assert_eq!(atom.valence_electrons(), 2);
+    }
+
+    #[test]
+    fn test_atom_valence_electrons_carbon() {
+        let atom = Atom::new(1, 6, [0.0, 0.0, 0.0]);
+        // C has 6 electrons: 2 in first shell, 4 in second
+        assert_eq!(atom.valence_electrons(), 4);
+    }
+
+    #[test]
+    fn test_atom_is_noble_gas_helium() {
+        let atom = Atom::new(1, 2, [0.0, 0.0, 0.0]);
+        // He fills first shell (2/2)
+        assert!(atom.is_noble_gas());
+    }
+
+    #[test]
+    fn test_atom_is_noble_gas_neon() {
+        let atom = Atom::new(1, 10, [0.0, 0.0, 0.0]);
+        // Ne fills first two shells (2+8=10)
+        assert!(atom.is_noble_gas());
+    }
+
+    #[test]
+    fn test_atom_is_not_noble_gas() {
+        let atom = Atom::new(1, 6, [0.0, 0.0, 0.0]);
+        assert!(!atom.is_noble_gas());
+    }
+
+    #[test]
+    fn test_atom_can_bond() {
+        let atom = Atom::new(1, 1, [0.0, 0.0, 0.0]);
+        assert!(atom.can_bond());
+
+        let noble = Atom::new(1, 2, [0.0, 0.0, 0.0]);
+        assert!(!noble.can_bond());
+    }
+
+    #[test]
+    fn test_atom_can_bond_limit() {
+        let mut atom = Atom::new(1, 6, [0.0, 0.0, 0.0]);
+        // Carbon can bond, but not more than 4
+        assert!(atom.can_bond());
+        atom.bonds = vec![1, 2, 3, 4];
+        assert!(!atom.can_bond());
+    }
+
+    #[test]
+    fn test_atom_render_color() {
+        let color = atom_render_color(1);
+        assert_eq!(color.len(), 4);
+        // H should be white-ish
+        assert!(color[0] > 0.9);
+
+        let color_c = atom_render_color(6);
+        // C should be dark gray
+        assert!(color_c[0] < 0.5);
+    }
+
+    // --- AtomicSystem tests ---
+
+    #[test]
+    fn test_atomic_system_new() {
+        let sys = AtomicSystem::new();
+        assert!(sys.atoms.is_empty());
+        assert_eq!(sys.temperature, T_RECOMBINATION);
+        assert_eq!(sys.bonds_formed, 0);
+    }
+
+    #[test]
+    fn test_nucleosynthesis_basic() {
+        let mut rng = make_rng();
+        let mut sys = AtomicSystem::new();
+
+        // 4 protons + 4 neutrons -> 2 He-4 atoms
+        let created = sys.nucleosynthesis(4, 4, &mut rng);
+        assert_eq!(created, 2);
+        assert_eq!(sys.atoms.len(), 2);
+        assert!(sys.atoms.iter().all(|a| a.atomic_number == 2));
+    }
+
+    #[test]
+    fn test_nucleosynthesis_mixed() {
+        let mut rng = make_rng();
+        let mut sys = AtomicSystem::new();
+
+        // 5 protons + 2 neutrons -> 1 He-4 + 3 H
+        let created = sys.nucleosynthesis(5, 2, &mut rng);
+        assert_eq!(created, 4); // 1 He + 3 H
+        let he_count = sys.atoms.iter().filter(|a| a.atomic_number == 2).count();
+        let h_count = sys.atoms.iter().filter(|a| a.atomic_number == 1).count();
+        assert_eq!(he_count, 1);
+        assert_eq!(h_count, 3);
+    }
+
+    #[test]
+    fn test_nucleosynthesis_only_protons() {
+        let mut rng = make_rng();
+        let mut sys = AtomicSystem::new();
+
+        // 3 protons + 0 neutrons -> 3 H
+        let created = sys.nucleosynthesis(3, 0, &mut rng);
+        assert_eq!(created, 3);
+        assert!(sys.atoms.iter().all(|a| a.atomic_number == 1));
+    }
+
+    #[test]
+    fn test_seed_earth_elements() {
+        let mut rng = make_rng();
+        let mut sys = AtomicSystem::new();
+
+        let total = sys.seed_earth_elements(&mut rng);
+        // Expected: 40 H + 10 He + 15 C + 10 N + 15 O + 3 P = 93
+        assert_eq!(total, 93);
+        assert_eq!(sys.atoms.len(), 93);
+    }
+
+    #[test]
+    fn test_element_counts() {
+        let mut rng = make_rng();
+        let mut sys = AtomicSystem::new();
+        sys.seed_earth_elements(&mut rng);
+
+        let counts = sys.element_counts();
+        // Should contain H, He, C, N, O, P
+        let h_count = counts.iter().find(|(s, _)| *s == "H").map(|(_, c)| *c).unwrap_or(0);
+        assert_eq!(h_count, 40);
+
+        let c_count = counts.iter().find(|(s, _)| *s == "C").map(|(_, c)| *c).unwrap_or(0);
+        assert_eq!(c_count, 15);
+    }
+
+    #[test]
+    fn test_atom_render_size() {
+        let h = Atom::new(1, 1, [0.0; 3]);
+        let fe = Atom::new(1, 26, [0.0; 3]);
+        // Iron should be visually larger than hydrogen
+        assert!(fe.render_size() > h.render_size());
+    }
+}

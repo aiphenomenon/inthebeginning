@@ -459,3 +459,449 @@ impl QuantumField {
         )
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // -----------------------------------------------------------------------
+    // WaveFunction
+    // -----------------------------------------------------------------------
+
+    /// Default WaveFunction has amplitude 1, phase 0, and is coherent.
+    #[test]
+    fn wavefunction_default() {
+        let wf = WaveFunction::default();
+        assert_eq!(wf.amplitude, 1.0);
+        assert_eq!(wf.phase, 0.0);
+        assert!(wf.coherent);
+    }
+
+    /// Born rule: probability is amplitude squared.
+    #[test]
+    fn wavefunction_probability() {
+        let wf = WaveFunction {
+            amplitude: 0.5,
+            phase: 0.0,
+            coherent: true,
+        };
+        assert!((wf.probability() - 0.25).abs() < 1e-10);
+    }
+
+    /// Probability of default wave function is 1.0.
+    #[test]
+    fn wavefunction_default_probability_is_one() {
+        let wf = WaveFunction::default();
+        assert!((wf.probability() - 1.0).abs() < 1e-10);
+    }
+
+    /// Zero-amplitude wave function has zero probability.
+    #[test]
+    fn wavefunction_zero_amplitude() {
+        let wf = WaveFunction {
+            amplitude: 0.0,
+            phase: 1.0,
+            coherent: true,
+        };
+        assert_eq!(wf.probability(), 0.0);
+    }
+
+    /// Evolve advances the phase when coherent.
+    #[test]
+    fn wavefunction_evolve_advances_phase() {
+        let mut wf = WaveFunction::default();
+        let energy = 1.0;
+        let dt = 0.1;
+        wf.evolve(dt, energy);
+        // Phase = (energy * dt / HBAR) % (2*PI)
+        let raw_phase = energy * dt / HBAR;
+        let expected_phase = raw_phase % (2.0 * PI);
+        assert!((wf.phase - expected_phase).abs() < 1e-10,
+            "phase {} should equal expected {}", wf.phase, expected_phase);
+    }
+
+    /// Evolve does not change phase when not coherent.
+    #[test]
+    fn wavefunction_evolve_incoherent_no_change() {
+        let mut wf = WaveFunction {
+            amplitude: 1.0,
+            phase: 0.0,
+            coherent: false,
+        };
+        wf.evolve(0.1, 1.0);
+        assert_eq!(wf.phase, 0.0);
+    }
+
+    /// Phase wraps modulo 2*PI.
+    #[test]
+    fn wavefunction_evolve_phase_wraps() {
+        let mut wf = WaveFunction::default();
+        // Large energy * dt so phase > 2*PI
+        wf.evolve(1.0, 100.0);
+        assert!(wf.phase >= 0.0);
+        assert!(wf.phase < 2.0 * PI);
+    }
+
+    /// Collapse makes the wave function incoherent.
+    #[test]
+    fn wavefunction_collapse_becomes_incoherent() {
+        let mut wf = WaveFunction::default();
+        let _ = wf.collapse();
+        assert!(!wf.coherent);
+    }
+
+    /// After collapse, amplitude is either 0 or 1.
+    #[test]
+    fn wavefunction_collapse_amplitude_binary() {
+        let mut wf = WaveFunction {
+            amplitude: 0.7,
+            phase: 0.0,
+            coherent: true,
+        };
+        let _ = wf.collapse();
+        assert!(wf.amplitude == 0.0 || wf.amplitude == 1.0);
+    }
+
+    /// Superposition of two identical wave functions preserves coherence.
+    #[test]
+    fn wavefunction_superpose_identical() {
+        let wf = WaveFunction::default();
+        let result = wf.superpose(&wf);
+        assert!(result.coherent);
+        // Same phase => constructive interference, amplitude capped at 1.0
+        assert!(result.amplitude <= 1.0);
+        assert!(result.amplitude > 0.0);
+    }
+
+    /// Superposition of two wave functions with pi phase difference.
+    #[test]
+    fn wavefunction_superpose_destructive() {
+        let wf1 = WaveFunction {
+            amplitude: 0.5,
+            phase: 0.0,
+            coherent: true,
+        };
+        let wf2 = WaveFunction {
+            amplitude: 0.5,
+            phase: PI,
+            coherent: true,
+        };
+        let result = wf1.superpose(&wf2);
+        // Destructive interference: cos(pi) = -1
+        // combined = sqrt(0.25 + 0.25 + 2*0.5*0.5*(-1)) = sqrt(0) = 0
+        assert!(result.amplitude.abs() < 1e-10);
+    }
+
+    // -----------------------------------------------------------------------
+    // Particle
+    // -----------------------------------------------------------------------
+
+    /// New particle has the correct type.
+    #[test]
+    fn particle_new_has_correct_type() {
+        let p = Particle::new(ParticleType::Electron);
+        assert_eq!(p.particle_type, ParticleType::Electron);
+    }
+
+    /// New particle starts at the origin.
+    #[test]
+    fn particle_new_at_origin() {
+        let p = Particle::new(ParticleType::Proton);
+        assert_eq!(p.position, [0.0, 0.0, 0.0]);
+    }
+
+    /// New particle has zero momentum.
+    #[test]
+    fn particle_new_zero_momentum() {
+        let p = Particle::new(ParticleType::Neutron);
+        assert_eq!(p.momentum, [0.0, 0.0, 0.0]);
+    }
+
+    /// Particle IDs are unique.
+    #[test]
+    fn particle_ids_unique() {
+        let p1 = Particle::new(ParticleType::Electron);
+        let p2 = Particle::new(ParticleType::Electron);
+        assert_ne!(p1.particle_id, p2.particle_id);
+    }
+
+    /// Builder methods chain correctly.
+    #[test]
+    fn particle_builder_chain() {
+        let p = Particle::new(ParticleType::Photon)
+            .with_position([1.0, 2.0, 3.0])
+            .with_momentum([0.1, 0.2, 0.3])
+            .with_spin(Spin::Down)
+            .with_color(Color::Red);
+        assert_eq!(p.position, [1.0, 2.0, 3.0]);
+        assert_eq!(p.momentum, [0.1, 0.2, 0.3]);
+        assert_eq!(p.spin, Spin::Down);
+        assert_eq!(p.color, Some(Color::Red));
+    }
+
+    /// Particle mass delegates to ParticleType.
+    #[test]
+    fn particle_mass_delegation() {
+        let p = Particle::new(ParticleType::Proton);
+        assert_eq!(p.mass(), M_PROTON);
+    }
+
+    /// Particle charge delegates to ParticleType.
+    #[test]
+    fn particle_charge_delegation() {
+        let p = Particle::new(ParticleType::Electron);
+        assert_eq!(p.charge(), -1.0);
+    }
+
+    /// A massive particle at rest has energy E = mc^2.
+    #[test]
+    fn particle_energy_at_rest() {
+        let p = Particle::new(ParticleType::Electron);
+        let expected = M_ELECTRON * C * C;
+        assert!((p.energy() - expected).abs() < 1e-10);
+    }
+
+    /// A particle with momentum has more energy than at rest.
+    #[test]
+    fn particle_energy_with_momentum() {
+        let p_rest = Particle::new(ParticleType::Electron);
+        let p_moving = Particle::new(ParticleType::Electron)
+            .with_momentum([1.0, 0.0, 0.0]);
+        assert!(p_moving.energy() > p_rest.energy());
+    }
+
+    /// de Broglie wavelength: zero momentum gives infinity.
+    #[test]
+    fn particle_wavelength_zero_momentum() {
+        let p = Particle::new(ParticleType::Electron);
+        assert_eq!(p.wavelength(), f64::INFINITY);
+    }
+
+    /// de Broglie wavelength decreases with increasing momentum.
+    #[test]
+    fn particle_wavelength_decreases_with_momentum() {
+        let p1 = Particle::new(ParticleType::Electron)
+            .with_momentum([1.0, 0.0, 0.0]);
+        let p2 = Particle::new(ParticleType::Electron)
+            .with_momentum([10.0, 0.0, 0.0]);
+        assert!(p2.wavelength() < p1.wavelength());
+    }
+
+    /// de Broglie wavelength = 2*pi*hbar / |p|.
+    #[test]
+    fn particle_wavelength_formula() {
+        let p = Particle::new(ParticleType::Electron)
+            .with_momentum([3.0, 4.0, 0.0]);
+        let p_mag = 5.0; // sqrt(9+16)
+        let expected = 2.0 * PI * HBAR / p_mag;
+        assert!((p.wavelength() - expected).abs() < 1e-10);
+    }
+
+    // -----------------------------------------------------------------------
+    // QuantumField
+    // -----------------------------------------------------------------------
+
+    /// New QuantumField is empty.
+    #[test]
+    fn quantum_field_new_is_empty() {
+        let qf = QuantumField::new(1000.0);
+        assert_eq!(qf.particles.len(), 0);
+        assert_eq!(qf.total_created, 0);
+        assert_eq!(qf.total_annihilated, 0);
+        assert_eq!(qf.vacuum_energy, 0.0);
+    }
+
+    /// Pair production fails with insufficient energy.
+    #[test]
+    fn pair_production_insufficient_energy() {
+        let mut qf = QuantumField::new(1000.0);
+        let result = qf.pair_production(0.5); // well below 2*m_e*c^2 = 2.0
+        assert!(result.is_none());
+        assert_eq!(qf.particles.len(), 0);
+    }
+
+    /// Pair production with enough energy for electron-positron pair.
+    #[test]
+    fn pair_production_electron_positron() {
+        let mut qf = QuantumField::new(1000.0);
+        // Energy just above 2*M_ELECTRON*C*C = 2.0, but well below 2*M_PROTON
+        let result = qf.pair_production(5.0);
+        assert!(result.is_some());
+        assert_eq!(qf.particles.len(), 2);
+        assert_eq!(qf.total_created, 2);
+    }
+
+    /// Pair production creates entangled particles.
+    #[test]
+    fn pair_production_creates_entangled_pair() {
+        let mut qf = QuantumField::new(1000.0);
+        let (pid, apid) = qf.pair_production(5.0).unwrap();
+        assert_ne!(pid, apid);
+        assert_eq!(qf.entangled_pairs.len(), 1);
+        assert_eq!(qf.entangled_pairs[0].particle_a_id, pid);
+        assert_eq!(qf.entangled_pairs[0].particle_b_id, apid);
+        // Particles reference each other
+        let p1 = qf.particles.iter().find(|p| p.particle_id == pid).unwrap();
+        let p2 = qf.particles.iter().find(|p| p.particle_id == apid).unwrap();
+        assert_eq!(p1.entangled_with, Some(apid));
+        assert_eq!(p2.entangled_with, Some(pid));
+    }
+
+    /// Pair-produced particles have opposite spins.
+    #[test]
+    fn pair_production_opposite_spins() {
+        let mut qf = QuantumField::new(1000.0);
+        let (pid, apid) = qf.pair_production(5.0).unwrap();
+        let p1 = qf.particles.iter().find(|p| p.particle_id == pid).unwrap();
+        let p2 = qf.particles.iter().find(|p| p.particle_id == apid).unwrap();
+        assert_eq!(p1.spin, Spin::Up);
+        assert_eq!(p2.spin, Spin::Down);
+    }
+
+    /// Annihilation removes two particles and creates two photons.
+    #[test]
+    fn annihilation_creates_photons() {
+        let mut qf = QuantumField::new(1000.0);
+        qf.pair_production(5.0).unwrap();
+        assert_eq!(qf.particles.len(), 2);
+
+        let energy = qf.annihilate(0, 1);
+        assert!(energy > 0.0);
+        // After annihilation: original 2 removed, 2 photons added
+        assert_eq!(qf.particles.len(), 2);
+        assert_eq!(qf.total_annihilated, 2);
+        // Both remaining particles should be photons
+        for p in &qf.particles {
+            assert_eq!(p.particle_type, ParticleType::Photon);
+        }
+    }
+
+    /// Quark confinement does nothing at high temperature.
+    #[test]
+    fn quark_confinement_high_temp_no_effect() {
+        let mut qf = QuantumField::new(T_QUARK_HADRON * 2.0);
+        qf.particles.push(Particle::new(ParticleType::Up));
+        qf.particles.push(Particle::new(ParticleType::Up));
+        qf.particles.push(Particle::new(ParticleType::Down));
+        let hadrons = qf.quark_confinement();
+        assert!(hadrons.is_empty());
+        // Quarks still present
+        assert_eq!(qf.particles.len(), 3);
+    }
+
+    /// Quark confinement forms protons (uud) at low temperature.
+    #[test]
+    fn quark_confinement_forms_proton() {
+        let mut qf = QuantumField::new(T_QUARK_HADRON * 0.5);
+        qf.particles.push(Particle::new(ParticleType::Up));
+        qf.particles.push(Particle::new(ParticleType::Up));
+        qf.particles.push(Particle::new(ParticleType::Down));
+
+        let hadrons = qf.quark_confinement();
+        assert_eq!(hadrons.len(), 1);
+        assert_eq!(hadrons[0].particle_type, ParticleType::Proton);
+    }
+
+    /// Quark confinement forms neutrons (udd) at low temperature.
+    #[test]
+    fn quark_confinement_forms_neutron() {
+        let mut qf = QuantumField::new(T_QUARK_HADRON * 0.5);
+        qf.particles.push(Particle::new(ParticleType::Up));
+        qf.particles.push(Particle::new(ParticleType::Down));
+        qf.particles.push(Particle::new(ParticleType::Down));
+
+        let hadrons = qf.quark_confinement();
+        assert_eq!(hadrons.len(), 1);
+        assert_eq!(hadrons[0].particle_type, ParticleType::Neutron);
+    }
+
+    /// Quark confinement with mixed quarks produces multiple hadrons.
+    #[test]
+    fn quark_confinement_multiple_hadrons() {
+        let mut qf = QuantumField::new(T_QUARK_HADRON * 0.5);
+        // 4 ups + 4 downs: should make 2 protons (uud) then 1 neutron (udd)
+        // or some combination
+        for _ in 0..4 {
+            qf.particles.push(Particle::new(ParticleType::Up));
+            qf.particles.push(Particle::new(ParticleType::Down));
+        }
+        let hadrons = qf.quark_confinement();
+        // With 4u+4d: first 2 protons (4u,2d), then 1 neutron (0u,2d) -- but
+        // protons need 2u+1d each, so 2 protons use 4u+2d, leaving 2d, not
+        // enough for a neutron (needs 1u+2d). So we get exactly 2 protons.
+        assert!(!hadrons.is_empty());
+        let proton_count = hadrons.iter().filter(|h| h.particle_type == ParticleType::Proton).count();
+        let neutron_count = hadrons.iter().filter(|h| h.particle_type == ParticleType::Neutron).count();
+        assert!(proton_count + neutron_count == hadrons.len());
+    }
+
+    /// Cool reduces the temperature.
+    #[test]
+    fn quantum_field_cool() {
+        let mut qf = QuantumField::new(1000.0);
+        qf.cool(0.9);
+        assert!((qf.temperature - 900.0).abs() < 1e-10);
+    }
+
+    /// Evolve moves massive particles according to momentum/mass.
+    #[test]
+    fn quantum_field_evolve_moves_particles() {
+        let mut qf = QuantumField::new(1000.0);
+        let p = Particle::new(ParticleType::Electron)
+            .with_momentum([M_ELECTRON, 0.0, 0.0]); // v = p/m = 1.0
+        qf.particles.push(p);
+
+        let dt = 1.0;
+        qf.evolve(dt);
+
+        // x should be approximately 1.0 (p/m * dt)
+        assert!((qf.particles[0].position[0] - 1.0).abs() < 1e-10);
+    }
+
+    /// Evolve moves massless particles at speed of light.
+    #[test]
+    fn quantum_field_evolve_massless_at_c() {
+        let mut qf = QuantumField::new(1000.0);
+        let p = Particle::new(ParticleType::Photon)
+            .with_momentum([1.0, 0.0, 0.0]);
+        qf.particles.push(p);
+
+        let dt = 0.5;
+        qf.evolve(dt);
+
+        // Photon moves at C along momentum direction
+        assert!((qf.particles[0].position[0] - C * dt).abs() < 1e-10);
+    }
+
+    /// Total energy includes vacuum energy.
+    #[test]
+    fn quantum_field_total_energy_includes_vacuum() {
+        let mut qf = QuantumField::new(1000.0);
+        qf.vacuum_energy = 42.0;
+        assert!((qf.total_energy() - 42.0).abs() < 1e-10);
+    }
+
+    /// Particle count returns correct counts per type.
+    #[test]
+    fn quantum_field_particle_count_by_type() {
+        let mut qf = QuantumField::new(1000.0);
+        qf.particles.push(Particle::new(ParticleType::Electron));
+        qf.particles.push(Particle::new(ParticleType::Electron));
+        qf.particles.push(Particle::new(ParticleType::Proton));
+
+        let counts = qf.particle_count();
+        assert_eq!(*counts.get(&ParticleType::Electron).unwrap(), 2);
+        assert_eq!(*counts.get(&ParticleType::Proton).unwrap(), 1);
+        assert!(counts.get(&ParticleType::Neutron).is_none());
+    }
+
+    /// Compact representation includes temperature and particle count.
+    #[test]
+    fn quantum_field_to_compact_format() {
+        let qf = QuantumField::new(1000.0);
+        let compact = qf.to_compact();
+        assert!(compact.starts_with("QF["));
+        assert!(compact.contains("T="));
+        assert!(compact.contains("n=0"));
+    }
+}

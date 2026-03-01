@@ -104,6 +104,261 @@ fn print_progress(stats: &SimStats) {
 // Main
 // ---------------------------------------------------------------------------
 
+#[cfg(test)]
+mod tests {
+    use super::simulator::constants::*;
+    use super::simulator::quantum::{Particle, QuantumField};
+    use super::simulator::atomic::{Atom, AtomicSystem};
+    use super::simulator::chemistry::ChemicalSystem;
+    use super::simulator::biology::{BiologicalSystem, Genome, Lifeform};
+    use super::simulator::environment::Environment;
+    use super::simulator::universe::Universe;
+
+    // -----------------------------------------------------------------------
+    // Integration: Quantum -> Atomic pipeline
+    // -----------------------------------------------------------------------
+
+    /// Pair production followed by quark confinement produces hadrons.
+    #[test]
+    fn integration_pair_production_to_hadrons() {
+        let mut qf = QuantumField::new(T_QUARK_HADRON * 2.0);
+
+        // Manually add quarks (as if produced by pair production)
+        // 2 up + 1 down => proton
+        qf.particles.push(Particle::new(ParticleType::Up));
+        qf.particles.push(Particle::new(ParticleType::Up));
+        qf.particles.push(Particle::new(ParticleType::Down));
+
+        // Cool below confinement temperature
+        qf.temperature = T_QUARK_HADRON * 0.1;
+
+        let hadrons = qf.quark_confinement();
+        assert_eq!(hadrons.len(), 1);
+        assert_eq!(hadrons[0].particle_type, ParticleType::Proton);
+    }
+
+    /// Recombination converts field protons+electrons into hydrogen atoms.
+    #[test]
+    fn integration_recombination_pipeline() {
+        let mut qf = QuantumField::new(T_RECOMBINATION * 0.5);
+        let mut atomic = AtomicSystem::new(T_RECOMBINATION * 0.5);
+
+        // Add 3 protons and 3 electrons
+        for _ in 0..3 {
+            qf.particles.push(Particle::new(ParticleType::Proton));
+            qf.particles.push(Particle::new(ParticleType::Electron));
+        }
+
+        let atoms = atomic.recombination(&mut qf);
+        assert_eq!(atoms.len(), 3);
+        for a in &atoms {
+            assert_eq!(a.atomic_number, 1);
+            assert_eq!(a.symbol(), "H");
+        }
+        assert_eq!(qf.particles.len(), 0);
+    }
+
+    // -----------------------------------------------------------------------
+    // Integration: Atomic -> Chemistry pipeline
+    // -----------------------------------------------------------------------
+
+    /// Atoms can form water molecules.
+    #[test]
+    fn integration_atoms_to_water() {
+        let mut chem = ChemicalSystem::new();
+        let mut atoms: Vec<Atom> = Vec::new();
+
+        // Add 4H + 2O
+        for _ in 0..4 {
+            atoms.push(Atom::new(1));
+        }
+        for _ in 0..2 {
+            atoms.push(Atom::new(8));
+        }
+
+        let water_count = chem.form_water(&mut atoms);
+        assert_eq!(water_count, 2);
+        assert_eq!(chem.water_count, 2);
+    }
+
+    /// Multiple molecule types form from a mixed atom pool.
+    #[test]
+    fn integration_mixed_molecule_formation() {
+        let mut chem = ChemicalSystem::new();
+        let mut atoms: Vec<Atom> = Vec::new();
+
+        // Add H, C, N, O atoms
+        for _ in 0..20 {
+            atoms.push(Atom::new(1)); // H
+        }
+        for _ in 0..3 {
+            atoms.push(Atom::new(6)); // C
+        }
+        for _ in 0..2 {
+            atoms.push(Atom::new(7)); // N
+        }
+        for _ in 0..5 {
+            atoms.push(Atom::new(8)); // O
+        }
+
+        let water = chem.form_water(&mut atoms);
+        let methane = chem.form_methane(&mut atoms);
+        let ammonia = chem.form_ammonia(&mut atoms);
+
+        assert!(water + methane + ammonia > 0,
+            "should form at least some molecules");
+    }
+
+    // -----------------------------------------------------------------------
+    // Integration: Chemistry -> Biology pipeline
+    // -----------------------------------------------------------------------
+
+    /// Abiogenesis produces lifeforms when chemistry provides precursors.
+    #[test]
+    fn integration_chemistry_to_biology() {
+        let mut chem = ChemicalSystem::new();
+        chem.nucleotide_count = 50;
+        chem.amino_acid_count = 50;
+
+        let mut bio = BiologicalSystem::new();
+        let created = bio.abiogenesis(&chem);
+        assert!(created > 0, "abiogenesis should produce lifeforms");
+        assert!(!bio.population.is_empty());
+    }
+
+    // -----------------------------------------------------------------------
+    // Integration: Biology + Environment
+    // -----------------------------------------------------------------------
+
+    /// Lifeforms evolve in a habitable environment.
+    #[test]
+    fn integration_life_in_environment() {
+        let mut env = Environment::early_earth();
+        env.make_habitable();
+
+        let mut bio = BiologicalSystem::new();
+        // Seed a few lifeforms
+        for _ in 0..5 {
+            let mut lf = Lifeform::new(48);
+            lf.energy = 200.0;
+            bio.population.push(lf);
+        }
+
+        // Run a few generations
+        for _ in 0..10 {
+            bio.tick(env.temperature, env.resources, env.radiation_level);
+            env.tick(bio.population.len());
+        }
+
+        assert!(bio.generation == 10);
+        // At least some lifeforms should survive
+        assert!(!bio.population.is_empty(),
+            "some lifeforms should survive in habitable environment");
+    }
+
+    // -----------------------------------------------------------------------
+    // Integration: Full Universe pipeline (abbreviated)
+    // -----------------------------------------------------------------------
+
+    /// Universe advances through multiple epochs without panic.
+    #[test]
+    fn integration_universe_multi_epoch() {
+        let mut u = Universe::new();
+        // Run through the first 6 epochs (up to nucleosynthesis)
+        while u.tick < RECOMBINATION_EPOCH {
+            u.step();
+        }
+        let stats = u.stats();
+        assert_eq!(stats.tick, RECOMBINATION_EPOCH);
+        assert!(stats.temperature < T_PLANCK);
+    }
+
+    /// format_sci produces correct formatting.
+    #[test]
+    fn format_sci_values() {
+        assert_eq!(super::format_sci(0.0), "0");
+        assert_eq!(super::format_sci(1234567.0), "1.23e6");
+        assert_eq!(super::format_sci(0.001), "1.00e-3");
+        assert_eq!(super::format_sci(42.0), "42.00");
+    }
+
+    // -----------------------------------------------------------------------
+    // Integration: DNA replication fidelity
+    // -----------------------------------------------------------------------
+
+    /// DNA replication with zero error rate preserves the sequence.
+    #[test]
+    fn integration_dna_replication_fidelity() {
+        let bases: Vec<char> = "ATGCATGCATGCATGCATGCATGCATGCATGCATGC"
+            .chars().collect();
+        let genome = Genome {
+            bases: bases.clone(),
+            methylation: vec![false; bases.len()],
+            generation: 0,
+        };
+        let child = genome.replicate(0.0);
+        assert_eq!(child.bases, bases);
+        assert_eq!(child.generation, 1);
+    }
+
+    // -----------------------------------------------------------------------
+    // Integration: Wave function -> Particle -> Field
+    // -----------------------------------------------------------------------
+
+    /// Wave function evolution affects particles in the field.
+    #[test]
+    fn integration_wavefunction_in_field() {
+        let mut qf = QuantumField::new(1000.0);
+        let p = Particle::new(ParticleType::Electron)
+            .with_momentum([1.0, 0.0, 0.0]);
+        qf.particles.push(p);
+
+        // Evolve the field
+        qf.evolve(0.1);
+
+        // Particle should have moved and phase should have changed
+        assert!(qf.particles[0].position[0] != 0.0);
+        assert!(qf.particles[0].wave_fn.phase != 0.0);
+    }
+
+    // -----------------------------------------------------------------------
+    // Integration: Energy conservation in pair creation/annihilation
+    // -----------------------------------------------------------------------
+
+    /// Pair creation followed by annihilation conserves energy approximately.
+    #[test]
+    fn integration_energy_conservation() {
+        let mut qf = QuantumField::new(1000.0);
+        let input_energy = 5.0;
+        let _pair = qf.pair_production(input_energy).unwrap();
+
+        let particle_energy: f64 = qf.particles.iter()
+            .map(|p| p.energy())
+            .sum();
+
+        // Particles should have nonzero energy
+        assert!(particle_energy > 0.0);
+    }
+
+    // -----------------------------------------------------------------------
+    // Integration: Nucleosynthesis atom composition
+    // -----------------------------------------------------------------------
+
+    /// Nucleosynthesis with 7:1 proton-to-neutron ratio produces
+    /// ~75% hydrogen, ~25% helium by atom count.
+    #[test]
+    fn integration_nucleosynthesis_composition() {
+        let mut sys = AtomicSystem::new(T_NUCLEOSYNTHESIS);
+        // 14 protons, 2 neutrons (7:1 ratio)
+        let atoms = sys.nucleosynthesis(14, 2);
+        let h_count = atoms.iter().filter(|a| a.atomic_number == 1).count();
+        let he_count = atoms.iter().filter(|a| a.atomic_number == 2).count();
+        // 2p+2n => 1 He, remaining 12p => 12 H
+        assert_eq!(he_count, 1);
+        assert_eq!(h_count, 12);
+    }
+}
+
 fn main() {
     println!();
     println!(

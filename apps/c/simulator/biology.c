@@ -245,7 +245,9 @@ static void bio_ensure_capacity(Biosphere *bio, int needed)
     int new_cap = bio->capacity * 2;
     while (new_cap < bio->count + needed) new_cap *= 2;
     if (new_cap > MAX_CELLS * 2) new_cap = MAX_CELLS * 2;
-    bio->cells = (Cell *)realloc(bio->cells, (size_t)new_cap * sizeof(Cell));
+    Cell *tmp = (Cell *)realloc(bio->cells, (size_t)new_cap * sizeof(Cell));
+    if (!tmp) return;
+    bio->cells = tmp;
     bio->capacity = new_cap;
 }
 

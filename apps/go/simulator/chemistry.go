@@ -1,6 +1,7 @@
 package simulator
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 	"sync/atomic"
@@ -63,7 +64,7 @@ func (m *Molecule) computeFormula() {
 	for _, sym := range []string{"C", "H"} {
 		if n, ok := counts[sym]; ok {
 			if n > 1 {
-				formula += sym + string(rune('0'+n)) // simplified for small counts
+				formula += sym + fmt.Sprintf("%d", n)
 			} else {
 				formula += sym
 			}
@@ -73,7 +74,7 @@ func (m *Molecule) computeFormula() {
 	// Remaining alphabetical
 	for sym, n := range counts {
 		if n > 1 {
-			formula += sym + string(rune('0'+n))
+			formula += sym + fmt.Sprintf("%d", n)
 		} else {
 			formula += sym
 		}

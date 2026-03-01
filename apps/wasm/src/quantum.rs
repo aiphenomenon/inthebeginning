@@ -504,3 +504,359 @@ fn random_color(rng: &mut impl Rng) -> ColorCharge {
         _ => ColorCharge::Blue,
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rand::rngs::SmallRng;
+    use rand::SeedableRng;
+
+    fn make_rng() -> SmallRng {
+        SmallRng::seed_from_u64(42)
+    }
+
+    // --- ParticleType tests ---
+
+    #[test]
+    fn test_particle_type_mass() {
+        assert_eq!(ParticleType::Photon.mass(), 0.0);
+        assert_eq!(ParticleType::Gluon.mass(), 0.0);
+        assert_eq!(ParticleType::Electron.mass(), M_ELECTRON);
+        assert_eq!(ParticleType::Positron.mass(), M_ELECTRON);
+        assert_eq!(ParticleType::Proton.mass(), M_PROTON);
+        assert_eq!(ParticleType::Neutron.mass(), M_NEUTRON);
+        assert_eq!(ParticleType::Up.mass(), M_UP_QUARK);
+        assert_eq!(ParticleType::Down.mass(), M_DOWN_QUARK);
+    }
+
+    #[test]
+    fn test_particle_type_charge() {
+        assert_eq!(ParticleType::Electron.charge(), -1.0);
+        assert_eq!(ParticleType::Positron.charge(), 1.0);
+        assert_eq!(ParticleType::Proton.charge(), 1.0);
+        assert_eq!(ParticleType::Neutron.charge(), 0.0);
+        assert_eq!(ParticleType::Photon.charge(), 0.0);
+        // Quark charges
+        assert!((ParticleType::Up.charge() - 2.0 / 3.0).abs() < 1e-10);
+        assert!((ParticleType::Down.charge() - (-1.0 / 3.0)).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_particle_type_label() {
+        assert_eq!(ParticleType::Electron.label(), "e-");
+        assert_eq!(ParticleType::Positron.label(), "e+");
+        assert_eq!(ParticleType::Proton.label(), "p+");
+        assert_eq!(ParticleType::Neutron.label(), "n0");
+        assert_eq!(ParticleType::Photon.label(), "gamma");
+    }
+
+    #[test]
+    fn test_particle_type_render_color() {
+        let color = ParticleType::Electron.render_color();
+        assert_eq!(color.len(), 4);
+        // All color components should be in [0, 1]
+        for &c in &color {
+            assert!(c >= 0.0 && c <= 1.0);
+        }
+    }
+
+    #[test]
+    fn test_particle_type_render_size() {
+        // Larger particles should have larger render size
+        assert!(ParticleType::Proton.render_size() > ParticleType::Electron.render_size());
+        assert!(ParticleType::Electron.render_size() > ParticleType::Neutrino.render_size());
+    }
+
+    // --- Particle tests ---
+
+    #[test]
+    fn test_particle_energy_at_rest() {
+        let p = Particle {
+            id: 1,
+            particle_type: ParticleType::Electron,
+            position: [0.0; 3],
+            momentum: [0.0; 3],
+            spin: Spin::Up,
+            color: None,
+        };
+        // E = mc^2 when at rest (C=1)
+        let expected = M_ELECTRON * C * C;
+        assert!((p.energy() - expected).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_particle_energy_photon() {
+        let p = Particle {
+            id: 1,
+            particle_type: ParticleType::Photon,
+            position: [0.0; 3],
+            momentum: [1.0, 0.0, 0.0],
+            spin: Spin::Up,
+            color: None,
+        };
+        // E = |p|c for massless particle
+        let expected = 1.0 * C;
+        assert!((p.energy() - expected).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_particle_energy_with_momentum() {
+        let p = Particle {
+            id: 1,
+            particle_type: ParticleType::Electron,
+            position: [0.0; 3],
+            momentum: [3.0, 4.0, 0.0],
+            spin: Spin::Up,
+            color: None,
+        };
+        // E = sqrt(p^2 * c^2 + m^2 * c^4)
+        let p2 = 9.0 + 16.0; // = 25
+        let expected = (p2 * C * C + (M_ELECTRON * C * C).powi(2)).sqrt();
+        assert!((p.energy() - expected).abs() < 1e-10);
+    }
+
+    // --- QuantumField tests ---
+
+    #[test]
+    fn test_quantum_field_new() {
+        let qf = QuantumField::new(1e6);
+        assert_eq!(qf.temperature, 1e6);
+        assert!(qf.particles.is_empty());
+        assert_eq!(qf.total_created, 0);
+        assert_eq!(qf.total_annihilated, 0);
+    }
+
+    #[test]
+    fn test_seed_early_universe() {
+        let mut rng = make_rng();
+        let mut qf = QuantumField::new(1e8);
+        qf.seed_early_universe(&mut rng);
+
+        // Should create 30 up + 20 down + 40 electrons + 5 photons = 95
+        assert_eq!(qf.particles.len(), 95);
+        assert_eq!(qf.total_created, 95);
+
+        // Count by type
+        let ups = qf.particles.iter().filter(|p| p.particle_type == ParticleType::Up).count();
+        let downs = qf.particles.iter().filter(|p| p.particle_type == ParticleType::Down).count();
+        let electrons = qf.particles.iter().filter(|p| p.particle_type == ParticleType::Electron).count();
+        let photons = qf.particles.iter().filter(|p| p.particle_type == ParticleType::Photon).count();
+
+        assert_eq!(ups, 30);
+        assert_eq!(downs, 20);
+        assert_eq!(electrons, 40);
+        assert_eq!(photons, 5);
+    }
+
+    #[test]
+    fn test_pair_production_below_threshold() {
+        let mut rng = make_rng();
+        let mut qf = QuantumField::new(1e6);
+        // Energy below 2 * m_e * c^2 should fail
+        let result = qf.pair_production(0.5, &mut rng);
+        assert!(!result);
+        assert!(qf.particles.is_empty());
+    }
+
+    #[test]
+    fn test_pair_production_above_threshold() {
+        let mut rng = make_rng();
+        let mut qf = QuantumField::new(1e6);
+        // Energy above threshold should succeed
+        let energy = 2.0 * M_ELECTRON * C * C + 10.0;
+        let result = qf.pair_production(energy, &mut rng);
+        assert!(result);
+        assert_eq!(qf.particles.len(), 2);
+        assert_eq!(qf.total_created, 2);
+
+        // Momenta should be opposite
+        let p1 = &qf.particles[0];
+        let p2 = &qf.particles[1];
+        for i in 0..3 {
+            assert!((p1.momentum[i] + p2.momentum[i]).abs() < 1e-10);
+        }
+    }
+
+    #[test]
+    fn test_quark_confinement_above_threshold() {
+        let mut rng = make_rng();
+        let mut qf = QuantumField::new(T_QUARK_HADRON * 2.0);
+        qf.seed_early_universe(&mut rng);
+        // Temperature too high: no confinement
+        let hadrons = qf.quark_confinement(&mut rng);
+        assert!(hadrons.is_empty());
+    }
+
+    #[test]
+    fn test_quark_confinement_below_threshold() {
+        let mut rng = make_rng();
+        let mut qf = QuantumField::new(T_QUARK_HADRON * 0.5);
+        qf.seed_early_universe(&mut rng);
+
+        let initial_ups = qf.particles.iter().filter(|p| p.particle_type == ParticleType::Up).count();
+        let initial_downs = qf.particles.iter().filter(|p| p.particle_type == ParticleType::Down).count();
+
+        let hadrons = qf.quark_confinement(&mut rng);
+        assert!(!hadrons.is_empty());
+
+        // Should have formed protons and/or neutrons
+        let protons = hadrons.iter().filter(|p| p.particle_type == ParticleType::Proton).count();
+        let neutrons = hadrons.iter().filter(|p| p.particle_type == ParticleType::Neutron).count();
+        assert!(protons > 0 || neutrons > 0);
+
+        // No remaining free quarks (with 30 up and 20 down, expect 10p + 0n with 10 up left over,
+        // then some neutrons; exact count depends on ordering)
+        let remaining_ups = qf.particles.iter().filter(|p| p.particle_type == ParticleType::Up).count();
+        let remaining_downs = qf.particles.iter().filter(|p| p.particle_type == ParticleType::Down).count();
+        // All quarks should be consumed: 30 up + 20 down -> at most 10 protons (20up + 10down),
+        // then remaining 10 up can't form anything since no downs left
+        assert!(remaining_ups + remaining_downs < initial_ups + initial_downs);
+    }
+
+    #[test]
+    fn test_evolve_moves_particles() {
+        let mut qf = QuantumField::new(1e6);
+        qf.particles.push(Particle {
+            id: 1,
+            particle_type: ParticleType::Electron,
+            position: [0.0, 0.0, 0.0],
+            momentum: [1.0, 0.0, 0.0],
+            spin: Spin::Up,
+            color: None,
+        });
+
+        qf.evolve(1.0);
+        // position should have changed: p/m * dt = 1.0/1.0 * 1.0 = 1.0
+        assert!((qf.particles[0].position[0] - 1.0).abs() < 1e-10);
+        assert_eq!(qf.particles[0].position[1], 0.0);
+        assert_eq!(qf.particles[0].position[2], 0.0);
+    }
+
+    #[test]
+    fn test_evolve_photon_moves_at_c() {
+        let mut qf = QuantumField::new(1e6);
+        qf.particles.push(Particle {
+            id: 1,
+            particle_type: ParticleType::Photon,
+            position: [0.0, 0.0, 0.0],
+            momentum: [1.0, 0.0, 0.0],
+            spin: Spin::Up,
+            color: None,
+        });
+
+        qf.evolve(1.0);
+        // Massless particle: position += (p/|p|) * c * dt = 1.0 * 1.0 * 1.0 = 1.0
+        assert!((qf.particles[0].position[0] - C).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_particle_counts() {
+        let mut qf = QuantumField::new(1e6);
+        qf.particles.push(Particle {
+            id: 1,
+            particle_type: ParticleType::Electron,
+            position: [0.0; 3],
+            momentum: [0.0; 3],
+            spin: Spin::Up,
+            color: None,
+        });
+        qf.particles.push(Particle {
+            id: 2,
+            particle_type: ParticleType::Electron,
+            position: [0.0; 3],
+            momentum: [0.0; 3],
+            spin: Spin::Down,
+            color: None,
+        });
+        qf.particles.push(Particle {
+            id: 3,
+            particle_type: ParticleType::Proton,
+            position: [0.0; 3],
+            momentum: [0.0; 3],
+            spin: Spin::Up,
+            color: None,
+        });
+
+        let counts = qf.particle_counts();
+        let electron_count = counts.iter().find(|(pt, _)| *pt == ParticleType::Electron).map(|(_, c)| *c);
+        let proton_count = counts.iter().find(|(pt, _)| *pt == ParticleType::Proton).map(|(_, c)| *c);
+        assert_eq!(electron_count, Some(2));
+        assert_eq!(proton_count, Some(1));
+    }
+
+    #[test]
+    fn test_proton_neutron_count() {
+        let mut qf = QuantumField::new(1e6);
+        qf.particles.push(Particle {
+            id: 1, particle_type: ParticleType::Proton,
+            position: [0.0; 3], momentum: [0.0; 3],
+            spin: Spin::Up, color: None,
+        });
+        qf.particles.push(Particle {
+            id: 2, particle_type: ParticleType::Neutron,
+            position: [0.0; 3], momentum: [0.0; 3],
+            spin: Spin::Up, color: None,
+        });
+        qf.particles.push(Particle {
+            id: 3, particle_type: ParticleType::Neutron,
+            position: [0.0; 3], momentum: [0.0; 3],
+            spin: Spin::Down, color: None,
+        });
+
+        assert_eq!(qf.proton_count(), 1);
+        assert_eq!(qf.neutron_count(), 2);
+    }
+
+    #[test]
+    fn test_remove_hadrons() {
+        let mut qf = QuantumField::new(1e6);
+        qf.particles.push(Particle {
+            id: 1, particle_type: ParticleType::Proton,
+            position: [0.0; 3], momentum: [0.0; 3],
+            spin: Spin::Up, color: None,
+        });
+        qf.particles.push(Particle {
+            id: 2, particle_type: ParticleType::Electron,
+            position: [0.0; 3], momentum: [0.0; 3],
+            spin: Spin::Up, color: None,
+        });
+        qf.particles.push(Particle {
+            id: 3, particle_type: ParticleType::Neutron,
+            position: [0.0; 3], momentum: [0.0; 3],
+            spin: Spin::Down, color: None,
+        });
+
+        qf.remove_hadrons();
+        assert_eq!(qf.particles.len(), 1);
+        assert_eq!(qf.particles[0].particle_type, ParticleType::Electron);
+    }
+
+    #[test]
+    fn test_remove_for_recombination() {
+        let mut qf = QuantumField::new(1e6);
+        for i in 0..3 {
+            qf.particles.push(Particle {
+                id: i, particle_type: ParticleType::Proton,
+                position: [0.0; 3], momentum: [0.0; 3],
+                spin: Spin::Up, color: None,
+            });
+        }
+        for i in 3..6 {
+            qf.particles.push(Particle {
+                id: i, particle_type: ParticleType::Electron,
+                position: [0.0; 3], momentum: [0.0; 3],
+                spin: Spin::Up, color: None,
+            });
+        }
+        qf.particles.push(Particle {
+            id: 10, particle_type: ParticleType::Photon,
+            position: [0.0; 3], momentum: [1.0, 0.0, 0.0],
+            spin: Spin::Up, color: None,
+        });
+
+        qf.remove_for_recombination(2, 2);
+        // Should have 1 proton + 1 electron + 1 photon = 3
+        assert_eq!(qf.particles.len(), 3);
+        assert_eq!(qf.proton_count(), 1);
+    }
+}
