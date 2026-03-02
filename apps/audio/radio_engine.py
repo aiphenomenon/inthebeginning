@@ -401,10 +401,15 @@ class InstrumentFactory:
         # Frequency multiplier (octave range: 0.25 to 4.0)
         freq_mult = rng.choice([0.25, 0.5, 0.5, 1.0, 1.0, 1.0, 2.0, 2.0, 4.0])
 
-        # Vibrato
-        vib_rate = rng.uniform(3.0, 7.0)
-        vib_depth = rng.uniform(0.001, 0.008)
-        vib_delay = rng.uniform(0.1, 0.5)
+        # Vibrato -- kept subtle for smooth fluid sound; only 15% of
+        # instruments get noticeable vibrato, the rest are nearly straight
+        if rng.random() < 0.15:
+            vib_rate = rng.uniform(4.0, 6.0)
+            vib_depth = rng.uniform(0.0008, 0.002)
+        else:
+            vib_rate = rng.uniform(4.0, 5.5)
+            vib_depth = rng.uniform(0.0001, 0.0005)
+        vib_delay = rng.uniform(0.3, 1.0)
 
         # Noise
         noise_level = rng.uniform(0.0, 0.06)
@@ -419,6 +424,15 @@ class InstrumentFactory:
         # Filter (lowpass cutoff multiplier relative to fundamental)
         filter_mult = rng.uniform(4.0, 20.0)
         filter_q = rng.uniform(0.5, 2.0)
+
+        # Assign a musical role for kit grouping
+        role_map = {
+            'additive': 'melody', 'fm': 'melody', 'bowed': 'melody',
+            'blown': 'melody', 'plucked': 'harmony', 'pad': 'harmony',
+            'bass': 'bass', 'struck': 'rhythm', 'bell': 'harmony',
+            'noise_perc': 'rhythm',
+        }
+        role = role_map.get(technique, 'melody')
 
         instr = {
             'name': name,
@@ -436,6 +450,7 @@ class InstrumentFactory:
             'distortion': distortion,
             'filter_mult': filter_mult,
             'filter_q': filter_q,
+            'role': role,
         }
         self._instrument_registry[name] = instr
         return instr
@@ -553,6 +568,88 @@ class InstrumentFactory:
 
 
 # ---------------------------------------------------------------------------
+# INSTRUMENT KIT -- Groups instruments into scale-coherent ensembles
+# ---------------------------------------------------------------------------
+class InstrumentKit:
+    """A kit is a set of instruments pre-assigned to roles (melody, harmony,
+    bass, rhythm) that share a common scale and tonal centre.
+
+    Kits are designed to sound good together -- like selecting a band whose
+    instruments are already tuned to the same key.
+    """
+
+    def __init__(self, name, instruments, scale, root, rng_seed=0):
+        self.name = name
+        self.scale = scale   # list of semitone intervals
+        self.root = root     # MIDI root note
+
+        rng = random.Random(rng_seed)
+
+        # Sort instruments into roles
+        self.melody = [i for i in instruments if i.get('role') == 'melody']
+        self.harmony = [i for i in instruments if i.get('role') == 'harmony']
+        self.bass = [i for i in instruments if i.get('role') == 'bass']
+        self.rhythm = [i for i in instruments if i.get('role') == 'rhythm']
+
+        # If any role is empty, redistribute
+        all_instr = list(instruments)
+        rng.shuffle(all_instr)
+        if not self.melody:
+            self.melody = all_instr[:2]
+        if not self.harmony:
+            self.harmony = all_instr[1:3]
+        if not self.bass:
+            self.bass = all_instr[2:4]
+        if not self.rhythm:
+            self.rhythm = all_instr[3:5]
+
+    def scale_notes(self, octave_range=2):
+        """Return all MIDI notes in this kit's scale across octave_range."""
+        notes = []
+        for oct in range(-1, octave_range + 1):
+            for interval in self.scale:
+                n = self.root + oct * 12 + int(round(interval))
+                if 24 <= n <= 108:
+                    notes.append(n)
+        return sorted(set(notes))
+
+    def snap_to_scale(self, midi_note):
+        """Snap a MIDI note to the nearest note in this kit's scale."""
+        pc = (midi_note - self.root) % 12
+        best = 0
+        best_dist = 12
+        for s in self.scale:
+            s_int = int(round(s)) % 12
+            dist = min(abs(pc - s_int), 12 - abs(pc - s_int))
+            if dist < best_dist:
+                best_dist = dist
+                best = s_int
+        octave = (midi_note - self.root) // 12
+        return self.root + octave * 12 + best
+
+    @staticmethod
+    def build_kits(instruments, scale, root, n_kits, rng):
+        """Build n_kits from a pool of instruments, each following the scale."""
+        kits = []
+        pool = list(instruments)
+        rng.shuffle(pool)
+        per_kit = max(4, len(pool) // max(n_kits, 1))
+        for k in range(n_kits):
+            start = k * per_kit
+            end = min(start + per_kit, len(pool))
+            if start >= len(pool):
+                start = 0
+                end = min(per_kit, len(pool))
+            kit_instrs = pool[start:end]
+            kit = InstrumentKit(
+                f"kit_{k}", kit_instrs, scale, root,
+                rng_seed=rng.randint(0, 2**31)
+            )
+            kits.append(kit)
+        return kits
+
+
+# ---------------------------------------------------------------------------
 # MIDI LIBRARY -- Loads and samples from public domain classical MIDI files
 # ---------------------------------------------------------------------------
 class MidiLibrary:
@@ -613,9 +710,10 @@ class MidiLibrary:
                         notes.append((msg.note, dur, vel))
         return notes
 
-    def sample_phrase(self, rng, length=8, root=60, scale=None):
-        """Sample a phrase from a random MIDI file and transpose to root.
+    def sample_phrase(self, rng, length=32, root=60, scale=None):
+        """Sample a longer phrase from a random MIDI file and transpose to root.
 
+        Takes up to ``length`` notes (default 32 for richer musical phrases).
         Returns list of (midi_note, duration_beats, velocity) tuples.
         The notes are projected onto the given scale if provided.
         """
@@ -625,7 +723,7 @@ class MidiLibrary:
         seq = rng.choice(self._note_sequences)
         notes = seq['notes']
 
-        # Pick a random starting point
+        # Pick a random starting point -- take longer runs from the MIDI
         if len(notes) <= length:
             phrase_notes = notes
         else:
@@ -976,9 +1074,11 @@ class MoodSegment:
 
         epoch_music = EPOCH_MUSIC.get(epoch, EPOCH_MUSIC['Present'])
 
+        # Mood duration: random 42-188 seconds (not simulation-driven)
+        self.duration = self.rng.uniform(42.0, 188.0)
+
         # Time signature (from Wikipedia-documented set)
         available_ts = epoch_music['time_sigs']
-        # Blend in some EDM time sigs for variety
         if self.rng.random() < 0.3:
             available_ts = available_ts + EDM_TIME_SIGS
         self.time_sig = self.rng.choice(available_ts)
@@ -987,11 +1087,9 @@ class MoodSegment:
 
         # Tempo (BPM) from simulation conditions
         tempo_lo, tempo_hi = epoch_music['tempo']
-        # Use simulation density/temperature to modulate within range
         temp = sim_state.get('temperature', 1e6)
         temp_factor = clamp(math.log10(max(1, temp)) / 15.0, 0.0, 1.0)
         self.tempo = tempo_lo + (tempo_hi - tempo_lo) * temp_factor
-        # Add EDM influence: occasionally push tempo up
         if self.rng.random() < 0.2:
             self.tempo = min(self.tempo * 1.2, 160)
 
@@ -1001,33 +1099,35 @@ class MoodSegment:
 
         # Root note
         root = EPOCH_ROOTS.get(epoch, 60)
-        # Sample from different space regions: shift root
         particles = sim_state.get('particles', 0)
         region_shift = (particles * 7) % 12
-        self.root = root + region_shift - 6  # +/- 6 semitones
+        self.root = root + region_shift - 6
 
         # Chord progression
         prog_name = self.rng.choice(list(PROGRESSIONS.keys()))
         self.progression = PROGRESSIONS[prog_name]
         self.progression_name = prog_name
 
-        # Number of concurrent instruments: 1-16 based on sine of simulation
+        # Number of concurrent instruments: 6-16 based on sine
         density = epoch_music['density']
         atoms = sim_state.get('atoms', 0)
         sine_val = math.sin(segment_idx * 0.7 + atoms * 0.001)
         instrument_factor = (sine_val + 1) / 2  # 0..1
         self.n_instruments = clamp(
-            int(1 + instrument_factor * density * 15), 1, 16
+            int(6 + instrument_factor * density * 10), 6, 16
         )
+
+        # Number of instrument kits: 1-3
+        self.n_kits = self.rng.choice([1, 1, 2, 2, 2, 3])
 
         # Scale family for mashup blending
         self.family = epoch_music['family']
 
         # Whether to apply dampening/smoothing
-        self.dampen = self.rng.random() < 0.4  # 40% chance
+        self.dampen = self.rng.random() < 0.4
 
         # EDM beat style flag
-        self.edm_beats = self.rng.random() < 0.35  # 35% chance
+        self.edm_beats = self.rng.random() < 0.35
 
 
 # ---------------------------------------------------------------------------
@@ -1036,12 +1136,13 @@ class MoodSegment:
 class RadioEngine:
     """In The Beginning Radio -- Cosmic simulation music station.
 
-    Generates continuously evolving music with 42-second mood shifts,
-    500+ instruments, classical/EDM fusion, MIDI sampling, and TTS.
+    Generates continuously evolving music with variable-length mood
+    segments (42-188s), morph transitions, 500+ instruments grouped
+    into scale-coherent kits, classical/EDM fusion, MIDI sampling,
+    and TTS injection during mood transitions.
     """
 
-    SEGMENT_DURATION = 42.0  # seconds per mood shift
-    CROSSFADE_DURATION = 3.0  # seconds of crossfade between segments
+    MORPH_DURATION = 6.0     # seconds of morph-transition between moods
     FADE_IN_DURATION = 5.0   # seconds of fade-in at start
     FADE_OUT_DURATION = 8.0  # seconds of fade-out at end
 
@@ -1065,67 +1166,98 @@ class RadioEngine:
         # Smoothing filter
         self.smoother = SmoothingFilter()
 
-        # Track which segment gets TTS injection
-        total_segments = int(total_duration / self.SEGMENT_DURATION) + 1
-        if total_segments >= 3:
-            # TTS happens once per 10 minutes, between two mood shifts
-            self.tts_segment = self.rng.randint(
-                max(1, total_segments // 4),
-                min(total_segments - 2, total_segments * 3 // 4)
-            )
-        else:
-            self.tts_segment = -1  # No TTS for very short pieces
+        # Pre-compute segment layout: variable-length moods (42-188s)
+        self.segments = self._plan_segments()
+
+        # TTS: once per 10-minute window, placed during a morph transition
+        self.tts_transitions = self._plan_tts()
+
+
+    def _plan_segments(self):
+        """Pre-compute segment layout with variable durations (42-188s)."""
+        segments = []
+        t = 0.0
+        idx = 0
+        while t < self.total_duration:
+            seg_rng = random.Random(self.seed + idx * 31337)
+            duration = seg_rng.uniform(42.0, 188.0)
+            # Don't overshoot
+            if t + duration > self.total_duration:
+                duration = self.total_duration - t
+                if duration < 1.0:
+                    break
+            segments.append({'start': t, 'duration': duration, 'idx': idx})
+            t += duration
+            idx += 1
+        # Ensure at least one segment for short durations
+        if not segments and self.total_duration > 0:
+            segments.append({'start': 0.0, 'duration': self.total_duration, 'idx': 0})
+        return segments
+
+    def _plan_tts(self):
+        """Plan TTS injection: once per 10-minute window, during a morph."""
+        transitions = set()
+        window = 600.0  # 10 minutes
+        n_windows = max(1, int(self.total_duration / window))
+        for w in range(n_windows):
+            window_start = w * window
+            window_end = min((w + 1) * window, self.total_duration)
+            # Find segment transitions within this window
+            candidates = []
+            for i, seg in enumerate(self.segments[:-1]):
+                trans_time = seg['start'] + seg['duration']
+                if window_start < trans_time < window_end:
+                    candidates.append(i)
+            if candidates:
+                pick = self.rng.choice(candidates)
+                transitions.add(pick)
+        return transitions
 
     def render(self, sim_states=None):
-        """Render the full audio piece.
+        """Render the full audio piece with morph transitions.
 
-        Args:
-            sim_states: Optional list of dicts with simulation state per segment.
-                        If None, generates synthetic simulation data.
-
-        Returns:
-            (left_channel, right_channel) as lists of float samples.
+        Returns (left_channel, right_channel) as lists of float samples.
         """
         total_samples = int(self.total_duration * SAMPLE_RATE)
         left = [0.0] * total_samples
         right = [0.0] * total_samples
 
-        # How many segments?
-        n_segments = int(math.ceil(self.total_duration / self.SEGMENT_DURATION))
-        segment_samples = int(self.SEGMENT_DURATION * SAMPLE_RATE)
-        crossfade_samples = int(self.CROSSFADE_DURATION * SAMPLE_RATE)
+        n_segments = len(self.segments)
+        morph_samples = int(self.MORPH_DURATION * SAMPLE_RATE)
 
-        # Generate simulation states if not provided
         if sim_states is None:
             sim_states = self._generate_sim_states(n_segments)
 
-        prev_segment_audio = None
-
         for seg_idx in range(n_segments):
-            seg_start_sample = seg_idx * segment_samples
+            seg_info = self.segments[seg_idx]
+            seg_start_sample = int(seg_info['start'] * SAMPLE_RATE)
+            seg_duration = seg_info['duration']
+            segment_samples = int(seg_duration * SAMPLE_RATE)
             if seg_start_sample >= total_samples:
                 break
 
-            # Determine epoch from time position
-            time_pos = seg_idx * self.SEGMENT_DURATION
+            # Determine epoch
+            time_pos = seg_info['start']
             epoch_idx = int(time_pos / self.total_duration * 12.999)
             epoch_idx = clamp(epoch_idx, 0, 12)
             epoch = EPOCH_ORDER[epoch_idx]
-
             sim_state = sim_states[min(seg_idx, len(sim_states) - 1)]
 
-            # Create mood segment
+            # Create mood segment (now with variable duration)
             mood = MoodSegment(
                 seg_idx, epoch, epoch_idx, sim_state,
                 self.seed + seg_idx * 31337
             )
 
-            # Select instruments for this segment
+            # Build instrument kits for this mood
             selected = self._select_instruments(mood)
+            kits = InstrumentKit.build_kits(
+                selected, mood.scale, mood.root, mood.n_kits, mood.rng
+            )
 
             # Render the segment
             seg_left, seg_right = self._render_segment(
-                mood, selected, segment_samples, sim_state
+                mood, kits, segment_samples, sim_state
             )
 
             # Apply smoothing/dampening if mood says so
@@ -1135,30 +1267,30 @@ class RadioEngine:
                 seg_left = self.smoother.apply_gentle_compression(seg_left)
                 seg_right = self.smoother.apply_gentle_compression(seg_right)
 
-            # Inject TTS if this is the designated segment
-            if seg_idx == self.tts_segment:
-                seg_left, seg_right = self._inject_tts(
-                    seg_left, seg_right, mood, epoch_idx
-                )
-
-            # Apply crossfade with previous segment
+            # Apply morph transition envelope
             seg_end = min(seg_start_sample + len(seg_left), total_samples)
             seg_len = seg_end - seg_start_sample
 
             for i in range(seg_len):
                 fade = 1.0
-                # Crossfade-in from previous segment
-                if i < crossfade_samples and seg_idx > 0:
-                    fade = i / crossfade_samples
-                # Crossfade-out to next segment
+                # Morph-in from previous mood (smooth sine curve, not linear)
+                if i < morph_samples and seg_idx > 0:
+                    fade = 0.5 - 0.5 * math.cos(math.pi * i / morph_samples)
+                # Morph-out to next mood
                 remaining = seg_len - i
-                if remaining < crossfade_samples and seg_idx < n_segments - 1:
-                    fade *= remaining / crossfade_samples
+                if remaining < morph_samples and seg_idx < n_segments - 1:
+                    fade *= 0.5 + 0.5 * math.cos(math.pi * (1 - remaining / morph_samples))
 
                 left[seg_start_sample + i] += seg_left[i] * fade
                 right[seg_start_sample + i] += seg_right[i] * fade
 
-            # Rotate instruments every 10 minutes (approx 14 segments)
+            # Inject TTS during morph transition if this is a designated one
+            if seg_idx in self.tts_transitions:
+                trans_start = seg_start_sample + seg_len - morph_samples
+                self._inject_tts_at(left, right, trans_start, total_samples,
+                                    mood, epoch_idx)
+
+            # Rotate instruments periodically
             if seg_idx > 0 and seg_idx % 14 == 0:
                 self._generation += 1
                 self.instruments = self.factory.rotate_instruments(
@@ -1190,43 +1322,37 @@ class RadioEngine:
     def render_streaming(self, wav_file, sim_states=None):
         """Render audio segment-by-segment directly to an open WAV file.
 
-        This avoids holding the full piece in memory, making it suitable
-        for long-form renders (60+ minutes). Each 42-second segment is
-        rendered, crossfaded, and written immediately.
-
-        Args:
-            wav_file: An open wave.Wave_write object (stereo, 16-bit, 44100).
-            sim_states: Optional list of dicts with simulation state per segment.
+        Uses morph transitions between variable-length mood segments.
+        Each segment is rendered, morphed, and flushed to disk.
         """
         total_samples = int(self.total_duration * SAMPLE_RATE)
-        n_segments = int(math.ceil(self.total_duration / self.SEGMENT_DURATION))
-        segment_samples = int(self.SEGMENT_DURATION * SAMPLE_RATE)
-        crossfade_samples = int(self.CROSSFADE_DURATION * SAMPLE_RATE)
+        n_segments = len(self.segments)
+        morph_samples = int(self.MORPH_DURATION * SAMPLE_RATE)
         fade_in_samples = int(self.FADE_IN_DURATION * SAMPLE_RATE)
         fade_out_samples = int(self.FADE_OUT_DURATION * SAMPLE_RATE)
 
         if sim_states is None:
             sim_states = self._generate_sim_states(n_segments)
 
-        # We keep a rolling output buffer that accumulates overlapping segments.
-        # When a segment's non-overlapping region is complete, we flush it.
-        # Buffer is 2 segments wide to handle crossfade overlap.
-        buf_len = segment_samples + crossfade_samples
+        # Rolling buffer for overlap (morph region)
+        max_seg_samples = int(190 * SAMPLE_RATE)  # max segment length + margin
+        buf_len = max_seg_samples + morph_samples * 2
         buf_left = [0.0] * buf_len
         buf_right = [0.0] * buf_len
-        buf_global_start = 0   # global sample index of buf[0]
+        buf_global_start = 0
         samples_written = 0
 
         _tanh = math.tanh
-        _pack = struct.pack
 
         for seg_idx in range(n_segments):
-            seg_global_start = seg_idx * segment_samples
+            seg_info = self.segments[seg_idx]
+            seg_global_start = int(seg_info['start'] * SAMPLE_RATE)
+            seg_duration = seg_info['duration']
+            segment_samples = int(seg_duration * SAMPLE_RATE)
             if seg_global_start >= total_samples:
                 break
 
-            # Determine epoch
-            time_pos = seg_idx * self.SEGMENT_DURATION
+            time_pos = seg_info['start']
             epoch_idx = int(time_pos / self.total_duration * 12.999)
             epoch_idx = clamp(epoch_idx, 0, 12)
             epoch = EPOCH_ORDER[epoch_idx]
@@ -1237,8 +1363,11 @@ class RadioEngine:
                 self.seed + seg_idx * 31337
             )
             selected = self._select_instruments(mood)
+            kits = InstrumentKit.build_kits(
+                selected, mood.scale, mood.root, mood.n_kits, mood.rng
+            )
             seg_left, seg_right = self._render_segment(
-                mood, selected, segment_samples, sim_state
+                mood, kits, segment_samples, sim_state
             )
 
             if mood.dampen:
@@ -1247,31 +1376,24 @@ class RadioEngine:
                 seg_left = self.smoother.apply_gentle_compression(seg_left)
                 seg_right = self.smoother.apply_gentle_compression(seg_right)
 
-            if seg_idx == self.tts_segment:
-                seg_left, seg_right = self._inject_tts(
-                    seg_left, seg_right, mood, epoch_idx
-                )
-
-            # Add segment into the rolling buffer with crossfade
+            # Add segment with morph envelope into rolling buffer
             seg_end_global = min(seg_global_start + len(seg_left), total_samples)
             seg_len = seg_end_global - seg_global_start
 
             for i in range(seg_len):
                 global_i = seg_global_start + i
                 buf_i = global_i - buf_global_start
-                # Grow buffer if needed
                 while buf_i >= len(buf_left):
                     buf_left.append(0.0)
                     buf_right.append(0.0)
 
                 fade = 1.0
-                if i < crossfade_samples and seg_idx > 0:
-                    fade = i / crossfade_samples
+                if i < morph_samples and seg_idx > 0:
+                    fade = 0.5 - 0.5 * math.cos(math.pi * i / morph_samples)
                 remaining = seg_len - i
-                if remaining < crossfade_samples and seg_idx < n_segments - 1:
-                    fade *= remaining / crossfade_samples
+                if remaining < morph_samples and seg_idx < n_segments - 1:
+                    fade *= 0.5 + 0.5 * math.cos(math.pi * (1 - remaining / morph_samples))
 
-                # Master fade-in / fade-out
                 if global_i < fade_in_samples:
                     fade *= global_i / fade_in_samples
                 elif global_i >= total_samples - fade_out_samples:
@@ -1280,13 +1402,18 @@ class RadioEngine:
                 buf_left[buf_i] += seg_left[i] * fade
                 buf_right[buf_i] += seg_right[i] * fade
 
-            # Flush the non-overlapping portion to WAV
-            # The next segment starts at seg_global_start + segment_samples,
-            # and its crossfade reaches back crossfade_samples. So we can
-            # safely flush up to (next_seg_start - crossfade_samples).
+            # Inject TTS during morph if designated
+            if seg_idx in self.tts_transitions:
+                trans_start = seg_global_start + seg_len - morph_samples
+                self._inject_tts_into_buf(
+                    buf_left, buf_right, buf_global_start,
+                    trans_start, total_samples, mood, epoch_idx
+                )
+
+            # Flush completed audio
             if seg_idx < n_segments - 1:
-                next_seg_start = (seg_idx + 1) * segment_samples
-                flush_up_to = next_seg_start - crossfade_samples
+                next_seg_start = int(self.segments[seg_idx + 1]['start'] * SAMPLE_RATE)
+                flush_up_to = next_seg_start - morph_samples
             else:
                 flush_up_to = total_samples
 
@@ -1298,7 +1425,6 @@ class RadioEngine:
                     buf_j = (samples_written + j) - buf_global_start
                     lv = buf_left[buf_j] if 0 <= buf_j < len(buf_left) else 0.0
                     rv = buf_right[buf_j] if 0 <= buf_j < len(buf_right) else 0.0
-                    # Soft limit + stereo smooth
                     lv, rv = lv * 0.9 + rv * 0.1, rv * 0.9 + lv * 0.1
                     li = int(_tanh(lv) * 32767)
                     ri = int(_tanh(rv) * 32767)
@@ -1308,9 +1434,8 @@ class RadioEngine:
                 wav_file.writeframes(bytes(data))
                 samples_written = flush_end
 
-                # Shift buffer: keep only the overlap region
                 keep_from = flush_end - buf_global_start
-                if keep_from > 0 and keep_from < len(buf_left):
+                if 0 < keep_from < len(buf_left):
                     buf_left = buf_left[keep_from:] + [0.0] * keep_from
                     buf_right = buf_right[keep_from:] + [0.0] * keep_from
                     buf_global_start = flush_end
@@ -1319,7 +1444,6 @@ class RadioEngine:
                     buf_right = [0.0] * buf_len
                     buf_global_start = flush_end
 
-            # Rotate instruments periodically
             if seg_idx > 0 and seg_idx % 14 == 0:
                 self._generation += 1
                 self.instruments = self.factory.rotate_instruments(
@@ -1327,13 +1451,13 @@ class RadioEngine:
                 )
 
             if seg_idx % 3 == 0:
-                elapsed_min = seg_idx * self.SEGMENT_DURATION / 60
+                elapsed_min = seg_info['start'] / 60
                 print(f"  [Streaming] Segment {seg_idx+1}/{n_segments} "
-                      f"({elapsed_min:.1f}min) epoch={epoch} "
+                      f"({elapsed_min:.1f}min, {seg_duration:.0f}s) epoch={epoch} "
                       f"written={samples_written/SAMPLE_RATE:.0f}s",
                       flush=True)
 
-        # Flush any remaining samples
+        # Flush remaining
         remaining_count = total_samples - samples_written
         if remaining_count > 0:
             data = bytearray(remaining_count * 4)
@@ -1371,17 +1495,16 @@ class RadioEngine:
         """Select instruments for this mood segment."""
         n = mood.n_instruments
         rng = mood.rng
-
-        # Pick from the full instrument set
         selected = rng.sample(self.instruments, min(n, len(self.instruments)))
         return selected
 
-    def _render_segment(self, mood, instruments, n_samples, sim_state):
-        """Render a 42-second mood segment.
+    def _render_segment(self, mood, kits, n_samples, sim_state):
+        """Render a mood segment using instrument kits.
 
         Uses bar-based rendering with the segment's time signature,
-        scale, and tempo. Blends algorithmic composition with MIDI
-        sampling from classical works.
+        scale, and tempo. Instruments are grouped into 1-3 kits that
+        each follow the mood's scale. Uses longer MIDI phrases and
+        standard chord progressions with proper note runs.
         """
         left = [0.0] * n_samples
         right = [0.0] * n_samples
@@ -1389,151 +1512,258 @@ class RadioEngine:
         rng = mood.rng
         tempo = mood.tempo
         beats_per_bar = mood.beats_per_bar
-        scale = mood.scale
         root = mood.root
 
-        # Beat duration in samples
-        beat_dur = 60.0 / tempo  # seconds per beat
+        # Beat and bar timing
+        beat_dur = 60.0 / tempo
         beat_samples = int(beat_dur * SAMPLE_RATE)
         bar_samples = beat_samples * beats_per_bar
-
-        # Number of bars in segment
         n_bars = max(1, n_samples // bar_samples)
 
-        # Get MIDI phrases for this segment
-        midi_phrases = []
-        for _ in range(min(4, len(instruments))):
-            phrase = self.midi_lib.sample_phrase(rng, length=8, root=root, scale=scale)
-            midi_phrases.append(phrase)
+        # Get MIDI phrases -- longer samples (32+ notes) per kit
+        midi_phrases = {}
+        for kit in kits:
+            phrases = []
+            for _ in range(3):
+                phrase = self.midi_lib.sample_phrase(
+                    rng, length=rng.randint(16, 48),
+                    root=kit.root, scale=kit.scale
+                )
+                phrases.append(phrase)
+            midi_phrases[kit.name] = phrases
 
-        # Get a chord pattern from MIDI if available
-        midi_chords = self.midi_lib.sample_chord_pattern(rng, root, scale, length=8)
+        # Standard chord progressions per bar
+        progression = mood.progression
 
-        # Assign roles to instruments
-        n_instr = len(instruments)
-        melody_instrs = instruments[:max(1, n_instr // 4)]
-        harmony_instrs = instruments[n_instr // 4:n_instr // 2]
-        bass_instrs = instruments[n_instr // 2:n_instr * 3 // 4]
-        rhythm_instrs = instruments[n_instr * 3 // 4:]
-
-        # Render bar by bar
         for bar_idx in range(n_bars):
             bar_offset = bar_idx * bar_samples
             if bar_offset >= n_samples:
                 break
 
-            # Progress through chord progression
-            prog_idx = bar_idx % len(mood.progression)
-            chord_root_offset, chord_type = mood.progression[prog_idx]
+            prog_idx = bar_idx % len(progression)
+            chord_root_offset, chord_type = progression[prog_idx]
             chord_root = root + chord_root_offset
             chord_intervals = CHORD_INTERVALS.get(chord_type, [0, 4, 7])
             chord_notes = [chord_root + ci for ci in chord_intervals]
 
-            # --- MELODY ---
-            for instr in melody_instrs:
-                if rng.random() < 0.7:  # 70% chance of playing
-                    # Use MIDI phrase or generate algorithmically
-                    if midi_phrases and rng.random() < 0.5:
-                        phrase = rng.choice(midi_phrases)
-                    else:
-                        phrase = self._generate_melody(rng, root, scale, beats_per_bar)
+            for kit in kits:
+                # Snap chord to kit scale
+                kit_chord = [kit.snap_to_scale(n) for n in chord_notes]
 
-                    note_offset = bar_offset
-                    for midi_note, dur_beats, vel in phrase:
-                        note_dur = dur_beats * beat_dur
-                        # Add humanization flex
-                        note_dur *= rng.uniform(0.92, 1.08)
-                        timing_flex = int(rng.uniform(-0.01, 0.01) * SAMPLE_RATE)
-
-                        note_samples = self.factory.synthesize_note(
-                            instr, mtof(midi_note), note_dur, vel
-                        )
-                        write_offset = note_offset + timing_flex
-                        self._mix_mono(left, right, note_samples, write_offset,
-                                      n_samples, rng.uniform(-0.5, 0.5))
-                        note_offset += int(note_dur * SAMPLE_RATE)
-                        if note_offset >= bar_offset + bar_samples:
-                            break
-
-            # --- HARMONY (chord pads) ---
-            for instr in harmony_instrs:
-                if rng.random() < 0.6:
-                    # Use MIDI chords or progression chords
-                    if midi_chords and rng.random() < 0.4:
-                        bar_chord = midi_chords[bar_idx % len(midi_chords)]
-                    else:
-                        bar_chord = chord_notes
-
-                    # Render sustained chord
-                    chord_dur = beats_per_bar * beat_dur * rng.uniform(0.8, 1.0)
-                    for cn in bar_chord[:4]:
-                        note_samples = self.factory.synthesize_note(
-                            instr, mtof(cn), chord_dur, rng.uniform(0.3, 0.6)
-                        )
-                        pan = rng.uniform(-0.7, 0.7)
-                        self._mix_mono(left, right, note_samples, bar_offset,
-                                      n_samples, pan)
-
-            # --- BASS ---
-            for instr in bass_instrs:
-                if rng.random() < 0.65:
-                    bass_note = chord_root - 12  # One octave down
-                    if rng.random() < 0.5:
-                        bass_note -= 12  # Two octaves down
-                    bass_note = clamp(bass_note, 24, 60)
-
-                    # Bass pattern: on beats
-                    for beat in range(beats_per_bar):
-                        if rng.random() < 0.6:
-                            beat_offset = bar_offset + beat * beat_samples
-                            bass_dur = beat_dur * rng.uniform(0.5, 0.9)
-                            note_samples = self.factory.synthesize_note(
-                                instr, mtof(bass_note), bass_dur, rng.uniform(0.5, 0.8)
+                # --- MELODY from MIDI phrases ---
+                for instr in kit.melody[:2]:
+                    if rng.random() < 0.75:
+                        kit_phrases = midi_phrases.get(kit.name, [])
+                        if kit_phrases and rng.random() < 0.6:
+                            phrase = rng.choice(kit_phrases)
+                            # Take a slice matching the bar length
+                            bar_beats = beats_per_bar
+                            beat_count = 0
+                            bar_phrase = []
+                            for note_data in phrase:
+                                if beat_count >= bar_beats:
+                                    break
+                                bar_phrase.append(note_data)
+                                beat_count += note_data[1]
+                            phrase = bar_phrase if bar_phrase else phrase[:beats_per_bar]
+                        else:
+                            phrase = self._generate_scale_run(
+                                rng, kit.root, kit.scale, beats_per_bar
                             )
-                            self._mix_mono(left, right, note_samples, beat_offset,
-                                          n_samples, 0.0)
-                            # Walk the bass
-                            if rng.random() < 0.3:
-                                bass_note += rng.choice([-2, -1, 1, 2, 5, 7])
-                                bass_note = clamp(bass_note, 24, 60)
 
-            # --- RHYTHM / DRUMS ---
-            if mood.edm_beats or rng.random() < 0.5:
-                self._render_beat_pattern(
-                    left, right, rhythm_instrs, bar_offset, bar_samples,
-                    beats_per_bar, beat_samples, n_samples, rng, mood
-                )
+                        note_offset = bar_offset
+                        for midi_note, dur_beats, vel in phrase:
+                            note_dur = dur_beats * beat_dur
+                            note_dur *= rng.uniform(0.95, 1.05)
+                            timing_flex = int(rng.uniform(-0.005, 0.005) * SAMPLE_RATE)
+                            note_samples = self.factory.synthesize_note(
+                                instr, mtof(kit.snap_to_scale(midi_note)),
+                                note_dur, vel * 0.7
+                            )
+                            write_offset = note_offset + timing_flex
+                            self._mix_mono(left, right, note_samples, write_offset,
+                                          n_samples, rng.uniform(-0.4, 0.4))
+                            note_offset += int(note_dur * SAMPLE_RATE)
+                            if note_offset >= bar_offset + bar_samples:
+                                break
+
+                # --- HARMONY (chord pads, sustained) ---
+                for instr in kit.harmony[:2]:
+                    if rng.random() < 0.65:
+                        chord_dur = beats_per_bar * beat_dur * rng.uniform(0.85, 1.0)
+                        for cn in kit_chord[:4]:
+                            note_samples = self.factory.synthesize_note(
+                                instr, mtof(cn), chord_dur, rng.uniform(0.25, 0.5)
+                            )
+                            self._mix_mono(left, right, note_samples, bar_offset,
+                                          n_samples, rng.uniform(-0.6, 0.6))
+
+                # --- BASS (fuller, richer, longer, melodic) ---
+                for instr in kit.bass[:2]:
+                    if rng.random() < 0.7:
+                        self._render_bass_line(
+                            left, right, instr, kit, chord_root,
+                            bar_offset, bar_samples, beat_dur,
+                            beats_per_bar, n_samples, rng
+                        )
+
+                # --- RHYTHM / DRUMS ---
+                if mood.edm_beats or rng.random() < 0.5:
+                    self._render_beat_pattern(
+                        left, right, kit.rhythm, bar_offset, bar_samples,
+                        beats_per_bar, beat_samples, n_samples, rng, mood
+                    )
 
         return left, right
 
-    def _generate_melody(self, rng, root, scale, n_notes):
-        """Generate a melodic phrase algorithmically."""
+    def _generate_scale_run(self, rng, root, scale, n_notes):
+        """Generate a standard scale run (ascending, descending, or arpeggio)."""
         intervals = [int(round(s)) for s in scale]
+        pattern_type = rng.choice(['ascending', 'descending', 'arpeggio',
+                                    'step_wise', 'pendulum'])
         notes = []
-        current_degree = rng.randint(0, len(intervals) - 1)
-        octave = 0
+        scale_notes = []
+        for oct in range(-1, 3):
+            for s in intervals:
+                n = root + oct * 12 + s
+                if 36 <= n <= 96:
+                    scale_notes.append(n)
+        scale_notes.sort()
 
-        for _ in range(n_notes):
-            # Step motion with occasional leaps
-            step = rng.choice([-2, -1, -1, 0, 1, 1, 2, 3])
-            current_degree += step
-            if current_degree < 0:
-                current_degree += len(intervals)
-                octave -= 1
-            elif current_degree >= len(intervals):
-                current_degree -= len(intervals)
-                octave += 1
-            octave = clamp(octave, -1, 2)
+        if not scale_notes:
+            scale_notes = [root]
 
-            midi_note = root + intervals[current_degree % len(intervals)] + octave * 12
-            midi_note = clamp(midi_note, 36, 96)
-
-            # Duration with variety
-            dur = rng.choice([0.25, 0.25, 0.5, 0.5, 0.5, 1.0, 1.0, 1.5, 2.0])
-            vel = rng.uniform(0.5, 0.9)
-            notes.append((midi_note, dur, vel))
+        if pattern_type == 'ascending':
+            start_idx = rng.randint(0, max(0, len(scale_notes) - n_notes))
+            for i in range(n_notes):
+                idx = min(start_idx + i, len(scale_notes) - 1)
+                dur = rng.choice([0.25, 0.5, 0.5, 0.5])
+                notes.append((scale_notes[idx], dur, rng.uniform(0.5, 0.8)))
+        elif pattern_type == 'descending':
+            start_idx = rng.randint(n_notes, len(scale_notes) - 1) if len(scale_notes) > n_notes else len(scale_notes) - 1
+            for i in range(n_notes):
+                idx = max(0, start_idx - i)
+                dur = rng.choice([0.25, 0.5, 0.5, 0.5])
+                notes.append((scale_notes[idx], dur, rng.uniform(0.5, 0.8)))
+        elif pattern_type == 'arpeggio':
+            # Standard arpeggio: root, 3rd, 5th, octave
+            arp_degrees = [0, 2, 4, 0]  # indices into scale
+            for i in range(n_notes):
+                deg = arp_degrees[i % len(arp_degrees)]
+                oct_shift = (i // len(arp_degrees)) * 12
+                n_idx = min(deg, len(intervals) - 1)
+                note = root + intervals[n_idx] + oct_shift
+                note = clamp(note, 36, 96)
+                dur = rng.choice([0.5, 0.5, 1.0])
+                notes.append((note, dur, rng.uniform(0.5, 0.8)))
+        elif pattern_type == 'pendulum':
+            mid = len(scale_notes) // 2
+            for i in range(n_notes):
+                offset = int(math.sin(i * 0.7) * min(4, len(scale_notes) // 3))
+                idx = clamp(mid + offset, 0, len(scale_notes) - 1)
+                dur = rng.choice([0.25, 0.5, 0.5])
+                notes.append((scale_notes[idx], dur, rng.uniform(0.5, 0.8)))
+        else:  # step_wise
+            idx = rng.randint(0, len(scale_notes) - 1)
+            for _ in range(n_notes):
+                dur = rng.choice([0.25, 0.5, 0.5, 1.0])
+                notes.append((scale_notes[idx], dur, rng.uniform(0.5, 0.8)))
+                step = rng.choice([-1, -1, 1, 1, 2])
+                idx = clamp(idx + step, 0, len(scale_notes) - 1)
 
         return notes
+
+    def _render_bass_line(self, left, right, instr, kit, chord_root,
+                          bar_offset, bar_samples, beat_dur, beats_per_bar,
+                          total_samples, rng):
+        """Render a full, rich, melodic bass line.
+
+        Bass notes are longer and more sustained. The line walks through
+        scale degrees with occasional leaps, forming a melodic contour
+        rather than just blips on the beat.
+        """
+        bass_root = kit.snap_to_scale(chord_root - 24)  # 2 octaves down
+        bass_root = clamp(bass_root, 24, 55)
+
+        # Build bass scale in the low register
+        bass_scale = []
+        for oct in range(-1, 1):
+            for s in kit.scale:
+                n = bass_root + oct * 12 + int(round(s))
+                if 24 <= n <= 60:
+                    bass_scale.append(n)
+        bass_scale = sorted(set(bass_scale))
+        if not bass_scale:
+            bass_scale = [bass_root]
+
+        # Choose bass pattern
+        pattern = rng.choice(['walking', 'sustained', 'melodic', 'octave_pulse'])
+
+        if pattern == 'sustained':
+            # One long sustained bass note per bar
+            dur = beats_per_bar * beat_dur * rng.uniform(0.7, 0.95)
+            note_samples = self.factory.synthesize_note(
+                instr, mtof(bass_root), dur, rng.uniform(0.6, 0.85)
+            )
+            self._mix_mono(left, right, note_samples, bar_offset,
+                          total_samples, 0.0)
+
+        elif pattern == 'walking':
+            # Walking bass: one note per beat, stepping through scale
+            current_idx = 0
+            for s in bass_scale:
+                if s >= bass_root:
+                    current_idx = bass_scale.index(s)
+                    break
+            for beat in range(beats_per_bar):
+                beat_offset = bar_offset + beat * int(beat_dur * SAMPLE_RATE)
+                dur = beat_dur * rng.uniform(0.7, 0.95)
+                note = bass_scale[current_idx % len(bass_scale)]
+                note_samples = self.factory.synthesize_note(
+                    instr, mtof(note), dur, rng.uniform(0.55, 0.8)
+                )
+                self._mix_mono(left, right, note_samples, beat_offset,
+                              total_samples, 0.0)
+                step = rng.choice([-1, 1, 1, 1, 2])
+                current_idx = clamp(current_idx + step, 0, len(bass_scale) - 1)
+
+        elif pattern == 'melodic':
+            # Melodic bass: mix of long and short notes forming a melody
+            t = 0
+            current_idx = 0
+            for s in bass_scale:
+                if s >= bass_root:
+                    current_idx = bass_scale.index(s)
+                    break
+            total_beats = beats_per_bar
+            while t < total_beats:
+                dur_beats = rng.choice([0.5, 1.0, 1.0, 1.5, 2.0])
+                dur_beats = min(dur_beats, total_beats - t)
+                if dur_beats <= 0:
+                    break
+                note = bass_scale[current_idx % len(bass_scale)]
+                beat_offset = bar_offset + int(t * beat_dur * SAMPLE_RATE)
+                note_samples = self.factory.synthesize_note(
+                    instr, mtof(note), dur_beats * beat_dur * 0.9,
+                    rng.uniform(0.55, 0.8)
+                )
+                self._mix_mono(left, right, note_samples, beat_offset,
+                              total_samples, rng.uniform(-0.1, 0.1))
+                step = rng.choice([-2, -1, 1, 1, 2, 3])
+                current_idx = clamp(current_idx + step, 0, len(bass_scale) - 1)
+                t += dur_beats
+
+        else:  # octave_pulse
+            # Root and octave alternating
+            for beat in range(beats_per_bar):
+                beat_offset = bar_offset + beat * int(beat_dur * SAMPLE_RATE)
+                note = bass_root if beat % 2 == 0 else min(bass_root + 12, 60)
+                dur = beat_dur * rng.uniform(0.6, 0.85)
+                note_samples = self.factory.synthesize_note(
+                    instr, mtof(note), dur, rng.uniform(0.55, 0.8)
+                )
+                self._mix_mono(left, right, note_samples, beat_offset,
+                              total_samples, 0.0)
 
     def _render_beat_pattern(self, left, right, instrs, bar_offset,
                             bar_samples, beats_per_bar, beat_samples,
@@ -1542,7 +1772,6 @@ class RadioEngine:
         if not instrs:
             return
 
-        # EDM four-on-the-floor or classical rhythm
         for beat in range(beats_per_bar):
             beat_offset = bar_offset + beat * beat_samples
 
@@ -1564,8 +1793,9 @@ class RadioEngine:
             # Hi-hat subdivisions
             if len(instrs) > 2:
                 hihat = instrs[2 % len(instrs)]
-                for sub in range(2 if not mood.edm_beats else 4):
-                    sub_offset = beat_offset + sub * (beat_samples // (2 if not mood.edm_beats else 4))
+                subdivisions = 4 if mood.edm_beats else 2
+                for sub in range(subdivisions):
+                    sub_offset = beat_offset + sub * (beat_samples // subdivisions)
                     if rng.random() < 0.7:
                         note = self.factory.synthesize_note(hihat, 8000.0, 0.05, 0.3)
                         self._mix_mono(left, right, note, sub_offset,
@@ -1581,70 +1811,100 @@ class RadioEngine:
         for i in range(start, end):
             si = i - offset
             if 0 <= si < n:
-                left[i] += samples[si] * l_gain * 0.3
-                right[i] += samples[si] * r_gain * 0.3
+                left[i] += samples[si] * l_gain * 0.25
+                right[i] += samples[si] * r_gain * 0.25
 
-    def _inject_tts(self, left, right, mood, epoch_idx):
-        """Inject spoken word segment into the audio.
-
-        Places TTS in the middle of the segment, followed by
-        'In The Beginning Radio' station identification.
-        """
+    def _inject_tts_at(self, left, right, trans_start, total_samples,
+                       mood, epoch_idx):
+        """Inject TTS during a morph transition between mood segments."""
         rng = mood.rng
-
-        # Get phrases from source code
         phrases = self.tts.get_source_phrases(rng, count=2)
-        speech_text = '. '.join(phrases)
+        speech_text = '. '.join(phrases) + '. In the beginning radio.'
 
-        # Add station ID
-        full_text = speech_text + '. In the beginning radio.'
-
-        # Generate TTS audio
         voice_seed = rng.randint(0, 100)
         tts_samples, tts_sr = self.tts.generate_speech(
-            full_text, voice_seed, epoch_idx
+            speech_text, voice_seed, epoch_idx
         )
-
         if tts_samples is None:
-            return left, right
+            return
 
-        # Resample TTS to match our sample rate if needed
         if tts_sr != SAMPLE_RATE:
             tts_samples = self._resample(tts_samples, tts_sr, SAMPLE_RATE)
 
-        # Normalize TTS
         peak = max(abs(s) for s in tts_samples) if tts_samples else 1.0
         if peak > 0:
-            tts_samples = [s / peak * 0.7 for s in tts_samples]
+            tts_samples = [s / peak * 0.65 for s in tts_samples]
 
-        # Place TTS in the middle of the segment
-        mid = len(left) // 2
-        tts_start = max(0, mid - len(tts_samples) // 2)
+        # Place TTS centered on the transition point
+        tts_start = max(0, trans_start - len(tts_samples) // 4)
 
-        # Duck the music under the speech
+        # Duck music around speech
         duck_start = max(0, tts_start - int(0.5 * SAMPLE_RATE))
-        duck_end = min(len(left), tts_start + len(tts_samples) + int(0.5 * SAMPLE_RATE))
+        duck_end = min(total_samples, tts_start + len(tts_samples) + int(0.5 * SAMPLE_RATE))
         duck_ramp = int(0.3 * SAMPLE_RATE)
 
         for i in range(duck_start, duck_end):
-            # Compute duck envelope
+            if i < 0 or i >= total_samples:
+                continue
             if i < duck_start + duck_ramp:
                 duck = 1.0 - 0.6 * ((i - duck_start) / duck_ramp)
             elif i > duck_end - duck_ramp:
                 duck = 1.0 - 0.6 * ((duck_end - i) / duck_ramp)
             else:
-                duck = 0.4  # Music at 40% during speech
+                duck = 0.4
             left[i] *= duck
             right[i] *= duck
 
-        # Mix TTS into both channels (centered)
         for i in range(len(tts_samples)):
             si = tts_start + i
-            if 0 <= si < len(left):
+            if 0 <= si < total_samples:
                 left[si] += tts_samples[i] * 0.5
                 right[si] += tts_samples[i] * 0.5
 
-        return left, right
+    def _inject_tts_into_buf(self, buf_left, buf_right, buf_global_start,
+                             trans_start, total_samples, mood, epoch_idx):
+        """Inject TTS into the rolling buffer during streaming render."""
+        rng = mood.rng
+        phrases = self.tts.get_source_phrases(rng, count=2)
+        speech_text = '. '.join(phrases) + '. In the beginning radio.'
+
+        voice_seed = rng.randint(0, 100)
+        tts_samples, tts_sr = self.tts.generate_speech(
+            speech_text, voice_seed, epoch_idx
+        )
+        if tts_samples is None:
+            return
+
+        if tts_sr != SAMPLE_RATE:
+            tts_samples = self._resample(tts_samples, tts_sr, SAMPLE_RATE)
+
+        peak = max(abs(s) for s in tts_samples) if tts_samples else 1.0
+        if peak > 0:
+            tts_samples = [s / peak * 0.65 for s in tts_samples]
+
+        tts_start = max(0, trans_start - len(tts_samples) // 4)
+        duck_start = max(0, tts_start - int(0.5 * SAMPLE_RATE))
+        duck_end = min(total_samples, tts_start + len(tts_samples) + int(0.5 * SAMPLE_RATE))
+        duck_ramp = int(0.3 * SAMPLE_RATE)
+
+        for i in range(duck_start, duck_end):
+            buf_i = i - buf_global_start
+            if 0 <= buf_i < len(buf_left):
+                if i < duck_start + duck_ramp:
+                    duck = 1.0 - 0.6 * ((i - duck_start) / duck_ramp)
+                elif i > duck_end - duck_ramp:
+                    duck = 1.0 - 0.6 * ((duck_end - i) / duck_ramp)
+                else:
+                    duck = 0.4
+                buf_left[buf_i] *= duck
+                buf_right[buf_i] *= duck
+
+        for i in range(len(tts_samples)):
+            global_i = tts_start + i
+            buf_i = global_i - buf_global_start
+            if 0 <= buf_i < len(buf_left):
+                buf_left[buf_i] += tts_samples[i] * 0.5
+                buf_right[buf_i] += tts_samples[i] * 0.5
 
     def _resample(self, samples, from_sr, to_sr):
         """Simple linear interpolation resampling."""
@@ -1708,10 +1968,11 @@ def generate_radio_mp3(output_path, duration=600.0, seed=42):
     print(f"[RadioEngine] {len(engine.instruments)} instruments loaded")
     print(f"[RadioEngine] {len(engine.midi_lib._note_sequences)} MIDI sequences loaded")
     print(f"[RadioEngine] TTS engine: {'Silero' if engine.tts._silero_available else 'espeak-ng'}")
-    print(f"[RadioEngine] TTS segment: {engine.tts_segment}")
+    print(f"[RadioEngine] TTS transitions at segments: {sorted(engine.tts_transitions)}")
 
-    n_segments = int(math.ceil(duration / engine.SEGMENT_DURATION))
-    print(f"[RadioEngine] {n_segments} mood segments x {engine.SEGMENT_DURATION}s each")
+    n_segments = len(engine.segments)
+    avg_dur = sum(s['duration'] for s in engine.segments) / max(n_segments, 1)
+    print(f"[RadioEngine] {n_segments} mood segments (avg {avg_dur:.0f}s, range 42-188s)")
 
     print(f"[RadioEngine] Rendering audio...")
     t0 = _time.time()
@@ -1724,7 +1985,8 @@ def generate_radio_mp3(output_path, duration=600.0, seed=42):
 
         # Run simulation to collect states at segment boundaries
         sim_states = []
-        ticks_per_segment = int(duration / n_segments * 50)  # 50 ticks/sec
+        total_ticks = int(duration * 50)  # 50 ticks/sec
+        ticks_per_segment = max(1, total_ticks // n_segments)
         for seg in range(n_segments):
             for _ in range(ticks_per_segment):
                 universe.step()
