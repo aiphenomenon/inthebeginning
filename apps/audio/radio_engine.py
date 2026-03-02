@@ -1187,6 +1187,171 @@ class RadioEngine:
 
         return left, right
 
+    def render_streaming(self, wav_file, sim_states=None):
+        """Render audio segment-by-segment directly to an open WAV file.
+
+        This avoids holding the full piece in memory, making it suitable
+        for long-form renders (60+ minutes). Each 42-second segment is
+        rendered, crossfaded, and written immediately.
+
+        Args:
+            wav_file: An open wave.Wave_write object (stereo, 16-bit, 44100).
+            sim_states: Optional list of dicts with simulation state per segment.
+        """
+        total_samples = int(self.total_duration * SAMPLE_RATE)
+        n_segments = int(math.ceil(self.total_duration / self.SEGMENT_DURATION))
+        segment_samples = int(self.SEGMENT_DURATION * SAMPLE_RATE)
+        crossfade_samples = int(self.CROSSFADE_DURATION * SAMPLE_RATE)
+        fade_in_samples = int(self.FADE_IN_DURATION * SAMPLE_RATE)
+        fade_out_samples = int(self.FADE_OUT_DURATION * SAMPLE_RATE)
+
+        if sim_states is None:
+            sim_states = self._generate_sim_states(n_segments)
+
+        # We keep a rolling output buffer that accumulates overlapping segments.
+        # When a segment's non-overlapping region is complete, we flush it.
+        # Buffer is 2 segments wide to handle crossfade overlap.
+        buf_len = segment_samples + crossfade_samples
+        buf_left = [0.0] * buf_len
+        buf_right = [0.0] * buf_len
+        buf_global_start = 0   # global sample index of buf[0]
+        samples_written = 0
+
+        _tanh = math.tanh
+        _pack = struct.pack
+
+        for seg_idx in range(n_segments):
+            seg_global_start = seg_idx * segment_samples
+            if seg_global_start >= total_samples:
+                break
+
+            # Determine epoch
+            time_pos = seg_idx * self.SEGMENT_DURATION
+            epoch_idx = int(time_pos / self.total_duration * 12.999)
+            epoch_idx = clamp(epoch_idx, 0, 12)
+            epoch = EPOCH_ORDER[epoch_idx]
+            sim_state = sim_states[min(seg_idx, len(sim_states) - 1)]
+
+            mood = MoodSegment(
+                seg_idx, epoch, epoch_idx, sim_state,
+                self.seed + seg_idx * 31337
+            )
+            selected = self._select_instruments(mood)
+            seg_left, seg_right = self._render_segment(
+                mood, selected, segment_samples, sim_state
+            )
+
+            if mood.dampen:
+                seg_left = self.smoother.apply_lowpass(seg_left, 5000)
+                seg_right = self.smoother.apply_lowpass(seg_right, 5000)
+                seg_left = self.smoother.apply_gentle_compression(seg_left)
+                seg_right = self.smoother.apply_gentle_compression(seg_right)
+
+            if seg_idx == self.tts_segment:
+                seg_left, seg_right = self._inject_tts(
+                    seg_left, seg_right, mood, epoch_idx
+                )
+
+            # Add segment into the rolling buffer with crossfade
+            seg_end_global = min(seg_global_start + len(seg_left), total_samples)
+            seg_len = seg_end_global - seg_global_start
+
+            for i in range(seg_len):
+                global_i = seg_global_start + i
+                buf_i = global_i - buf_global_start
+                # Grow buffer if needed
+                while buf_i >= len(buf_left):
+                    buf_left.append(0.0)
+                    buf_right.append(0.0)
+
+                fade = 1.0
+                if i < crossfade_samples and seg_idx > 0:
+                    fade = i / crossfade_samples
+                remaining = seg_len - i
+                if remaining < crossfade_samples and seg_idx < n_segments - 1:
+                    fade *= remaining / crossfade_samples
+
+                # Master fade-in / fade-out
+                if global_i < fade_in_samples:
+                    fade *= global_i / fade_in_samples
+                elif global_i >= total_samples - fade_out_samples:
+                    fade *= (total_samples - global_i) / fade_out_samples
+
+                buf_left[buf_i] += seg_left[i] * fade
+                buf_right[buf_i] += seg_right[i] * fade
+
+            # Flush the non-overlapping portion to WAV
+            # The next segment starts at seg_global_start + segment_samples,
+            # and its crossfade reaches back crossfade_samples. So we can
+            # safely flush up to (next_seg_start - crossfade_samples).
+            if seg_idx < n_segments - 1:
+                next_seg_start = (seg_idx + 1) * segment_samples
+                flush_up_to = next_seg_start - crossfade_samples
+            else:
+                flush_up_to = total_samples
+
+            flush_end = min(flush_up_to, total_samples)
+            flush_count = flush_end - samples_written
+            if flush_count > 0:
+                data = bytearray(flush_count * 4)
+                for j in range(flush_count):
+                    buf_j = (samples_written + j) - buf_global_start
+                    lv = buf_left[buf_j] if 0 <= buf_j < len(buf_left) else 0.0
+                    rv = buf_right[buf_j] if 0 <= buf_j < len(buf_right) else 0.0
+                    # Soft limit + stereo smooth
+                    lv, rv = lv * 0.9 + rv * 0.1, rv * 0.9 + lv * 0.1
+                    li = int(_tanh(lv) * 32767)
+                    ri = int(_tanh(rv) * 32767)
+                    struct.pack_into('<hh', data, j * 4,
+                                   max(-32767, min(32767, li)),
+                                   max(-32767, min(32767, ri)))
+                wav_file.writeframes(bytes(data))
+                samples_written = flush_end
+
+                # Shift buffer: keep only the overlap region
+                keep_from = flush_end - buf_global_start
+                if keep_from > 0 and keep_from < len(buf_left):
+                    buf_left = buf_left[keep_from:] + [0.0] * keep_from
+                    buf_right = buf_right[keep_from:] + [0.0] * keep_from
+                    buf_global_start = flush_end
+                elif keep_from >= len(buf_left):
+                    buf_left = [0.0] * buf_len
+                    buf_right = [0.0] * buf_len
+                    buf_global_start = flush_end
+
+            # Rotate instruments periodically
+            if seg_idx > 0 and seg_idx % 14 == 0:
+                self._generation += 1
+                self.instruments = self.factory.rotate_instruments(
+                    self.instruments, n_swap=50, generation=self._generation
+                )
+
+            if seg_idx % 3 == 0:
+                elapsed_min = seg_idx * self.SEGMENT_DURATION / 60
+                print(f"  [Streaming] Segment {seg_idx+1}/{n_segments} "
+                      f"({elapsed_min:.1f}min) epoch={epoch} "
+                      f"written={samples_written/SAMPLE_RATE:.0f}s",
+                      flush=True)
+
+        # Flush any remaining samples
+        remaining_count = total_samples - samples_written
+        if remaining_count > 0:
+            data = bytearray(remaining_count * 4)
+            for j in range(remaining_count):
+                buf_j = (samples_written + j) - buf_global_start
+                lv = buf_left[buf_j] if 0 <= buf_j < len(buf_left) else 0.0
+                rv = buf_right[buf_j] if 0 <= buf_j < len(buf_right) else 0.0
+                lv, rv = lv * 0.9 + rv * 0.1, rv * 0.9 + lv * 0.1
+                li = int(_tanh(lv) * 32767)
+                ri = int(_tanh(rv) * 32767)
+                struct.pack_into('<hh', data, j * 4,
+                               max(-32767, min(32767, li)),
+                               max(-32767, min(32767, ri)))
+            wav_file.writeframes(bytes(data))
+            samples_written += remaining_count
+
+        return samples_written
+
     def _generate_sim_states(self, n_segments):
         """Generate synthetic simulation states for standalone rendering."""
         states = []
@@ -1581,29 +1746,61 @@ def generate_radio_mp3(output_path, duration=600.0, seed=42):
         print(f"  Using synthetic simulation data instead.")
         sim_states = None
 
-    left, right = engine.render(sim_states)
+    # Use streaming renderer for long durations (>10 min) to avoid OOM
+    use_streaming = duration > 660
 
-    t1 = _time.time()
-    print(f"[RadioEngine] Rendered {len(left)/SAMPLE_RATE:.1f}s of audio in {t1-t0:.1f}s")
-
-    # Write to WAV first, then convert to MP3
-    if output_path.endswith('.mp3'):
+    if use_streaming:
+        print(f"[RadioEngine] Using streaming renderer (low memory)...")
         with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
             wav_path = tmp.name
         try:
-            print(f"[RadioEngine] Writing WAV ({len(left)*4/1048576:.1f} MB)...")
-            render_to_wav(left, right, wav_path)
-            print(f"[RadioEngine] Converting to MP3...")
-            wav_to_mp3(wav_path, output_path)
-            print(f"[RadioEngine] Saved: {output_path}")
+            with wave.open(wav_path, 'wb') as wf:
+                wf.setnchannels(2)
+                wf.setsampwidth(2)
+                wf.setframerate(SAMPLE_RATE)
+                total_written = engine.render_streaming(wf, sim_states)
+            t1 = _time.time()
+            print(f"[RadioEngine] Streamed {total_written/SAMPLE_RATE:.1f}s in {t1-t0:.1f}s")
+
+            if output_path.endswith('.mp3'):
+                print(f"[RadioEngine] Converting to MP3...")
+                wav_to_mp3(wav_path, output_path)
+                print(f"[RadioEngine] Saved: {output_path}")
+            else:
+                import shutil
+                shutil.move(wav_path, output_path)
+                wav_path = None
+                print(f"[RadioEngine] Saved: {output_path}")
         finally:
-            try:
-                os.unlink(wav_path)
-            except OSError:
-                pass
+            if wav_path:
+                try:
+                    os.unlink(wav_path)
+                except OSError:
+                    pass
     else:
-        render_to_wav(left, right, output_path)
-        print(f"[RadioEngine] Saved: {output_path}")
+        left, right = engine.render(sim_states)
+
+        t1 = _time.time()
+        print(f"[RadioEngine] Rendered {len(left)/SAMPLE_RATE:.1f}s of audio in {t1-t0:.1f}s")
+
+        # Write to WAV first, then convert to MP3
+        if output_path.endswith('.mp3'):
+            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
+                wav_path = tmp.name
+            try:
+                print(f"[RadioEngine] Writing WAV ({len(left)*4/1048576:.1f} MB)...")
+                render_to_wav(left, right, wav_path)
+                print(f"[RadioEngine] Converting to MP3...")
+                wav_to_mp3(wav_path, output_path)
+                print(f"[RadioEngine] Saved: {output_path}")
+            finally:
+                try:
+                    os.unlink(wav_path)
+                except OSError:
+                    pass
+        else:
+            render_to_wav(left, right, output_path)
+            print(f"[RadioEngine] Saved: {output_path}")
 
     file_size = os.path.getsize(output_path) if os.path.exists(output_path) else 0
     print(f"[RadioEngine] File size: {file_size/1048576:.1f} MB")
