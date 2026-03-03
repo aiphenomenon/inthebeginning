@@ -210,6 +210,38 @@ For a 20-file refactoring task: AST costs ~2,000 tokens for understanding versus
 See `docs/ast_passing_efficiency.md` for the full methodology and per-language
 breakdown.
 
+### Pre-Generated AST Captures
+
+The `ast_captures/` directory contains pre-computed AST snapshots that should be
+loaded at the **start of every agent session** alongside any source code reads:
+
+- `symbols.json` — All symbol definitions across the codebase
+- `coverage_map.json` — Testable code paths for all Python files
+- `compact_ast.txt` — Full compact AST representation
+
+**Session startup protocol**:
+1. Read `ast_captures/symbols.json` to get a global symbol map
+2. Read `ast_captures/compact_ast.txt` for structural overview
+3. Dispatch both ASTs + relevant source code to subagents for parallel processing
+4. Use AST data to reason about code structure before reading raw source
+
+**AST history in git**: The `ast_captures/` directory is versioned in git. The diff
+history of these files is useful for reasoning about how the program structure has
+changed over time — symbol additions/removals, complexity trends, and coverage gaps.
+Agents can use `git log -- ast_captures/` to understand code fluctuation.
+
+**Regeneration**: AST captures should be regenerated at the **end of each work
+session** to keep them current:
+
+```python
+from ast_dsl.core import ASTEngine, ASTQuery
+import json, os
+
+engine = ASTEngine()
+base = "/path/to/project"
+# ... regenerate symbols.json, coverage_map.json, compact_ast.txt
+```
+
 ---
 
 ## Agent Roles in a Swarm

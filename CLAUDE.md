@@ -266,6 +266,18 @@ files allow agents to skip on-the-fly parsing for common queries:
 - `coverage_map.json` -- Testable code paths
 - `compact_ast.txt` -- Full compact AST (use for structural queries)
 
+**Session startup**: At the start of each session, read `ast_captures/symbols.json`
+and `ast_captures/compact_ast.txt` to get a global overview of the codebase structure.
+Dispatch these ASTs alongside relevant source code to subagents for parallel
+processing. This enables faster reasoning about code structure.
+
+**AST history in git**: The `ast_captures/` directory is versioned in git. Use
+`git log -- ast_captures/` to reason about program fluctuation over time -- symbol
+additions/removals, complexity trends, and coverage gap history.
+
+**Regeneration**: AST captures must be regenerated at the **end of each work session**
+to keep them current for the next agent session.
+
 Read these instead of parsing source files directly when possible. To regenerate:
 
 ```python
