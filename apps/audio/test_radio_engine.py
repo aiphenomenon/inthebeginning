@@ -402,5 +402,128 @@ except ImportError:
     HAS_MIDO = False
 
 
+class TestMidiLibrarySampleBars(unittest.TestCase):
+    """Tests for MidiLibrary.sample_bars() method."""
+
+    def setUp(self):
+        self.lib = MidiLibrary()
+        self.rng = random.Random(42)
+
+    def test_sample_bars_returns_tuple(self):
+        """sample_bars should return (notes_list, duration) tuple."""
+        result = self.lib.sample_bars(self.rng, 4, 120, 4, root=60)
+        self.assertIsInstance(result, tuple)
+        self.assertEqual(len(result), 2)
+        notes, duration = result
+        self.assertIsInstance(notes, list)
+        self.assertIsInstance(duration, float)
+        self.assertGreater(duration, 0)
+
+    def test_sample_bars_timing_bounds(self):
+        """All note times should be within segment duration."""
+        result = self.lib.sample_bars(self.rng, 4, 120, 4, root=60)
+        notes, duration = result
+        for t_sec, midi_note, dur_sec, vel in notes:
+            self.assertGreaterEqual(t_sec, 0.0)
+            self.assertLessEqual(t_sec, duration + 0.01)
+            self.assertGreater(dur_sec, 0.0)
+            self.assertGreaterEqual(vel, 0.0)
+            self.assertLessEqual(vel, 1.0)
+
+    def test_sample_bars_fallback(self):
+        """With no MIDI files, should use fallback generation."""
+        lib = MidiLibrary()
+        lib._note_sequences = []
+        result = lib.sample_bars(self.rng, 4, 120, 4, root=60)
+        notes, duration = result
+        self.assertGreater(len(notes), 0)
+        self.assertGreater(duration, 0)
+
+
+class TestSynthesizeColoredNote(unittest.TestCase):
+    """Tests for InstrumentFactory.synthesize_colored_note()."""
+
+    def setUp(self):
+        self.factory = InstrumentFactory(42)
+        self.instr = self.factory.generate_instrument("test_color", 42)
+
+    def test_produces_samples(self):
+        """Should produce a non-empty list of samples."""
+        samples = self.factory.synthesize_colored_note(
+            self.instr, 440.0, 0.5, 0.8, 0.25
+        )
+        self.assertGreater(len(samples), 0)
+
+    def test_correct_duration(self):
+        """Output length should match requested duration."""
+        duration = 0.5
+        samples = self.factory.synthesize_colored_note(
+            self.instr, 440.0, duration, 0.8, 0.25
+        )
+        expected = int(duration * SAMPLE_RATE)
+        self.assertEqual(len(samples), expected)
+
+    def test_zero_color_is_clean(self):
+        """With color_amount=0, output should be clean base tone."""
+        samples = self.factory.synthesize_colored_note(
+            self.instr, 440.0, 0.1, 0.8, 0.0
+        )
+        self.assertGreater(len(samples), 0)
+        # Should have non-zero energy
+        energy = sum(s * s for s in samples)
+        self.assertGreater(energy, 0)
+
+    def test_various_color_amounts(self):
+        """Different color amounts should produce different outputs."""
+        s1 = self.factory.synthesize_colored_note(
+            self.instr, 440.0, 0.1, 0.8, 0.1
+        )
+        s2 = self.factory.synthesize_colored_note(
+            self.instr, 440.0, 0.1, 0.8, 0.35
+        )
+        # They should differ (different blend ratios)
+        diff = sum(abs(a - b) for a, b in zip(s1, s2))
+        self.assertGreater(diff, 0)
+
+
+class TestChamberEffects(unittest.TestCase):
+    """Tests for chamber orchestra effects in SmoothingFilter."""
+
+    def setUp(self):
+        self.smoother = SmoothingFilter()
+        # Create a simple test signal: impulse
+        self.impulse = [0.0] * SAMPLE_RATE
+        self.impulse[0] = 1.0
+
+    def test_reverb_adds_tail(self):
+        """Reverb should add energy after the impulse."""
+        out = self.smoother.apply_reverb(self.impulse)
+        # Check that there's energy in the tail (after 10ms)
+        tail_start = int(0.01 * SAMPLE_RATE)
+        tail_energy = sum(s * s for s in out[tail_start:tail_start + 2000])
+        self.assertGreater(tail_energy, 0)
+
+    def test_reverb_preserves_length(self):
+        """Reverb output should be same length as input."""
+        out = self.smoother.apply_reverb(self.impulse)
+        self.assertEqual(len(out), len(self.impulse))
+
+    def test_chorus_preserves_length(self):
+        """Chorus output should be same length as input."""
+        # Use a tone instead of impulse for chorus
+        tone = [math.sin(2 * math.pi * 440 * i / SAMPLE_RATE) * 0.5
+                for i in range(SAMPLE_RATE // 10)]
+        out = self.smoother.apply_chorus(tone)
+        self.assertEqual(len(out), len(tone))
+
+    def test_early_reflections(self):
+        """Early reflections should produce delayed copies."""
+        out = self.smoother.apply_early_reflections(self.impulse)
+        self.assertEqual(len(out), len(self.impulse))
+        # Check that there's energy at reflection delay points
+        delay_11ms = int(0.011 * SAMPLE_RATE)
+        self.assertNotEqual(out[delay_11ms], 0.0)
+
+
 if __name__ == '__main__':
     unittest.main()

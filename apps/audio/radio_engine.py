@@ -518,6 +518,65 @@ class InstrumentFactory:
 
         return samples
 
+    def synthesize_colored_note(self, instr, freq, duration, velocity=0.8,
+                                color_amount=0.25):
+        """Synthesize a note with subtle instrument coloring on a clean base.
+
+        Base (1 - color_amount): clean piano-like additive tone (8 harmonics)
+        Color (color_amount): instrument's harmonic profile, vibrato, noise
+        """
+        n = int(duration * SAMPLE_RATE)
+        if n <= 0:
+            return []
+
+        f = freq
+        ca = clamp(color_amount, 0.0, 1.0)
+
+        # --- Base tone: clean additive harmonics ---
+        base = [0.0] * n
+        # Simple ADSR for base
+        a_len = min(int(0.01 * SAMPLE_RATE), n)
+        d_len = min(int(0.05 * SAMPLE_RATE), n)
+        r_len = min(int(0.08 * SAMPLE_RATE), n)
+        s_level = 0.7
+        base_env = [0.0] * n
+        for i in range(n):
+            if i < a_len:
+                base_env[i] = i / max(a_len, 1)
+            elif i < a_len + d_len:
+                base_env[i] = 1.0 - (1.0 - s_level) * (i - a_len) / max(d_len, 1)
+            elif i < n - r_len:
+                base_env[i] = s_level
+            else:
+                base_env[i] = s_level * (n - i) / max(r_len, 1)
+
+        for i in range(n):
+            t = i * INV_SR
+            s = 0.0
+            for h in range(1, 9):
+                h_freq = f * h
+                if h_freq >= SAMPLE_RATE / 2:
+                    break
+                amp = 1.0 / (h ** 1.2)
+                s += amp * math.sin(TWO_PI * h_freq * t)
+            base[i] = s * base_env[i] * velocity
+
+        if ca == 0.0:
+            return base
+
+        # --- Color: use instrument's characteristics ---
+        color = self.synthesize_note(instr, freq, duration, velocity)
+
+        # Blend
+        result = [0.0] * n
+        base_w = 1.0 - ca
+        cn = min(len(color), n)
+        for i in range(n):
+            c = color[i] if i < cn else 0.0
+            result[i] = base[i] * base_w + c * ca
+
+        return result
+
     def generate_instrument_set(self, count=537, base_seed=42):
         """Generate a full set of unique instruments.
 
@@ -683,10 +742,12 @@ class MidiLibrary:
                 notes = self._extract_notes(mid)
                 if len(notes) >= 8:
                     composer = os.path.basename(os.path.dirname(path))
+                    tpb = getattr(mid, 'ticks_per_beat', 480)
                     self._note_sequences.append({
                         'path': path,
                         'composer': composer,
                         'notes': notes,
+                        'ticks_per_beat': tpb,
                     })
             except Exception:
                 continue
@@ -694,7 +755,7 @@ class MidiLibrary:
         self._loaded = True
 
     def _extract_notes(self, midi_file):
-        """Extract (pitch, duration_ticks, velocity) tuples from MIDI."""
+        """Extract (onset_ticks, pitch, duration_ticks, velocity) tuples from MIDI."""
         notes = []
         for track in midi_file.tracks:
             current_time = 0
@@ -707,7 +768,8 @@ class MidiLibrary:
                     start, vel = active_notes.pop(msg.note)
                     dur = current_time - start
                     if dur > 0:
-                        notes.append((msg.note, dur, vel))
+                        notes.append((start, msg.note, dur, vel))
+        notes.sort(key=lambda n: (n[0], n[1]))
         return notes
 
     def sample_phrase(self, rng, length=32, root=60, scale=None):
@@ -735,18 +797,19 @@ class MidiLibrary:
             return self._generate_fallback_phrase(rng, length, root, scale)
 
         # Find the phrase's center pitch
-        pitches = [n[0] for n in phrase_notes]
+        pitches = [n[1] for n in phrase_notes]
         center = sum(pitches) / len(pitches)
         offset = root - center
 
+        tpb = seq.get('ticks_per_beat', 480)
         result = []
-        for pitch, dur_ticks, vel in phrase_notes:
+        for _onset, pitch, dur_ticks, vel in phrase_notes:
             new_pitch = int(pitch + offset)
             # Project onto scale if provided
             if scale:
                 new_pitch = self._snap_to_scale(new_pitch, root, scale)
-            # Convert ticks to approximate beats (assume 480 ticks/beat)
-            dur_beats = max(0.125, dur_ticks / 480.0)
+            # Convert ticks to approximate beats
+            dur_beats = max(0.125, dur_ticks / tpb)
             # Add humanization flex: +/- 5% duration, +/- 3% pitch
             dur_beats *= rng.uniform(0.95, 1.05)
             velocity = clamp(vel / 127.0 * rng.uniform(0.9, 1.1), 0.1, 1.0)
@@ -768,10 +831,10 @@ class MidiLibrary:
         chords = []
         i = 0
         while i < len(notes) - 2 and len(chords) < length:
-            group = [notes[i][0]]
+            group = [notes[i][1]]
             j = i + 1
             while j < min(i + 6, len(notes)):
-                group.append(notes[j][0])
+                group.append(notes[j][1])
                 j += 1
             if len(group) >= 3:
                 # Transpose to root
@@ -820,6 +883,100 @@ class MidiLibrary:
             result.append((new_note, dur, vel))
             current = new_note
         return result
+
+    def sample_bars(self, rng, n_bars, tempo, beats_per_bar, root=60, scale=None):
+        """Sample a contiguous multi-bar segment preserving polyphonic timing.
+
+        Returns (notes_list, segment_duration_seconds) where each note is
+        (relative_time_sec, midi_note, duration_sec, velocity).
+        """
+        if not self._note_sequences:
+            return self._generate_fallback_bars(rng, n_bars, tempo, beats_per_bar,
+                                                root, scale)
+
+        seq = rng.choice(self._note_sequences)
+        notes = seq['notes']
+        tpb = seq.get('ticks_per_beat', 480)
+
+        if len(notes) < 8:
+            return self._generate_fallback_bars(rng, n_bars, tempo, beats_per_bar,
+                                                root, scale)
+
+        # Estimate ticks per bar from tempo and tpb
+        ticks_per_bar = tpb * beats_per_bar
+        segment_ticks = ticks_per_bar * n_bars
+
+        # Pick a random starting onset
+        max_onset = notes[-1][0]
+        if max_onset <= segment_ticks:
+            start_tick = 0
+        else:
+            start_tick = rng.randint(0, max(0, int(max_onset - segment_ticks)))
+
+        end_tick = start_tick + segment_ticks
+
+        # Collect notes in the window
+        segment_notes = []
+        for onset, pitch, dur, vel in notes:
+            if onset < start_tick:
+                continue
+            if onset >= end_tick:
+                break
+            segment_notes.append((onset - start_tick, pitch, dur, vel))
+
+        if not segment_notes:
+            return self._generate_fallback_bars(rng, n_bars, tempo, beats_per_bar,
+                                                root, scale)
+
+        # Transpose to root and snap to scale
+        pitches = [n[1] for n in segment_notes]
+        center = sum(pitches) / len(pitches)
+        offset = root - center
+
+        # Convert to seconds
+        secs_per_tick = 60.0 / (tempo * tpb)
+        segment_duration = segment_ticks * secs_per_tick
+
+        result = []
+        for onset_t, pitch, dur_t, vel in segment_notes:
+            new_pitch = int(pitch + offset)
+            if scale:
+                new_pitch = self._snap_to_scale(new_pitch, root, scale)
+            new_pitch = clamp(new_pitch, 24, 108)
+            t_sec = onset_t * secs_per_tick
+            dur_sec = max(0.02, dur_t * secs_per_tick)
+            velocity = clamp(vel / 127.0, 0.1, 1.0)
+            result.append((t_sec, new_pitch, dur_sec, velocity))
+
+        return (result, segment_duration)
+
+    def _generate_fallback_bars(self, rng, n_bars, tempo, beats_per_bar,
+                                root, scale):
+        """Generate fallback bars algorithmically when no MIDI files available."""
+        intervals = scale if scale else [0, 2, 4, 5, 7, 9, 11]
+        beat_dur = 60.0 / tempo
+        segment_duration = n_bars * beats_per_bar * beat_dur
+
+        result = []
+        t = 0.0
+        current = root
+        while t < segment_duration:
+            step = rng.choice([-2, -1, 0, 1, 1, 2])
+            idx = 0
+            for j, s in enumerate(intervals):
+                if (current - root) % 12 >= int(round(s)):
+                    idx = j
+            idx = clamp(idx + step, 0, len(intervals) - 1)
+            new_note = root + int(round(intervals[idx]))
+            octave_shift = rng.choice([-12, 0, 0, 12])
+            new_note = clamp(new_note + octave_shift, 36, 96)
+            dur = rng.choice([0.25, 0.5, 0.5, 1.0]) * beat_dur
+            vel = rng.uniform(0.4, 0.85)
+            result.append((t, new_note, dur, vel))
+            t += dur
+            current = new_note
+
+        return (result, segment_duration)
 
 
 # ---------------------------------------------------------------------------
@@ -1055,6 +1212,95 @@ class SmoothingFilter:
             out[i] = samples[i] * gain
         return out
 
+    def apply_early_reflections(self, samples, sr=SAMPLE_RATE):
+        """Add early reflections for room character.
+
+        5 delayed copies at 11/17/23/31/41ms at decreasing amplitudes.
+        """
+        delays_ms = [11, 17, 23, 31, 41]
+        amps = [0.35, 0.25, 0.18, 0.12, 0.08]
+        n = len(samples)
+        out = list(samples)
+        for delay_ms, amp in zip(delays_ms, amps):
+            d = int(delay_ms * sr / 1000)
+            for i in range(d, n):
+                out[i] += samples[i - d] * amp
+        # Normalize to prevent clipping
+        peak = max(abs(s) for s in out) if out else 1.0
+        if peak > 1.0:
+            for i in range(n):
+                out[i] /= peak
+        return out
+
+    def apply_reverb(self, samples, wet=0.30, sr=SAMPLE_RATE):
+        """Schroeder reverb: 4 comb filters + 2 allpass filters.
+
+        Comb filter delays: ~30/37/41/44ms. Allpass delays: ~5/1.7ms.
+        """
+        n = len(samples)
+        dry = 1.0 - wet
+
+        # Comb filter parameters
+        comb_delays = [int(d * sr / 1000) for d in [30, 37, 41, 44]]
+        comb_gains = [0.75, 0.72, 0.70, 0.68]
+
+        comb_outputs = []
+        for delay, gain in zip(comb_delays, comb_gains):
+            buf = [0.0] * (n + delay)
+            for i in range(n):
+                buf[i + delay] = samples[i] + gain * buf[i]
+            comb_outputs.append(buf[:n])
+
+        # Sum comb outputs
+        mixed = [0.0] * n
+        for i in range(n):
+            for co in comb_outputs:
+                mixed[i] += co[i]
+            mixed[i] /= len(comb_outputs)
+
+        # Allpass filters
+        ap_delays = [int(d * sr / 1000) for d in [5, 1.7]]
+        ap_gain = 0.7
+        for delay in ap_delays:
+            if delay < 1:
+                delay = 1
+            buf_in = list(mixed)
+            buf_out = [0.0] * n
+            for i in range(n):
+                delayed = buf_out[i - delay] if i >= delay else 0.0
+                buf_out[i] = -ap_gain * buf_in[i] + buf_in[i - delay] if i >= delay else buf_in[i]
+                buf_out[i] += ap_gain * delayed
+            mixed = buf_out
+
+        # Blend
+        out = [0.0] * n
+        for i in range(n):
+            out[i] = samples[i] * dry + mixed[i] * wet
+        # Normalize
+        peak = max(abs(s) for s in out) if out else 1.0
+        if peak > 1.0:
+            for i in range(n):
+                out[i] /= peak
+        return out
+
+    def apply_chorus(self, samples, sr=SAMPLE_RATE):
+        """LFO-modulated delay for ensemble doubling.
+
+        Base delay ~20ms, depth +/-3ms, LFO rate 0.7 Hz.
+        """
+        n = len(samples)
+        base_delay = int(0.020 * sr)
+        depth = int(0.003 * sr)
+        lfo_rate = 0.7
+        out = list(samples)
+        for i in range(n):
+            lfo = math.sin(TWO_PI * lfo_rate * i / sr)
+            delay = base_delay + int(lfo * depth)
+            src = i - delay
+            if 0 <= src < n:
+                out[i] = samples[i] * 0.7 + samples[src] * 0.3
+        return out
+
 
 # ---------------------------------------------------------------------------
 # MOOD SEGMENT -- Encapsulates 42 seconds of musical character
@@ -1126,9 +1372,6 @@ class MoodSegment:
         # Whether to apply dampening/smoothing
         self.dampen = self.rng.random() < 0.4
 
-        # EDM beat style flag
-        self.edm_beats = self.rng.random() < 0.35
-
 
 # ---------------------------------------------------------------------------
 # RADIO ENGINE -- The main music generation engine
@@ -1146,7 +1389,7 @@ class RadioEngine:
     FADE_IN_DURATION = 5.0   # seconds of fade-in at start
     FADE_OUT_DURATION = 8.0  # seconds of fade-out at end
 
-    def __init__(self, seed=42, total_duration=600.0):
+    def __init__(self, seed=42, total_duration=1800.0):
         self.seed = seed
         self.total_duration = total_duration
         self.rng = random.Random(seed)
@@ -1499,12 +1742,12 @@ class RadioEngine:
         return selected
 
     def _render_segment(self, mood, kits, n_samples, sim_state):
-        """Render a mood segment using instrument kits.
+        """Render a mood segment by looping a coloured MIDI excerpt.
 
-        Uses bar-based rendering with the segment's time signature,
-        scale, and tempo. Instruments are grouped into 1-3 kits that
-        each follow the mood's scale. Uses longer MIDI phrases and
-        standard chord progressions with proper note runs.
+        1. Sample a continuous 4-8 bar segment from the MIDI library.
+        2. Render every note with synthesize_colored_note.
+        3. Apply chamber-orchestra effects (reverb, reflections, chorus).
+        4. Loop the rendered excerpt to fill the mood's duration with crossfade.
         """
         left = [0.0] * n_samples
         right = [0.0] * n_samples
@@ -1514,292 +1757,86 @@ class RadioEngine:
         beats_per_bar = mood.beats_per_bar
         root = mood.root
 
-        # Beat and bar timing
-        beat_dur = 60.0 / tempo
-        beat_samples = int(beat_dur * SAMPLE_RATE)
-        bar_samples = beat_samples * beats_per_bar
-        n_bars = max(1, n_samples // bar_samples)
+        # Choose loop length: 4-8 bars
+        loop_bars = rng.randint(4, 8)
 
-        # Get MIDI phrases -- longer samples (32+ notes) per kit
-        midi_phrases = {}
+        # Sample a contiguous MIDI segment
+        bars_result = self.midi_lib.sample_bars(
+            rng, loop_bars, tempo, beats_per_bar,
+            root=root, scale=mood.scale
+        )
+        midi_notes, segment_duration = bars_result
+
+        if segment_duration <= 0:
+            return left, right
+
+        loop_samples = int(segment_duration * SAMPLE_RATE)
+        if loop_samples <= 0:
+            return left, right
+
+        # Pick 1-3 instruments for colouring
+        all_instr = []
         for kit in kits:
-            phrases = []
-            for _ in range(3):
-                phrase = self.midi_lib.sample_phrase(
-                    rng, length=rng.randint(16, 48),
-                    root=kit.root, scale=kit.scale
-                )
-                phrases.append(phrase)
-            midi_phrases[kit.name] = phrases
+            all_instr.extend(kit.melody + kit.harmony + kit.bass)
+        if not all_instr:
+            all_instr = rng.sample(self.instruments,
+                                   min(3, len(self.instruments)))
+        n_color = rng.randint(1, min(3, len(all_instr)))
+        color_instrs = rng.sample(all_instr, n_color)
 
-        # Standard chord progressions per bar
-        progression = mood.progression
+        color_amount = rng.uniform(0.15, 0.35)
 
-        for bar_idx in range(n_bars):
-            bar_offset = bar_idx * bar_samples
-            if bar_offset >= n_samples:
-                break
+        # Render the loop excerpt
+        loop_left = [0.0] * loop_samples
+        loop_right = [0.0] * loop_samples
 
-            prog_idx = bar_idx % len(progression)
-            chord_root_offset, chord_type = progression[prog_idx]
-            chord_root = root + chord_root_offset
-            chord_intervals = CHORD_INTERVALS.get(chord_type, [0, 4, 7])
-            chord_notes = [chord_root + ci for ci in chord_intervals]
+        for t_sec, midi_note, dur_sec, vel in midi_notes:
+            offset = int(t_sec * SAMPLE_RATE)
+            if offset >= loop_samples:
+                continue
 
-            for kit in kits:
-                # Snap chord to kit scale
-                kit_chord = [kit.snap_to_scale(n) for n in chord_notes]
+            freq = mtof(midi_note)
+            instr = rng.choice(color_instrs)
 
-                # --- MELODY from MIDI phrases ---
-                for instr in kit.melody[:2]:
-                    if rng.random() < 0.75:
-                        kit_phrases = midi_phrases.get(kit.name, [])
-                        if kit_phrases and rng.random() < 0.6:
-                            phrase = rng.choice(kit_phrases)
-                            # Take a slice matching the bar length
-                            bar_beats = beats_per_bar
-                            beat_count = 0
-                            bar_phrase = []
-                            for note_data in phrase:
-                                if beat_count >= bar_beats:
-                                    break
-                                bar_phrase.append(note_data)
-                                beat_count += note_data[1]
-                            phrase = bar_phrase if bar_phrase else phrase[:beats_per_bar]
-                        else:
-                            phrase = self._generate_scale_run(
-                                rng, kit.root, kit.scale, beats_per_bar
-                            )
+            note_samps = self.factory.synthesize_colored_note(
+                instr, freq, dur_sec, vel, color_amount
+            )
 
-                        note_offset = bar_offset
-                        for midi_note, dur_beats, vel in phrase:
-                            note_dur = dur_beats * beat_dur
-                            note_dur *= rng.uniform(0.95, 1.05)
-                            timing_flex = int(rng.uniform(-0.005, 0.005) * SAMPLE_RATE)
-                            note_samples = self.factory.synthesize_note(
-                                instr, mtof(kit.snap_to_scale(midi_note)),
-                                note_dur, vel * 0.7
-                            )
-                            write_offset = note_offset + timing_flex
-                            self._mix_mono(left, right, note_samples, write_offset,
-                                          n_samples, rng.uniform(-0.4, 0.4))
-                            note_offset += int(note_dur * SAMPLE_RATE)
-                            if note_offset >= bar_offset + bar_samples:
-                                break
+            # Pan by pitch register: low=center, high=wider
+            pitch_norm = clamp((midi_note - 36) / 72.0, 0.0, 1.0)
+            pan = (pitch_norm - 0.5) * 0.6
+            self._mix_mono(loop_left, loop_right, note_samps, offset,
+                          loop_samples, pan)
 
-                # --- HARMONY (chord pads, sustained) ---
-                for instr in kit.harmony[:2]:
-                    if rng.random() < 0.65:
-                        chord_dur = beats_per_bar * beat_dur * rng.uniform(0.85, 1.0)
-                        for cn in kit_chord[:4]:
-                            note_samples = self.factory.synthesize_note(
-                                instr, mtof(cn), chord_dur, rng.uniform(0.25, 0.5)
-                            )
-                            self._mix_mono(left, right, note_samples, bar_offset,
-                                          n_samples, rng.uniform(-0.6, 0.6))
+        # Apply chamber effects probabilistically
+        if rng.random() < 0.70:
+            loop_left = self.smoother.apply_early_reflections(loop_left)
+            loop_right = self.smoother.apply_early_reflections(loop_right)
+        if rng.random() < 0.60:
+            loop_left = self.smoother.apply_reverb(loop_left)
+            loop_right = self.smoother.apply_reverb(loop_right)
+        if rng.random() < 0.40:
+            loop_left = self.smoother.apply_chorus(loop_left)
+            loop_right = self.smoother.apply_chorus(loop_right)
 
-                # --- BASS (fuller, richer, longer, melodic) ---
-                for instr in kit.bass[:2]:
-                    if rng.random() < 0.7:
-                        self._render_bass_line(
-                            left, right, instr, kit, chord_root,
-                            bar_offset, bar_samples, beat_dur,
-                            beats_per_bar, n_samples, rng
-                        )
-
-                # --- RHYTHM / DRUMS ---
-                if mood.edm_beats or rng.random() < 0.5:
-                    self._render_beat_pattern(
-                        left, right, kit.rhythm, bar_offset, bar_samples,
-                        beats_per_bar, beat_samples, n_samples, rng, mood
-                    )
+        # Loop with crossfade to fill mood duration
+        xfade = min(int(rng.uniform(0.5, 1.0) * SAMPLE_RATE), loop_samples // 4)
+        pos = 0
+        while pos < n_samples:
+            remaining = n_samples - pos
+            chunk = min(loop_samples, remaining)
+            for i in range(chunk):
+                fade = 1.0
+                if pos > 0 and i < xfade:
+                    fade = i / max(xfade, 1)
+                dist_to_end = chunk - i
+                if dist_to_end < xfade and pos + chunk < n_samples:
+                    fade *= dist_to_end / max(xfade, 1)
+                left[pos + i] += loop_left[i] * fade
+                right[pos + i] += loop_right[i] * fade
+            pos += loop_samples - xfade
 
         return left, right
-
-    def _generate_scale_run(self, rng, root, scale, n_notes):
-        """Generate a standard scale run (ascending, descending, or arpeggio)."""
-        intervals = [int(round(s)) for s in scale]
-        pattern_type = rng.choice(['ascending', 'descending', 'arpeggio',
-                                    'step_wise', 'pendulum'])
-        notes = []
-        scale_notes = []
-        for oct in range(-1, 3):
-            for s in intervals:
-                n = root + oct * 12 + s
-                if 36 <= n <= 96:
-                    scale_notes.append(n)
-        scale_notes.sort()
-
-        if not scale_notes:
-            scale_notes = [root]
-
-        if pattern_type == 'ascending':
-            start_idx = rng.randint(0, max(0, len(scale_notes) - n_notes))
-            for i in range(n_notes):
-                idx = min(start_idx + i, len(scale_notes) - 1)
-                dur = rng.choice([0.25, 0.5, 0.5, 0.5])
-                notes.append((scale_notes[idx], dur, rng.uniform(0.5, 0.8)))
-        elif pattern_type == 'descending':
-            start_idx = rng.randint(n_notes, len(scale_notes) - 1) if len(scale_notes) > n_notes else len(scale_notes) - 1
-            for i in range(n_notes):
-                idx = max(0, start_idx - i)
-                dur = rng.choice([0.25, 0.5, 0.5, 0.5])
-                notes.append((scale_notes[idx], dur, rng.uniform(0.5, 0.8)))
-        elif pattern_type == 'arpeggio':
-            # Standard arpeggio: root, 3rd, 5th, octave
-            arp_degrees = [0, 2, 4, 0]  # indices into scale
-            for i in range(n_notes):
-                deg = arp_degrees[i % len(arp_degrees)]
-                oct_shift = (i // len(arp_degrees)) * 12
-                n_idx = min(deg, len(intervals) - 1)
-                note = root + intervals[n_idx] + oct_shift
-                note = clamp(note, 36, 96)
-                dur = rng.choice([0.5, 0.5, 1.0])
-                notes.append((note, dur, rng.uniform(0.5, 0.8)))
-        elif pattern_type == 'pendulum':
-            mid = len(scale_notes) // 2
-            for i in range(n_notes):
-                offset = int(math.sin(i * 0.7) * min(4, len(scale_notes) // 3))
-                idx = clamp(mid + offset, 0, len(scale_notes) - 1)
-                dur = rng.choice([0.25, 0.5, 0.5])
-                notes.append((scale_notes[idx], dur, rng.uniform(0.5, 0.8)))
-        else:  # step_wise
-            idx = rng.randint(0, len(scale_notes) - 1)
-            for _ in range(n_notes):
-                dur = rng.choice([0.25, 0.5, 0.5, 1.0])
-                notes.append((scale_notes[idx], dur, rng.uniform(0.5, 0.8)))
-                step = rng.choice([-1, -1, 1, 1, 2])
-                idx = clamp(idx + step, 0, len(scale_notes) - 1)
-
-        return notes
-
-    def _render_bass_line(self, left, right, instr, kit, chord_root,
-                          bar_offset, bar_samples, beat_dur, beats_per_bar,
-                          total_samples, rng):
-        """Render a full, rich, melodic bass line.
-
-        Bass notes are longer and more sustained. The line walks through
-        scale degrees with occasional leaps, forming a melodic contour
-        rather than just blips on the beat.
-        """
-        bass_root = kit.snap_to_scale(chord_root - 24)  # 2 octaves down
-        bass_root = clamp(bass_root, 24, 55)
-
-        # Build bass scale in the low register
-        bass_scale = []
-        for oct in range(-1, 1):
-            for s in kit.scale:
-                n = bass_root + oct * 12 + int(round(s))
-                if 24 <= n <= 60:
-                    bass_scale.append(n)
-        bass_scale = sorted(set(bass_scale))
-        if not bass_scale:
-            bass_scale = [bass_root]
-
-        # Choose bass pattern
-        pattern = rng.choice(['walking', 'sustained', 'melodic', 'octave_pulse'])
-
-        if pattern == 'sustained':
-            # One long sustained bass note per bar
-            dur = beats_per_bar * beat_dur * rng.uniform(0.7, 0.95)
-            note_samples = self.factory.synthesize_note(
-                instr, mtof(bass_root), dur, rng.uniform(0.6, 0.85)
-            )
-            self._mix_mono(left, right, note_samples, bar_offset,
-                          total_samples, 0.0)
-
-        elif pattern == 'walking':
-            # Walking bass: one note per beat, stepping through scale
-            current_idx = 0
-            for s in bass_scale:
-                if s >= bass_root:
-                    current_idx = bass_scale.index(s)
-                    break
-            for beat in range(beats_per_bar):
-                beat_offset = bar_offset + beat * int(beat_dur * SAMPLE_RATE)
-                dur = beat_dur * rng.uniform(0.7, 0.95)
-                note = bass_scale[current_idx % len(bass_scale)]
-                note_samples = self.factory.synthesize_note(
-                    instr, mtof(note), dur, rng.uniform(0.55, 0.8)
-                )
-                self._mix_mono(left, right, note_samples, beat_offset,
-                              total_samples, 0.0)
-                step = rng.choice([-1, 1, 1, 1, 2])
-                current_idx = clamp(current_idx + step, 0, len(bass_scale) - 1)
-
-        elif pattern == 'melodic':
-            # Melodic bass: mix of long and short notes forming a melody
-            t = 0
-            current_idx = 0
-            for s in bass_scale:
-                if s >= bass_root:
-                    current_idx = bass_scale.index(s)
-                    break
-            total_beats = beats_per_bar
-            while t < total_beats:
-                dur_beats = rng.choice([0.5, 1.0, 1.0, 1.5, 2.0])
-                dur_beats = min(dur_beats, total_beats - t)
-                if dur_beats <= 0:
-                    break
-                note = bass_scale[current_idx % len(bass_scale)]
-                beat_offset = bar_offset + int(t * beat_dur * SAMPLE_RATE)
-                note_samples = self.factory.synthesize_note(
-                    instr, mtof(note), dur_beats * beat_dur * 0.9,
-                    rng.uniform(0.55, 0.8)
-                )
-                self._mix_mono(left, right, note_samples, beat_offset,
-                              total_samples, rng.uniform(-0.1, 0.1))
-                step = rng.choice([-2, -1, 1, 1, 2, 3])
-                current_idx = clamp(current_idx + step, 0, len(bass_scale) - 1)
-                t += dur_beats
-
-        else:  # octave_pulse
-            # Root and octave alternating
-            for beat in range(beats_per_bar):
-                beat_offset = bar_offset + beat * int(beat_dur * SAMPLE_RATE)
-                note = bass_root if beat % 2 == 0 else min(bass_root + 12, 60)
-                dur = beat_dur * rng.uniform(0.6, 0.85)
-                note_samples = self.factory.synthesize_note(
-                    instr, mtof(note), dur, rng.uniform(0.55, 0.8)
-                )
-                self._mix_mono(left, right, note_samples, beat_offset,
-                              total_samples, 0.0)
-
-    def _render_beat_pattern(self, left, right, instrs, bar_offset,
-                            bar_samples, beats_per_bar, beat_samples,
-                            total_samples, rng, mood):
-        """Render a drum/rhythm pattern."""
-        if not instrs:
-            return
-
-        for beat in range(beats_per_bar):
-            beat_offset = bar_offset + beat * beat_samples
-
-            # Kick on downbeats
-            if beat % 2 == 0 or (mood.edm_beats and mood.time_sig == '4/4'):
-                if instrs:
-                    kick = instrs[0]
-                    note = self.factory.synthesize_note(kick, 55.0, 0.15, 0.7)
-                    self._mix_mono(left, right, note, beat_offset,
-                                  total_samples, 0.0)
-
-            # Snare on backbeats
-            if beat % 2 == 1 and len(instrs) > 1:
-                snare = instrs[1 % len(instrs)]
-                note = self.factory.synthesize_note(snare, 200.0, 0.1, 0.6)
-                self._mix_mono(left, right, note, beat_offset,
-                              total_samples, rng.uniform(-0.2, 0.2))
-
-            # Hi-hat subdivisions
-            if len(instrs) > 2:
-                hihat = instrs[2 % len(instrs)]
-                subdivisions = 4 if mood.edm_beats else 2
-                for sub in range(subdivisions):
-                    sub_offset = beat_offset + sub * (beat_samples // subdivisions)
-                    if rng.random() < 0.7:
-                        note = self.factory.synthesize_note(hihat, 8000.0, 0.05, 0.3)
-                        self._mix_mono(left, right, note, sub_offset,
-                                      total_samples, rng.uniform(-0.5, 0.5))
 
     def _mix_mono(self, left, right, samples, offset, total_samples, pan):
         """Mix mono samples into stereo buffers with panning."""
@@ -1954,10 +1991,10 @@ def wav_to_mp3(wav_path, mp3_path, bitrate='192k'):
     )
 
 
-def generate_radio_mp3(output_path, duration=600.0, seed=42):
+def generate_radio_mp3(output_path, duration=1800.0, seed=42):
     """Generate the radio MP3 file.
 
-    This is the main entry point for producing the 10-minute cosmic
+    This is the main entry point for producing the 30-minute cosmic
     radio station MP3 with all features enabled.
     """
     import tempfile
@@ -2077,8 +2114,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='In The Beginning Radio')
     parser.add_argument('--output', '-o', default='cosmic_radio.mp3',
                        help='Output file path (WAV or MP3)')
-    parser.add_argument('--duration', '-d', type=float, default=600.0,
-                       help='Duration in seconds (default: 600)')
+    parser.add_argument('--duration', '-d', type=float, default=1800.0,
+                       help='Duration in seconds (default: 1800)')
     parser.add_argument('--seed', '-s', type=int, default=42,
                        help='Random seed')
     args = parser.parse_args()
