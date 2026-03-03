@@ -25,6 +25,8 @@ from apps.audio.radio_engine import (
     EPOCH_MUSIC, EPOCH_ORDER, EPOCH_ROOTS, SAMPLE_RATE,
     TWO_PI, EDM_TIME_SIGS,
     _adsr, _write_wav,
+    RONDO_PATTERNS, DIATONIC_CHORD_QUALITY, GM_ORCHESTRA_INSTRUMENTS,
+    PIANO_PROGRAMS, HAS_FLUIDSYNTH,
 )
 
 
@@ -523,6 +525,276 @@ class TestChamberEffects(unittest.TestCase):
         # Check that there's energy at reflection delay points
         delay_11ms = int(0.011 * SAMPLE_RATE)
         self.assertNotEqual(out[delay_11ms], 0.0)
+
+
+class TestChordMultiplication(unittest.TestCase):
+    """Tests for _build_chord_from_note() -- chord expansion with consonance."""
+
+    def setUp(self):
+        self.engine = RadioEngine(seed=42, total_duration=5.0)
+        self.rng = random.Random(42)
+
+    def test_returns_2_to_5_notes(self):
+        """Chord should have between 2 and 5 notes."""
+        for n in range(2, 6):
+            chord = self.engine._build_chord_from_note(
+                60, 60, 'ionian', [0, 2, 4, 5, 7, 9, 11], n_notes=n, rng=self.rng
+            )
+            self.assertTrue(2 <= len(chord) <= n,
+                           f"Requested {n} notes, got {len(chord)}")
+
+    def test_valid_midi_range(self):
+        """All chord notes should be in valid MIDI range 24-108."""
+        chord = self.engine._build_chord_from_note(
+            60, 60, 'ionian', [0, 2, 4, 5, 7, 9, 11], n_notes=5, rng=self.rng
+        )
+        for note in chord:
+            self.assertTrue(24 <= note <= 108, f"Note {note} out of range")
+
+    def test_root_preserved(self):
+        """Root note (or close) should be in the chord."""
+        chord = self.engine._build_chord_from_note(
+            60, 60, 'ionian', [0, 2, 4, 5, 7, 9, 11], n_notes=3, rng=self.rng
+        )
+        # The base note (60 = C4) should be in the chord
+        self.assertIn(60, chord)
+
+    def test_consonant_intervals(self):
+        """No adjacent notes should have minor 2nd interval (1 semitone)."""
+        for _ in range(20):
+            note = self.rng.randint(48, 84)
+            chord = self.engine._build_chord_from_note(
+                note, 60, 'ionian', [0, 2, 4, 5, 7, 9, 11],
+                n_notes=self.rng.randint(2, 5), rng=self.rng
+            )
+            sorted_chord = sorted(chord)
+            for i in range(1, len(sorted_chord)):
+                interval = sorted_chord[i] - sorted_chord[i - 1]
+                self.assertGreater(interval, 1,
+                    f"Minor 2nd found: {sorted_chord[i-1]}-{sorted_chord[i]}")
+
+    def test_dissonant_input_corrected(self):
+        """A dissonant input note should still produce a consonant chord."""
+        # MIDI 61 = C#, which is outside C major scale
+        chord = self.engine._build_chord_from_note(
+            61, 60, 'ionian', [0, 2, 4, 5, 7, 9, 11], n_notes=3, rng=self.rng
+        )
+        sorted_chord = sorted(chord)
+        for i in range(1, len(sorted_chord)):
+            interval = sorted_chord[i] - sorted_chord[i - 1]
+            self.assertGreater(interval, 1,
+                "Dissonance not corrected")
+
+
+class TestRondoStructure(unittest.TestCase):
+    """Tests for _build_rondo_sections()."""
+
+    def setUp(self):
+        self.engine = RadioEngine(seed=42, total_duration=5.0)
+        self.rng = random.Random(42)
+        # Create some base chord notes: (t_sec, [chord_notes], dur_sec, vel)
+        self.base_notes = [
+            (0.0, [60, 64, 67], 0.5, 0.8),
+            (0.5, [62, 65, 69], 0.5, 0.7),
+            (1.0, [64, 67, 71], 0.5, 0.8),
+            (1.5, [60, 64, 67], 0.5, 0.7),
+        ]
+
+    def test_returns_sections(self):
+        """Should return a list of (label, notes) tuples."""
+        result = self.engine._build_rondo_sections(
+            self.base_notes, 60, 'ionian', [0, 2, 4, 5, 7, 9, 11],
+            100.0, self.rng  # >80s triggers ABACADA
+        )
+        self.assertIsInstance(result, list)
+        self.assertTrue(len(result) >= 5)  # At least ABACA
+        for label, notes in result:
+            self.assertIn(label, ['A', 'B', 'C', 'D'])
+            self.assertIsInstance(notes, list)
+
+    def test_a_sections_match_theme(self):
+        """All A sections should be the original theme."""
+        result = self.engine._build_rondo_sections(
+            self.base_notes, 60, 'ionian', [0, 2, 4, 5, 7, 9, 11],
+            100.0, self.rng
+        )
+        a_sections = [(label, notes) for label, notes in result if label == 'A']
+        self.assertTrue(len(a_sections) >= 2)
+        for _, notes in a_sections:
+            self.assertEqual(len(notes), len(self.base_notes))
+
+    def test_episodes_differ_from_theme(self):
+        """B, C, D sections should differ from A."""
+        result = self.engine._build_rondo_sections(
+            self.base_notes, 60, 'ionian', [0, 2, 4, 5, 7, 9, 11],
+            100.0, random.Random(42)
+        )
+        a_notes = None
+        for label, notes in result:
+            if label == 'A':
+                a_notes = notes
+                break
+        for label, notes in result:
+            if label != 'A' and a_notes:
+                # At least one chord should differ
+                diffs = 0
+                for (_, c1, _, _), (_, c2, _, _) in zip(a_notes, notes):
+                    if c1 != c2:
+                        diffs += 1
+                self.assertGreater(diffs, 0,
+                    f"Section {label} is identical to A")
+
+
+class TestTempoMultiplier(unittest.TestCase):
+    """Tests for _compute_tempo_multiplier()."""
+
+    def setUp(self):
+        self.engine = RadioEngine(seed=42, total_duration=5.0)
+
+    def test_range_2_to_4(self):
+        """Multiplier should be in [2.0, 4.0]."""
+        for i in range(50):
+            state = {'temperature': 10 ** i, 'particles': i * 100}
+            mult = self.engine._compute_tempo_multiplier(state)
+            self.assertTrue(2.0 <= mult <= 4.0,
+                           f"Multiplier {mult} out of range for state {state}")
+
+    def test_deterministic(self):
+        """Same state should give same multiplier."""
+        state = {'temperature': 1e6, 'particles': 500}
+        m1 = self.engine._compute_tempo_multiplier(state)
+        m2 = self.engine._compute_tempo_multiplier(state)
+        self.assertEqual(m1, m2)
+
+    def test_different_states_differ(self):
+        """Different states should usually give different multipliers."""
+        m1 = self.engine._compute_tempo_multiplier({'temperature': 1e6})
+        m2 = self.engine._compute_tempo_multiplier({'temperature': 1e9})
+        self.assertNotEqual(m1, m2)
+
+
+class TestInstrumentVoiceSelection(unittest.TestCase):
+    """Tests for _choose_gm_instruments()."""
+
+    def setUp(self):
+        self.engine = RadioEngine(seed=42, total_duration=5.0)
+        self.rng = random.Random(42)
+
+    def test_correct_voice_count(self):
+        """Should return exactly n_voices voice configs."""
+        for n in range(1, 6):
+            midi_info = {'programs': set(), 'path': None}
+            voices = self.engine._choose_gm_instruments(midi_info, n, self.rng)
+            self.assertEqual(len(voices), n)
+
+    def test_voice_has_required_fields(self):
+        """Each voice config should have gm_program, octave_offset, pan, chord_size."""
+        midi_info = {'programs': set(), 'path': None}
+        voices = self.engine._choose_gm_instruments(midi_info, 3, self.rng)
+        for v in voices:
+            self.assertIn('gm_program', v)
+            self.assertIn('octave_offset', v)
+            self.assertIn('pan', v)
+            self.assertIn('chord_size', v)
+            self.assertIn('color_amount', v)
+            self.assertTrue(2 <= v['chord_size'] <= 5)
+
+
+class TestLoopFriendliness(unittest.TestCase):
+    """Tests for MidiLibrary._assess_loop_friendliness()."""
+
+    def setUp(self):
+        self.lib = MidiLibrary()
+
+    def test_perfect_loop_scores_high(self):
+        """A segment with matching start/end pitches should score well."""
+        # Notes with same pitch classes at start and end, balanced density
+        notes = [(i * 100, 60, 100, 80) for i in range(16)]
+        score = self.lib._assess_loop_friendliness(notes, 0, 1600, 480)
+        self.assertGreater(score, 0.5)
+
+    def test_score_in_range(self):
+        """Score should always be between 0 and 1."""
+        for _ in range(20):
+            rng = random.Random(_)
+            notes = [(rng.randint(0, 5000), rng.randint(40, 80),
+                      rng.randint(50, 200), rng.randint(40, 100))
+                     for _ in range(rng.randint(0, 30))]
+            score = self.lib._assess_loop_friendliness(notes, 0, 5000, 480)
+            self.assertTrue(0.0 <= score <= 1.0, f"Score {score} out of range")
+
+
+class TestFluidSynthRendering(unittest.TestCase):
+    """Tests for MidiLibrary.render_fluidsynth()."""
+
+    def test_returns_none_without_valid_path(self):
+        """Should return None for a nonexistent MIDI path."""
+        result = MidiLibrary.render_fluidsynth('/nonexistent.mid', 0)
+        self.assertIsNone(result)
+
+    def test_produces_samples_with_real_midi(self):
+        """Should produce stereo samples from a real MIDI file (if available)."""
+        if not HAS_FLUIDSYNTH:
+            self.skipTest("FluidSynth not available")
+        # Find a MIDI file
+        midi_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                'midi_library')
+        midi_files = []
+        if os.path.isdir(midi_dir):
+            for f in os.listdir(midi_dir):
+                if f.endswith('.mid') or f.endswith('.midi'):
+                    midi_files.append(os.path.join(midi_dir, f))
+        if not midi_files:
+            self.skipTest("No MIDI files available")
+        result = MidiLibrary.render_fluidsynth(midi_files[0], 0)
+        if result is not None:
+            left, right = result
+            self.assertTrue(len(left) > 0)
+            self.assertEqual(len(left), len(right))
+
+    def test_graceful_fallback(self):
+        """Should not crash even when FluidSynth has issues."""
+        # Use an empty file to trigger an error path
+        with tempfile.NamedTemporaryFile(suffix='.mid', delete=False) as f:
+            f.write(b'\x00' * 10)
+            bad_path = f.name
+        try:
+            result = MidiLibrary.render_fluidsynth(bad_path, 40)
+            # Should return None, not crash
+            self.assertTrue(result is None or isinstance(result, tuple))
+        finally:
+            os.unlink(bad_path)
+
+
+class TestSampleBarsSeeded(unittest.TestCase):
+    """Tests for MidiLibrary.sample_bars_seeded()."""
+
+    def setUp(self):
+        self.lib = MidiLibrary()
+        self.lib.load()
+        self.rng = random.Random(42)
+
+    def test_returns_triple(self):
+        """Should return (notes, duration, midi_info) tuple."""
+        state = {'temperature': 1e6, 'particles': 500}
+        result = self.lib.sample_bars_seeded(state, 4, 120, 4,
+                                              root=60, rng=self.rng)
+        self.assertIsInstance(result, tuple)
+        self.assertEqual(len(result), 3)
+        notes, duration, info = result
+        self.assertIsInstance(notes, list)
+        self.assertGreater(duration, 0)
+        self.assertIsInstance(info, dict)
+
+    def test_deterministic_selection(self):
+        """Same sim_state should select the same MIDI segment."""
+        state = {'temperature': 1e6, 'particles': 500}
+        r1 = self.lib.sample_bars_seeded(state, 4, 120, 4,
+                                          root=60, rng=random.Random(42))
+        r2 = self.lib.sample_bars_seeded(state, 4, 120, 4,
+                                          root=60, rng=random.Random(42))
+        self.assertEqual(len(r1[0]), len(r2[0]))
+        self.assertAlmostEqual(r1[1], r2[1], places=2)
 
 
 if __name__ == '__main__':

@@ -200,7 +200,55 @@ CHORD_INTERVALS = {
     'sus2': [0, 2, 7],
     'sus4': [0, 5, 7],
     'pow': [0, 7],
+    'add9': [0, 4, 7, 14],
+    'min9': [0, 3, 7, 10, 14],
 }
+
+# ---------------------------------------------------------------------------
+# RONDO PATTERNS (classical form)
+# ---------------------------------------------------------------------------
+RONDO_PATTERNS = {
+    'ABACA':   ['A', 'B', 'A', 'C', 'A'],
+    'ABACADA': ['A', 'B', 'A', 'C', 'A', 'D', 'A'],
+}
+
+# Diatonic chord qualities per scale degree (7-degree scales)
+DIATONIC_CHORD_QUALITY = {
+    'ionian':         ['maj', 'min', 'min', 'maj', 'maj', 'min', 'dim'],
+    'dorian':         ['min', 'min', 'maj', 'maj', 'min', 'dim', 'maj'],
+    'phrygian':       ['min', 'maj', 'maj', 'min', 'dim', 'maj', 'min'],
+    'lydian':         ['maj', 'maj', 'min', 'dim', 'maj', 'min', 'min'],
+    'mixolydian':     ['maj', 'min', 'dim', 'maj', 'min', 'min', 'maj'],
+    'aeolian':        ['min', 'dim', 'maj', 'min', 'min', 'maj', 'maj'],
+    'locrian':        ['dim', 'maj', 'min', 'min', 'maj', 'maj', 'min'],
+    'harmonic_minor': ['min', 'dim', 'aug', 'min', 'maj', 'maj', 'dim'],
+    'melodic_minor':  ['min', 'min', 'aug', 'maj', 'maj', 'dim', 'dim'],
+}
+
+# General MIDI orchestra instruments for FluidSynth rendering
+GM_ORCHESTRA_INSTRUMENTS = {
+    40: 'Violin', 41: 'Viola', 42: 'Cello', 43: 'Contrabass',
+    44: 'Tremolo Strings', 45: 'Pizzicato Strings',
+    46: 'Orchestral Harp', 48: 'String Ensemble 1',
+    56: 'Trumpet', 57: 'Trombone', 58: 'Tuba',
+    60: 'French Horn', 61: 'Brass Section',
+    68: 'Oboe', 69: 'English Horn', 70: 'Bassoon',
+    71: 'Clarinet', 72: 'Piccolo', 73: 'Flute',
+    74: 'Recorder', 75: 'Pan Flute',
+    6: 'Harpsichord', 8: 'Celesta',
+    11: 'Vibraphone', 14: 'Tubular Bells',
+}
+
+PIANO_PROGRAMS = {0, 1, 2, 3, 4, 5, 6, 7}  # GM piano family
+
+# FluidSynth availability
+_FLUIDSYNTH_PATH = None
+_FLUIDR3_SF2 = '/usr/share/sounds/sf2/FluidR3_GM.sf2'
+for _p in ['/usr/bin/fluidsynth', '/usr/local/bin/fluidsynth']:
+    if os.path.isfile(_p):
+        _FLUIDSYNTH_PATH = _p
+        break
+HAS_FLUIDSYNTH = _FLUIDSYNTH_PATH is not None and os.path.isfile(_FLUIDR3_SF2)
 
 # ---------------------------------------------------------------------------
 # EPOCH -> Musical character mapping (from simulation)
@@ -564,8 +612,11 @@ class InstrumentFactory:
         if ca == 0.0:
             return base
 
-        # --- Color: use instrument's characteristics ---
-        color = self.synthesize_note(instr, freq, duration, velocity)
+        # --- Color: use instrument's characteristics (suppress noise/distortion) ---
+        clean_instr = dict(instr)
+        clean_instr['noise_level'] = 0.0
+        clean_instr['distortion'] = min(instr.get('distortion', 0) * 0.3, 0.1)
+        color = self.synthesize_note(clean_instr, freq, duration, velocity)
 
         # Blend
         result = [0.0] * n
@@ -978,6 +1029,262 @@ class MidiLibrary:
 
         return (result, segment_duration)
 
+    def _assess_loop_friendliness(self, notes, start_tick, end_tick, tpb):
+        """Score how well a segment loops (0.0-1.0).
+
+        Checks pitch class overlap at boundaries, note density balance,
+        and clean note endings.
+        """
+        if not notes:
+            return 0.0
+
+        segment_notes = [(o, p, d, v) for o, p, d, v in notes
+                         if start_tick <= o < end_tick]
+        if len(segment_notes) < 4:
+            return 0.1
+
+        # 1. Pitch class overlap at start vs end (0-0.4)
+        boundary = (end_tick - start_tick) // 8
+        start_pcs = set((p % 12) for o, p, d, v in segment_notes
+                        if o < start_tick + boundary)
+        end_pcs = set((p % 12) for o, p, d, v in segment_notes
+                       if o >= end_tick - boundary)
+        if start_pcs and end_pcs:
+            overlap = len(start_pcs & end_pcs) / max(len(start_pcs | end_pcs), 1)
+        else:
+            overlap = 0.0
+        score = overlap * 0.4
+
+        # 2. Note density balance (0-0.3): similar density in first/second half
+        mid = (start_tick + end_tick) // 2
+        first_half = sum(1 for o, p, d, v in segment_notes if o < mid)
+        second_half = len(segment_notes) - first_half
+        if first_half + second_half > 0:
+            balance = 1.0 - abs(first_half - second_half) / (first_half + second_half)
+        else:
+            balance = 0.0
+        score += balance * 0.3
+
+        # 3. Clean endings (0-0.3): notes ending near segment boundary
+        cut_notes = sum(1 for o, p, d, v in segment_notes
+                        if o + d > end_tick + tpb)
+        cut_ratio = cut_notes / max(len(segment_notes), 1)
+        score += (1.0 - cut_ratio) * 0.3
+
+        return clamp(score, 0.0, 1.0)
+
+    def sample_bars_seeded(self, sim_state, n_bars, tempo, beats_per_bar,
+                           root=60, scale=None, rng=None):
+        """Sample MIDI bars using simulation state as deterministic seed.
+
+        Uses hash of sim_state to pick MIDI file and start position.
+        Tries up to 3 offsets for best loop-friendliness score.
+        Returns (notes_list, segment_duration, midi_info) where midi_info
+        contains the source file path and detected programs.
+        """
+        if not self._note_sequences:
+            fb = self._generate_fallback_bars(rng or random.Random(42),
+                                              n_bars, tempo, beats_per_bar,
+                                              root, scale)
+            return (fb[0], fb[1], {'path': None, 'programs': set()})
+
+        if rng is None:
+            rng = random.Random(42)
+
+        # Hash simulation state for deterministic selection
+        if sim_state:
+            state_str = repr(sorted(sim_state.items()))
+            h = hashlib.sha256(state_str.encode()).hexdigest()
+            idx = int(h[:8], 16) % len(self._note_sequences)
+        else:
+            idx = rng.randint(0, len(self._note_sequences) - 1)
+
+        seq = self._note_sequences[idx]
+        notes = seq['notes']
+        tpb = seq.get('ticks_per_beat', 480)
+
+        if len(notes) < 8:
+            fb = self._generate_fallback_bars(rng, n_bars, tempo, beats_per_bar,
+                                              root, scale)
+            return (fb[0], fb[1], {'path': seq.get('path'), 'programs': set()})
+
+        ticks_per_bar = tpb * beats_per_bar
+        segment_ticks = ticks_per_bar * n_bars
+        max_onset = notes[-1][0]
+
+        # Try up to 3 offsets, pick best loop score
+        best_start = 0
+        best_score = -1.0
+        for attempt in range(3):
+            if sim_state and attempt == 0:
+                h2 = hashlib.sha256((state_str + str(attempt)).encode()).hexdigest()
+                candidate = int(h2[8:16], 16) % max(1, int(max_onset))
+            else:
+                candidate = rng.randint(0, max(0, int(max_onset - segment_ticks)))
+            score = self._assess_loop_friendliness(notes, candidate,
+                                                    candidate + segment_ticks, tpb)
+            if score > best_score:
+                best_score = score
+                best_start = candidate
+
+        start_tick = best_start
+        end_tick = start_tick + segment_ticks
+
+        # Collect notes in window
+        segment_notes = [(o - start_tick, p, d, v)
+                         for o, p, d, v in notes
+                         if start_tick <= o < end_tick]
+
+        if not segment_notes:
+            fb = self._generate_fallback_bars(rng, n_bars, tempo, beats_per_bar,
+                                              root, scale)
+            return (fb[0], fb[1], {'path': seq.get('path'), 'programs': set()})
+
+        # Transpose to root and snap to scale
+        pitches = [n[1] for n in segment_notes]
+        center = sum(pitches) / len(pitches)
+        offset = root - center
+
+        secs_per_tick = 60.0 / (tempo * tpb)
+        segment_duration = segment_ticks * secs_per_tick
+
+        result = []
+        for onset_t, pitch, dur_t, vel in segment_notes:
+            new_pitch = int(pitch + offset)
+            if scale:
+                new_pitch = self._snap_to_scale(new_pitch, root, scale)
+            new_pitch = clamp(new_pitch, 24, 108)
+            t_sec = onset_t * secs_per_tick
+            dur_sec = max(0.02, dur_t * secs_per_tick)
+            velocity = clamp(vel / 127.0, 0.1, 1.0)
+            result.append((t_sec, new_pitch, dur_sec, velocity))
+
+        # Detect programs (instruments) from source MIDI
+        programs = set()
+        if HAS_MIDO and seq.get('path'):
+            try:
+                mid = mido.MidiFile(seq['path'])
+                for track in mid.tracks:
+                    for msg in track:
+                        if msg.type == 'program_change':
+                            programs.add(msg.program)
+            except Exception:
+                pass
+
+        midi_info = {
+            'path': seq.get('path'),
+            'programs': programs,
+            'start_tick': start_tick,
+            'end_tick': end_tick,
+            'tpb': tpb,
+            'loop_score': best_score,
+        }
+
+        return (result, segment_duration, midi_info)
+
+    @staticmethod
+    def render_fluidsynth(midi_path, gm_program, tempo_factor=1.0,
+                          start_tick=0, end_tick=None):
+        """Render a MIDI file through FluidSynth with a specific GM instrument.
+
+        Creates a temp MIDI with the target program_change, renders via
+        FluidSynth+FluidR3_GM, returns (left_samples, right_samples) as floats.
+        Returns None if FluidSynth is unavailable.
+        """
+        if not HAS_FLUIDSYNTH or not HAS_MIDO:
+            return None
+
+        import tempfile
+
+        try:
+            mid = mido.MidiFile(midi_path)
+        except Exception:
+            return None
+
+        # Build a new MIDI with target instrument and optional tempo scaling
+        new_mid = mido.MidiFile(ticks_per_beat=mid.ticks_per_beat)
+
+        for i, track in enumerate(mid.tracks):
+            new_track = mido.MidiTrack()
+            new_mid.tracks.append(new_track)
+
+            # Insert program change at start of first track
+            if i == 0:
+                new_track.append(mido.Message('program_change',
+                                              program=gm_program, time=0))
+                if tempo_factor != 1.0:
+                    # Adjust tempo
+                    base_tempo = 500000  # 120 BPM default
+                    for msg in track:
+                        if msg.type == 'set_tempo':
+                            base_tempo = msg.tempo
+                            break
+                    new_tempo = int(base_tempo / tempo_factor)
+                    new_track.append(mido.MetaMessage('set_tempo',
+                                                       tempo=new_tempo, time=0))
+
+            current_time = 0
+            for msg in track:
+                current_time += msg.time
+                if start_tick and current_time < start_tick:
+                    continue
+                if end_tick and current_time > end_tick:
+                    break
+                # Replace any program_change with our target
+                if msg.type == 'program_change':
+                    new_track.append(mido.Message('program_change',
+                                                  program=gm_program,
+                                                  time=msg.time))
+                else:
+                    new_track.append(msg.copy())
+
+        try:
+            with tempfile.NamedTemporaryFile(suffix='.mid', delete=False) as tf:
+                temp_mid = tf.name
+            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as wf:
+                temp_wav = wf.name
+
+            new_mid.save(temp_mid)
+
+            subprocess.run(
+                [_FLUIDSYNTH_PATH, '-ni', _FLUIDR3_SF2, temp_mid,
+                 '-F', temp_wav, '-r', str(SAMPLE_RATE), '-g', '0.6'],
+                capture_output=True, timeout=60
+            )
+
+            if not os.path.exists(temp_wav) or os.path.getsize(temp_wav) < 100:
+                return None
+
+            # Read WAV into float samples
+            with wave.open(temp_wav, 'rb') as wf:
+                n_channels = wf.getnchannels()
+                n_frames = wf.getnframes()
+                raw = wf.readframes(n_frames)
+
+            left = [0.0] * n_frames
+            right = [0.0] * n_frames
+            for i in range(n_frames):
+                if n_channels == 2:
+                    l_val = struct.unpack_from('<h', raw, i * 4)[0]
+                    r_val = struct.unpack_from('<h', raw, i * 4 + 2)[0]
+                    left[i] = l_val / 32768.0
+                    right[i] = r_val / 32768.0
+                else:
+                    val = struct.unpack_from('<h', raw, i * 2)[0]
+                    left[i] = val / 32768.0
+                    right[i] = val / 32768.0
+
+            return (left, right)
+
+        except Exception:
+            return None
+        finally:
+            for p in [temp_mid, temp_wav]:
+                try:
+                    os.unlink(p)
+                except OSError:
+                    pass
+
 
 # ---------------------------------------------------------------------------
 # TTS ENGINE -- Text-to-speech for voice injection
@@ -1372,6 +1679,10 @@ class MoodSegment:
         # Whether to apply dampening/smoothing
         self.dampen = self.rng.random() < 0.4
 
+        # Number of concurrent instrument voices: 1-5
+        voice_factor = (sine_val + 1) / 2  # reuse from n_instruments
+        self.n_voices = clamp(int(1 + voice_factor * density * 5), 1, 5)
+
 
 # ---------------------------------------------------------------------------
 # RADIO ENGINE -- The main music generation engine
@@ -1741,13 +2052,216 @@ class RadioEngine:
         selected = rng.sample(self.instruments, min(n, len(self.instruments)))
         return selected
 
-    def _render_segment(self, mood, kits, n_samples, sim_state):
-        """Render a mood segment by looping a coloured MIDI excerpt.
+    # ------------------------------------------------------------------
+    # Chord / rondo / voice / tempo helpers
+    # ------------------------------------------------------------------
 
-        1. Sample a continuous 4-8 bar segment from the MIDI library.
-        2. Render every note with synthesize_colored_note.
-        3. Apply chamber-orchestra effects (reverb, reflections, chorus).
-        4. Loop the rendered excerpt to fill the mood's duration with crossfade.
+    def _compute_tempo_multiplier(self, sim_state):
+        """Compute a 2X-4X tempo multiplier from simulation state hash."""
+        if not sim_state:
+            return 2.5
+        state_str = repr(sorted(sim_state.items()))
+        h = hashlib.sha256(state_str.encode()).hexdigest()[:8]
+        return 2.0 + 2.0 * (int(h, 16) / 0xFFFFFFFF)
+
+    def _build_chord_from_note(self, midi_note, root, scale_name,
+                               scale_intervals, n_notes=3, rng=None):
+        """Expand a single MIDI note into a 2-5 note consonant chord.
+
+        Uses diatonic chord quality lookup and consonance enforcement.
+        Returns list of MIDI note numbers forming the chord.
+        """
+        # Snap base note to scale first
+        base = self.midi_lib._snap_to_scale(midi_note, root, scale_intervals)
+
+        # Determine scale degree
+        pc = (base - root) % 12
+        intervals = [int(round(s)) % 12 for s in scale_intervals]
+
+        degree = 0
+        best_dist = 12
+        for i, s in enumerate(intervals):
+            dist = min(abs(pc - s), 12 - abs(pc - s))
+            if dist < best_dist:
+                best_dist = dist
+                degree = i
+
+        # Get chord quality from diatonic table
+        qualities = DIATONIC_CHORD_QUALITY.get(scale_name)
+        if qualities and degree < len(qualities):
+            chord_type = qualities[degree]
+        else:
+            # Fallback: even degrees major, odd minor
+            chord_type = 'maj' if degree % 2 == 0 else 'min'
+
+        # Build chord intervals based on n_notes
+        n_notes = clamp(n_notes, 2, 5)
+        if n_notes == 2:
+            chord_ivs = CHORD_INTERVALS.get('pow', [0, 7])
+        elif n_notes == 3:
+            chord_ivs = CHORD_INTERVALS.get(chord_type, [0, 4, 7])
+        elif n_notes == 4:
+            ext = chord_type + '7'
+            chord_ivs = CHORD_INTERVALS.get(ext,
+                        CHORD_INTERVALS.get(chord_type, [0, 4, 7]) + [10])
+        else:  # 5 notes
+            ext = chord_type + '7'
+            base_ivs = CHORD_INTERVALS.get(ext,
+                       CHORD_INTERVALS.get(chord_type, [0, 4, 7]) + [10])
+            chord_ivs = list(base_ivs) + [14]  # add 9th
+
+        chord_ivs = chord_ivs[:n_notes]
+
+        # Build chord notes
+        chord = []
+        for iv in chord_ivs:
+            note = base + iv
+            note = self.midi_lib._snap_to_scale(note, root, scale_intervals)
+            note = clamp(note, 24, 108)
+            chord.append(note)
+
+        # Consonance check: reject any adjacent minor 2nd (semitone clash)
+        chord_sorted = sorted(set(chord))
+        clean = [chord_sorted[0]] if chord_sorted else [base]
+        for i in range(1, len(chord_sorted)):
+            interval = chord_sorted[i] - clean[-1]
+            if interval <= 1:
+                # Skip — too close (minor 2nd / unison)
+                continue
+            clean.append(chord_sorted[i])
+
+        # Ensure we have at least 2 notes
+        if len(clean) < 2:
+            fifth = self.midi_lib._snap_to_scale(base + 7, root, scale_intervals)
+            clean.append(clamp(fifth, 24, 108))
+
+        return clean[:n_notes]
+
+    def _build_rondo_sections(self, base_notes, root, scale_name,
+                              scale_intervals, segment_duration, rng):
+        """Build ABACADA rondo structure from chord-expanded notes.
+
+        Returns list of (section_label, notes_list) tuples where each
+        note is (t_sec, [chord_notes], dur_sec, velocity).
+        """
+        duration = segment_duration
+
+        # Choose rondo pattern
+        if duration > 80:
+            pattern = RONDO_PATTERNS['ABACADA']
+        else:
+            pattern = RONDO_PATTERNS['ABACA']
+
+        sections = {}
+        sections['A'] = base_notes  # Theme
+
+        # B: transposed +5 semitones (subdominant), inverted voicing
+        b_notes = []
+        for t, chord, dur, vel in base_notes:
+            new_chord = []
+            for note in chord:
+                n = self.midi_lib._snap_to_scale(note + 5, root, scale_intervals)
+                new_chord.append(clamp(n, 24, 108))
+            # Invert: move lowest note up an octave
+            if len(new_chord) > 1:
+                new_chord[0] = clamp(new_chord[0] + 12, 24, 108)
+                new_chord.sort()
+            b_notes.append((t, new_chord, dur, vel))
+        sections['B'] = b_notes
+
+        # C: transposed -3 semitones (relative minor/major), different register
+        c_notes = []
+        for t, chord, dur, vel in base_notes:
+            new_chord = []
+            for note in chord:
+                n = self.midi_lib._snap_to_scale(note - 3, root, scale_intervals)
+                new_chord.append(clamp(n + 12, 24, 108))  # up an octave
+            c_notes.append((t, new_chord, dur * rng.uniform(0.9, 1.1), vel))
+        sections['C'] = c_notes
+
+        # D: transposed +7 (dominant), wider voicing
+        d_notes = []
+        for t, chord, dur, vel in base_notes:
+            new_chord = []
+            for i, note in enumerate(chord):
+                n = self.midi_lib._snap_to_scale(note + 7, root, scale_intervals)
+                # Spread: alternate octaves for wider voicing
+                shift = (-12 if i % 2 == 0 else 12) if len(chord) > 2 else 0
+                new_chord.append(clamp(n + shift, 24, 108))
+            new_chord.sort()
+            d_notes.append((t, new_chord, dur, vel * rng.uniform(0.8, 1.0)))
+        sections['D'] = d_notes
+
+        # Ensure smooth voice leading at transitions
+        result = []
+        for label in pattern:
+            result.append((label, sections.get(label, base_notes)))
+
+        return result
+
+    def _choose_gm_instruments(self, midi_info, n_voices, rng):
+        """Choose GM instruments for FluidSynth rendering.
+
+        If piano-only: 50% keep piano, 50% switch to orchestra.
+        Returns list of (gm_program, octave_offset, pan, chord_size) dicts.
+        """
+        programs = midi_info.get('programs', set())
+        is_piano = not programs or all(p in PIANO_PROGRAMS for p in programs)
+
+        voices = []
+        orch_programs = list(GM_ORCHESTRA_INSTRUMENTS.keys())
+
+        # Octave offsets and pans for spreading voices
+        offsets_pool = [-24, -12, 0, 12, 24]
+        pans_pool = [-0.6, -0.3, 0.0, 0.3, 0.6]
+
+        for v in range(n_voices):
+            if is_piano and rng.random() < 0.5:
+                gm = 0  # Keep as Acoustic Grand Piano
+            elif is_piano:
+                gm = rng.choice(orch_programs)
+            else:
+                # Non-piano: keep original or complement
+                orig = sorted(programs)
+                if v < len(orig):
+                    gm = orig[v]
+                else:
+                    gm = rng.choice(orch_programs)
+
+            oct_offset = offsets_pool[v % len(offsets_pool)]
+            pan = pans_pool[v % len(pans_pool)]
+
+            # Chord size: bass=2-3, mid=3-4, treble=3-5
+            if oct_offset <= -12:
+                chord_size = rng.randint(2, 3)
+            elif oct_offset >= 12:
+                chord_size = rng.randint(3, 5)
+            else:
+                chord_size = rng.randint(3, 4)
+
+            color_amount = 0.15 if oct_offset < 0 else 0.30
+
+            voices.append({
+                'gm_program': gm,
+                'octave_offset': oct_offset,
+                'pan': pan,
+                'chord_size': chord_size,
+                'color_amount': color_amount,
+            })
+
+        return voices
+
+    def _render_segment(self, mood, kits, n_samples, sim_state):
+        """Render a mood segment with chord rondo structure.
+
+        Pipeline:
+        1. Compute tempo multiplier (2X-4X)
+        2. Sample MIDI bars with simulation-seeded selection
+        3. Expand notes → 2-5 note consonant chords
+        4. Build rondo sections (ABACADA)
+        5. Select 1-5 voice instruments (FluidSynth + coloring)
+        6. Render all voices with chamber effects
+        7. Loop with crossfade to fill mood duration
         """
         left = [0.0] * n_samples
         right = [0.0] * n_samples
@@ -1757,58 +2271,112 @@ class RadioEngine:
         beats_per_bar = mood.beats_per_bar
         root = mood.root
 
-        # Choose loop length: 4-8 bars
+        # 1. Tempo multiplier
+        tempo_mult = self._compute_tempo_multiplier(sim_state)
+        effective_tempo = min(tempo * tempo_mult, 480)
+
+        # 2. Sample MIDI bars with seeded selection
         loop_bars = rng.randint(4, 8)
-
-        # Sample a contiguous MIDI segment
-        bars_result = self.midi_lib.sample_bars(
-            rng, loop_bars, tempo, beats_per_bar,
-            root=root, scale=mood.scale
+        bars_result = self.midi_lib.sample_bars_seeded(
+            sim_state, loop_bars, effective_tempo, beats_per_bar,
+            root=root, scale=mood.scale, rng=rng
         )
-        midi_notes, segment_duration = bars_result
+        midi_notes, segment_duration, midi_info = bars_result
 
-        if segment_duration <= 0:
+        if segment_duration <= 0 or not midi_notes:
             return left, right
 
-        loop_samples = int(segment_duration * SAMPLE_RATE)
+        # 3. Choose voice instruments
+        n_voices = getattr(mood, 'n_voices', rng.randint(1, 5))
+        voice_configs = self._choose_gm_instruments(midi_info, n_voices, rng)
+
+        # 4. Expand each note into chords (use primary voice chord size)
+        primary_chord_size = voice_configs[0]['chord_size'] if voice_configs else 3
+        chord_notes = []
+        for t_sec, midi_note, dur_sec, vel in midi_notes:
+            chord = self._build_chord_from_note(
+                midi_note, root, mood.scale_name, mood.scale,
+                n_notes=primary_chord_size, rng=rng
+            )
+            chord_notes.append((t_sec, chord, dur_sec, vel))
+
+        # 5. Build rondo sections
+        rondo = self._build_rondo_sections(
+            chord_notes, root, mood.scale_name, mood.scale,
+            segment_duration, rng
+        )
+
+        # Compute total rondo duration
+        rondo_duration = segment_duration * len(rondo)
+        loop_samples = int(rondo_duration * SAMPLE_RATE)
         if loop_samples <= 0:
             return left, right
 
-        # Pick 1-3 instruments for colouring
-        all_instr = []
-        for kit in kits:
-            all_instr.extend(kit.melody + kit.harmony + kit.bass)
-        if not all_instr:
-            all_instr = rng.sample(self.instruments,
-                                   min(3, len(self.instruments)))
-        n_color = rng.randint(1, min(3, len(all_instr)))
-        color_instrs = rng.sample(all_instr, n_color)
-
-        color_amount = rng.uniform(0.15, 0.35)
-
-        # Render the loop excerpt
         loop_left = [0.0] * loop_samples
         loop_right = [0.0] * loop_samples
 
-        for t_sec, midi_note, dur_sec, vel in midi_notes:
-            offset = int(t_sec * SAMPLE_RATE)
-            if offset >= loop_samples:
-                continue
+        # Gain per voice to prevent clipping
+        voice_gain = 0.25 / max(n_voices, 1)
 
-            freq = mtof(midi_note)
-            instr = rng.choice(color_instrs)
+        # 6. Render all voices across all rondo sections
+        section_offset_sec = 0.0
 
-            note_samps = self.factory.synthesize_colored_note(
-                instr, freq, dur_sec, vel, color_amount
+        # Try FluidSynth for primary voice
+        fluid_rendered = None
+        if HAS_FLUIDSYNTH and midi_info.get('path'):
+            primary_gm = voice_configs[0]['gm_program']
+            fluid_rendered = MidiLibrary.render_fluidsynth(
+                midi_info['path'], primary_gm,
+                tempo_factor=tempo_mult,
+                start_tick=midi_info.get('start_tick', 0),
+                end_tick=midi_info.get('end_tick')
             )
 
-            # Pan by pitch register: low=center, high=wider
-            pitch_norm = clamp((midi_note - 36) / 72.0, 0.0, 1.0)
-            pan = (pitch_norm - 0.5) * 0.6
-            self._mix_mono(loop_left, loop_right, note_samps, offset,
-                          loop_samples, pan)
+        for sec_idx, (label, section_notes) in enumerate(rondo):
+            sec_start = int(section_offset_sec * SAMPLE_RATE)
 
-        # Apply chamber effects probabilistically
+            for v_idx, vc in enumerate(voice_configs):
+                oct_off = vc['octave_offset']
+                pan = vc['pan']
+                ca = vc['color_amount']
+                v_chord_size = vc['chord_size']
+
+                # Use FluidSynth rendered audio for first voice, first A section
+                if (v_idx == 0 and fluid_rendered is not None
+                        and label == 'A' and sec_idx == 0):
+                    fl, fr = fluid_rendered
+                    fl_n = min(len(fl), loop_samples - sec_start)
+                    for i in range(fl_n):
+                        pos = sec_start + i
+                        if 0 <= pos < loop_samples:
+                            loop_left[pos] += fl[i] * voice_gain
+                            loop_right[pos] += fr[i] * voice_gain
+                    continue
+
+                # Pick a coloring instrument from the 537-bank
+                color_instr = rng.choice(self.instruments)
+
+                for t_sec, chord, dur_sec, vel in section_notes:
+                    offset = sec_start + int(t_sec * SAMPLE_RATE)
+                    if offset >= loop_samples:
+                        continue
+
+                    # Re-build chord at this voice's chord size + octave
+                    voice_chord = chord[:v_chord_size]
+                    voice_chord = [clamp(n + oct_off, 24, 108)
+                                   for n in voice_chord]
+
+                    for note in voice_chord:
+                        freq = mtof(note)
+                        samps = self.factory.synthesize_colored_note(
+                            color_instr, freq, dur_sec, vel, ca
+                        )
+                        self._mix_mono(loop_left, loop_right, samps,
+                                      offset, loop_samples, pan * voice_gain * 4)
+
+            section_offset_sec += segment_duration
+
+        # 7. Apply chamber effects
         if rng.random() < 0.70:
             loop_left = self.smoother.apply_early_reflections(loop_left)
             loop_right = self.smoother.apply_early_reflections(loop_right)
@@ -1819,8 +2387,9 @@ class RadioEngine:
             loop_left = self.smoother.apply_chorus(loop_left)
             loop_right = self.smoother.apply_chorus(loop_right)
 
-        # Loop with crossfade to fill mood duration
-        xfade = min(int(rng.uniform(0.5, 1.0) * SAMPLE_RATE), loop_samples // 4)
+        # 8. Loop with crossfade to fill mood duration
+        xfade = min(int(rng.uniform(0.5, 1.0) * SAMPLE_RATE),
+                     loop_samples // 4)
         pos = 0
         while pos < n_samples:
             remaining = n_samples - pos
