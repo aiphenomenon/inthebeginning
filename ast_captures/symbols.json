@@ -34,8 +34,18 @@
     },
     {
       "type": "FunctionDef",
-      "name": "main",
+      "name": "run_introspection",
       "line": 151,
+      "attributes": {
+        "args": [],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "main",
+      "line": 198,
       "attributes": {
         "args": [],
         "decorators": 0,
@@ -43,6 +53,7 @@
       }
     }
   ],
+  "ast_dsl/__init__.py": [],
   "ast_dsl/c_ast.py": [
     {
       "type": "FunctionDef",
@@ -134,7 +145,7 @@
     {
       "type": "ClassDef",
       "name": "ASTNode",
-      "line": 34,
+      "line": 38,
       "attributes": {
         "bases": [],
         "decorators": 1
@@ -143,7 +154,7 @@
     {
       "type": "FunctionDef",
       "name": "to_dict",
-      "line": 46,
+      "line": 50,
       "attributes": {
         "args": [
           "self"
@@ -155,7 +166,7 @@
     {
       "type": "FunctionDef",
       "name": "to_compact",
-      "line": 64,
+      "line": 68,
       "attributes": {
         "args": [
           "self"
@@ -167,7 +178,7 @@
     {
       "type": "FunctionDef",
       "name": "walk",
-      "line": 79,
+      "line": 83,
       "attributes": {
         "args": [
           "self"
@@ -179,7 +190,7 @@
     {
       "type": "FunctionDef",
       "name": "find",
-      "line": 85,
+      "line": 89,
       "attributes": {
         "args": [
           "self",
@@ -193,7 +204,7 @@
     {
       "type": "ClassDef",
       "name": "ASTQuery",
-      "line": 98,
+      "line": 102,
       "attributes": {
         "bases": [],
         "decorators": 1
@@ -202,7 +213,7 @@
     {
       "type": "FunctionDef",
       "name": "to_dict",
-      "line": 106,
+      "line": 110,
       "attributes": {
         "args": [
           "self"
@@ -214,7 +225,7 @@
     {
       "type": "FunctionDef",
       "name": "from_dict",
-      "line": 110,
+      "line": 114,
       "attributes": {
         "args": [
           "cls",
@@ -227,7 +238,7 @@
     {
       "type": "ClassDef",
       "name": "PerformanceMetrics",
-      "line": 115,
+      "line": 119,
       "attributes": {
         "bases": [],
         "decorators": 1
@@ -236,7 +247,7 @@
     {
       "type": "FunctionDef",
       "name": "to_dict",
-      "line": 127,
+      "line": 131,
       "attributes": {
         "args": [
           "self"
@@ -248,7 +259,7 @@
     {
       "type": "ClassDef",
       "name": "ASTResult",
-      "line": 132,
+      "line": 136,
       "attributes": {
         "bases": [],
         "decorators": 1
@@ -257,7 +268,7 @@
     {
       "type": "FunctionDef",
       "name": "to_dict",
-      "line": 141,
+      "line": 145,
       "attributes": {
         "args": [
           "self"
@@ -269,7 +280,7 @@
     {
       "type": "FunctionDef",
       "name": "to_compact",
-      "line": 161,
+      "line": 165,
       "attributes": {
         "args": [
           "self"
@@ -281,7 +292,7 @@
     {
       "type": "ClassDef",
       "name": "ASTEngine",
-      "line": 178,
+      "line": 182,
       "attributes": {
         "bases": [],
         "decorators": 0
@@ -290,7 +301,7 @@
     {
       "type": "FunctionDef",
       "name": "__init__",
-      "line": 181,
+      "line": 185,
       "attributes": {
         "args": [
           "self"
@@ -302,7 +313,7 @@
     {
       "type": "FunctionDef",
       "name": "_measure",
-      "line": 187,
+      "line": 191,
       "attributes": {
         "args": [
           "self",
@@ -315,7 +326,7 @@
     {
       "type": "FunctionDef",
       "name": "execute",
-      "line": 211,
+      "line": 215,
       "attributes": {
         "args": [
           "self",
@@ -328,7 +339,7 @@
     {
       "type": "FunctionDef",
       "name": "_get_python_ast",
-      "line": 263,
+      "line": 267,
       "attributes": {
         "args": [
           "self",
@@ -341,7 +352,7 @@
     {
       "type": "FunctionDef",
       "name": "_parse_python",
-      "line": 275,
+      "line": 279,
       "attributes": {
         "args": [
           "self",
@@ -355,7 +366,7 @@
     {
       "type": "FunctionDef",
       "name": "_python_node_to_universal",
-      "line": 280,
+      "line": 284,
       "attributes": {
         "args": [
           "self",
@@ -369,7 +380,7 @@
     {
       "type": "FunctionDef",
       "name": "_action_parse",
-      "line": 360,
+      "line": 364,
       "attributes": {
         "args": [
           "self",
@@ -382,7 +393,7 @@
     {
       "type": "FunctionDef",
       "name": "_action_find",
-      "line": 376,
+      "line": 380,
       "attributes": {
         "args": [
           "self",
@@ -395,7 +406,7 @@
     {
       "type": "FunctionDef",
       "name": "_action_symbols",
-      "line": 383,
+      "line": 387,
       "attributes": {
         "args": [
           "self",
@@ -408,7 +419,7 @@
     {
       "type": "FunctionDef",
       "name": "_action_dependencies",
-      "line": 399,
+      "line": 403,
       "attributes": {
         "args": [
           "self",
@@ -421,7 +432,7 @@
     {
       "type": "FunctionDef",
       "name": "_action_callers",
-      "line": 413,
+      "line": 417,
       "attributes": {
         "args": [
           "self",
@@ -434,7 +445,7 @@
     {
       "type": "FunctionDef",
       "name": "_action_code_metrics",
-      "line": 427,
+      "line": 431,
       "attributes": {
         "args": [
           "self",
@@ -447,7 +458,7 @@
     {
       "type": "FunctionDef",
       "name": "_walk_depth",
-      "line": 437,
+      "line": 441,
       "attributes": {
         "args": [
           "node",
@@ -460,7 +471,7 @@
     {
       "type": "FunctionDef",
       "name": "_action_transform",
-      "line": 462,
+      "line": 466,
       "attributes": {
         "args": [
           "self",
@@ -473,7 +484,7 @@
     {
       "type": "FunctionDef",
       "name": "_action_coverage_map",
-      "line": 474,
+      "line": 478,
       "attributes": {
         "args": [
           "self",
@@ -486,7 +497,7 @@
     {
       "type": "FunctionDef",
       "name": "parse_file",
-      "line": 494,
+      "line": 498,
       "attributes": {
         "args": [
           "self",
@@ -500,7 +511,7 @@
     {
       "type": "FunctionDef",
       "name": "find_symbols",
-      "line": 499,
+      "line": 503,
       "attributes": {
         "args": [
           "self",
@@ -514,12 +525,155 @@
     {
       "type": "FunctionDef",
       "name": "get_dependencies",
-      "line": 504,
+      "line": 508,
       "attributes": {
         "args": [
           "self",
           "filepath",
           "language"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "ast_dsl/introspect.py": [
+    {
+      "type": "FunctionDef",
+      "name": "_ensure_parsers_loaded",
+      "line": 41,
+      "attributes": {
+        "args": [],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "FileIntrospection",
+      "line": 115,
+      "attributes": {
+        "bases": [],
+        "decorators": 1
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "compaction_ratio",
+      "line": 132,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_dict",
+      "line": 137,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "IntrospectionReport",
+      "line": 153,
+      "attributes": {
+        "bases": [],
+        "decorators": 1
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "summary",
+      "line": 170,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_dict",
+      "line": 188,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_json",
+      "line": 207,
+      "attributes": {
+        "args": [
+          "self",
+          "indent"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_count_node_types",
+      "line": 211,
+      "attributes": {
+        "args": [
+          "ast_node"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "introspect_file",
+      "line": 226,
+      "attributes": {
+        "args": [
+          "filepath",
+          "language"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "introspect_app",
+      "line": 267,
+      "attributes": {
+        "args": [
+          "root_path",
+          "language",
+          "app_name",
+          "exclude_dirs"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "introspect_all_apps",
+      "line": 332,
+      "attributes": {
+        "args": [
+          "project_root"
         ],
         "decorators": 0,
         "is_async": false
@@ -581,6 +735,45 @@
       "type": "FunctionDef",
       "name": "to_compact",
       "line": 145,
+      "attributes": {
+        "args": [
+          "node"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "ast_dsl/kotlin_ast.py": [
+    {
+      "type": "FunctionDef",
+      "name": "parse_kotlin_source",
+      "line": 10,
+      "attributes": {
+        "args": [
+          "source",
+          "filename"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "find_kotlin_symbols",
+      "line": 229,
+      "attributes": {
+        "args": [
+          "source"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_compact",
+      "line": 243,
       "attributes": {
         "args": [
           "node"
@@ -1317,6 +1510,124 @@
       }
     }
   ],
+  "ast_dsl/swift_ast.py": [
+    {
+      "type": "FunctionDef",
+      "name": "parse_swift_source",
+      "line": 13,
+      "attributes": {
+        "args": [
+          "source",
+          "filename"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "find_swift_symbols",
+      "line": 267,
+      "attributes": {
+        "args": [
+          "source"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_compact",
+      "line": 281,
+      "attributes": {
+        "args": [
+          "node"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "ast_dsl/typescript_ast.py": [
+    {
+      "type": "FunctionDef",
+      "name": "parse_typescript_source",
+      "line": 10,
+      "attributes": {
+        "args": [
+          "source",
+          "filename"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "find_typescript_symbols",
+      "line": 227,
+      "attributes": {
+        "args": [
+          "source"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_compact",
+      "line": 241,
+      "attributes": {
+        "args": [
+          "node"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "ast_dsl/wasm_ast.py": [
+    {
+      "type": "FunctionDef",
+      "name": "parse_wasm_source",
+      "line": 10,
+      "attributes": {
+        "args": [
+          "source",
+          "filename"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "find_wasm_symbols",
+      "line": 170,
+      "attributes": {
+        "args": [
+          "source"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_compact",
+      "line": 184,
+      "attributes": {
+        "args": [
+          "node"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "simulator/__init__.py": [],
   "simulator/atomic.py": [
     {
       "type": "ClassDef",
@@ -2169,7 +2480,7 @@
     {
       "type": "FunctionDef",
       "name": "average_fitness",
-      "line": 532,
+      "line": 533,
       "attributes": {
         "args": [
           "self"
@@ -2181,7 +2492,7 @@
     {
       "type": "FunctionDef",
       "name": "average_gc_content",
-      "line": 537,
+      "line": 538,
       "attributes": {
         "args": [
           "self"
@@ -2193,7 +2504,7 @@
     {
       "type": "FunctionDef",
       "name": "total_mutations",
-      "line": 542,
+      "line": 543,
       "attributes": {
         "args": [
           "self"
@@ -2205,7 +2516,7 @@
     {
       "type": "FunctionDef",
       "name": "to_compact",
-      "line": 545,
+      "line": 546,
       "attributes": {
         "args": [
           "self"
@@ -3298,6 +3609,7 @@
       }
     }
   ],
+  "tests/__init__.py": [],
   "tests/test_ast_dsl.py": [
     {
       "type": "ClassDef",
@@ -6350,7 +6662,7 @@
     {
       "type": "ClassDef",
       "name": "TestJavaAST",
-      "line": 143,
+      "line": 147,
       "attributes": {
         "bases": [
           "TestCase"
@@ -6361,18 +6673,6 @@
     {
       "type": "FunctionDef",
       "name": "test_parse",
-      "line": 144,
-      "attributes": {
-        "args": [
-          "self"
-        ],
-        "decorators": 0,
-        "is_async": false
-      }
-    },
-    {
-      "type": "FunctionDef",
-      "name": "test_find_symbols",
       "line": 148,
       "attributes": {
         "args": [
@@ -6384,8 +6684,20 @@
     },
     {
       "type": "FunctionDef",
+      "name": "test_find_symbols",
+      "line": 152,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
       "name": "test_package_detection",
-      "line": 155,
+      "line": 159,
       "attributes": {
         "args": [
           "self"
@@ -6397,7 +6709,7 @@
     {
       "type": "FunctionDef",
       "name": "test_import_detection",
-      "line": 161,
+      "line": 165,
       "attributes": {
         "args": [
           "self"
@@ -6409,7 +6721,7 @@
     {
       "type": "FunctionDef",
       "name": "test_interface_detection",
-      "line": 170,
+      "line": 174,
       "attributes": {
         "args": [
           "self"
@@ -6421,7 +6733,7 @@
     {
       "type": "FunctionDef",
       "name": "test_method_params",
-      "line": 177,
+      "line": 181,
       "attributes": {
         "args": [
           "self"
@@ -6433,7 +6745,7 @@
     {
       "type": "FunctionDef",
       "name": "test_compact",
-      "line": 184,
+      "line": 188,
       "attributes": {
         "args": [
           "self"
@@ -6445,7 +6757,7 @@
     {
       "type": "ClassDef",
       "name": "TestRustAST",
-      "line": 190,
+      "line": 194,
       "attributes": {
         "bases": [
           "TestCase"
@@ -6456,18 +6768,6 @@
     {
       "type": "FunctionDef",
       "name": "test_parse",
-      "line": 191,
-      "attributes": {
-        "args": [
-          "self"
-        ],
-        "decorators": 0,
-        "is_async": false
-      }
-    },
-    {
-      "type": "FunctionDef",
-      "name": "test_find_symbols",
       "line": 195,
       "attributes": {
         "args": [
@@ -6479,8 +6779,20 @@
     },
     {
       "type": "FunctionDef",
+      "name": "test_find_symbols",
+      "line": 199,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
       "name": "test_use_declarations",
-      "line": 202,
+      "line": 206,
       "attributes": {
         "args": [
           "self"
@@ -6492,7 +6804,7 @@
     {
       "type": "FunctionDef",
       "name": "test_mod_declarations",
-      "line": 207,
+      "line": 211,
       "attributes": {
         "args": [
           "self"
@@ -6504,7 +6816,7 @@
     {
       "type": "FunctionDef",
       "name": "test_struct_detection",
-      "line": 213,
+      "line": 217,
       "attributes": {
         "args": [
           "self"
@@ -6516,7 +6828,7 @@
     {
       "type": "FunctionDef",
       "name": "test_enum_detection",
-      "line": 220,
+      "line": 224,
       "attributes": {
         "args": [
           "self"
@@ -6528,7 +6840,7 @@
     {
       "type": "FunctionDef",
       "name": "test_trait_detection",
-      "line": 225,
+      "line": 229,
       "attributes": {
         "args": [
           "self"
@@ -6540,7 +6852,7 @@
     {
       "type": "FunctionDef",
       "name": "test_impl_detection",
-      "line": 230,
+      "line": 234,
       "attributes": {
         "args": [
           "self"
@@ -6552,7 +6864,7 @@
     {
       "type": "FunctionDef",
       "name": "test_async_fn",
-      "line": 235,
+      "line": 239,
       "attributes": {
         "args": [
           "self"
@@ -6564,7 +6876,7 @@
     {
       "type": "FunctionDef",
       "name": "test_compact",
-      "line": 242,
+      "line": 246,
       "attributes": {
         "args": [
           "self"
@@ -6576,7 +6888,7 @@
     {
       "type": "ClassDef",
       "name": "TestPerlAST",
-      "line": 248,
+      "line": 252,
       "attributes": {
         "bases": [
           "TestCase"
@@ -6587,18 +6899,6 @@
     {
       "type": "FunctionDef",
       "name": "test_parse",
-      "line": 249,
-      "attributes": {
-        "args": [
-          "self"
-        ],
-        "decorators": 0,
-        "is_async": false
-      }
-    },
-    {
-      "type": "FunctionDef",
-      "name": "test_find_symbols",
       "line": 253,
       "attributes": {
         "args": [
@@ -6610,8 +6910,20 @@
     },
     {
       "type": "FunctionDef",
+      "name": "test_find_symbols",
+      "line": 257,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
       "name": "test_use_declarations",
-      "line": 258,
+      "line": 262,
       "attributes": {
         "args": [
           "self"
@@ -6623,7 +6935,7 @@
     {
       "type": "FunctionDef",
       "name": "test_package_detection",
-      "line": 263,
+      "line": 267,
       "attributes": {
         "args": [
           "self"
@@ -6635,7 +6947,7 @@
     {
       "type": "FunctionDef",
       "name": "test_sub_declarations",
-      "line": 269,
+      "line": 273,
       "attributes": {
         "args": [
           "self"
@@ -6647,7 +6959,7 @@
     {
       "type": "FunctionDef",
       "name": "test_var_declarations",
-      "line": 277,
+      "line": 281,
       "attributes": {
         "args": [
           "self"
@@ -6659,7 +6971,7 @@
     {
       "type": "FunctionDef",
       "name": "test_method_calls",
-      "line": 282,
+      "line": 286,
       "attributes": {
         "args": [
           "self"
@@ -6671,7 +6983,7 @@
     {
       "type": "FunctionDef",
       "name": "test_compact",
-      "line": 288,
+      "line": 292,
       "attributes": {
         "args": [
           "self"
@@ -6683,7 +6995,7 @@
     {
       "type": "ClassDef",
       "name": "TestPHPAST",
-      "line": 294,
+      "line": 298,
       "attributes": {
         "bases": [
           "TestCase"
@@ -6694,18 +7006,6 @@
     {
       "type": "FunctionDef",
       "name": "test_parse",
-      "line": 295,
-      "attributes": {
-        "args": [
-          "self"
-        ],
-        "decorators": 0,
-        "is_async": false
-      }
-    },
-    {
-      "type": "FunctionDef",
-      "name": "test_find_symbols",
       "line": 299,
       "attributes": {
         "args": [
@@ -6717,8 +7017,20 @@
     },
     {
       "type": "FunctionDef",
+      "name": "test_find_symbols",
+      "line": 303,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
       "name": "test_namespace",
-      "line": 305,
+      "line": 309,
       "attributes": {
         "args": [
           "self"
@@ -6730,7 +7042,7 @@
     {
       "type": "FunctionDef",
       "name": "test_use_declarations",
-      "line": 311,
+      "line": 315,
       "attributes": {
         "args": [
           "self"
@@ -6742,7 +7054,7 @@
     {
       "type": "FunctionDef",
       "name": "test_class_detection",
-      "line": 316,
+      "line": 320,
       "attributes": {
         "args": [
           "self"
@@ -6754,7 +7066,7 @@
     {
       "type": "FunctionDef",
       "name": "test_interface_detection",
-      "line": 323,
+      "line": 327,
       "attributes": {
         "args": [
           "self"
@@ -6766,7 +7078,7 @@
     {
       "type": "FunctionDef",
       "name": "test_trait_detection",
-      "line": 329,
+      "line": 333,
       "attributes": {
         "args": [
           "self"
@@ -6778,7 +7090,7 @@
     {
       "type": "FunctionDef",
       "name": "test_function_return_type",
-      "line": 334,
+      "line": 338,
       "attributes": {
         "args": [
           "self"
@@ -6790,7 +7102,7 @@
     {
       "type": "FunctionDef",
       "name": "test_compact",
-      "line": 341,
+      "line": 345,
       "attributes": {
         "args": [
           "self"
@@ -6802,7 +7114,7 @@
     {
       "type": "ClassDef",
       "name": "TestCAST",
-      "line": 347,
+      "line": 351,
       "attributes": {
         "bases": [
           "TestCase"
@@ -6813,18 +7125,6 @@
     {
       "type": "FunctionDef",
       "name": "test_parse",
-      "line": 348,
-      "attributes": {
-        "args": [
-          "self"
-        ],
-        "decorators": 0,
-        "is_async": false
-      }
-    },
-    {
-      "type": "FunctionDef",
-      "name": "test_find_symbols",
       "line": 352,
       "attributes": {
         "args": [
@@ -6836,8 +7136,640 @@
     },
     {
       "type": "FunctionDef",
+      "name": "test_find_symbols",
+      "line": 356,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
       "name": "test_compact",
-      "line": 357,
+      "line": 361,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestWebAssemblyAST",
+      "line": 524,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_parse",
+      "line": 525,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_find_symbols",
+      "line": 529,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_func_declarations",
+      "line": 535,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_import_declarations",
+      "line": 542,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_export_declarations",
+      "line": 547,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_global_declarations",
+      "line": 554,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_memory_in_import",
+      "line": 560,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_type_declaration",
+      "line": 567,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_start_declaration",
+      "line": 572,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_compact",
+      "line": 578,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestTypeScriptAST",
+      "line": 584,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_parse",
+      "line": 585,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_find_symbols",
+      "line": 589,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_import_declarations",
+      "line": 596,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_class_detection",
+      "line": 601,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_interface_detection",
+      "line": 606,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_type_alias",
+      "line": 613,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_enum_detection",
+      "line": 618,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_function_detection",
+      "line": 624,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_namespace_detection",
+      "line": 629,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_decorator",
+      "line": 635,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_compact",
+      "line": 640,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestSwiftAST",
+      "line": 646,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_parse",
+      "line": 647,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_find_symbols",
+      "line": 651,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_import_declarations",
+      "line": 658,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_struct_detection",
+      "line": 665,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_class_detection",
+      "line": 672,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_enum_detection",
+      "line": 677,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_protocol_detection",
+      "line": 683,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_extension_detection",
+      "line": 688,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_actor_detection",
+      "line": 693,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_func_async_throws",
+      "line": 699,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_init_detection",
+      "line": 705,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_typealias",
+      "line": 710,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_compact",
+      "line": 715,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestKotlinAST",
+      "line": 721,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_parse",
+      "line": 722,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_find_symbols",
+      "line": 726,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_package_detection",
+      "line": 733,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_import_declarations",
+      "line": 739,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_data_class",
+      "line": 744,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_sealed_class",
+      "line": 751,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_object_declaration",
+      "line": 758,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_interface_detection",
+      "line": 765,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_sealed_interface",
+      "line": 770,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_suspend_fun",
+      "line": 777,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_extension_function",
+      "line": 784,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_property_declarations",
+      "line": 790,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_typealias",
+      "line": 795,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_compact",
+      "line": 800,
       "attributes": {
         "args": [
           "self"
@@ -8105,6 +9037,7116 @@
       "type": "FunctionDef",
       "name": "test_chemical_system_emerges",
       "line": 146,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "apps/audio/composer.py": [
+    {
+      "type": "FunctionDef",
+      "name": "mtof",
+      "line": 37,
+      "attributes": {
+        "args": [
+          "note"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "clamp",
+      "line": 41,
+      "attributes": {
+        "args": [
+          "v",
+          "lo",
+          "hi"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_fast_sin",
+      "line": 380,
+      "attributes": {
+        "args": [
+          "phase"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "StreamingOsc",
+      "line": 386,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 396,
+      "attributes": {
+        "args": [
+          "self",
+          "freq",
+          "duration",
+          "timbre_name",
+          "gain",
+          "attack",
+          "decay",
+          "sustain",
+          "release"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "render_chunk",
+      "line": 448,
+      "attributes": {
+        "args": [
+          "self",
+          "num_samples"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "AdditiveSynth",
+      "line": 484,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "render",
+      "line": 493,
+      "attributes": {
+        "args": [
+          "freq",
+          "duration",
+          "timbre_name",
+          "gain",
+          "attack",
+          "decay",
+          "sustain",
+          "release",
+          "vibrato_rate",
+          "vibrato_depth"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "PercSynth",
+      "line": 507,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_cached",
+      "line": 520,
+      "attributes": {
+        "args": [
+          "key",
+          "fn"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "kick",
+      "line": 530,
+      "attributes": {
+        "args": [
+          "freq",
+          "duration",
+          "gain"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_gen",
+      "line": 532,
+      "attributes": {
+        "args": [],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "snare",
+      "line": 547,
+      "attributes": {
+        "args": [
+          "freq",
+          "duration",
+          "gain",
+          "rng"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "hihat",
+      "line": 567,
+      "attributes": {
+        "args": [
+          "duration",
+          "gain",
+          "rng"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "rim",
+      "line": 586,
+      "attributes": {
+        "args": [
+          "freq",
+          "duration",
+          "gain"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_gen",
+      "line": 588,
+      "attributes": {
+        "args": [],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "BeatEngine",
+      "line": 605,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 613,
+      "attributes": {
+        "args": [
+          "self",
+          "rng",
+          "bpm"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "update_state",
+      "line": 624,
+      "attributes": {
+        "args": [
+          "self",
+          "epoch",
+          "epoch_idx",
+          "tick",
+          "temperature",
+          "particles"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "render_beat_bar",
+      "line": 647,
+      "attributes": {
+        "args": [
+          "self",
+          "duration_samples",
+          "root_note"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "MelodicVoice",
+      "line": 695,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 702,
+      "attributes": {
+        "args": [
+          "self",
+          "rng",
+          "voice_id"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "update_state",
+      "line": 714,
+      "attributes": {
+        "args": [
+          "self",
+          "epoch",
+          "epoch_idx",
+          "root_note",
+          "scale_name"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "maybe_start_phrase",
+      "line": 729,
+      "attributes": {
+        "args": [
+          "self",
+          "epoch",
+          "root_note",
+          "scale_intervals"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "render_chunk",
+      "line": 768,
+      "attributes": {
+        "args": [
+          "self",
+          "num_samples"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "maybe_play_phrase",
+      "line": 809,
+      "attributes": {
+        "args": [
+          "self",
+          "epoch",
+          "root_note",
+          "scale_intervals",
+          "duration_samples"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "HarmonicEngine",
+      "line": 822,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 829,
+      "attributes": {
+        "args": [
+          "self",
+          "rng"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "update_progression",
+      "line": 836,
+      "attributes": {
+        "args": [
+          "self",
+          "epoch",
+          "root_note",
+          "scale_intervals"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "get_current_chord",
+      "line": 843,
+      "attributes": {
+        "args": [
+          "self",
+          "root_note",
+          "scale_intervals"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "advance_chord",
+      "line": 861,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "start_chord_pad",
+      "line": 865,
+      "attributes": {
+        "args": [
+          "self",
+          "chord_notes",
+          "duration",
+          "timbre"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "render_pad_chunk",
+      "line": 885,
+      "attributes": {
+        "args": [
+          "self",
+          "num_samples"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "has_active_pad",
+      "line": 908,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "PocketNavigator",
+      "line": 917,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 927,
+      "attributes": {
+        "args": [
+          "self",
+          "rng"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "update",
+      "line": 933,
+      "attributes": {
+        "args": [
+          "self",
+          "epoch_idx",
+          "particles",
+          "atoms",
+          "molecules",
+          "cells",
+          "temperature"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_navigate",
+      "line": 949,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "get_timbre_for_domain",
+      "line": 962,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "get_octave_shift",
+      "line": 966,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "Composer",
+      "line": 983,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 991,
+      "attributes": {
+        "args": [
+          "self",
+          "seed"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "get_scale_for_state",
+      "line": 1014,
+      "attributes": {
+        "args": [
+          "self",
+          "epoch",
+          "epoch_idx",
+          "temperature",
+          "rng"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "compose_tick",
+      "line": 1021,
+      "attributes": {
+        "args": [
+          "self",
+          "epoch",
+          "epoch_idx",
+          "root_note",
+          "temperature",
+          "particles",
+          "atoms",
+          "molecules",
+          "cells",
+          "generation",
+          "samples_per_tick"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "apps/audio/generate.py": [
+    {
+      "type": "FunctionDef",
+      "name": "mtof",
+      "line": 96,
+      "attributes": {
+        "args": [
+          "note"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "clamp",
+      "line": 101,
+      "attributes": {
+        "args": [
+          "v",
+          "lo",
+          "hi"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "MixBuffer",
+      "line": 109,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 112,
+      "attributes": {
+        "args": [
+          "self",
+          "num_samples"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "add_mono",
+      "line": 117,
+      "attributes": {
+        "args": [
+          "self",
+          "samples",
+          "offset",
+          "pan",
+          "gain"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "add_stereo",
+      "line": 127,
+      "attributes": {
+        "args": [
+          "self",
+          "left",
+          "right",
+          "offset",
+          "gain"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_pcm16",
+      "line": 134,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "NumpyMixBuffer",
+      "line": 153,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 156,
+      "attributes": {
+        "args": [
+          "self",
+          "num_samples"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "add_mono",
+      "line": 161,
+      "attributes": {
+        "args": [
+          "self",
+          "samples",
+          "offset",
+          "pan",
+          "gain"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "add_stereo",
+      "line": 172,
+      "attributes": {
+        "args": [
+          "self",
+          "left",
+          "right",
+          "offset",
+          "gain"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "to_pcm16",
+      "line": 182,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "NumpyLowpassFilter",
+      "line": 195,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 198,
+      "attributes": {
+        "args": [
+          "self",
+          "cutoff",
+          "q"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_update_coeffs",
+      "line": 207,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "set_cutoff",
+      "line": 218,
+      "attributes": {
+        "args": [
+          "self",
+          "cutoff"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "process",
+      "line": 222,
+      "attributes": {
+        "args": [
+          "self",
+          "x"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "process_block",
+      "line": 230,
+      "attributes": {
+        "args": [
+          "self",
+          "samples"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_sine_blip",
+      "line": 260,
+      "attributes": {
+        "args": [
+          "freq",
+          "duration",
+          "pan"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_bell_tone",
+      "line": 282,
+      "attributes": {
+        "args": [
+          "freq",
+          "decay"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_pulse",
+      "line": 308,
+      "attributes": {
+        "args": [
+          "freq",
+          "width"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_pad",
+      "line": 345,
+      "attributes": {
+        "args": [
+          "notes",
+          "sustain"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_gen_pad_numpy",
+      "line": 413,
+      "attributes": {
+        "args": [
+          "notes",
+          "n",
+          "fade_in",
+          "sustain",
+          "fade_out",
+          "gain_per_note"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_sequence",
+      "line": 450,
+      "attributes": {
+        "args": [
+          "notes",
+          "tempo"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_impulse_response",
+      "line": 486,
+      "attributes": {
+        "args": [
+          "duration",
+          "decay"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "apply_reverb",
+      "line": 502,
+      "attributes": {
+        "args": [
+          "dry_l",
+          "dry_r",
+          "ir_l",
+          "ir_r",
+          "wet"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "LowpassFilter",
+      "line": 528,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 531,
+      "attributes": {
+        "args": [
+          "self",
+          "cutoff",
+          "q"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_update_coeffs",
+      "line": 538,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "set_cutoff",
+      "line": 554,
+      "attributes": {
+        "args": [
+          "self",
+          "cutoff"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "process",
+      "line": 558,
+      "attributes": {
+        "args": [
+          "self",
+          "x"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "process_block",
+      "line": 566,
+      "attributes": {
+        "args": [
+          "self",
+          "samples"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "CosmicAudioRenderer",
+      "line": 589,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 600,
+      "attributes": {
+        "args": [
+          "self",
+          "seed",
+          "ticks_per_second",
+          "enhanced",
+          "engine"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_epoch_index",
+      "line": 650,
+      "attributes": {
+        "args": [
+          "self",
+          "name"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_root_note",
+      "line": 657,
+      "attributes": {
+        "args": [
+          "self",
+          "epoch_name"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_chord_notes",
+      "line": 661,
+      "attributes": {
+        "args": [
+          "self",
+          "root"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "render_chunk",
+      "line": 665,
+      "attributes": {
+        "args": [
+          "self",
+          "num_ticks"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_inject_dark_matter_texture",
+      "line": 786,
+      "attributes": {
+        "args": [
+          "self",
+          "mix",
+          "offset",
+          "root"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_schedule_pad",
+      "line": 820,
+      "attributes": {
+        "args": [
+          "self",
+          "root"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_sonify_quantum",
+      "line": 828,
+      "attributes": {
+        "args": [
+          "self",
+          "mix",
+          "offset",
+          "root",
+          "particles",
+          "tick_i"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_sonify_atomic",
+      "line": 846,
+      "attributes": {
+        "args": [
+          "self",
+          "mix",
+          "offset",
+          "root",
+          "atoms",
+          "tick_i"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_sonify_chemistry",
+      "line": 872,
+      "attributes": {
+        "args": [
+          "self",
+          "mix",
+          "offset",
+          "root",
+          "molecules",
+          "tick_i"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_sonify_biology",
+      "line": 884,
+      "attributes": {
+        "args": [
+          "self",
+          "mix",
+          "offset",
+          "root",
+          "cells",
+          "generation",
+          "tick_i"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "write_wav",
+      "line": 916,
+      "attributes": {
+        "args": [
+          "renderer",
+          "duration_seconds",
+          "output_path",
+          "progress"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "write_mp3",
+      "line": 944,
+      "attributes": {
+        "args": [
+          "renderer",
+          "duration_seconds",
+          "output_path",
+          "bitrate",
+          "progress"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "encoder_thread",
+      "line": 978,
+      "attributes": {
+        "args": [],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "play_local",
+      "line": 1021,
+      "attributes": {
+        "args": [
+          "renderer",
+          "duration_seconds"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "stream_raw",
+      "line": 1061,
+      "attributes": {
+        "args": [
+          "renderer",
+          "duration_seconds"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "run_radio",
+      "line": 1080,
+      "attributes": {
+        "args": [
+          "renderer",
+          "port",
+          "host",
+          "bitrate"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "handle_client",
+      "line": 1105,
+      "attributes": {
+        "args": [
+          "conn",
+          "addr"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "accept_loop",
+      "line": 1167,
+      "attributes": {
+        "args": [],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "read_encoded",
+      "line": 1200,
+      "attributes": {
+        "args": [],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "main",
+      "line": 1290,
+      "attributes": {
+        "args": [],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "apps/audio/music_engine.py": [
+    {
+      "type": "FunctionDef",
+      "name": "mtof",
+      "line": 52,
+      "attributes": {
+        "args": [
+          "note"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "ftom",
+      "line": 56,
+      "attributes": {
+        "args": [
+          "freq"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "clamp",
+      "line": 62,
+      "attributes": {
+        "args": [
+          "v",
+          "lo",
+          "hi"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TimeSignature",
+      "line": 71,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 81,
+      "attributes": {
+        "args": [
+          "self",
+          "numerator",
+          "denominator",
+          "beat_groups",
+          "name"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_default_groups",
+      "line": 87,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "bar_duration",
+      "line": 105,
+      "attributes": {
+        "args": [
+          "self",
+          "bpm"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "bar_samples",
+      "line": 112,
+      "attributes": {
+        "args": [
+          "self",
+          "bpm"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "beat_positions",
+      "line": 116,
+      "attributes": {
+        "args": [
+          "self",
+          "bpm"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "strong_beats",
+      "line": 133,
+      "attributes": {
+        "args": [
+          "self",
+          "bpm"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "SampleBank",
+      "line": 247,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 255,
+      "attributes": {
+        "args": [
+          "self",
+          "samples_dir",
+          "preload"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_preload_all",
+      "line": 264,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "load",
+      "line": 273,
+      "attributes": {
+        "args": [
+          "self",
+          "name"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_load_wav",
+      "line": 293,
+      "attributes": {
+        "args": [
+          "self",
+          "path"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_load_mp3",
+      "line": 320,
+      "attributes": {
+        "args": [
+          "self",
+          "path"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "get_pitched",
+      "line": 338,
+      "attributes": {
+        "args": [
+          "self",
+          "name",
+          "midi_note",
+          "duration_samples"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "get_sample_bank",
+      "line": 406,
+      "attributes": {
+        "args": [],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "Track",
+      "line": 418,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 433,
+      "attributes": {
+        "args": [
+          "self",
+          "name",
+          "instrument",
+          "gain",
+          "pan"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "render_bar",
+      "line": 444,
+      "attributes": {
+        "args": [
+          "self",
+          "notes",
+          "bar_samples",
+          "time_sig",
+          "bpm",
+          "rng"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_synth_fallback",
+      "line": 504,
+      "attributes": {
+        "args": [
+          "self",
+          "midi",
+          "num_samples"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "PhraseGenerator",
+      "line": 527,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 592,
+      "attributes": {
+        "args": [
+          "self",
+          "rng"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "generate_melody",
+      "line": 598,
+      "attributes": {
+        "args": [
+          "self",
+          "root",
+          "scale",
+          "chord_notes",
+          "time_sig",
+          "bars_in_phrase"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "generate_bass",
+      "line": 643,
+      "attributes": {
+        "args": [
+          "self",
+          "root",
+          "scale",
+          "chord_degree",
+          "time_sig"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "generate_chord_voicing",
+      "line": 668,
+      "attributes": {
+        "args": [
+          "self",
+          "root",
+          "scale",
+          "chord_degree",
+          "chord_type",
+          "time_sig"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "generate_drums",
+      "line": 689,
+      "attributes": {
+        "args": [
+          "self",
+          "time_sig",
+          "intensity"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_degree_to_midi",
+      "line": 719,
+      "attributes": {
+        "args": [
+          "self",
+          "degree",
+          "root",
+          "scale"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "DrumTrack",
+      "line": 738,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 745,
+      "attributes": {
+        "args": [
+          "self",
+          "gain",
+          "pan"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "render_bar",
+      "line": 750,
+      "attributes": {
+        "args": [
+          "self",
+          "hits",
+          "bar_samples",
+          "time_sig",
+          "bpm"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "BiquadFilter",
+      "line": 793,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 799,
+      "attributes": {
+        "args": [
+          "self",
+          "cutoff",
+          "q",
+          "filter_type"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_compute_coeffs",
+      "line": 807,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "process_block",
+      "line": 834,
+      "attributes": {
+        "args": [
+          "self",
+          "samples"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "MixBus",
+      "line": 863,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 873,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "set_lowpass",
+      "line": 881,
+      "attributes": {
+        "args": [
+          "self",
+          "cutoff"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "mix_tracks",
+      "line": 887,
+      "attributes": {
+        "args": [
+          "self",
+          "track_buffers",
+          "num_samples"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_mix_tracks_numpy",
+      "line": 924,
+      "attributes": {
+        "args": [
+          "self",
+          "track_buffers",
+          "num_samples"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "Section",
+      "line": 960,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 971,
+      "attributes": {
+        "args": [
+          "self",
+          "time_sig",
+          "bpm",
+          "root",
+          "scale_name",
+          "progression_name",
+          "instruments",
+          "duration_bars"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "get_chord_for_bar",
+      "line": 984,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "MusicDirector",
+      "line": 998,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 1011,
+      "attributes": {
+        "args": [
+          "self",
+          "seed"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_get_era",
+      "line": 1082,
+      "attributes": {
+        "args": [
+          "self",
+          "epoch_idx"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_create_section",
+      "line": 1090,
+      "attributes": {
+        "args": [
+          "self",
+          "epoch",
+          "epoch_idx",
+          "temperature"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_render_next_bar",
+      "line": 1133,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "compose_tick",
+      "line": 1191,
+      "attributes": {
+        "args": [
+          "self",
+          "epoch",
+          "epoch_idx",
+          "temperature",
+          "particles",
+          "atoms",
+          "molecules",
+          "cells",
+          "generation",
+          "samples_per_tick"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "apps/audio/radio_engine.py": [
+    {
+      "type": "FunctionDef",
+      "name": "mtof",
+      "line": 73,
+      "attributes": {
+        "args": [
+          "note"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "ftom",
+      "line": 77,
+      "attributes": {
+        "args": [
+          "freq"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "clamp",
+      "line": 83,
+      "attributes": {
+        "args": [
+          "v",
+          "lo",
+          "hi"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_adsr",
+      "line": 301,
+      "attributes": {
+        "args": [
+          "n",
+          "attack",
+          "decay",
+          "sustain_level",
+          "release"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_write_wav",
+      "line": 323,
+      "attributes": {
+        "args": [
+          "path",
+          "samples",
+          "sample_rate"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "InstrumentFactory",
+      "line": 344,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 373,
+      "attributes": {
+        "args": [
+          "self",
+          "seed"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_make_harmonic_profile",
+      "line": 378,
+      "attributes": {
+        "args": [
+          "self",
+          "technique",
+          "variant_seed"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "generate_instrument",
+      "line": 428,
+      "attributes": {
+        "args": [
+          "self",
+          "name",
+          "seed"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "synthesize_note",
+      "line": 506,
+      "attributes": {
+        "args": [
+          "self",
+          "instr",
+          "freq",
+          "duration",
+          "velocity"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "synthesize_colored_note",
+      "line": 569,
+      "attributes": {
+        "args": [
+          "self",
+          "instr",
+          "freq",
+          "duration",
+          "velocity",
+          "color_amount"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "generate_instrument_set",
+      "line": 631,
+      "attributes": {
+        "args": [
+          "self",
+          "count",
+          "base_seed"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "rotate_instruments",
+      "line": 651,
+      "attributes": {
+        "args": [
+          "self",
+          "current_set",
+          "n_swap",
+          "generation"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "InstrumentKit",
+      "line": 683,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 691,
+      "attributes": {
+        "args": [
+          "self",
+          "name",
+          "instruments",
+          "scale",
+          "root",
+          "rng_seed"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "scale_notes",
+      "line": 716,
+      "attributes": {
+        "args": [
+          "self",
+          "octave_range"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "snap_to_scale",
+      "line": 726,
+      "attributes": {
+        "args": [
+          "self",
+          "midi_note"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "build_kits",
+      "line": 741,
+      "attributes": {
+        "args": [
+          "instruments",
+          "scale",
+          "root",
+          "n_kits",
+          "rng"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "MidiLibrary",
+      "line": 765,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 772,
+      "attributes": {
+        "args": [
+          "self",
+          "midi_dir"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "load",
+      "line": 779,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_extract_notes",
+      "line": 808,
+      "attributes": {
+        "args": [
+          "self",
+          "midi_file"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "sample_phrase",
+      "line": 826,
+      "attributes": {
+        "args": [
+          "self",
+          "rng",
+          "length",
+          "root",
+          "scale"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "sample_chord_pattern",
+      "line": 871,
+      "attributes": {
+        "args": [
+          "self",
+          "rng",
+          "root",
+          "scale",
+          "length"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_snap_to_scale",
+      "line": 902,
+      "attributes": {
+        "args": [
+          "self",
+          "midi_note",
+          "root",
+          "scale_intervals"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_generate_fallback_phrase",
+      "line": 917,
+      "attributes": {
+        "args": [
+          "self",
+          "rng",
+          "length",
+          "root",
+          "scale"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "sample_bars",
+      "line": 938,
+      "attributes": {
+        "args": [
+          "self",
+          "rng",
+          "n_bars",
+          "tempo",
+          "beats_per_bar",
+          "root",
+          "scale"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_generate_fallback_bars",
+      "line": 1004,
+      "attributes": {
+        "args": [
+          "self",
+          "rng",
+          "n_bars",
+          "tempo",
+          "beats_per_bar",
+          "root",
+          "scale"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_assess_loop_friendliness",
+      "line": 1032,
+      "attributes": {
+        "args": [
+          "self",
+          "notes",
+          "start_tick",
+          "end_tick",
+          "tpb"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "sample_bars_seeded",
+      "line": 1076,
+      "attributes": {
+        "args": [
+          "self",
+          "sim_state",
+          "n_bars",
+          "tempo",
+          "beats_per_bar",
+          "root",
+          "scale",
+          "rng"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "render_fluidsynth",
+      "line": 1186,
+      "attributes": {
+        "args": [
+          "midi_path",
+          "gm_program",
+          "tempo_factor",
+          "start_tick",
+          "end_tick"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TTSEngine",
+      "line": 1292,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 1311,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_try_load_silero",
+      "line": 1316,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "generate_speech",
+      "line": 1340,
+      "attributes": {
+        "args": [
+          "self",
+          "text",
+          "voice_seed",
+          "epoch_idx"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_generate_silero",
+      "line": 1350,
+      "attributes": {
+        "args": [
+          "self",
+          "text",
+          "voice_seed",
+          "epoch_idx"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_generate_espeak",
+      "line": 1365,
+      "attributes": {
+        "args": [
+          "self",
+          "text",
+          "voice_seed",
+          "epoch_idx"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "get_source_phrases",
+      "line": 1403,
+      "attributes": {
+        "args": [
+          "self",
+          "rng",
+          "count"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "SmoothingFilter",
+      "line": 1456,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 1463,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "apply_lowpass",
+      "line": 1467,
+      "attributes": {
+        "args": [
+          "self",
+          "samples",
+          "cutoff_hz"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "apply_soft_limit",
+      "line": 1477,
+      "attributes": {
+        "args": [
+          "self",
+          "samples",
+          "threshold"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "apply_stereo_smooth",
+      "line": 1490,
+      "attributes": {
+        "args": [
+          "self",
+          "left",
+          "right",
+          "amount"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "apply_gentle_compression",
+      "line": 1500,
+      "attributes": {
+        "args": [
+          "self",
+          "samples",
+          "ratio",
+          "threshold"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "apply_early_reflections",
+      "line": 1522,
+      "attributes": {
+        "args": [
+          "self",
+          "samples",
+          "sr"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "apply_reverb",
+      "line": 1542,
+      "attributes": {
+        "args": [
+          "self",
+          "samples",
+          "wet",
+          "sr"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "apply_chorus",
+      "line": 1593,
+      "attributes": {
+        "args": [
+          "self",
+          "samples",
+          "sr"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "MoodSegment",
+      "line": 1615,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 1622,
+      "attributes": {
+        "args": [
+          "self",
+          "segment_idx",
+          "epoch",
+          "epoch_idx",
+          "sim_state",
+          "rng_seed"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "RadioEngine",
+      "line": 1690,
+      "attributes": {
+        "bases": [],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "__init__",
+      "line": 1703,
+      "attributes": {
+        "args": [
+          "self",
+          "seed",
+          "total_duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_plan_segments",
+      "line": 1730,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_plan_tts",
+      "line": 1751,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "render",
+      "line": 1770,
+      "attributes": {
+        "args": [
+          "self",
+          "sim_states"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "render_streaming",
+      "line": 1876,
+      "attributes": {
+        "args": [
+          "self",
+          "wav_file",
+          "sim_states"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_generate_sim_states",
+      "line": 2033,
+      "attributes": {
+        "args": [
+          "self",
+          "n_segments"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_select_instruments",
+      "line": 2048,
+      "attributes": {
+        "args": [
+          "self",
+          "mood"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_compute_tempo_multiplier",
+      "line": 2059,
+      "attributes": {
+        "args": [
+          "self",
+          "sim_state"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_build_chord_from_note",
+      "line": 2067,
+      "attributes": {
+        "args": [
+          "self",
+          "midi_note",
+          "root",
+          "scale_name",
+          "scale_intervals",
+          "n_notes",
+          "rng"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_build_rondo_sections",
+      "line": 2140,
+      "attributes": {
+        "args": [
+          "self",
+          "base_notes",
+          "root",
+          "scale_name",
+          "scale_intervals",
+          "segment_duration",
+          "rng"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_choose_gm_instruments",
+      "line": 2202,
+      "attributes": {
+        "args": [
+          "self",
+          "midi_info",
+          "n_voices",
+          "rng"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_render_segment",
+      "line": 2254,
+      "attributes": {
+        "args": [
+          "self",
+          "mood",
+          "kits",
+          "n_samples",
+          "sim_state"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_mix_mono",
+      "line": 2410,
+      "attributes": {
+        "args": [
+          "self",
+          "left",
+          "right",
+          "samples",
+          "offset",
+          "total_samples",
+          "pan"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_inject_tts_at",
+      "line": 2423,
+      "attributes": {
+        "args": [
+          "self",
+          "left",
+          "right",
+          "trans_start",
+          "total_samples",
+          "mood",
+          "epoch_idx"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_inject_tts_into_buf",
+      "line": 2470,
+      "attributes": {
+        "args": [
+          "self",
+          "buf_left",
+          "buf_right",
+          "buf_global_start",
+          "trans_start",
+          "total_samples",
+          "mood",
+          "epoch_idx"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_resample",
+      "line": 2515,
+      "attributes": {
+        "args": [
+          "self",
+          "samples",
+          "from_sr",
+          "to_sr"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "render_to_wav",
+      "line": 2536,
+      "attributes": {
+        "args": [
+          "left",
+          "right",
+          "path",
+          "sample_rate"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "wav_to_mp3",
+      "line": 2553,
+      "attributes": {
+        "args": [
+          "wav_path",
+          "mp3_path",
+          "bitrate"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "generate_radio_mp3",
+      "line": 2563,
+      "attributes": {
+        "args": [
+          "output_path",
+          "duration",
+          "seed"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "apps/audio/sample_gen.py": [
+    {
+      "type": "FunctionDef",
+      "name": "_write_wav",
+      "line": 38,
+      "attributes": {
+        "args": [
+          "path",
+          "samples",
+          "sample_rate"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "_adsr",
+      "line": 56,
+      "attributes": {
+        "args": [
+          "n",
+          "attack",
+          "decay",
+          "sustain_level",
+          "release",
+          "sample_rate"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_piano",
+      "line": 83,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_electric_piano",
+      "line": 118,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_harpsichord",
+      "line": 136,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_celesta",
+      "line": 158,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_violin",
+      "line": 183,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_cello",
+      "line": 210,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_viola",
+      "line": 232,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_harp",
+      "line": 254,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_pizzicato",
+      "line": 275,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_flute",
+      "line": 300,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_clarinet",
+      "line": 320,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_oboe",
+      "line": 342,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_bassoon",
+      "line": 364,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_french_horn",
+      "line": 390,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_trumpet",
+      "line": 412,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_trombone",
+      "line": 434,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_tubular_bell",
+      "line": 460,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_glockenspiel",
+      "line": 483,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_vibraphone",
+      "line": 503,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_singing_bowl",
+      "line": 525,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_kick_drum",
+      "line": 550,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_snare_drum",
+      "line": 566,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_hi_hat_closed",
+      "line": 589,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_hi_hat_open",
+      "line": 605,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_cymbal_crash",
+      "line": 621,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_tom",
+      "line": 641,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_sitar",
+      "line": 660,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_koto",
+      "line": 688,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_kalimba",
+      "line": 709,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_gamelan_gong",
+      "line": 729,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_shakuhachi",
+      "line": 751,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_didgeridoo",
+      "line": 772,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_warm_pad",
+      "line": 798,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_string_ensemble",
+      "line": 821,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_choir_pad",
+      "line": 844,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_glass_pad",
+      "line": 876,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_cosmic_drone",
+      "line": 891,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_acoustic_bass",
+      "line": 915,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_synth_bass",
+      "line": 936,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "gen_electric_bass",
+      "line": 958,
+      "attributes": {
+        "args": [
+          "duration"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "generate_all_samples",
+      "line": 1036,
+      "attributes": {
+        "args": [
+          "output_dir"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "compress_to_mp3",
+      "line": 1052,
+      "attributes": {
+        "args": [
+          "wav_dir",
+          "mp3_dir",
+          "bitrate"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "apps/audio/test_audio.py": [
+    {
+      "type": "ClassDef",
+      "name": "TestUtilities",
+      "line": 23,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_mtof_a4",
+      "line": 26,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_mtof_c4",
+      "line": 30,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_mtof_octave",
+      "line": 34,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_clamp_within",
+      "line": 38,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_clamp_below",
+      "line": 41,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_clamp_above",
+      "line": 44,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestMixBuffer",
+      "line": 48,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_creation",
+      "line": 51,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_add_mono",
+      "line": 57,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_add_mono_hard_left",
+      "line": 65,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_pcm16_length",
+      "line": 71,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_to_pcm16_soft_limit",
+      "line": 77,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestInstruments",
+      "line": 88,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_sine_blip_returns_samples",
+      "line": 91,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_sine_blip_has_sound",
+      "line": 96,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_sine_blip_decays",
+      "line": 101,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_bell_tone_returns_samples",
+      "line": 109,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_bell_tone_has_fm_character",
+      "line": 113,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_pulse_returns_samples",
+      "line": 119,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_pulse_has_sound",
+      "line": 123,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_pad_returns_stereo",
+      "line": 128,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_pad_has_fade_in",
+      "line": 133,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_sequence_returns_samples",
+      "line": 143,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_sequence_length_matches_tempo",
+      "line": 147,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestImpulseResponse",
+      "line": 156,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_returns_stereo",
+      "line": 159,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_decays",
+      "line": 164,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestLowpassFilter",
+      "line": 172,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_creation",
+      "line": 175,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_passes_low_frequencies",
+      "line": 179,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_attenuates_high_frequencies",
+      "line": 189,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_set_cutoff",
+      "line": 198,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestEpochMapping",
+      "line": 204,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_all_epochs_have_roots",
+      "line": 207,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_root_notes_ascending",
+      "line": 211,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_epoch_count",
+      "line": 217,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestCosmicAudioRenderer",
+      "line": 222,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_creation",
+      "line": 225,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_render_chunk",
+      "line": 229,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_render_chunk_not_silent",
+      "line": 235,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_epoch_progression",
+      "line": 243,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_wav_output",
+      "line": 255,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "apps/audio/test_composer.py": [
+    {
+      "type": "ClassDef",
+      "name": "TestComposerUtilities",
+      "line": 26,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_mtof_a4",
+      "line": 29,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_mtof_c4",
+      "line": 32,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_clamp_within",
+      "line": 35,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_clamp_below",
+      "line": 38,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_clamp_above",
+      "line": 41,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_fast_sin_zero",
+      "line": 44,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_fast_sin_quarter",
+      "line": 47,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_fast_sin_half",
+      "line": 50,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_wavetable_size",
+      "line": 53,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestScalesData",
+      "line": 57,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_scales_not_empty",
+      "line": 60,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_all_scales_start_with_zero",
+      "line": 63,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_all_scales_have_intervals",
+      "line": 67,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_epoch_scale_families_cover_all_epochs",
+      "line": 71,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_epoch_scale_families_reference_valid_scales",
+      "line": 80,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestTimbresData",
+      "line": 87,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_timbres_not_empty",
+      "line": 90,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_tonal_timbres_have_harmonics",
+      "line": 93,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_fundamental_is_loudest",
+      "line": 100,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_domain_timbres_reference_valid_timbres",
+      "line": 109,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestRhythmPatternsData",
+      "line": 116,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_patterns_not_empty",
+      "line": 119,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_all_patterns_have_onsets",
+      "line": 122,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_onsets_between_zero_and_one",
+      "line": 126,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_epoch_rhythm_families_reference_valid_patterns",
+      "line": 132,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestProgressionsData",
+      "line": 139,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_progressions_not_empty",
+      "line": 142,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_epoch_progressions_reference_valid",
+      "line": 145,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestMotifsData",
+      "line": 152,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_motifs_not_empty",
+      "line": 155,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_all_motifs_have_notes",
+      "line": 158,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_epoch_motifs_reference_valid",
+      "line": 162,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestStreamingOsc",
+      "line": 169,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_creation",
+      "line": 172,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_render_chunk_returns_samples",
+      "line": 176,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_has_sound",
+      "line": 181,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_dies_after_duration",
+      "line": 187,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_dead_osc_returns_none",
+      "line": 193,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_incremental_matches_full",
+      "line": 198,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_nyquist_filter",
+      "line": 216,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestAdditiveSynth",
+      "line": 223,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_render_returns_samples",
+      "line": 226,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_different_timbres_sound_different",
+      "line": 230,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestPercSynth",
+      "line": 238,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_kick_returns_samples",
+      "line": 241,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_kick_has_sound",
+      "line": 245,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_kick_cache",
+      "line": 250,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_snare_returns_samples",
+      "line": 257,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_hihat_returns_samples",
+      "line": 264,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_rim_returns_samples",
+      "line": 269,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestBeatEngine",
+      "line": 276,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_creation",
+      "line": 279,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_render_returns_correct_length",
+      "line": 284,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_presence_bounded",
+      "line": 290,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_update_state_changes_pattern",
+      "line": 299,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestMelodicVoice",
+      "line": 310,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_creation",
+      "line": 313,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_update_state",
+      "line": 318,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_render_chunk_when_not_playing",
+      "line": 324,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_maybe_play_phrase_returns_samples",
+      "line": 331,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestHarmonicEngine",
+      "line": 349,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_creation",
+      "line": 352,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_get_current_chord",
+      "line": 357,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_advance_chord",
+      "line": 364,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_start_and_render_pad",
+      "line": 370,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_pad_has_sound",
+      "line": 379,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_pad_eventually_dies",
+      "line": 390,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestPocketNavigator",
+      "line": 399,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_creation",
+      "line": 402,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_update_changes_domain",
+      "line": 407,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_get_timbre_for_domain",
+      "line": 418,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_get_octave_shift",
+      "line": 425,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestComposer",
+      "line": 432,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_creation",
+      "line": 435,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_compose_tick_returns_stereo",
+      "line": 442,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_compose_tick_produces_sound",
+      "line": 450,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_epoch_transitions",
+      "line": 461,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_get_scale_for_state",
+      "line": 470,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_performance_under_threshold",
+      "line": 477,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_deterministic_with_same_seed",
+      "line": 490,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "apps/audio/test_music_engine.py": [
+    {
+      "type": "ClassDef",
+      "name": "TestUtilities",
+      "line": 19,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_mtof_a4",
+      "line": 22,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_mtof_c4",
+      "line": 25,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_mtof_octave",
+      "line": 28,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_ftom_a4",
+      "line": 31,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_ftom_roundtrip",
+      "line": 34,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_clamp",
+      "line": 38,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestTimeSignature",
+      "line": 44,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_44_bar_duration",
+      "line": 47,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_34_bar_duration",
+      "line": 52,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_68_bar_duration",
+      "line": 57,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_78_bar_duration",
+      "line": 62,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_54_bar_duration",
+      "line": 67,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_bar_samples_positive",
+      "line": 72,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_beat_positions",
+      "line": 77,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_strong_beats_44",
+      "line": 85,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_all_time_sigs_defined",
+      "line": 91,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_epoch_time_sigs_valid",
+      "line": 97,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_beat_groups_sum",
+      "line": 103,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestScalesAndChords",
+      "line": 109,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_all_scales_valid_intervals",
+      "line": 112,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_all_chord_types_valid",
+      "line": 120,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_all_progressions_reference_valid_chords",
+      "line": 125,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_epoch_styles_defined",
+      "line": 131,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_epoch_styles_reference_valid_scales",
+      "line": 140,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_epoch_styles_reference_valid_progressions",
+      "line": 146,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_epoch_styles_have_tempo_range",
+      "line": 152,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestSampleBank",
+      "line": 160,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "setUpClass",
+      "line": 164,
+      "attributes": {
+        "args": [
+          "cls"
+        ],
+        "decorators": 1,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_load_piano",
+      "line": 167,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_get_pitched_returns_list",
+      "line": 174,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_pitch_shift_higher",
+      "line": 182,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_nonexistent_sample",
+      "line": 193,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestTrack",
+      "line": 198,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_track_creation",
+      "line": 201,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_render_empty_notes",
+      "line": 207,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_render_with_notes",
+      "line": 214,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_inactive_track",
+      "line": 223,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestDrumTrack",
+      "line": 232,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_drum_creation",
+      "line": 235,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_render_empty",
+      "line": 239,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_render_with_hits",
+      "line": 245,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestPhraseGenerator",
+      "line": 253,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "setUp",
+      "line": 256,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_generate_melody",
+      "line": 260,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_generate_bass",
+      "line": 272,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_generate_chord_voicing",
+      "line": 279,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_generate_drums",
+      "line": 287,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_generate_drums_34",
+      "line": 294,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestBiquadFilter",
+      "line": 299,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_lowpass_creation",
+      "line": 302,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_highpass_creation",
+      "line": 306,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_process_block",
+      "line": 310,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_lowpass_attenuates_high",
+      "line": 316,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_highpass_attenuates_low",
+      "line": 326,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestMixBus",
+      "line": 336,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_mix_empty",
+      "line": 339,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_mix_single_track",
+      "line": 345,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_mix_preserves_length",
+      "line": 353,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_soft_limiter",
+      "line": 360,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestSection",
+      "line": 369,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_section_creation",
+      "line": 372,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_chord_cycling",
+      "line": 380,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestMusicDirector",
+      "line": 393,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_creation",
+      "line": 396,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_compose_tick_returns_stereo",
+      "line": 400,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_compose_tick_not_silent",
+      "line": 409,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_epoch_transition",
+      "line": 420,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_deterministic_with_seed",
+      "line": 430,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_different_seeds_differ",
+      "line": 439,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestSampleGen",
+      "line": 454,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_sample_catalog_exists",
+      "line": 457,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_all_generators_callable",
+      "line": 461,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_sample_files_exist",
+      "line": 466,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestSpectralSafety",
+      "line": 474,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_no_dc_offset",
+      "line": 477,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_output_in_range",
+      "line": 488,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    }
+  ],
+  "apps/audio/test_radio_engine.py": [
+    {
+      "type": "ClassDef",
+      "name": "TestUtilities",
+      "line": 33,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_mtof_a4",
+      "line": 36,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_mtof_c4",
+      "line": 40,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_ftom_440",
+      "line": 44,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_clamp",
+      "line": 48,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_adsr_length",
+      "line": 53,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_adsr_shape",
+      "line": 59,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestDataIntegrity",
+      "line": 70,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_all_scales_have_intervals",
+      "line": 73,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_all_time_signatures_valid",
+      "line": 80,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_all_progressions_have_chords",
+      "line": 87,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_all_epochs_have_music_config",
+      "line": 95,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_all_epoch_roots_defined",
+      "line": 105,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_chord_intervals_valid",
+      "line": 111,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestInstrumentFactory",
+      "line": 117,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "setUp",
+      "line": 120,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_generate_single_instrument",
+      "line": 123,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_generate_instrument_set_count",
+      "line": 131,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_instrument_names_unique",
+      "line": 135,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_synthesize_note_produces_samples",
+      "line": 140,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_synthesize_note_duration",
+      "line": 146,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_synthesize_note_range",
+      "line": 152,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_rotate_instruments",
+      "line": 160,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_fm_instrument",
+      "line": 169,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_noise_percussion",
+      "line": 179,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestMidiLibrary",
+      "line": 188,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "setUp",
+      "line": 191,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_midi_files_loaded",
+      "line": 195,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_sample_phrase",
+      "line": 203,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_fallback_phrase",
+      "line": 212,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_snap_to_scale",
+      "line": 220,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestTTSEngine",
+      "line": 228,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "setUp",
+      "line": 231,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_espeak_available",
+      "line": 234,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_generate_speech",
+      "line": 239,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_get_source_phrases",
+      "line": 245,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestSmoothingFilter",
+      "line": 253,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "setUp",
+      "line": 256,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_lowpass_reduces_high_freq",
+      "line": 259,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_soft_limit_clamps",
+      "line": 274,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_stereo_smooth_preserves_energy",
+      "line": 281,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_compression",
+      "line": 289,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestMoodSegment",
+      "line": 297,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_mood_creation",
+      "line": 300,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_instrument_count_range",
+      "line": 312,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_all_epochs_produce_valid_mood",
+      "line": 320,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestRadioEngine",
+      "line": 329,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_engine_init",
+      "line": 332,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_short_render",
+      "line": 338,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_stereo_channels_differ",
+      "line": 348,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_fade_in",
+      "line": 355,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_fade_out",
+      "line": 363,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_output_range",
+      "line": 371,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestWavOutput",
+      "line": 380,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_render_to_wav",
+      "line": 383,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestMidiLibrarySampleBars",
+      "line": 407,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "setUp",
+      "line": 410,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_sample_bars_returns_tuple",
+      "line": 414,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_sample_bars_timing_bounds",
+      "line": 424,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_sample_bars_fallback",
+      "line": 435,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestSynthesizeColoredNote",
+      "line": 445,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "setUp",
+      "line": 448,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_produces_samples",
+      "line": 452,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_correct_duration",
+      "line": 459,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_zero_color_is_clean",
+      "line": 468,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_various_color_amounts",
+      "line": 478,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestChamberEffects",
+      "line": 491,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "setUp",
+      "line": 494,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_reverb_adds_tail",
+      "line": 500,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_reverb_preserves_length",
+      "line": 508,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_chorus_preserves_length",
+      "line": 513,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_early_reflections",
+      "line": 521,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestChordMultiplication",
+      "line": 530,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "setUp",
+      "line": 533,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_returns_2_to_5_notes",
+      "line": 537,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_valid_midi_range",
+      "line": 546,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_root_preserved",
+      "line": 554,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_consonant_intervals",
+      "line": 562,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_dissonant_input_corrected",
+      "line": 576,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestRondoStructure",
+      "line": 589,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "setUp",
+      "line": 592,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_returns_sections",
+      "line": 603,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_a_sections_match_theme",
+      "line": 615,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_episodes_differ_from_theme",
+      "line": 626,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestTempoMultiplier",
+      "line": 648,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "setUp",
+      "line": 651,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_range_2_to_4",
+      "line": 654,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_deterministic",
+      "line": 662,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_different_states_differ",
+      "line": 669,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestInstrumentVoiceSelection",
+      "line": 676,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "setUp",
+      "line": 679,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_correct_voice_count",
+      "line": 683,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_voice_has_required_fields",
+      "line": 690,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestLoopFriendliness",
+      "line": 703,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "setUp",
+      "line": 706,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_perfect_loop_scores_high",
+      "line": 709,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_score_in_range",
+      "line": 716,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestFluidSynthRendering",
+      "line": 727,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_returns_none_without_valid_path",
+      "line": 730,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_produces_samples_with_real_midi",
+      "line": 735,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_graceful_fallback",
+      "line": 755,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "ClassDef",
+      "name": "TestSampleBarsSeeded",
+      "line": 769,
+      "attributes": {
+        "bases": [
+          "TestCase"
+        ],
+        "decorators": 0
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "setUp",
+      "line": 772,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_returns_triple",
+      "line": 777,
+      "attributes": {
+        "args": [
+          "self"
+        ],
+        "decorators": 0,
+        "is_async": false
+      }
+    },
+    {
+      "type": "FunctionDef",
+      "name": "test_deterministic_selection",
+      "line": 789,
       "attributes": {
         "args": [
           "self"

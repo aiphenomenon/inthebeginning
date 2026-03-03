@@ -24,9 +24,16 @@
       "testable": true
     },
     {
-      "function": "main",
+      "function": "run_introspection",
       "line": 151,
       "branches": 3,
+      "args": [],
+      "testable": true
+    },
+    {
+      "function": "main",
+      "line": 198,
+      "branches": 5,
       "args": [],
       "testable": true
     }
@@ -92,7 +99,7 @@
   "ast_dsl/core.py": [
     {
       "function": "to_dict",
-      "line": 46,
+      "line": 50,
       "branches": 4,
       "args": [
         "self"
@@ -101,7 +108,7 @@
     },
     {
       "function": "to_compact",
-      "line": 64,
+      "line": 68,
       "branches": 4,
       "args": [
         "self"
@@ -110,7 +117,7 @@
     },
     {
       "function": "walk",
-      "line": 79,
+      "line": 83,
       "branches": 1,
       "args": [
         "self"
@@ -119,7 +126,7 @@
     },
     {
       "function": "find",
-      "line": 85,
+      "line": 89,
       "branches": 3,
       "args": [
         "self",
@@ -130,7 +137,7 @@
     },
     {
       "function": "to_dict",
-      "line": 106,
+      "line": 110,
       "branches": 0,
       "args": [
         "self"
@@ -139,7 +146,7 @@
     },
     {
       "function": "from_dict",
-      "line": 110,
+      "line": 114,
       "branches": 0,
       "args": [
         "cls",
@@ -149,7 +156,7 @@
     },
     {
       "function": "to_dict",
-      "line": 127,
+      "line": 131,
       "branches": 0,
       "args": [
         "self"
@@ -158,7 +165,7 @@
     },
     {
       "function": "to_dict",
-      "line": 141,
+      "line": 145,
       "branches": 4,
       "args": [
         "self"
@@ -167,7 +174,7 @@
     },
     {
       "function": "to_compact",
-      "line": 161,
+      "line": 165,
       "branches": 4,
       "args": [
         "self"
@@ -176,7 +183,7 @@
     },
     {
       "function": "__init__",
-      "line": 181,
+      "line": 185,
       "branches": 0,
       "args": [
         "self"
@@ -185,7 +192,7 @@
     },
     {
       "function": "_measure",
-      "line": 187,
+      "line": 191,
       "branches": 0,
       "args": [
         "self",
@@ -195,7 +202,7 @@
     },
     {
       "function": "execute",
-      "line": 211,
+      "line": 215,
       "branches": 9,
       "args": [
         "self",
@@ -205,7 +212,7 @@
     },
     {
       "function": "_get_python_ast",
-      "line": 263,
+      "line": 267,
       "branches": 2,
       "args": [
         "self",
@@ -215,7 +222,7 @@
     },
     {
       "function": "_parse_python",
-      "line": 275,
+      "line": 279,
       "branches": 0,
       "args": [
         "self",
@@ -226,7 +233,7 @@
     },
     {
       "function": "_python_node_to_universal",
-      "line": 280,
+      "line": 284,
       "branches": 20,
       "args": [
         "self",
@@ -237,7 +244,7 @@
     },
     {
       "function": "_action_parse",
-      "line": 360,
+      "line": 364,
       "branches": 3,
       "args": [
         "self",
@@ -247,7 +254,7 @@
     },
     {
       "function": "_action_find",
-      "line": 376,
+      "line": 380,
       "branches": 0,
       "args": [
         "self",
@@ -257,7 +264,7 @@
     },
     {
       "function": "_action_symbols",
-      "line": 383,
+      "line": 387,
       "branches": 2,
       "args": [
         "self",
@@ -267,7 +274,7 @@
     },
     {
       "function": "_action_dependencies",
-      "line": 399,
+      "line": 403,
       "branches": 2,
       "args": [
         "self",
@@ -277,7 +284,7 @@
     },
     {
       "function": "_action_callers",
-      "line": 413,
+      "line": 417,
       "branches": 2,
       "args": [
         "self",
@@ -287,7 +294,7 @@
     },
     {
       "function": "_action_code_metrics",
-      "line": 427,
+      "line": 431,
       "branches": 5,
       "args": [
         "self",
@@ -297,7 +304,7 @@
     },
     {
       "function": "_walk_depth",
-      "line": 437,
+      "line": 441,
       "branches": 5,
       "args": [
         "node",
@@ -307,7 +314,7 @@
     },
     {
       "function": "_action_transform",
-      "line": 462,
+      "line": 466,
       "branches": 3,
       "args": [
         "self",
@@ -317,7 +324,7 @@
     },
     {
       "function": "_action_coverage_map",
-      "line": 474,
+      "line": 478,
       "branches": 4,
       "args": [
         "self",
@@ -327,7 +334,7 @@
     },
     {
       "function": "parse_file",
-      "line": 494,
+      "line": 498,
       "branches": 0,
       "args": [
         "self",
@@ -338,7 +345,7 @@
     },
     {
       "function": "find_symbols",
-      "line": 499,
+      "line": 503,
       "branches": 0,
       "args": [
         "self",
@@ -349,12 +356,107 @@
     },
     {
       "function": "get_dependencies",
-      "line": 504,
+      "line": 508,
       "branches": 0,
       "args": [
         "self",
         "filepath",
         "language"
+      ],
+      "testable": true
+    }
+  ],
+  "ast_dsl/introspect.py": [
+    {
+      "function": "_ensure_parsers_loaded",
+      "line": 41,
+      "branches": 12,
+      "args": [],
+      "testable": true
+    },
+    {
+      "function": "compaction_ratio",
+      "line": 132,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_dict",
+      "line": 137,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "summary",
+      "line": 170,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_dict",
+      "line": 188,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_json",
+      "line": 207,
+      "branches": 0,
+      "args": [
+        "self",
+        "indent"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_count_node_types",
+      "line": 211,
+      "branches": 4,
+      "args": [
+        "ast_node"
+      ],
+      "testable": true
+    },
+    {
+      "function": "introspect_file",
+      "line": 226,
+      "branches": 4,
+      "args": [
+        "filepath",
+        "language"
+      ],
+      "testable": true
+    },
+    {
+      "function": "introspect_app",
+      "line": 267,
+      "branches": 7,
+      "args": [
+        "root_path",
+        "language",
+        "app_name",
+        "exclude_dirs"
+      ],
+      "testable": true
+    },
+    {
+      "function": "introspect_all_apps",
+      "line": 332,
+      "branches": 3,
+      "args": [
+        "project_root"
       ],
       "testable": true
     }
@@ -401,6 +503,36 @@
     {
       "function": "to_compact",
       "line": 145,
+      "branches": 0,
+      "args": [
+        "node"
+      ],
+      "testable": true
+    }
+  ],
+  "ast_dsl/kotlin_ast.py": [
+    {
+      "function": "parse_kotlin_source",
+      "line": 10,
+      "branches": 43,
+      "args": [
+        "source",
+        "filename"
+      ],
+      "testable": true
+    },
+    {
+      "function": "find_kotlin_symbols",
+      "line": 229,
+      "branches": 2,
+      "args": [
+        "source"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_compact",
+      "line": 243,
       "branches": 0,
       "args": [
         "node"
@@ -890,6 +1022,96 @@
     {
       "function": "to_compact",
       "line": 156,
+      "branches": 0,
+      "args": [
+        "node"
+      ],
+      "testable": true
+    }
+  ],
+  "ast_dsl/swift_ast.py": [
+    {
+      "function": "parse_swift_source",
+      "line": 13,
+      "branches": 42,
+      "args": [
+        "source",
+        "filename"
+      ],
+      "testable": true
+    },
+    {
+      "function": "find_swift_symbols",
+      "line": 267,
+      "branches": 2,
+      "args": [
+        "source"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_compact",
+      "line": 281,
+      "branches": 0,
+      "args": [
+        "node"
+      ],
+      "testable": true
+    }
+  ],
+  "ast_dsl/typescript_ast.py": [
+    {
+      "function": "parse_typescript_source",
+      "line": 10,
+      "branches": 32,
+      "args": [
+        "source",
+        "filename"
+      ],
+      "testable": true
+    },
+    {
+      "function": "find_typescript_symbols",
+      "line": 227,
+      "branches": 2,
+      "args": [
+        "source"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_compact",
+      "line": 241,
+      "branches": 0,
+      "args": [
+        "node"
+      ],
+      "testable": true
+    }
+  ],
+  "ast_dsl/wasm_ast.py": [
+    {
+      "function": "parse_wasm_source",
+      "line": 10,
+      "branches": 15,
+      "args": [
+        "source",
+        "filename"
+      ],
+      "testable": true
+    },
+    {
+      "function": "find_wasm_symbols",
+      "line": 170,
+      "branches": 2,
+      "args": [
+        "source"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_compact",
+      "line": 184,
       "branches": 0,
       "args": [
         "node"
@@ -1484,7 +1706,7 @@
     },
     {
       "function": "average_fitness",
-      "line": 532,
+      "line": 533,
       "branches": 1,
       "args": [
         "self"
@@ -1493,7 +1715,7 @@
     },
     {
       "function": "average_gc_content",
-      "line": 537,
+      "line": 538,
       "branches": 1,
       "args": [
         "self"
@@ -1502,7 +1724,7 @@
     },
     {
       "function": "total_mutations",
-      "line": 542,
+      "line": 543,
       "branches": 0,
       "args": [
         "self"
@@ -1511,7 +1733,7 @@
     },
     {
       "function": "to_compact",
-      "line": 545,
+      "line": 546,
       "branches": 0,
       "args": [
         "self"
@@ -1685,7 +1907,6 @@
       "testable": true
     }
   ],
-  "simulator/constants.py": [],
   "simulator/environment.py": [
     {
       "function": "to_compact",
@@ -4333,15 +4554,6 @@
   "tests/test_language_asts.py": [
     {
       "function": "test_parse",
-      "line": 144,
-      "branches": 0,
-      "args": [
-        "self"
-      ],
-      "testable": true
-    },
-    {
-      "function": "test_find_symbols",
       "line": 148,
       "branches": 0,
       "args": [
@@ -4350,8 +4562,17 @@
       "testable": true
     },
     {
+      "function": "test_find_symbols",
+      "line": 152,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
       "function": "test_package_detection",
-      "line": 155,
+      "line": 159,
       "branches": 0,
       "args": [
         "self"
@@ -4360,7 +4581,7 @@
     },
     {
       "function": "test_import_detection",
-      "line": 161,
+      "line": 165,
       "branches": 0,
       "args": [
         "self"
@@ -4369,7 +4590,7 @@
     },
     {
       "function": "test_interface_detection",
-      "line": 170,
+      "line": 174,
       "branches": 0,
       "args": [
         "self"
@@ -4378,7 +4599,7 @@
     },
     {
       "function": "test_method_params",
-      "line": 177,
+      "line": 181,
       "branches": 0,
       "args": [
         "self"
@@ -4387,7 +4608,7 @@
     },
     {
       "function": "test_compact",
-      "line": 184,
+      "line": 188,
       "branches": 0,
       "args": [
         "self"
@@ -4396,15 +4617,6 @@
     },
     {
       "function": "test_parse",
-      "line": 191,
-      "branches": 0,
-      "args": [
-        "self"
-      ],
-      "testable": true
-    },
-    {
-      "function": "test_find_symbols",
       "line": 195,
       "branches": 0,
       "args": [
@@ -4413,8 +4625,17 @@
       "testable": true
     },
     {
+      "function": "test_find_symbols",
+      "line": 199,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
       "function": "test_use_declarations",
-      "line": 202,
+      "line": 206,
       "branches": 0,
       "args": [
         "self"
@@ -4423,7 +4644,7 @@
     },
     {
       "function": "test_mod_declarations",
-      "line": 207,
+      "line": 211,
       "branches": 0,
       "args": [
         "self"
@@ -4432,7 +4653,7 @@
     },
     {
       "function": "test_struct_detection",
-      "line": 213,
+      "line": 217,
       "branches": 0,
       "args": [
         "self"
@@ -4441,7 +4662,7 @@
     },
     {
       "function": "test_enum_detection",
-      "line": 220,
+      "line": 224,
       "branches": 0,
       "args": [
         "self"
@@ -4450,7 +4671,7 @@
     },
     {
       "function": "test_trait_detection",
-      "line": 225,
+      "line": 229,
       "branches": 0,
       "args": [
         "self"
@@ -4459,7 +4680,7 @@
     },
     {
       "function": "test_impl_detection",
-      "line": 230,
+      "line": 234,
       "branches": 0,
       "args": [
         "self"
@@ -4468,7 +4689,7 @@
     },
     {
       "function": "test_async_fn",
-      "line": 235,
+      "line": 239,
       "branches": 0,
       "args": [
         "self"
@@ -4477,7 +4698,7 @@
     },
     {
       "function": "test_compact",
-      "line": 242,
+      "line": 246,
       "branches": 0,
       "args": [
         "self"
@@ -4486,15 +4707,6 @@
     },
     {
       "function": "test_parse",
-      "line": 249,
-      "branches": 0,
-      "args": [
-        "self"
-      ],
-      "testable": true
-    },
-    {
-      "function": "test_find_symbols",
       "line": 253,
       "branches": 0,
       "args": [
@@ -4503,8 +4715,17 @@
       "testable": true
     },
     {
+      "function": "test_find_symbols",
+      "line": 257,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
       "function": "test_use_declarations",
-      "line": 258,
+      "line": 262,
       "branches": 0,
       "args": [
         "self"
@@ -4513,7 +4734,7 @@
     },
     {
       "function": "test_package_detection",
-      "line": 263,
+      "line": 267,
       "branches": 0,
       "args": [
         "self"
@@ -4522,7 +4743,7 @@
     },
     {
       "function": "test_sub_declarations",
-      "line": 269,
+      "line": 273,
       "branches": 0,
       "args": [
         "self"
@@ -4531,7 +4752,7 @@
     },
     {
       "function": "test_var_declarations",
-      "line": 277,
+      "line": 281,
       "branches": 0,
       "args": [
         "self"
@@ -4540,7 +4761,7 @@
     },
     {
       "function": "test_method_calls",
-      "line": 282,
+      "line": 286,
       "branches": 0,
       "args": [
         "self"
@@ -4549,7 +4770,7 @@
     },
     {
       "function": "test_compact",
-      "line": 288,
+      "line": 292,
       "branches": 0,
       "args": [
         "self"
@@ -4558,15 +4779,6 @@
     },
     {
       "function": "test_parse",
-      "line": 295,
-      "branches": 0,
-      "args": [
-        "self"
-      ],
-      "testable": true
-    },
-    {
-      "function": "test_find_symbols",
       "line": 299,
       "branches": 0,
       "args": [
@@ -4575,8 +4787,17 @@
       "testable": true
     },
     {
+      "function": "test_find_symbols",
+      "line": 303,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
       "function": "test_namespace",
-      "line": 305,
+      "line": 309,
       "branches": 0,
       "args": [
         "self"
@@ -4585,7 +4806,7 @@
     },
     {
       "function": "test_use_declarations",
-      "line": 311,
+      "line": 315,
       "branches": 0,
       "args": [
         "self"
@@ -4594,7 +4815,7 @@
     },
     {
       "function": "test_class_detection",
-      "line": 316,
+      "line": 320,
       "branches": 0,
       "args": [
         "self"
@@ -4603,7 +4824,7 @@
     },
     {
       "function": "test_interface_detection",
-      "line": 323,
+      "line": 327,
       "branches": 0,
       "args": [
         "self"
@@ -4612,7 +4833,7 @@
     },
     {
       "function": "test_trait_detection",
-      "line": 329,
+      "line": 333,
       "branches": 0,
       "args": [
         "self"
@@ -4621,7 +4842,7 @@
     },
     {
       "function": "test_function_return_type",
-      "line": 334,
+      "line": 338,
       "branches": 0,
       "args": [
         "self"
@@ -4630,7 +4851,7 @@
     },
     {
       "function": "test_compact",
-      "line": 341,
+      "line": 345,
       "branches": 0,
       "args": [
         "self"
@@ -4639,15 +4860,6 @@
     },
     {
       "function": "test_parse",
-      "line": 348,
-      "branches": 0,
-      "args": [
-        "self"
-      ],
-      "testable": true
-    },
-    {
-      "function": "test_find_symbols",
       "line": 352,
       "branches": 0,
       "args": [
@@ -4656,8 +4868,449 @@
       "testable": true
     },
     {
+      "function": "test_find_symbols",
+      "line": 356,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
       "function": "test_compact",
-      "line": 357,
+      "line": 361,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_parse",
+      "line": 525,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_find_symbols",
+      "line": 529,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_func_declarations",
+      "line": 535,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_import_declarations",
+      "line": 542,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_export_declarations",
+      "line": 547,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_global_declarations",
+      "line": 554,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_memory_in_import",
+      "line": 560,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_type_declaration",
+      "line": 567,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_start_declaration",
+      "line": 572,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_compact",
+      "line": 578,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_parse",
+      "line": 585,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_find_symbols",
+      "line": 589,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_import_declarations",
+      "line": 596,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_class_detection",
+      "line": 601,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_interface_detection",
+      "line": 606,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_type_alias",
+      "line": 613,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_enum_detection",
+      "line": 618,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_function_detection",
+      "line": 624,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_namespace_detection",
+      "line": 629,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_decorator",
+      "line": 635,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_compact",
+      "line": 640,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_parse",
+      "line": 647,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_find_symbols",
+      "line": 651,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_import_declarations",
+      "line": 658,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_struct_detection",
+      "line": 665,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_class_detection",
+      "line": 672,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_enum_detection",
+      "line": 677,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_protocol_detection",
+      "line": 683,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_extension_detection",
+      "line": 688,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_actor_detection",
+      "line": 693,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_func_async_throws",
+      "line": 699,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_init_detection",
+      "line": 705,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_typealias",
+      "line": 710,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_compact",
+      "line": 715,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_parse",
+      "line": 722,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_find_symbols",
+      "line": 726,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_package_detection",
+      "line": 733,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_import_declarations",
+      "line": 739,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_data_class",
+      "line": 744,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_sealed_class",
+      "line": 751,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_object_declaration",
+      "line": 758,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_interface_detection",
+      "line": 765,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_sealed_interface",
+      "line": 770,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_suspend_fun",
+      "line": 777,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_extension_function",
+      "line": 784,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_property_declarations",
+      "line": 790,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_typealias",
+      "line": 795,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_compact",
+      "line": 800,
       "branches": 0,
       "args": [
         "self"
@@ -5495,6 +6148,4817 @@
     {
       "function": "test_chemical_system_emerges",
       "line": 146,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    }
+  ],
+  "apps/audio/composer.py": [
+    {
+      "function": "mtof",
+      "line": 37,
+      "branches": 0,
+      "args": [
+        "note"
+      ],
+      "testable": true
+    },
+    {
+      "function": "clamp",
+      "line": 41,
+      "branches": 0,
+      "args": [
+        "v",
+        "lo",
+        "hi"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_fast_sin",
+      "line": 380,
+      "branches": 0,
+      "args": [
+        "phase"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 396,
+      "branches": 7,
+      "args": [
+        "self",
+        "freq",
+        "duration",
+        "timbre_name",
+        "gain",
+        "attack",
+        "decay",
+        "sustain",
+        "release"
+      ],
+      "testable": true
+    },
+    {
+      "function": "render_chunk",
+      "line": 448,
+      "branches": 6,
+      "args": [
+        "self",
+        "num_samples"
+      ],
+      "testable": true
+    },
+    {
+      "function": "render",
+      "line": 493,
+      "branches": 0,
+      "args": [
+        "freq",
+        "duration",
+        "timbre_name",
+        "gain",
+        "attack",
+        "decay",
+        "sustain",
+        "release",
+        "vibrato_rate",
+        "vibrato_depth"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_cached",
+      "line": 520,
+      "branches": 2,
+      "args": [
+        "key",
+        "fn"
+      ],
+      "testable": true
+    },
+    {
+      "function": "kick",
+      "line": 530,
+      "branches": 1,
+      "args": [
+        "freq",
+        "duration",
+        "gain"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_gen",
+      "line": 532,
+      "branches": 1,
+      "args": [],
+      "testable": true
+    },
+    {
+      "function": "snare",
+      "line": 547,
+      "branches": 1,
+      "args": [
+        "freq",
+        "duration",
+        "gain",
+        "rng"
+      ],
+      "testable": true
+    },
+    {
+      "function": "hihat",
+      "line": 567,
+      "branches": 1,
+      "args": [
+        "duration",
+        "gain",
+        "rng"
+      ],
+      "testable": true
+    },
+    {
+      "function": "rim",
+      "line": 586,
+      "branches": 1,
+      "args": [
+        "freq",
+        "duration",
+        "gain"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_gen",
+      "line": 588,
+      "branches": 1,
+      "args": [],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 613,
+      "branches": 0,
+      "args": [
+        "self",
+        "rng",
+        "bpm"
+      ],
+      "testable": true
+    },
+    {
+      "function": "update_state",
+      "line": 624,
+      "branches": 0,
+      "args": [
+        "self",
+        "epoch",
+        "epoch_idx",
+        "tick",
+        "temperature",
+        "particles"
+      ],
+      "testable": true
+    },
+    {
+      "function": "render_beat_bar",
+      "line": 647,
+      "branches": 7,
+      "args": [
+        "self",
+        "duration_samples",
+        "root_note"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 702,
+      "branches": 0,
+      "args": [
+        "self",
+        "rng",
+        "voice_id"
+      ],
+      "testable": true
+    },
+    {
+      "function": "update_state",
+      "line": 714,
+      "branches": 3,
+      "args": [
+        "self",
+        "epoch",
+        "epoch_idx",
+        "root_note",
+        "scale_name"
+      ],
+      "testable": true
+    },
+    {
+      "function": "maybe_start_phrase",
+      "line": 729,
+      "branches": 5,
+      "args": [
+        "self",
+        "epoch",
+        "root_note",
+        "scale_intervals"
+      ],
+      "testable": true
+    },
+    {
+      "function": "render_chunk",
+      "line": 768,
+      "branches": 7,
+      "args": [
+        "self",
+        "num_samples"
+      ],
+      "testable": true
+    },
+    {
+      "function": "maybe_play_phrase",
+      "line": 809,
+      "branches": 0,
+      "args": [
+        "self",
+        "epoch",
+        "root_note",
+        "scale_intervals",
+        "duration_samples"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 829,
+      "branches": 0,
+      "args": [
+        "self",
+        "rng"
+      ],
+      "testable": true
+    },
+    {
+      "function": "update_progression",
+      "line": 836,
+      "branches": 0,
+      "args": [
+        "self",
+        "epoch",
+        "root_note",
+        "scale_intervals"
+      ],
+      "testable": true
+    },
+    {
+      "function": "get_current_chord",
+      "line": 843,
+      "branches": 2,
+      "args": [
+        "self",
+        "root_note",
+        "scale_intervals"
+      ],
+      "testable": true
+    },
+    {
+      "function": "advance_chord",
+      "line": 861,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "start_chord_pad",
+      "line": 865,
+      "branches": 1,
+      "args": [
+        "self",
+        "chord_notes",
+        "duration",
+        "timbre"
+      ],
+      "testable": true
+    },
+    {
+      "function": "render_pad_chunk",
+      "line": 885,
+      "branches": 5,
+      "args": [
+        "self",
+        "num_samples"
+      ],
+      "testable": true
+    },
+    {
+      "function": "has_active_pad",
+      "line": 908,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 927,
+      "branches": 0,
+      "args": [
+        "self",
+        "rng"
+      ],
+      "testable": true
+    },
+    {
+      "function": "update",
+      "line": 933,
+      "branches": 1,
+      "args": [
+        "self",
+        "epoch_idx",
+        "particles",
+        "atoms",
+        "molecules",
+        "cells",
+        "temperature"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_navigate",
+      "line": 949,
+      "branches": 3,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "get_timbre_for_domain",
+      "line": 962,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "get_octave_shift",
+      "line": 966,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 991,
+      "branches": 0,
+      "args": [
+        "self",
+        "seed"
+      ],
+      "testable": true
+    },
+    {
+      "function": "get_scale_for_state",
+      "line": 1014,
+      "branches": 0,
+      "args": [
+        "self",
+        "epoch",
+        "epoch_idx",
+        "temperature",
+        "rng"
+      ],
+      "testable": true
+    },
+    {
+      "function": "compose_tick",
+      "line": 1021,
+      "branches": 9,
+      "args": [
+        "self",
+        "epoch",
+        "epoch_idx",
+        "root_note",
+        "temperature",
+        "particles",
+        "atoms",
+        "molecules",
+        "cells",
+        "generation",
+        "samples_per_tick"
+      ],
+      "testable": true
+    }
+  ],
+  "apps/audio/generate.py": [
+    {
+      "function": "mtof",
+      "line": 96,
+      "branches": 0,
+      "args": [
+        "note"
+      ],
+      "testable": true
+    },
+    {
+      "function": "clamp",
+      "line": 101,
+      "branches": 0,
+      "args": [
+        "v",
+        "lo",
+        "hi"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 112,
+      "branches": 0,
+      "args": [
+        "self",
+        "num_samples"
+      ],
+      "testable": true
+    },
+    {
+      "function": "add_mono",
+      "line": 117,
+      "branches": 1,
+      "args": [
+        "self",
+        "samples",
+        "offset",
+        "pan",
+        "gain"
+      ],
+      "testable": true
+    },
+    {
+      "function": "add_stereo",
+      "line": 127,
+      "branches": 1,
+      "args": [
+        "self",
+        "left",
+        "right",
+        "offset",
+        "gain"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_pcm16",
+      "line": 134,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 156,
+      "branches": 0,
+      "args": [
+        "self",
+        "num_samples"
+      ],
+      "testable": true
+    },
+    {
+      "function": "add_mono",
+      "line": 161,
+      "branches": 1,
+      "args": [
+        "self",
+        "samples",
+        "offset",
+        "pan",
+        "gain"
+      ],
+      "testable": true
+    },
+    {
+      "function": "add_stereo",
+      "line": 172,
+      "branches": 1,
+      "args": [
+        "self",
+        "left",
+        "right",
+        "offset",
+        "gain"
+      ],
+      "testable": true
+    },
+    {
+      "function": "to_pcm16",
+      "line": 182,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 198,
+      "branches": 0,
+      "args": [
+        "self",
+        "cutoff",
+        "q"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_update_coeffs",
+      "line": 207,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "set_cutoff",
+      "line": 218,
+      "branches": 0,
+      "args": [
+        "self",
+        "cutoff"
+      ],
+      "testable": true
+    },
+    {
+      "function": "process",
+      "line": 222,
+      "branches": 0,
+      "args": [
+        "self",
+        "x"
+      ],
+      "testable": true
+    },
+    {
+      "function": "process_block",
+      "line": 230,
+      "branches": 2,
+      "args": [
+        "self",
+        "samples"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_sine_blip",
+      "line": 260,
+      "branches": 2,
+      "args": [
+        "freq",
+        "duration",
+        "pan"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_bell_tone",
+      "line": 282,
+      "branches": 2,
+      "args": [
+        "freq",
+        "decay"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_pulse",
+      "line": 308,
+      "branches": 3,
+      "args": [
+        "freq",
+        "width"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_pad",
+      "line": 345,
+      "branches": 8,
+      "args": [
+        "notes",
+        "sustain"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_gen_pad_numpy",
+      "line": 413,
+      "branches": 4,
+      "args": [
+        "notes",
+        "n",
+        "fade_in",
+        "sustain",
+        "fade_out",
+        "gain_per_note"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_sequence",
+      "line": 450,
+      "branches": 4,
+      "args": [
+        "notes",
+        "tempo"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_impulse_response",
+      "line": 486,
+      "branches": 1,
+      "args": [
+        "duration",
+        "decay"
+      ],
+      "testable": true
+    },
+    {
+      "function": "apply_reverb",
+      "line": 502,
+      "branches": 2,
+      "args": [
+        "dry_l",
+        "dry_r",
+        "ir_l",
+        "ir_r",
+        "wet"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 531,
+      "branches": 0,
+      "args": [
+        "self",
+        "cutoff",
+        "q"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_update_coeffs",
+      "line": 538,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "set_cutoff",
+      "line": 554,
+      "branches": 0,
+      "args": [
+        "self",
+        "cutoff"
+      ],
+      "testable": true
+    },
+    {
+      "function": "process",
+      "line": 558,
+      "branches": 0,
+      "args": [
+        "self",
+        "x"
+      ],
+      "testable": true
+    },
+    {
+      "function": "process_block",
+      "line": 566,
+      "branches": 1,
+      "args": [
+        "self",
+        "samples"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 600,
+      "branches": 3,
+      "args": [
+        "self",
+        "seed",
+        "ticks_per_second",
+        "enhanced",
+        "engine"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_epoch_index",
+      "line": 650,
+      "branches": 1,
+      "args": [
+        "self",
+        "name"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_root_note",
+      "line": 657,
+      "branches": 0,
+      "args": [
+        "self",
+        "epoch_name"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_chord_notes",
+      "line": 661,
+      "branches": 0,
+      "args": [
+        "self",
+        "root"
+      ],
+      "testable": true
+    },
+    {
+      "function": "render_chunk",
+      "line": 665,
+      "branches": 18,
+      "args": [
+        "self",
+        "num_ticks"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_inject_dark_matter_texture",
+      "line": 786,
+      "branches": 3,
+      "args": [
+        "self",
+        "mix",
+        "offset",
+        "root"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_schedule_pad",
+      "line": 820,
+      "branches": 0,
+      "args": [
+        "self",
+        "root"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_sonify_quantum",
+      "line": 828,
+      "branches": 2,
+      "args": [
+        "self",
+        "mix",
+        "offset",
+        "root",
+        "particles",
+        "tick_i"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_sonify_atomic",
+      "line": 846,
+      "branches": 3,
+      "args": [
+        "self",
+        "mix",
+        "offset",
+        "root",
+        "atoms",
+        "tick_i"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_sonify_chemistry",
+      "line": 872,
+      "branches": 1,
+      "args": [
+        "self",
+        "mix",
+        "offset",
+        "root",
+        "molecules",
+        "tick_i"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_sonify_biology",
+      "line": 884,
+      "branches": 6,
+      "args": [
+        "self",
+        "mix",
+        "offset",
+        "root",
+        "cells",
+        "generation",
+        "tick_i"
+      ],
+      "testable": true
+    },
+    {
+      "function": "write_wav",
+      "line": 916,
+      "branches": 4,
+      "args": [
+        "renderer",
+        "duration_seconds",
+        "output_path",
+        "progress"
+      ],
+      "testable": true
+    },
+    {
+      "function": "write_mp3",
+      "line": 944,
+      "branches": 9,
+      "args": [
+        "renderer",
+        "duration_seconds",
+        "output_path",
+        "bitrate",
+        "progress"
+      ],
+      "testable": true
+    },
+    {
+      "function": "encoder_thread",
+      "line": 978,
+      "branches": 5,
+      "args": [],
+      "testable": true
+    },
+    {
+      "function": "play_local",
+      "line": 1021,
+      "branches": 5,
+      "args": [
+        "renderer",
+        "duration_seconds"
+      ],
+      "testable": true
+    },
+    {
+      "function": "stream_raw",
+      "line": 1061,
+      "branches": 2,
+      "args": [
+        "renderer",
+        "duration_seconds"
+      ],
+      "testable": true
+    },
+    {
+      "function": "run_radio",
+      "line": 1080,
+      "branches": 24,
+      "args": [
+        "renderer",
+        "port",
+        "host",
+        "bitrate"
+      ],
+      "testable": true
+    },
+    {
+      "function": "handle_client",
+      "line": 1105,
+      "branches": 6,
+      "args": [
+        "conn",
+        "addr"
+      ],
+      "testable": true
+    },
+    {
+      "function": "accept_loop",
+      "line": 1167,
+      "branches": 2,
+      "args": [],
+      "testable": true
+    },
+    {
+      "function": "read_encoded",
+      "line": 1200,
+      "branches": 10,
+      "args": [],
+      "testable": true
+    },
+    {
+      "function": "main",
+      "line": 1290,
+      "branches": 7,
+      "args": [],
+      "testable": true
+    }
+  ],
+  "apps/audio/music_engine.py": [
+    {
+      "function": "mtof",
+      "line": 52,
+      "branches": 0,
+      "args": [
+        "note"
+      ],
+      "testable": true
+    },
+    {
+      "function": "ftom",
+      "line": 56,
+      "branches": 1,
+      "args": [
+        "freq"
+      ],
+      "testable": true
+    },
+    {
+      "function": "clamp",
+      "line": 62,
+      "branches": 0,
+      "args": [
+        "v",
+        "lo",
+        "hi"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 81,
+      "branches": 0,
+      "args": [
+        "self",
+        "numerator",
+        "denominator",
+        "beat_groups",
+        "name"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_default_groups",
+      "line": 87,
+      "branches": 6,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "bar_duration",
+      "line": 105,
+      "branches": 0,
+      "args": [
+        "self",
+        "bpm"
+      ],
+      "testable": true
+    },
+    {
+      "function": "bar_samples",
+      "line": 112,
+      "branches": 0,
+      "args": [
+        "self",
+        "bpm"
+      ],
+      "testable": true
+    },
+    {
+      "function": "beat_positions",
+      "line": 116,
+      "branches": 2,
+      "args": [
+        "self",
+        "bpm"
+      ],
+      "testable": true
+    },
+    {
+      "function": "strong_beats",
+      "line": 133,
+      "branches": 0,
+      "args": [
+        "self",
+        "bpm"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 255,
+      "branches": 2,
+      "args": [
+        "self",
+        "samples_dir",
+        "preload"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_preload_all",
+      "line": 264,
+      "branches": 3,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "load",
+      "line": 273,
+      "branches": 4,
+      "args": [
+        "self",
+        "name"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_load_wav",
+      "line": 293,
+      "branches": 6,
+      "args": [
+        "self",
+        "path"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_load_mp3",
+      "line": 320,
+      "branches": 2,
+      "args": [
+        "self",
+        "path"
+      ],
+      "testable": true
+    },
+    {
+      "function": "get_pitched",
+      "line": 338,
+      "branches": 13,
+      "args": [
+        "self",
+        "name",
+        "midi_note",
+        "duration_samples"
+      ],
+      "testable": true
+    },
+    {
+      "function": "get_sample_bank",
+      "line": 406,
+      "branches": 1,
+      "args": [],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 433,
+      "branches": 0,
+      "args": [
+        "self",
+        "name",
+        "instrument",
+        "gain",
+        "pan"
+      ],
+      "testable": true
+    },
+    {
+      "function": "render_bar",
+      "line": 444,
+      "branches": 12,
+      "args": [
+        "self",
+        "notes",
+        "bar_samples",
+        "time_sig",
+        "bpm",
+        "rng"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_synth_fallback",
+      "line": 504,
+      "branches": 3,
+      "args": [
+        "self",
+        "midi",
+        "num_samples"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 592,
+      "branches": 0,
+      "args": [
+        "self",
+        "rng"
+      ],
+      "testable": true
+    },
+    {
+      "function": "generate_melody",
+      "line": 598,
+      "branches": 6,
+      "args": [
+        "self",
+        "root",
+        "scale",
+        "chord_notes",
+        "time_sig",
+        "bars_in_phrase"
+      ],
+      "testable": true
+    },
+    {
+      "function": "generate_bass",
+      "line": 643,
+      "branches": 4,
+      "args": [
+        "self",
+        "root",
+        "scale",
+        "chord_degree",
+        "time_sig"
+      ],
+      "testable": true
+    },
+    {
+      "function": "generate_chord_voicing",
+      "line": 668,
+      "branches": 3,
+      "args": [
+        "self",
+        "root",
+        "scale",
+        "chord_degree",
+        "chord_type",
+        "time_sig"
+      ],
+      "testable": true
+    },
+    {
+      "function": "generate_drums",
+      "line": 689,
+      "branches": 5,
+      "args": [
+        "self",
+        "time_sig",
+        "intensity"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_degree_to_midi",
+      "line": 719,
+      "branches": 3,
+      "args": [
+        "self",
+        "degree",
+        "root",
+        "scale"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 745,
+      "branches": 0,
+      "args": [
+        "self",
+        "gain",
+        "pan"
+      ],
+      "testable": true
+    },
+    {
+      "function": "render_bar",
+      "line": 750,
+      "branches": 5,
+      "args": [
+        "self",
+        "hits",
+        "bar_samples",
+        "time_sig",
+        "bpm"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 799,
+      "branches": 0,
+      "args": [
+        "self",
+        "cutoff",
+        "q",
+        "filter_type"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_compute_coeffs",
+      "line": 807,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "process_block",
+      "line": 834,
+      "branches": 2,
+      "args": [
+        "self",
+        "samples"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 873,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "set_lowpass",
+      "line": 881,
+      "branches": 0,
+      "args": [
+        "self",
+        "cutoff"
+      ],
+      "testable": true
+    },
+    {
+      "function": "mix_tracks",
+      "line": 887,
+      "branches": 5,
+      "args": [
+        "self",
+        "track_buffers",
+        "num_samples"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_mix_tracks_numpy",
+      "line": 924,
+      "branches": 3,
+      "args": [
+        "self",
+        "track_buffers",
+        "num_samples"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 971,
+      "branches": 0,
+      "args": [
+        "self",
+        "time_sig",
+        "bpm",
+        "root",
+        "scale_name",
+        "progression_name",
+        "instruments",
+        "duration_bars"
+      ],
+      "testable": true
+    },
+    {
+      "function": "get_chord_for_bar",
+      "line": 984,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 1011,
+      "branches": 0,
+      "args": [
+        "self",
+        "seed"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_get_era",
+      "line": 1082,
+      "branches": 2,
+      "args": [
+        "self",
+        "epoch_idx"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_create_section",
+      "line": 1090,
+      "branches": 1,
+      "args": [
+        "self",
+        "epoch",
+        "epoch_idx",
+        "temperature"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_render_next_bar",
+      "line": 1133,
+      "branches": 3,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "compose_tick",
+      "line": 1191,
+      "branches": 9,
+      "args": [
+        "self",
+        "epoch",
+        "epoch_idx",
+        "temperature",
+        "particles",
+        "atoms",
+        "molecules",
+        "cells",
+        "generation",
+        "samples_per_tick"
+      ],
+      "testable": true
+    }
+  ],
+  "apps/audio/radio_engine.py": [
+    {
+      "function": "mtof",
+      "line": 73,
+      "branches": 0,
+      "args": [
+        "note"
+      ],
+      "testable": true
+    },
+    {
+      "function": "ftom",
+      "line": 77,
+      "branches": 1,
+      "args": [
+        "freq"
+      ],
+      "testable": true
+    },
+    {
+      "function": "clamp",
+      "line": 83,
+      "branches": 0,
+      "args": [
+        "v",
+        "lo",
+        "hi"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_adsr",
+      "line": 301,
+      "branches": 4,
+      "args": [
+        "n",
+        "attack",
+        "decay",
+        "sustain_level",
+        "release"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_write_wav",
+      "line": 323,
+      "branches": 3,
+      "args": [
+        "path",
+        "samples",
+        "sample_rate"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 373,
+      "branches": 0,
+      "args": [
+        "self",
+        "seed"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_make_harmonic_profile",
+      "line": 378,
+      "branches": 17,
+      "args": [
+        "self",
+        "technique",
+        "variant_seed"
+      ],
+      "testable": true
+    },
+    {
+      "function": "generate_instrument",
+      "line": 428,
+      "branches": 4,
+      "args": [
+        "self",
+        "name",
+        "seed"
+      ],
+      "testable": true
+    },
+    {
+      "function": "synthesize_note",
+      "line": 506,
+      "branches": 10,
+      "args": [
+        "self",
+        "instr",
+        "freq",
+        "duration",
+        "velocity"
+      ],
+      "testable": true
+    },
+    {
+      "function": "synthesize_colored_note",
+      "line": 569,
+      "branches": 10,
+      "args": [
+        "self",
+        "instr",
+        "freq",
+        "duration",
+        "velocity",
+        "color_amount"
+      ],
+      "testable": true
+    },
+    {
+      "function": "generate_instrument_set",
+      "line": 631,
+      "branches": 1,
+      "args": [
+        "self",
+        "count",
+        "base_seed"
+      ],
+      "testable": true
+    },
+    {
+      "function": "rotate_instruments",
+      "line": 651,
+      "branches": 2,
+      "args": [
+        "self",
+        "current_set",
+        "n_swap",
+        "generation"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 691,
+      "branches": 4,
+      "args": [
+        "self",
+        "name",
+        "instruments",
+        "scale",
+        "root",
+        "rng_seed"
+      ],
+      "testable": true
+    },
+    {
+      "function": "scale_notes",
+      "line": 716,
+      "branches": 3,
+      "args": [
+        "self",
+        "octave_range"
+      ],
+      "testable": true
+    },
+    {
+      "function": "snap_to_scale",
+      "line": 726,
+      "branches": 2,
+      "args": [
+        "self",
+        "midi_note"
+      ],
+      "testable": true
+    },
+    {
+      "function": "build_kits",
+      "line": 741,
+      "branches": 2,
+      "args": [
+        "instruments",
+        "scale",
+        "root",
+        "n_kits",
+        "rng"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 772,
+      "branches": 0,
+      "args": [
+        "self",
+        "midi_dir"
+      ],
+      "testable": true
+    },
+    {
+      "function": "load",
+      "line": 779,
+      "branches": 7,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_extract_notes",
+      "line": 808,
+      "branches": 5,
+      "args": [
+        "self",
+        "midi_file"
+      ],
+      "testable": true
+    },
+    {
+      "function": "sample_phrase",
+      "line": 826,
+      "branches": 5,
+      "args": [
+        "self",
+        "rng",
+        "length",
+        "root",
+        "scale"
+      ],
+      "testable": true
+    },
+    {
+      "function": "sample_chord_pattern",
+      "line": 871,
+      "branches": 6,
+      "args": [
+        "self",
+        "rng",
+        "root",
+        "scale",
+        "length"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_snap_to_scale",
+      "line": 902,
+      "branches": 2,
+      "args": [
+        "self",
+        "midi_note",
+        "root",
+        "scale_intervals"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_generate_fallback_phrase",
+      "line": 917,
+      "branches": 3,
+      "args": [
+        "self",
+        "rng",
+        "length",
+        "root",
+        "scale"
+      ],
+      "testable": true
+    },
+    {
+      "function": "sample_bars",
+      "line": 938,
+      "branches": 9,
+      "args": [
+        "self",
+        "rng",
+        "n_bars",
+        "tempo",
+        "beats_per_bar",
+        "root",
+        "scale"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_generate_fallback_bars",
+      "line": 1004,
+      "branches": 3,
+      "args": [
+        "self",
+        "rng",
+        "n_bars",
+        "tempo",
+        "beats_per_bar",
+        "root",
+        "scale"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_assess_loop_friendliness",
+      "line": 1032,
+      "branches": 4,
+      "args": [
+        "self",
+        "notes",
+        "start_tick",
+        "end_tick",
+        "tpb"
+      ],
+      "testable": true
+    },
+    {
+      "function": "sample_bars_seeded",
+      "line": 1076,
+      "branches": 15,
+      "args": [
+        "self",
+        "sim_state",
+        "n_bars",
+        "tempo",
+        "beats_per_bar",
+        "root",
+        "scale",
+        "rng"
+      ],
+      "testable": true
+    },
+    {
+      "function": "render_fluidsynth",
+      "line": 1186,
+      "branches": 20,
+      "args": [
+        "midi_path",
+        "gm_program",
+        "tempo_factor",
+        "start_tick",
+        "end_tick"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 1311,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_try_load_silero",
+      "line": 1316,
+      "branches": 4,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "generate_speech",
+      "line": 1340,
+      "branches": 1,
+      "args": [
+        "self",
+        "text",
+        "voice_seed",
+        "epoch_idx"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_generate_silero",
+      "line": 1350,
+      "branches": 2,
+      "args": [
+        "self",
+        "text",
+        "voice_seed",
+        "epoch_idx"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_generate_espeak",
+      "line": 1365,
+      "branches": 7,
+      "args": [
+        "self",
+        "text",
+        "voice_seed",
+        "epoch_idx"
+      ],
+      "testable": true
+    },
+    {
+      "function": "get_source_phrases",
+      "line": 1403,
+      "branches": 14,
+      "args": [
+        "self",
+        "rng",
+        "count"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 1463,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "apply_lowpass",
+      "line": 1467,
+      "branches": 1,
+      "args": [
+        "self",
+        "samples",
+        "cutoff_hz"
+      ],
+      "testable": true
+    },
+    {
+      "function": "apply_soft_limit",
+      "line": 1477,
+      "branches": 2,
+      "args": [
+        "self",
+        "samples",
+        "threshold"
+      ],
+      "testable": true
+    },
+    {
+      "function": "apply_stereo_smooth",
+      "line": 1490,
+      "branches": 1,
+      "args": [
+        "self",
+        "left",
+        "right",
+        "amount"
+      ],
+      "testable": true
+    },
+    {
+      "function": "apply_gentle_compression",
+      "line": 1500,
+      "branches": 3,
+      "args": [
+        "self",
+        "samples",
+        "ratio",
+        "threshold"
+      ],
+      "testable": true
+    },
+    {
+      "function": "apply_early_reflections",
+      "line": 1522,
+      "branches": 4,
+      "args": [
+        "self",
+        "samples",
+        "sr"
+      ],
+      "testable": true
+    },
+    {
+      "function": "apply_reverb",
+      "line": 1542,
+      "branches": 10,
+      "args": [
+        "self",
+        "samples",
+        "wet",
+        "sr"
+      ],
+      "testable": true
+    },
+    {
+      "function": "apply_chorus",
+      "line": 1593,
+      "branches": 2,
+      "args": [
+        "self",
+        "samples",
+        "sr"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 1622,
+      "branches": 2,
+      "args": [
+        "self",
+        "segment_idx",
+        "epoch",
+        "epoch_idx",
+        "sim_state",
+        "rng_seed"
+      ],
+      "testable": true
+    },
+    {
+      "function": "__init__",
+      "line": 1703,
+      "branches": 0,
+      "args": [
+        "self",
+        "seed",
+        "total_duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_plan_segments",
+      "line": 1730,
+      "branches": 4,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_plan_tts",
+      "line": 1751,
+      "branches": 4,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "render",
+      "line": 1770,
+      "branches": 11,
+      "args": [
+        "self",
+        "sim_states"
+      ],
+      "testable": true
+    },
+    {
+      "function": "render_streaming",
+      "line": 1876,
+      "branches": 20,
+      "args": [
+        "self",
+        "wav_file",
+        "sim_states"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_generate_sim_states",
+      "line": 2033,
+      "branches": 1,
+      "args": [
+        "self",
+        "n_segments"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_select_instruments",
+      "line": 2048,
+      "branches": 0,
+      "args": [
+        "self",
+        "mood"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_compute_tempo_multiplier",
+      "line": 2059,
+      "branches": 1,
+      "args": [
+        "self",
+        "sim_state"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_build_chord_from_note",
+      "line": 2067,
+      "branches": 10,
+      "args": [
+        "self",
+        "midi_note",
+        "root",
+        "scale_name",
+        "scale_intervals",
+        "n_notes",
+        "rng"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_build_rondo_sections",
+      "line": 2140,
+      "branches": 9,
+      "args": [
+        "self",
+        "base_notes",
+        "root",
+        "scale_name",
+        "scale_intervals",
+        "segment_duration",
+        "rng"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_choose_gm_instruments",
+      "line": 2202,
+      "branches": 6,
+      "args": [
+        "self",
+        "midi_info",
+        "n_voices",
+        "rng"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_render_segment",
+      "line": 2254,
+      "branches": 19,
+      "args": [
+        "self",
+        "mood",
+        "kits",
+        "n_samples",
+        "sim_state"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_mix_mono",
+      "line": 2410,
+      "branches": 2,
+      "args": [
+        "self",
+        "left",
+        "right",
+        "samples",
+        "offset",
+        "total_samples",
+        "pan"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_inject_tts_at",
+      "line": 2423,
+      "branches": 9,
+      "args": [
+        "self",
+        "left",
+        "right",
+        "trans_start",
+        "total_samples",
+        "mood",
+        "epoch_idx"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_inject_tts_into_buf",
+      "line": 2470,
+      "branches": 9,
+      "args": [
+        "self",
+        "buf_left",
+        "buf_right",
+        "buf_global_start",
+        "trans_start",
+        "total_samples",
+        "mood",
+        "epoch_idx"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_resample",
+      "line": 2515,
+      "branches": 4,
+      "args": [
+        "self",
+        "samples",
+        "from_sr",
+        "to_sr"
+      ],
+      "testable": true
+    },
+    {
+      "function": "render_to_wav",
+      "line": 2536,
+      "branches": 2,
+      "args": [
+        "left",
+        "right",
+        "path",
+        "sample_rate"
+      ],
+      "testable": true
+    },
+    {
+      "function": "wav_to_mp3",
+      "line": 2553,
+      "branches": 0,
+      "args": [
+        "wav_path",
+        "mp3_path",
+        "bitrate"
+      ],
+      "testable": true
+    },
+    {
+      "function": "generate_radio_mp3",
+      "line": 2563,
+      "branches": 13,
+      "args": [
+        "output_path",
+        "duration",
+        "seed"
+      ],
+      "testable": true
+    }
+  ],
+  "apps/audio/sample_gen.py": [
+    {
+      "function": "_write_wav",
+      "line": 38,
+      "branches": 3,
+      "args": [
+        "path",
+        "samples",
+        "sample_rate"
+      ],
+      "testable": true
+    },
+    {
+      "function": "_adsr",
+      "line": 56,
+      "branches": 4,
+      "args": [
+        "n",
+        "attack",
+        "decay",
+        "sustain_level",
+        "release",
+        "sample_rate"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_piano",
+      "line": 83,
+      "branches": 4,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_electric_piano",
+      "line": 118,
+      "branches": 1,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_harpsichord",
+      "line": 136,
+      "branches": 4,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_celesta",
+      "line": 158,
+      "branches": 4,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_violin",
+      "line": 183,
+      "branches": 3,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_cello",
+      "line": 210,
+      "branches": 3,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_viola",
+      "line": 232,
+      "branches": 3,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_harp",
+      "line": 254,
+      "branches": 4,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_pizzicato",
+      "line": 275,
+      "branches": 4,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_flute",
+      "line": 300,
+      "branches": 1,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_clarinet",
+      "line": 320,
+      "branches": 1,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_oboe",
+      "line": 342,
+      "branches": 3,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_bassoon",
+      "line": 364,
+      "branches": 3,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_french_horn",
+      "line": 390,
+      "branches": 3,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_trumpet",
+      "line": 412,
+      "branches": 3,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_trombone",
+      "line": 434,
+      "branches": 3,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_tubular_bell",
+      "line": 460,
+      "branches": 4,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_glockenspiel",
+      "line": 483,
+      "branches": 4,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_vibraphone",
+      "line": 503,
+      "branches": 4,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_singing_bowl",
+      "line": 525,
+      "branches": 3,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_kick_drum",
+      "line": 550,
+      "branches": 1,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_snare_drum",
+      "line": 566,
+      "branches": 1,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_hi_hat_closed",
+      "line": 589,
+      "branches": 1,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_hi_hat_open",
+      "line": 605,
+      "branches": 1,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_cymbal_crash",
+      "line": 621,
+      "branches": 1,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_tom",
+      "line": 641,
+      "branches": 1,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_sitar",
+      "line": 660,
+      "branches": 4,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_koto",
+      "line": 688,
+      "branches": 4,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_kalimba",
+      "line": 709,
+      "branches": 4,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_gamelan_gong",
+      "line": 729,
+      "branches": 4,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_shakuhachi",
+      "line": 751,
+      "branches": 1,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_didgeridoo",
+      "line": 772,
+      "branches": 1,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_warm_pad",
+      "line": 798,
+      "branches": 4,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_string_ensemble",
+      "line": 821,
+      "branches": 2,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_choir_pad",
+      "line": 844,
+      "branches": 5,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_glass_pad",
+      "line": 876,
+      "branches": 1,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_cosmic_drone",
+      "line": 891,
+      "branches": 1,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_acoustic_bass",
+      "line": 915,
+      "branches": 4,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_synth_bass",
+      "line": 936,
+      "branches": 3,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "gen_electric_bass",
+      "line": 958,
+      "branches": 4,
+      "args": [
+        "duration"
+      ],
+      "testable": true
+    },
+    {
+      "function": "generate_all_samples",
+      "line": 1036,
+      "branches": 1,
+      "args": [
+        "output_dir"
+      ],
+      "testable": true
+    },
+    {
+      "function": "compress_to_mp3",
+      "line": 1052,
+      "branches": 3,
+      "args": [
+        "wav_dir",
+        "mp3_dir",
+        "bitrate"
+      ],
+      "testable": true
+    }
+  ],
+  "apps/audio/test_audio.py": [
+    {
+      "function": "test_mtof_a4",
+      "line": 26,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_mtof_c4",
+      "line": 30,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_mtof_octave",
+      "line": 34,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_clamp_within",
+      "line": 38,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_clamp_below",
+      "line": 41,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_clamp_above",
+      "line": 44,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_creation",
+      "line": 51,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_add_mono",
+      "line": 57,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_add_mono_hard_left",
+      "line": 65,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_pcm16_length",
+      "line": 71,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_to_pcm16_soft_limit",
+      "line": 77,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_sine_blip_returns_samples",
+      "line": 91,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_sine_blip_has_sound",
+      "line": 96,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_sine_blip_decays",
+      "line": 101,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_bell_tone_returns_samples",
+      "line": 109,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_bell_tone_has_fm_character",
+      "line": 113,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_pulse_returns_samples",
+      "line": 119,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_pulse_has_sound",
+      "line": 123,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_pad_returns_stereo",
+      "line": 128,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_pad_has_fade_in",
+      "line": 133,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_sequence_returns_samples",
+      "line": 143,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_sequence_length_matches_tempo",
+      "line": 147,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_returns_stereo",
+      "line": 159,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_decays",
+      "line": 164,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_creation",
+      "line": 175,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_passes_low_frequencies",
+      "line": 179,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_attenuates_high_frequencies",
+      "line": 189,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_set_cutoff",
+      "line": 198,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_all_epochs_have_roots",
+      "line": 207,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_root_notes_ascending",
+      "line": 211,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_epoch_count",
+      "line": 217,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_creation",
+      "line": 225,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_render_chunk",
+      "line": 229,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_render_chunk_not_silent",
+      "line": 235,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_epoch_progression",
+      "line": 243,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_wav_output",
+      "line": 255,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    }
+  ],
+  "apps/audio/test_composer.py": [
+    {
+      "function": "test_mtof_a4",
+      "line": 29,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_mtof_c4",
+      "line": 32,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_clamp_within",
+      "line": 35,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_clamp_below",
+      "line": 38,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_clamp_above",
+      "line": 41,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_fast_sin_zero",
+      "line": 44,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_fast_sin_quarter",
+      "line": 47,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_fast_sin_half",
+      "line": 50,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_wavetable_size",
+      "line": 53,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_scales_not_empty",
+      "line": 60,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_all_scales_start_with_zero",
+      "line": 63,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_all_scales_have_intervals",
+      "line": 67,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_epoch_scale_families_cover_all_epochs",
+      "line": 71,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_epoch_scale_families_reference_valid_scales",
+      "line": 80,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_timbres_not_empty",
+      "line": 90,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_tonal_timbres_have_harmonics",
+      "line": 93,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_fundamental_is_loudest",
+      "line": 100,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_domain_timbres_reference_valid_timbres",
+      "line": 109,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_patterns_not_empty",
+      "line": 119,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_all_patterns_have_onsets",
+      "line": 122,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_onsets_between_zero_and_one",
+      "line": 126,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_epoch_rhythm_families_reference_valid_patterns",
+      "line": 132,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_progressions_not_empty",
+      "line": 142,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_epoch_progressions_reference_valid",
+      "line": 145,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_motifs_not_empty",
+      "line": 155,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_all_motifs_have_notes",
+      "line": 158,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_epoch_motifs_reference_valid",
+      "line": 162,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_creation",
+      "line": 172,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_render_chunk_returns_samples",
+      "line": 176,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_has_sound",
+      "line": 181,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_dies_after_duration",
+      "line": 187,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_dead_osc_returns_none",
+      "line": 193,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_incremental_matches_full",
+      "line": 198,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_nyquist_filter",
+      "line": 216,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_render_returns_samples",
+      "line": 226,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_different_timbres_sound_different",
+      "line": 230,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_kick_returns_samples",
+      "line": 241,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_kick_has_sound",
+      "line": 245,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_kick_cache",
+      "line": 250,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_snare_returns_samples",
+      "line": 257,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_hihat_returns_samples",
+      "line": 264,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_rim_returns_samples",
+      "line": 269,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_creation",
+      "line": 279,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_render_returns_correct_length",
+      "line": 284,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_presence_bounded",
+      "line": 290,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_update_state_changes_pattern",
+      "line": 299,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_creation",
+      "line": 313,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_update_state",
+      "line": 318,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_render_chunk_when_not_playing",
+      "line": 324,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_maybe_play_phrase_returns_samples",
+      "line": 331,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_creation",
+      "line": 352,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_get_current_chord",
+      "line": 357,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_advance_chord",
+      "line": 364,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_start_and_render_pad",
+      "line": 370,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_pad_has_sound",
+      "line": 379,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_pad_eventually_dies",
+      "line": 390,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_creation",
+      "line": 402,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_update_changes_domain",
+      "line": 407,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_get_timbre_for_domain",
+      "line": 418,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_get_octave_shift",
+      "line": 425,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_creation",
+      "line": 435,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_compose_tick_returns_stereo",
+      "line": 442,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_compose_tick_produces_sound",
+      "line": 450,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_epoch_transitions",
+      "line": 461,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_get_scale_for_state",
+      "line": 470,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_performance_under_threshold",
+      "line": 477,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_deterministic_with_same_seed",
+      "line": 490,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    }
+  ],
+  "apps/audio/test_music_engine.py": [
+    {
+      "function": "test_mtof_a4",
+      "line": 22,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_mtof_c4",
+      "line": 25,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_mtof_octave",
+      "line": 28,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_ftom_a4",
+      "line": 31,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_ftom_roundtrip",
+      "line": 34,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_clamp",
+      "line": 38,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_44_bar_duration",
+      "line": 47,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_34_bar_duration",
+      "line": 52,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_68_bar_duration",
+      "line": 57,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_78_bar_duration",
+      "line": 62,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_54_bar_duration",
+      "line": 67,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_bar_samples_positive",
+      "line": 72,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_beat_positions",
+      "line": 77,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_strong_beats_44",
+      "line": 85,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_all_time_sigs_defined",
+      "line": 91,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_epoch_time_sigs_valid",
+      "line": 97,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_beat_groups_sum",
+      "line": 103,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_all_scales_valid_intervals",
+      "line": 112,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_all_chord_types_valid",
+      "line": 120,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_all_progressions_reference_valid_chords",
+      "line": 125,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_epoch_styles_defined",
+      "line": 131,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_epoch_styles_reference_valid_scales",
+      "line": 140,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_epoch_styles_reference_valid_progressions",
+      "line": 146,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_epoch_styles_have_tempo_range",
+      "line": 152,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "setUpClass",
+      "line": 164,
+      "branches": 0,
+      "args": [
+        "cls"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_load_piano",
+      "line": 167,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_get_pitched_returns_list",
+      "line": 174,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_pitch_shift_higher",
+      "line": 182,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_nonexistent_sample",
+      "line": 193,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_track_creation",
+      "line": 201,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_render_empty_notes",
+      "line": 207,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_render_with_notes",
+      "line": 214,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_inactive_track",
+      "line": 223,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_drum_creation",
+      "line": 235,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_render_empty",
+      "line": 239,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_render_with_hits",
+      "line": 245,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "setUp",
+      "line": 256,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_generate_melody",
+      "line": 260,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_generate_bass",
+      "line": 272,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_generate_chord_voicing",
+      "line": 279,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_generate_drums",
+      "line": 287,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_generate_drums_34",
+      "line": 294,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_lowpass_creation",
+      "line": 302,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_highpass_creation",
+      "line": 306,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_process_block",
+      "line": 310,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_lowpass_attenuates_high",
+      "line": 316,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_highpass_attenuates_low",
+      "line": 326,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_mix_empty",
+      "line": 339,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_mix_single_track",
+      "line": 345,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_mix_preserves_length",
+      "line": 353,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_soft_limiter",
+      "line": 360,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_section_creation",
+      "line": 372,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_chord_cycling",
+      "line": 380,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_creation",
+      "line": 396,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_compose_tick_returns_stereo",
+      "line": 400,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_compose_tick_not_silent",
+      "line": 409,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_epoch_transition",
+      "line": 420,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_deterministic_with_seed",
+      "line": 430,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_different_seeds_differ",
+      "line": 439,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_sample_catalog_exists",
+      "line": 457,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_all_generators_callable",
+      "line": 461,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_sample_files_exist",
+      "line": 466,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_no_dc_offset",
+      "line": 477,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_output_in_range",
+      "line": 488,
+      "branches": 3,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    }
+  ],
+  "apps/audio/test_radio_engine.py": [
+    {
+      "function": "test_mtof_a4",
+      "line": 36,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_mtof_c4",
+      "line": 40,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_ftom_440",
+      "line": 44,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_clamp",
+      "line": 48,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_adsr_length",
+      "line": 53,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_adsr_shape",
+      "line": 59,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_all_scales_have_intervals",
+      "line": 73,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_all_time_signatures_valid",
+      "line": 80,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_all_progressions_have_chords",
+      "line": 87,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_all_epochs_have_music_config",
+      "line": 95,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_all_epoch_roots_defined",
+      "line": 105,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_chord_intervals_valid",
+      "line": 111,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "setUp",
+      "line": 120,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_generate_single_instrument",
+      "line": 123,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_generate_instrument_set_count",
+      "line": 131,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_instrument_names_unique",
+      "line": 135,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_synthesize_note_produces_samples",
+      "line": 140,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_synthesize_note_duration",
+      "line": 146,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_synthesize_note_range",
+      "line": 152,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_rotate_instruments",
+      "line": 160,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_fm_instrument",
+      "line": 169,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_noise_percussion",
+      "line": 179,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "setUp",
+      "line": 191,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_midi_files_loaded",
+      "line": 195,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_sample_phrase",
+      "line": 203,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_fallback_phrase",
+      "line": 212,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_snap_to_scale",
+      "line": 220,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "setUp",
+      "line": 231,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_espeak_available",
+      "line": 234,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_generate_speech",
+      "line": 239,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_get_source_phrases",
+      "line": 245,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "setUp",
+      "line": 256,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_lowpass_reduces_high_freq",
+      "line": 259,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_soft_limit_clamps",
+      "line": 274,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_stereo_smooth_preserves_energy",
+      "line": 281,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_compression",
+      "line": 289,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_mood_creation",
+      "line": 300,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_instrument_count_range",
+      "line": 312,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_all_epochs_produce_valid_mood",
+      "line": 320,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_engine_init",
+      "line": 332,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_short_render",
+      "line": 338,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_stereo_channels_differ",
+      "line": 348,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_fade_in",
+      "line": 355,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_fade_out",
+      "line": 363,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_output_range",
+      "line": 371,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_render_to_wav",
+      "line": 383,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "setUp",
+      "line": 410,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_sample_bars_returns_tuple",
+      "line": 414,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_sample_bars_timing_bounds",
+      "line": 424,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_sample_bars_fallback",
+      "line": 435,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "setUp",
+      "line": 448,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_produces_samples",
+      "line": 452,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_correct_duration",
+      "line": 459,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_zero_color_is_clean",
+      "line": 468,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_various_color_amounts",
+      "line": 478,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "setUp",
+      "line": 494,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_reverb_adds_tail",
+      "line": 500,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_reverb_preserves_length",
+      "line": 508,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_chorus_preserves_length",
+      "line": 513,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_early_reflections",
+      "line": 521,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "setUp",
+      "line": 533,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_returns_2_to_5_notes",
+      "line": 537,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_valid_midi_range",
+      "line": 546,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_root_preserved",
+      "line": 554,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_consonant_intervals",
+      "line": 562,
+      "branches": 2,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_dissonant_input_corrected",
+      "line": 576,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "setUp",
+      "line": 592,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_returns_sections",
+      "line": 603,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_a_sections_match_theme",
+      "line": 615,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_episodes_differ_from_theme",
+      "line": 626,
+      "branches": 6,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "setUp",
+      "line": 651,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_range_2_to_4",
+      "line": 654,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_deterministic",
+      "line": 662,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_different_states_differ",
+      "line": 669,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "setUp",
+      "line": 679,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_correct_voice_count",
+      "line": 683,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_voice_has_required_fields",
+      "line": 690,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "setUp",
+      "line": 706,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_perfect_loop_scores_high",
+      "line": 709,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_score_in_range",
+      "line": 716,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_returns_none_without_valid_path",
+      "line": 730,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_produces_samples_with_real_midi",
+      "line": 735,
+      "branches": 6,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_graceful_fallback",
+      "line": 755,
+      "branches": 1,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "setUp",
+      "line": 772,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_returns_triple",
+      "line": 777,
+      "branches": 0,
+      "args": [
+        "self"
+      ],
+      "testable": true
+    },
+    {
+      "function": "test_deterministic_selection",
+      "line": 789,
       "branches": 0,
       "args": [
         "self"
