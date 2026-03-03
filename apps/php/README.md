@@ -34,7 +34,7 @@ php/
 Start the built-in PHP development server:
 
 ```sh
-php -S 0.0.0.0:8080 server.php
+php -S localhost:8080 server.php
 ```
 
 Open http://localhost:8080 in a browser. The page auto-refreshes every

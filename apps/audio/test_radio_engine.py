@@ -26,7 +26,7 @@ from apps.audio.radio_engine import (
     TWO_PI, EDM_TIME_SIGS,
     _adsr, _write_wav,
     RONDO_PATTERNS, DIATONIC_CHORD_QUALITY, GM_ORCHESTRA_INSTRUMENTS,
-    PIANO_PROGRAMS, HAS_FLUIDSYNTH,
+    PIANO_PROGRAMS, HAS_FLUIDSYNTH, ARPEGGIO_FORMS,
 )
 
 
@@ -306,15 +306,15 @@ class TestMoodSegment(unittest.TestCase):
         mood = MoodSegment(0, 'Star Formation', 7, sim_state, 42)
         self.assertEqual(mood.epoch, 'Star Formation')
         self.assertIn(mood.time_sig, list(TIME_SIGNATURES.keys()) + EDM_TIME_SIGS)
-        self.assertTrue(1 <= mood.n_instruments <= 16)
+        self.assertTrue(1 <= mood.n_instruments <= 4)
         self.assertTrue(60 <= mood.tempo <= 200)
 
     def test_instrument_count_range(self):
-        """Instrument count should always be 1-16."""
+        """v7: Instrument count should always be 2-4 (small band)."""
         for i in range(20):
             state = {'temperature': 10 ** i, 'particles': i * 100, 'atoms': i * 50}
             mood = MoodSegment(i, EPOCH_ORDER[i % 13], i % 13, state, i)
-            self.assertTrue(1 <= mood.n_instruments <= 16,
+            self.assertTrue(2 <= mood.n_instruments <= 4,
                           f"Segment {i}: n_instruments={mood.n_instruments}")
 
     def test_all_epochs_produce_valid_mood(self):
@@ -324,6 +324,85 @@ class TestMoodSegment(unittest.TestCase):
             self.assertIsNotNone(mood.scale)
             self.assertIsNotNone(mood.time_sig)
             self.assertTrue(mood.tempo > 0)
+
+
+class TestV7Features(unittest.TestCase):
+    """Test v7 radio engine features."""
+
+    def test_rondo_patterns_expanded(self):
+        """v7: Should have 7 rondo patterns."""
+        self.assertEqual(len(RONDO_PATTERNS), 7)
+        self.assertIn('ABCBA', RONDO_PATTERNS)
+        self.assertIn('AABBA', RONDO_PATTERNS)
+        self.assertIn('ABCDA', RONDO_PATTERNS)
+        self.assertIn('ABACBA', RONDO_PATTERNS)
+        self.assertIn('AABA', RONDO_PATTERNS)
+
+    def test_arpeggio_forms(self):
+        """v7: Should have 6 arpeggio forms."""
+        from apps.audio.radio_engine import ARPEGGIO_FORMS
+        self.assertEqual(len(ARPEGGIO_FORMS), 6)
+        self.assertIn('block', ARPEGGIO_FORMS)
+        self.assertIn('ascending', ARPEGGIO_FORMS)
+        self.assertIn('descending', ARPEGGIO_FORMS)
+        self.assertIn('alberti', ARPEGGIO_FORMS)
+        self.assertIn('broken', ARPEGGIO_FORMS)
+        self.assertIn('pendulum', ARPEGGIO_FORMS)
+        # Block should be None (simultaneous), others callable
+        self.assertIsNone(ARPEGGIO_FORMS['block'])
+        self.assertTrue(callable(ARPEGGIO_FORMS['ascending']))
+
+    def test_arpeggio_ascending(self):
+        """Ascending arpeggio should sort notes."""
+        from apps.audio.radio_engine import ARPEGGIO_FORMS
+        notes = [72, 60, 67, 64]
+        result = ARPEGGIO_FORMS['ascending'](notes)
+        self.assertEqual(result, [60, 64, 67, 72])
+
+    def test_arpeggio_descending(self):
+        """Descending arpeggio should reverse sort."""
+        from apps.audio.radio_engine import ARPEGGIO_FORMS
+        notes = [60, 64, 67]
+        result = ARPEGGIO_FORMS['descending'](notes)
+        self.assertEqual(result, [67, 64, 60])
+
+    def test_tempo_multiplier_range(self):
+        """v7: Tempo multiplier should be in 1.5-2.5x range."""
+        from apps.audio.radio_engine import RadioEngine
+        # Use a mock engine without MIDI loading
+        engine = RadioEngine.__new__(RadioEngine)
+        for i in range(20):
+            state = {'temperature': 10 ** i, 'particles': i * 100}
+            mult = engine._compute_tempo_multiplier(state)
+            self.assertGreaterEqual(mult, 1.5,
+                f"Multiplier {mult} below 1.5 for state {state}")
+            self.assertLessEqual(mult, 2.5,
+                f"Multiplier {mult} above 2.5 for state {state}")
+
+    def test_tempo_multiplier_none_state(self):
+        """Tempo multiplier with None state should be 2.0."""
+        engine = RadioEngine.__new__(RadioEngine)
+        self.assertEqual(engine._compute_tempo_multiplier(None), 2.0)
+
+    def test_mood_duration_multiples_of_42(self):
+        """v7: Mood durations should be multiples of 42 seconds."""
+        valid_durations = {42.0, 84.0, 126.0, 168.0, 210.0}
+        for i in range(50):
+            state = {'temperature': 1e6, 'particles': 100, 'atoms': 50}
+            mood = MoodSegment(i, EPOCH_ORDER[i % 13], i % 13, state, i * 7)
+            self.assertIn(mood.duration, valid_durations,
+                         f"Duration {mood.duration} not a multiple of 42")
+
+    def test_plan_segments_42s_multiples(self):
+        """v7: Planned segment durations should be multiples of 42s."""
+        engine = RadioEngine.__new__(RadioEngine)
+        engine.seed = 42
+        engine.total_duration = 300.0
+        segments = engine._plan_segments()
+        valid_durations = {42.0, 84.0, 126.0, 168.0, 210.0}
+        for seg in segments[:-1]:  # Last segment may be truncated
+            self.assertIn(seg['duration'], valid_durations,
+                         f"Duration {seg['duration']} not a 42s multiple")
 
 
 class TestRadioEngine(unittest.TestCase):
@@ -651,12 +730,12 @@ class TestTempoMultiplier(unittest.TestCase):
     def setUp(self):
         self.engine = RadioEngine(seed=42, total_duration=5.0)
 
-    def test_range_2_to_4(self):
-        """Multiplier should be in [2.0, 4.0]."""
+    def test_range_1_5_to_2_5(self):
+        """v7: Multiplier should be in [1.5, 2.5]."""
         for i in range(50):
             state = {'temperature': 10 ** i, 'particles': i * 100}
             mult = self.engine._compute_tempo_multiplier(state)
-            self.assertTrue(2.0 <= mult <= 4.0,
+            self.assertTrue(1.5 <= mult <= 2.5,
                            f"Multiplier {mult} out of range for state {state}")
 
     def test_deterministic(self):

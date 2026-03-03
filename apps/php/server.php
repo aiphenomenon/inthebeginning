@@ -7,7 +7,7 @@ declare(strict_types=1);
  * In The Beginning — PHP Snapshot Server
  *
  * Runs the simulation in the background and serves HTML snapshots.
- * Usage: php -S 0.0.0.0:8080 server.php
+ * Usage: php -S localhost:8080 server.php
  *
  * Endpoints:
  *   /          - HTML snapshot (auto-refreshes every 10s)

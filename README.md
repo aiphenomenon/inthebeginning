@@ -1,7 +1,7 @@
 # In The Beginning
 
 A multi-language cosmic physics simulator that models the universe from the Big Bang
-through the emergence of DNA-based life — implemented across 15 applications in
+through the emergence of DNA-based life — implemented across 16 applications in
 12 programming languages.
 
 The project also demonstrates an **AST-passing workflow** for AI-assisted development,
@@ -35,7 +35,7 @@ The simulator models 13 cosmic epochs across 300,000 simulation ticks:
 | Planck | 1 | 10^10 K | All forces unified |
 | Inflation | 10 | ~10^9 K | Exponential expansion, quantum fluctuations |
 | Electroweak | 100 | 10^8 K | EM and weak forces separate |
-| Quark | 1,000 | ~10^7 K | Quark-gluon plasma |
+| Quark | 1,000 | ~10^6 K | Quark-gluon plasma |
 | Hadron | 5,000 | 10^6 K | Quarks confined into protons/neutrons |
 | Nucleosynthesis | 10,000 | 10^4 K | Light nuclei form (H, He, Li) |
 | Recombination | 50,000 | 3,000 K | Atoms form, universe becomes transparent |
@@ -76,6 +76,7 @@ Universe (Orchestrator)
 | 13 | Kotlin Android | Kotlin | `apps/kotlin/` | Jetpack Compose + OpenGL |
 | 14 | macOS Screensaver | Swift | `apps/screensaver-macos/` | Metal particles |
 | 15 | Ubuntu Screensaver | C | `apps/screensaver-ubuntu/` | X11 + OpenGL |
+| 16 | Audio Radio Engine | Python | `apps/audio/` | WAV/MP3 composition engine |
 
 ## Testing
 
@@ -114,6 +115,9 @@ cd apps/php && php tests/run_tests.php
 
 # TypeScript
 cd apps/typescript && npm test
+
+# Audio composition engine
+python -m pytest apps/audio/ -v
 ```
 
 ## AST-Passing Workflow

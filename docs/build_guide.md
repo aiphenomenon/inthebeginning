@@ -18,7 +18,7 @@ for the implementations you plan to build.
 | Go         | Go 1.22+                                                     |
 | Rust       | Rust stable toolchain (rustup, cargo)                        |
 | C          | GCC or Clang, make, libc math (`-lm`)                       |
-| C++        | GCC or Clang (C++17), CMake 3.16+, make                     |
+| C++        | GCC or Clang (C++20), CMake 3.16+, make                     |
 | Java       | JDK 21+ (Temurin recommended)                                |
 | TypeScript | Node.js 20+, npm                                            |
 | PHP        | PHP 8.0+ (CLI with built-in server)                          |
@@ -49,7 +49,7 @@ python run_demo.py
 node apps/nodejs/index.js
 
 # Perl (no compilation step)
-perl apps/perl/simulator.pl
+perl apps/perl/simulate.pl
 ```
 
 For compiled languages, see the dedicated sections below.
@@ -84,7 +84,7 @@ Uses the Node.js built-in test runner (requires Node.js 22+).
 node apps/nodejs/index.js
 ```
 
-**Run tests (44 tests):**
+**Run tests (194 tests):**
 
 ```bash
 node --test apps/nodejs/test/test_simulator.js
@@ -97,10 +97,10 @@ node --test apps/nodejs/test/test_simulator.js
 **Run the CLI simulator:**
 
 ```bash
-perl apps/perl/simulator.pl
+perl apps/perl/simulate.pl
 ```
 
-**Run tests (56 tests):**
+**Run tests (376 tests):**
 
 ```bash
 prove -v apps/perl/t/
@@ -247,7 +247,7 @@ cd apps/c && make clean
 
 ## C++
 
-Requires CMake 3.16+ and a C++17-capable compiler.
+Requires CMake 3.16+ and a C++20-capable compiler.
 
 **Build:**
 
@@ -332,7 +332,7 @@ is required.
 **Start the server:**
 
 ```bash
-php -S 0.0.0.0:8080 apps/php/server.php
+php -S localhost:8080 apps/php/server.php
 ```
 
 Then open `http://localhost:8080` in a browser.
@@ -440,6 +440,36 @@ cd apps/screensaver-ubuntu && sudo make install
 ```bash
 cd apps/screensaver-ubuntu && sudo make uninstall
 ```
+
+---
+
+## Audio Composition Engine
+
+The audio engine is pure Python (stdlib only) with no required external dependencies.
+
+**Run the generator:**
+
+```bash
+cd apps/audio && python generate.py
+```
+
+**Run tests:**
+
+```bash
+python -m pytest apps/audio/ -v
+```
+
+**Optional dependencies for enhanced output:**
+
+| Dependency | Purpose | Install |
+|------------|---------|---------|
+| FluidSynth | MIDI rendering with SoundFont samples | `apt install fluidsynth` or `brew install fluid-synth` |
+| mido | MIDI file parsing for classical library sampling | `pip install mido` |
+| ffmpeg | MP3 encoding from WAV output | `apt install ffmpeg` or `brew install ffmpeg` |
+
+These are optional -- the engine generates WAV output using only the Python standard
+library (`math`, `random`, `struct`). FluidSynth, mido, and ffmpeg extend output
+capabilities but are not required.
 
 ---
 

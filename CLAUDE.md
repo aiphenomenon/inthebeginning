@@ -27,7 +27,7 @@ and similar LLM-based coding assistants working on this repository.
 
 **In The Beginning** is a multi-language cosmic physics simulator that models the
 universe from the Big Bang through the emergence of life. It implements the same
-simulation across 15 different programming languages and execution modes.
+simulation across 16 different applications and execution modes.
 
 The Python implementation in `simulator/` is the reference. All other implementations
 in `apps/` replicate its physics engine.
@@ -449,7 +449,7 @@ in `docs/` at each conversation turn** to ensure familiarity with the full archi
 |---|---|
 | `docs/steering.md` | AST reactive protocol -- full CueSignal specification, integration patterns for Claude Code / Jules / Codex / SERA, prompt templates, performance guidelines, and example workflows |
 | `docs/walkthrough.md` | Architecture walkthrough -- how the simulator is structured, physics modules, epoch progression |
-| `docs/apps_overview.md` | Overview of all 15 application implementations with language-specific notes |
+| `docs/apps_overview.md` | Overview of all 16 application implementations with language-specific notes |
 | `docs/build_guide.md` | Cross-platform build instructions for all languages and targets |
 | `docs/ast_passing_efficiency.md` | Token efficiency metrics and benchmarks for the AST-passing approach |
 | `docs/ast_introspection.md` | Guide to using AST introspection for code intelligence |
@@ -516,6 +516,9 @@ cd apps/kotlin && ./gradlew test
 
 # Swift (unit tests)
 cd apps/swift && swift test
+
+# Audio composition engine
+python -m pytest apps/audio/ -v
 ```
 
 ---
@@ -792,6 +795,7 @@ apps/
   wasm/              WebAssembly (Rust -> wasm-bindgen)
   screensaver-macos/ macOS screensaver (Swift + Metal)
   screensaver-ubuntu/ Ubuntu screensaver (C + X11)
+  audio/             Audio composition engine (Python)
 ast_dsl/             AST parsing and transformation engine
 ast_captures/        Pre-computed AST snapshots for reference
 tests/               Python test suite

@@ -80,11 +80,11 @@ compact AST is more space-efficient relative to the original source.
 | Java         | 26,611       | 9,424      | 2.8x             |
 | TypeScript   | 27,791       | 11,899     | 2.3x             |
 | Perl         | 20,076       | 6,056      | 3.3x             |
-| PHP          | 22,138       | 2,138      | 10.4x            |
-| Rust         | 25,845       | 2,570      | 10.1x            |
-| Swift        | 38,549       | 7,124      | 5.4x             |
-| WASM (Rust)  | 24,291       | 1,642      | 14.8x            |
-| macOS Saver  | 25,147       | 4,752      | 5.3x             |
+| PHP          | 22,138       | 2,138      | 10.1x            |
+| Rust         | 25,845       | 2,570      | 9.8x             |
+| Swift        | 38,549       | 7,124      | 5.3x             |
+| WASM (Rust)  | 24,291       | 1,642      | 14.3x            |
+| macOS Saver  | 25,147       | 4,752      | 5.2x             |
 
 ---
 

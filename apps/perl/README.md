@@ -30,6 +30,7 @@ perl/
     04_chemistry.t         # Chemistry tests
     05_biology.t           # Biology tests
     06_universe.t          # Universe integration tests
+    07_environment.t       # Environment tests
 ```
 
 ## Run
@@ -40,7 +41,7 @@ perl simulate.pl
 
 ## Testing
 
-Run the full test suite (56 tests across 6 test files):
+Run the full test suite (376 tests across 7 test files):
 
 ```sh
 prove -v t/

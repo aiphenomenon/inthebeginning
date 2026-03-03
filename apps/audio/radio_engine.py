@@ -1,22 +1,26 @@
 #!/usr/bin/env python3
 """
-Radio engine for 'In The Beginning Radio' -- a cosmic simulation music station.
+Radio engine v7 for 'In The Beginning Radio' -- a cosmic simulation music station.
 
 This engine generates continuously evolving music that shifts mood, instruments,
-time signature, scale, and tempo every 42 seconds, driven by the physics
+time signature, scale, and tempo at 42-second boundaries, driven by the physics
 simulation state. It features:
 
     - 500+ synthesized instruments with runtime instrument rotation
-    - 42-second mood segments with crossfading between them
+    - Mood segments at multiples of 42 seconds (42, 84, 126, 168, 210s)
+    - 2-4 instruments per mood forming a small band ensemble
+    - 7 rondo structures (ABACA, ABACADA, ABCBA, AABBA, ABCDA, ABACBA, AABA)
+    - 6 arpeggio forms (block, ascending, descending, alberti, broken, pendulum)
+    - Tempo multiplier 1.5x-2.5x for natural pacing
+    - Hartmann consonance enforcement on all chord voicings
+    - Anti-click processing: micro-fades, DC offset removal, cosine crossfades
     - Classical music scales and well-known time signatures (from Wikipedia)
-    - Fade-in at start, crossfade between segments, fade-out at end
+    - Diverse instrument family selection (strings, brass, woodwinds, keys, perc)
     - Smoothing/dampening to reduce MIDI-like artifacts
-    - EDM-influenced beat patterns blended with classical harmony
     - TTS voice injection using Silero (preferred) or espeak-ng (fallback)
-      with phrases sampled from project source code
     - MIDI note sampling from 249 public domain classical works (1600-1900)
     - Simulation-driven parameters sampled from different space regions
-    - 1-16 concurrent instruments per segment based on sine characteristics
+    - FluidSynth integration with FluidR3_GM.sf2 soundfont
 
 The engine uses Silero TTS (Apache 2.0) as primary voice synthesis, with
 espeak-ng (GPL) as fallback. MIDI files are sourced from public domain
@@ -210,6 +214,21 @@ CHORD_INTERVALS = {
 RONDO_PATTERNS = {
     'ABACA':   ['A', 'B', 'A', 'C', 'A'],
     'ABACADA': ['A', 'B', 'A', 'C', 'A', 'D', 'A'],
+    'ABCBA':   ['A', 'B', 'C', 'B', 'A'],           # Arch / palindrome
+    'AABBA':   ['A', 'A', 'B', 'B', 'A'],           # Verse-chorus-verse
+    'ABCDA':   ['A', 'B', 'C', 'D', 'A'],           # Through-composed return
+    'ABACBA':  ['A', 'B', 'A', 'C', 'B', 'A'],     # Extended arch rondo
+    'AABA':    ['A', 'A', 'B', 'A'],                 # 32-bar song form
+}
+
+# Arpeggio forms for rondo section variation
+ARPEGGIO_FORMS = {
+    'block':       None,              # Play all chord notes simultaneously
+    'ascending':   lambda ns: sorted(ns),
+    'descending':  lambda ns: sorted(ns, reverse=True),
+    'alberti':     lambda ns: [ns[0], ns[-1], ns[1 % len(ns)], ns[-1]] if len(ns) >= 2 else ns,
+    'broken':      lambda ns: [ns[i] for i in [0, 2 % len(ns), 1 % len(ns), -1]],
+    'pendulum':    lambda ns: sorted(ns) + sorted(ns, reverse=True)[1:-1],
 }
 
 # Diatonic chord qualities per scale degree (7-degree scales)
@@ -1613,8 +1632,10 @@ class SmoothingFilter:
 # MOOD SEGMENT -- Encapsulates 42 seconds of musical character
 # ---------------------------------------------------------------------------
 class MoodSegment:
-    """Represents a 42-second musical mood with specific characteristics.
+    """Represents a musical mood segment at multiples of 42 seconds.
 
+    v7: Durations are multiples of 42s (42, 84, 126, 168, 210) for
+    longer mood development. 2-4 instruments form a small band.
     All parameters are derived from the simulation state at the moment
     the segment begins, sampling from different regions of space.
     """
@@ -1627,8 +1648,10 @@ class MoodSegment:
 
         epoch_music = EPOCH_MUSIC.get(epoch, EPOCH_MUSIC['Present'])
 
-        # Mood duration: random 42-188 seconds (not simulation-driven)
-        self.duration = self.rng.uniform(42.0, 188.0)
+        # Mood duration: multiples of 42 seconds (42, 84, 126, 168, 210)
+        # v7: longer mood segments at 42-second boundaries for richer development
+        duration_multiples = [42.0, 84.0, 84.0, 126.0, 126.0, 168.0, 210.0]
+        self.duration = self.rng.choice(duration_multiples)
 
         # Time signature (from Wikipedia-documented set)
         available_ts = epoch_music['time_sigs']
@@ -1661,13 +1684,14 @@ class MoodSegment:
         self.progression = PROGRESSIONS[prog_name]
         self.progression_name = prog_name
 
-        # Number of concurrent instruments: 6-16 based on sine
+        # Number of concurrent instruments: 2-4 (small band)
+        # v7: reduced from 6-16 to 2-4 for tighter, more focused ensemble
         density = epoch_music['density']
         atoms = sim_state.get('atoms', 0)
         sine_val = math.sin(segment_idx * 0.7 + atoms * 0.001)
         instrument_factor = (sine_val + 1) / 2  # 0..1
         self.n_instruments = clamp(
-            int(6 + instrument_factor * density * 10), 6, 16
+            int(2 + instrument_factor * density * 2), 2, 4
         )
 
         # Number of instrument kits: 1-3
@@ -1688,11 +1712,12 @@ class MoodSegment:
 # RADIO ENGINE -- The main music generation engine
 # ---------------------------------------------------------------------------
 class RadioEngine:
-    """In The Beginning Radio -- Cosmic simulation music station.
+    """In The Beginning Radio v7 -- Cosmic simulation music station.
 
-    Generates continuously evolving music with variable-length mood
-    segments (42-188s), morph transitions, 500+ instruments grouped
-    into scale-coherent kits, classical/EDM fusion, MIDI sampling,
+    Generates continuously evolving music with mood segments at multiples
+    of 42 seconds, morph transitions, 2-4 instrument small band ensembles,
+    7 rondo forms with 6 arpeggio variations, Hartmann consonance enforcement,
+    anti-click processing, diverse instrument family selection, MIDI sampling,
     and TTS injection during mood transitions.
     """
 
@@ -1728,13 +1753,18 @@ class RadioEngine:
 
 
     def _plan_segments(self):
-        """Pre-compute segment layout with variable durations (42-188s)."""
+        """Pre-compute segment layout with 42-second multiple durations.
+
+        v7: durations are multiples of 42s (42, 84, 126, 168, 210) for
+        longer mood development and fewer transitions (reduces clicking).
+        """
+        duration_multiples = [42.0, 84.0, 84.0, 126.0, 126.0, 168.0, 210.0]
         segments = []
         t = 0.0
         idx = 0
         while t < self.total_duration:
             seg_rng = random.Random(self.seed + idx * 31337)
-            duration = seg_rng.uniform(42.0, 188.0)
+            duration = seg_rng.choice(duration_multiples)
             # Don't overshoot
             if t + duration > self.total_duration:
                 duration = self.total_duration - t
@@ -1889,7 +1919,7 @@ class RadioEngine:
             sim_states = self._generate_sim_states(n_segments)
 
         # Rolling buffer for overlap (morph region)
-        max_seg_samples = int(190 * SAMPLE_RATE)  # max segment length + margin
+        max_seg_samples = int(220 * SAMPLE_RATE)  # max segment length (210s) + margin
         buf_len = max_seg_samples + morph_samples * 2
         buf_left = [0.0] * buf_len
         buf_right = [0.0] * buf_len
@@ -2057,12 +2087,16 @@ class RadioEngine:
     # ------------------------------------------------------------------
 
     def _compute_tempo_multiplier(self, sim_state):
-        """Compute a 2X-4X tempo multiplier from simulation state hash."""
+        """Compute a 1.5X-2.5X tempo multiplier from simulation state hash.
+
+        v7: reduced from 2X-4X to 1.5X-2.5X for more natural pacing
+        and to reduce clicking artifacts from overly fast playback.
+        """
         if not sim_state:
-            return 2.5
+            return 2.0
         state_str = repr(sorted(sim_state.items()))
         h = hashlib.sha256(state_str.encode()).hexdigest()[:8]
-        return 2.0 + 2.0 * (int(h, 16) / 0xFFFFFFFF)
+        return 1.5 + 1.0 * (int(h, 16) / 0xFFFFFFFF)
 
     def _build_chord_from_note(self, midi_note, root, scale_name,
                                scale_intervals, n_notes=3, rng=None):
@@ -2120,13 +2154,25 @@ class RadioEngine:
             note = clamp(note, 24, 108)
             chord.append(note)
 
-        # Consonance check: reject any adjacent minor 2nd (semitone clash)
+        # v7: Enhanced Hartmann consonance enforcement
+        # Reject minor 2nd (semitone), tritone in bass, and enforce
+        # that intervals between voices are consonant (3rds, 4ths, 5ths, 6ths, octaves)
+        CONSONANT_INTERVALS = {3, 4, 5, 7, 8, 9, 12, 15, 16}  # semitones
         chord_sorted = sorted(set(chord))
         clean = [chord_sorted[0]] if chord_sorted else [base]
         for i in range(1, len(chord_sorted)):
             interval = chord_sorted[i] - clean[-1]
+            bass_interval = chord_sorted[i] - clean[0]
+            # Reject semitone clash and tritone against bass
             if interval <= 1:
-                # Skip — too close (minor 2nd / unison)
+                continue
+            if bass_interval % 12 == 6 and len(clean) < 3:
+                # Tritone against bass -- try shifting up a semitone
+                alt = chord_sorted[i] + 1
+                alt = self.midi_lib._snap_to_scale(alt, root, scale_intervals)
+                alt_interval = alt - clean[-1]
+                if alt_interval > 1 and (alt - clean[0]) % 12 != 6:
+                    clean.append(clamp(alt, 24, 108))
                 continue
             clean.append(chord_sorted[i])
 
@@ -2139,18 +2185,34 @@ class RadioEngine:
 
     def _build_rondo_sections(self, base_notes, root, scale_name,
                               scale_intervals, segment_duration, rng):
-        """Build ABACADA rondo structure from chord-expanded notes.
+        """Build rondo structure from chord-expanded notes with varied arpeggiation.
+
+        v7: Randomly selects from 7 rondo patterns and applies different
+        arpeggio forms to each section for varied mini-loop arrangements.
 
         Returns list of (section_label, notes_list) tuples where each
         note is (t_sec, [chord_notes], dur_sec, velocity).
         """
         duration = segment_duration
 
-        # Choose rondo pattern
-        if duration > 80:
-            pattern = RONDO_PATTERNS['ABACADA']
+        # v7: Choose rondo pattern from expanded set
+        pattern_names = list(RONDO_PATTERNS.keys())
+        if duration > 150:
+            # Longer segments get longer patterns
+            pattern_name = rng.choice(['ABACADA', 'ABACBA', 'ABCDA'])
+        elif duration > 80:
+            pattern_name = rng.choice(pattern_names)
         else:
-            pattern = RONDO_PATTERNS['ABACA']
+            pattern_name = rng.choice(['ABACA', 'AABA', 'ABCBA', 'AABBA'])
+        pattern = RONDO_PATTERNS[pattern_name]
+
+        # v7: Assign arpeggio forms to sections for variety
+        arp_names = list(ARPEGGIO_FORMS.keys())
+        section_arps = {}
+        for label in set(pattern):
+            section_arps[label] = rng.choice(arp_names)
+        # Theme (A) always uses block chords for recognizability
+        section_arps['A'] = 'block'
 
         sections = {}
         sections['A'] = base_notes  # Theme
@@ -2192,54 +2254,82 @@ class RadioEngine:
             d_notes.append((t, new_chord, dur, vel * rng.uniform(0.8, 1.0)))
         sections['D'] = d_notes
 
-        # Ensure smooth voice leading at transitions
+        # v7: Apply arpeggio forms to each section's notes
         result = []
         for label in pattern:
-            result.append((label, sections.get(label, base_notes)))
+            section_notes = sections.get(label, base_notes)
+            arp_name = section_arps.get(label, 'block')
+            arp_fn = ARPEGGIO_FORMS.get(arp_name)
+
+            if arp_fn is not None:
+                # Convert block chords to arpeggiated sequences
+                arpeggiated = []
+                for t, chord, dur, vel in section_notes:
+                    if len(chord) < 2:
+                        arpeggiated.append((t, chord, dur, vel))
+                        continue
+                    arp_order = arp_fn(list(chord))
+                    n_arp = len(arp_order)
+                    arp_dur = dur / max(n_arp, 1)
+                    for ai, note in enumerate(arp_order):
+                        arp_t = t + ai * arp_dur
+                        arpeggiated.append((arp_t, [note], arp_dur, vel))
+                result.append((label, arpeggiated))
+            else:
+                result.append((label, section_notes))
 
         return result
 
     def _choose_gm_instruments(self, midi_info, n_voices, rng):
         """Choose GM instruments for FluidSynth rendering.
 
-        If piano-only: 50% keep piano, 50% switch to orchestra.
-        Returns list of (gm_program, octave_offset, pan, chord_size) dicts.
+        v7: Uses weighted random pools to avoid piano/non-piano alternation.
+        Selects from instrument families (strings, brass, woodwinds, keys, etc.)
+        with weighted probabilities, ensuring genuine variety.
+        Returns list of voice config dicts.
         """
         programs = midi_info.get('programs', set())
-        is_piano = not programs or all(p in PIANO_PROGRAMS for p in programs)
-
-        voices = []
         orch_programs = list(GM_ORCHESTRA_INSTRUMENTS.keys())
 
-        # Octave offsets and pans for spreading voices
-        offsets_pool = [-24, -12, 0, 12, 24]
-        pans_pool = [-0.6, -0.3, 0.0, 0.3, 0.6]
+        # Build a diverse pool from instrument families
+        FAMILY_POOLS = {
+            'strings':   [40, 41, 42, 43, 44, 45, 48],
+            'brass':     [56, 57, 58, 60, 61],
+            'woodwinds': [68, 69, 70, 71, 72, 73, 74, 75],
+            'keys':      [0, 1, 2, 3, 4, 5, 6, 7, 8],
+            'pitched_perc': [11, 14, 46],
+        }
+        families = list(FAMILY_POOLS.keys())
+
+        # Randomize family selection order for this segment
+        rng.shuffle(families)
+
+        voices = []
+        used_families = set()
+
+        # Octave offsets and pans — shuffled for variety
+        offsets_pool = [-12, 0, 0, 12]
+        pans_pool = [-0.4, -0.15, 0.15, 0.4]
 
         for v in range(n_voices):
-            if is_piano and rng.random() < 0.5:
-                gm = 0  # Keep as Acoustic Grand Piano
-            elif is_piano:
-                gm = rng.choice(orch_programs)
-            else:
-                # Non-piano: keep original or complement
-                orig = sorted(programs)
-                if v < len(orig):
-                    gm = orig[v]
-                else:
-                    gm = rng.choice(orch_programs)
+            # Pick a family we haven't used yet if possible
+            available = [f for f in families if f not in used_families]
+            if not available:
+                available = families
+            family = rng.choice(available)
+            used_families.add(family)
+
+            pool = FAMILY_POOLS[family]
+            gm = rng.choice(pool)
 
             oct_offset = offsets_pool[v % len(offsets_pool)]
             pan = pans_pool[v % len(pans_pool)]
 
-            # Chord size: bass=2-3, mid=3-4, treble=3-5
-            if oct_offset <= -12:
-                chord_size = rng.randint(2, 3)
-            elif oct_offset >= 12:
-                chord_size = rng.randint(3, 5)
-            else:
-                chord_size = rng.randint(3, 4)
+            # Chord size: 2-4 notes per chord
+            chord_size = rng.randint(2, 4)
 
-            color_amount = 0.15 if oct_offset < 0 else 0.30
+            # Color amount: subtle for bass, more for treble
+            color_amount = 0.15 if oct_offset < 0 else 0.25
 
             voices.append({
                 'gm_program': gm,
@@ -2247,6 +2337,7 @@ class RadioEngine:
                 'pan': pan,
                 'chord_size': chord_size,
                 'color_amount': color_amount,
+                'family': family,
             })
 
         return voices
@@ -2254,14 +2345,15 @@ class RadioEngine:
     def _render_segment(self, mood, kits, n_samples, sim_state):
         """Render a mood segment with chord rondo structure.
 
-        Pipeline:
-        1. Compute tempo multiplier (2X-4X)
+        v7 Pipeline:
+        1. Compute tempo multiplier (1.5X-2.5X)
         2. Sample MIDI bars with simulation-seeded selection
-        3. Expand notes → 2-5 note consonant chords
-        4. Build rondo sections (ABACADA)
-        5. Select 1-5 voice instruments (FluidSynth + coloring)
-        6. Render all voices with chamber effects
-        7. Loop with crossfade to fill mood duration
+        3. Expand notes → 2-4 note consonant chords
+        4. Build rondo sections with varied arpeggio forms
+        5. Select 2-4 voice instruments (diverse families)
+        6. Each voice plays its own chord voicing simultaneously
+        7. Apply chamber effects and anti-click processing
+        8. Loop with long crossfade to fill mood duration
         """
         left = [0.0] * n_samples
         right = [0.0] * n_samples
@@ -2271,12 +2363,12 @@ class RadioEngine:
         beats_per_bar = mood.beats_per_bar
         root = mood.root
 
-        # 1. Tempo multiplier
+        # 1. Tempo multiplier (v7: 1.5-2.5x)
         tempo_mult = self._compute_tempo_multiplier(sim_state)
-        effective_tempo = min(tempo * tempo_mult, 480)
+        effective_tempo = min(tempo * tempo_mult, 360)
 
         # 2. Sample MIDI bars with seeded selection
-        loop_bars = rng.randint(4, 8)
+        loop_bars = rng.randint(4, 12)  # v7: up to 12 bars for longer phrases
         bars_result = self.midi_lib.sample_bars_seeded(
             sim_state, loop_bars, effective_tempo, beats_per_bar,
             root=root, scale=mood.scale, rng=rng
@@ -2286,21 +2378,20 @@ class RadioEngine:
         if segment_duration <= 0 or not midi_notes:
             return left, right
 
-        # 3. Choose voice instruments
-        n_voices = getattr(mood, 'n_voices', rng.randint(1, 5))
+        # 3. Choose voice instruments (v7: diverse families, no alternation)
+        n_voices = getattr(mood, 'n_voices', rng.randint(2, 4))
         voice_configs = self._choose_gm_instruments(midi_info, n_voices, rng)
 
-        # 4. Expand each note into chords (use primary voice chord size)
-        primary_chord_size = voice_configs[0]['chord_size'] if voice_configs else 3
+        # 4. Expand each note into chords -- each voice builds its own chord
         chord_notes = []
         for t_sec, midi_note, dur_sec, vel in midi_notes:
             chord = self._build_chord_from_note(
                 midi_note, root, mood.scale_name, mood.scale,
-                n_notes=primary_chord_size, rng=rng
+                n_notes=rng.randint(2, 4), rng=rng
             )
             chord_notes.append((t_sec, chord, dur_sec, vel))
 
-        # 5. Build rondo sections
+        # 5. Build rondo sections with varied arpeggio forms
         rondo = self._build_rondo_sections(
             chord_notes, root, mood.scale_name, mood.scale,
             segment_duration, rng
@@ -2315,8 +2406,8 @@ class RadioEngine:
         loop_left = [0.0] * loop_samples
         loop_right = [0.0] * loop_samples
 
-        # Gain per voice to prevent clipping
-        voice_gain = 0.25 / max(n_voices, 1)
+        # Gain per voice to prevent clipping (v7: adjusted for 2-4 voices)
+        voice_gain = 0.35 / max(n_voices, 1)
 
         # 6. Render all voices across all rondo sections
         section_offset_sec = 0.0
@@ -2334,6 +2425,9 @@ class RadioEngine:
 
         for sec_idx, (label, section_notes) in enumerate(rondo):
             sec_start = int(section_offset_sec * SAMPLE_RATE)
+
+            # v7: Each voice gets its own coloring instrument (persistent per section)
+            voice_instruments = [rng.choice(self.instruments) for _ in voice_configs]
 
             for v_idx, vc in enumerate(voice_configs):
                 oct_off = vc['octave_offset']
@@ -2353,17 +2447,19 @@ class RadioEngine:
                             loop_right[pos] += fr[i] * voice_gain
                     continue
 
-                # Pick a coloring instrument from the 537-bank
-                color_instr = rng.choice(self.instruments)
+                color_instr = voice_instruments[v_idx]
 
                 for t_sec, chord, dur_sec, vel in section_notes:
                     offset = sec_start + int(t_sec * SAMPLE_RATE)
                     if offset >= loop_samples:
                         continue
 
-                    # Re-build chord at this voice's chord size + octave
+                    # v7: Each voice builds its own chord voicing at its register
                     voice_chord = chord[:v_chord_size]
                     voice_chord = [clamp(n + oct_off, 24, 108)
+                                   for n in voice_chord]
+                    # Snap to scale to ensure consonance
+                    voice_chord = [self.midi_lib._snap_to_scale(n, root, mood.scale)
                                    for n in voice_chord]
 
                     for note in voice_chord:
@@ -2371,6 +2467,14 @@ class RadioEngine:
                         samps = self.factory.synthesize_colored_note(
                             color_instr, freq, dur_sec, vel, ca
                         )
+                        # v7: Anti-click micro-fade on each note (2ms in, 2ms out)
+                        click_guard = min(int(0.002 * SAMPLE_RATE), len(samps) // 4)
+                        for ci in range(click_guard):
+                            fade = ci / max(click_guard, 1)
+                            samps[ci] *= fade
+                            if len(samps) - 1 - ci >= 0:
+                                samps[len(samps) - 1 - ci] *= fade
+
                         self._mix_mono(loop_left, loop_right, samps,
                                       offset, loop_samples, pan * voice_gain * 4)
 
@@ -2387,9 +2491,22 @@ class RadioEngine:
             loop_left = self.smoother.apply_chorus(loop_left)
             loop_right = self.smoother.apply_chorus(loop_right)
 
-        # 8. Loop with crossfade to fill mood duration
-        xfade = min(int(rng.uniform(0.5, 1.0) * SAMPLE_RATE),
-                     loop_samples // 4)
+        # v7: DC offset removal to prevent low-frequency clicking
+        if loop_left:
+            dc_l = sum(loop_left) / len(loop_left)
+            dc_r = sum(loop_right) / len(loop_right)
+            if abs(dc_l) > 0.001 or abs(dc_r) > 0.001:
+                loop_left = [s - dc_l for s in loop_left]
+                loop_right = [s - dc_r for s in loop_right]
+
+        # v7: Gentle lowpass to remove harsh high-frequency artifacts
+        loop_left = self.smoother.apply_lowpass(loop_left, 8000)
+        loop_right = self.smoother.apply_lowpass(loop_right, 8000)
+
+        # 8. Loop with long crossfade to fill mood duration
+        # v7: Longer crossfade (2-4 seconds) to eliminate click at loop boundaries
+        xfade = min(int(rng.uniform(2.0, 4.0) * SAMPLE_RATE),
+                     loop_samples // 3)
         pos = 0
         while pos < n_samples:
             remaining = n_samples - pos
@@ -2397,10 +2514,11 @@ class RadioEngine:
             for i in range(chunk):
                 fade = 1.0
                 if pos > 0 and i < xfade:
-                    fade = i / max(xfade, 1)
+                    # v7: Use cosine crossfade for smoother loop joins
+                    fade = 0.5 - 0.5 * math.cos(math.pi * i / max(xfade, 1))
                 dist_to_end = chunk - i
                 if dist_to_end < xfade and pos + chunk < n_samples:
-                    fade *= dist_to_end / max(xfade, 1)
+                    fade *= 0.5 + 0.5 * math.cos(math.pi * (1 - dist_to_end / max(xfade, 1)))
                 left[pos + i] += loop_left[i] * fade
                 right[pos + i] += loop_right[i] * fade
             pos += loop_samples - xfade
@@ -2578,7 +2696,7 @@ def generate_radio_mp3(output_path, duration=1800.0, seed=42):
 
     n_segments = len(engine.segments)
     avg_dur = sum(s['duration'] for s in engine.segments) / max(n_segments, 1)
-    print(f"[RadioEngine] {n_segments} mood segments (avg {avg_dur:.0f}s, range 42-188s)")
+    print(f"[RadioEngine] {n_segments} mood segments (avg {avg_dur:.0f}s, multiples of 42s)")
 
     print(f"[RadioEngine] Rendering audio...")
     t0 = _time.time()

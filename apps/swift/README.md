@@ -40,31 +40,23 @@ swift/
 
 ## Build
 
-### Xcode
-
-Open the project in Xcode, select a target device or simulator, and build
-with Cmd+B.
-
-### Command Line
-
-```sh
-xcodebuild -scheme InTheBeginning -destination 'platform=iOS Simulator,name=iPhone 15 Pro' build
-```
-
-For macOS:
-
-```sh
-xcodebuild -scheme InTheBeginning -destination 'platform=macOS' build
-```
-
-### Swift Package Manager (simulator library only)
+### Command Line (Swift Package Manager)
 
 ```sh
 swift build
 ```
 
-This builds the `InTheBeginningSimulator` library target. The full app with
-Metal and Audio requires Xcode.
+This builds the `InTheBeginningSimulator` library target and the app executable.
+
+To run tests:
+
+```sh
+swift test
+```
+
+**Note**: The full app with Metal rendering and AVAudioEngine audio requires
+Xcode and a device or simulator. Open the `Package.swift` in Xcode, select a
+target device or simulator, and build with Cmd+B.
 
 ## Architecture
 

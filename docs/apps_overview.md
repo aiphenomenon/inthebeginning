@@ -5,7 +5,7 @@
 "In The Beginning" is a multi-language physics simulator that models the
 universe from the Big Bang through the emergence of DNA-based life. The
 simulation spans 13 cosmic epochs -- from the Planck era (tick 1) to the
-Present (tick 300,000) -- and is implemented across 15 applications in 12
+Present (tick 300,000) -- and is implemented across 16 applications in 12
 programming languages, targeting terminals, browsers, desktops, and mobile
 devices.
 
@@ -25,7 +25,7 @@ Every application implements the same timeline, defined by simulation ticks:
 | #  | Epoch            | Start Tick | Temperature         | Description                                       |
 |----|------------------|------------|---------------------|---------------------------------------------------|
 | 1  | Planck           | 1          | 10^10 K (sim)       | All forces unified, quantum gravity regime         |
-| 2  | Inflation        | 10         | ~10^8 K             | Exponential expansion, quantum fluctuations seed structure |
+| 2  | Inflation        | 10         | ~10^9 K             | Exponential expansion, quantum fluctuations seed structure |
 | 3  | Electroweak      | 100        | ~10^8 K             | Electromagnetic and weak forces separate           |
 | 4  | Quark            | 1,000      | ~10^6 K             | Quark-gluon plasma, free quarks and gluons         |
 | 5  | Hadron           | 5,000      | ~10^6 K             | Quarks confined into protons and neutrons           |
@@ -206,7 +206,7 @@ cd apps/nodejs && node index.js
 - Progress bars with Unicode block characters
 - DNA sequence display in biological epochs
 - Habitability indicator with UV and cosmic ray readings
-- 44 tests using `node:test` built-in test runner
+- 194 tests using `node:test` built-in test runner
 
 **File structure:**
 ```
@@ -221,7 +221,7 @@ apps/nodejs/
   universe.js          # Universe orchestrator
   package.json         # ES module config
   test/
-    test_simulator.js  # 44 tests using node:test
+    test_simulator.js  # 194 tests using node:test
 ```
 
 ---
@@ -248,7 +248,7 @@ cd apps/perl && perl simulate.pl
 - Callback-based epoch reporting via `on_epoch_complete` subroutine
 - Time::HiRes for precise elapsed-time measurement
 - Configurable ticks per epoch
-- 56 tests using Test::More across 6 test files
+- 376 tests using Test::More across 7 test files
 
 **File structure:**
 ```
@@ -668,7 +668,7 @@ cd apps/php && php simulate.php
 
 **Run command (HTTP server):**
 ```
-cd apps/php && php -S 0.0.0.0:8080 server.php
+cd apps/php && php -S localhost:8080 server.php
 # Then open http://localhost:8080
 ```
 
@@ -936,6 +936,50 @@ apps/screensaver-ubuntu/
 
 ---
 
+### 16. Audio Composition Engine
+
+**Description:** A Python-based audio composition engine that sonifies the cosmic
+simulation into structured, multi-track music. Features a bar-oriented architecture
+with real time signatures, 500+ instrument samples, MIDI library sampling from
+classical composers (Bach, Beethoven, Chopin, Mozart), and world musical scales
+spanning Western classical, Asian, Middle Eastern, Indian, and African traditions.
+
+**Build command:**
+```
+# No build step required
+```
+
+**Run command:**
+```
+cd apps/audio && python generate.py
+```
+
+**Key features:**
+- Bar-based multi-track music with real time signatures (4/4, 3/4, 6/8, 7/8, 5/4)
+- 500+ instrument samples (strings, winds, bells, percussion, pads, world instruments)
+- MIDI library sampling from public domain classical works (pre-1929)
+- World musical scales (30+ scales from 6 traditions)
+- Additive synthesis timbres with FFT-guided waveform shaping
+- Polyrhythmic patterns (3:2, 4:3, 5:4, West African, gamelan)
+- No external dependencies -- pure Python stdlib (math, random, struct)
+- Optional FluidSynth for MIDI rendering, mido for MIDI parsing, ffmpeg for MP3 output
+
+**File structure:**
+```
+apps/audio/
+  composer.py            # Musical composition engine with world traditions
+  music_engine.py        # Bar-oriented multi-track structured music engine
+  generate.py            # Audio generation entry point
+  sample_gen.py          # Instrument sample generation
+  test_audio.py          # Audio engine tests
+  test_composer.py       # Composer tests
+  test_music_engine.py   # Music engine tests
+  samples/               # 45+ instrument samples (MP3)
+  midi_library/          # Classical MIDI files (Bach, Beethoven, Chopin, Mozart)
+```
+
+---
+
 ## Build Quick Reference
 
 | App                | Build Command                                          | Run Command                                     | Output                          |
@@ -952,7 +996,7 @@ apps/screensaver-ubuntu/
 | Java GUI           | `cd apps/java && gradle fatJar`                        | `java -jar build/libs/java-all.jar`             | Terminal output                 |
 | TypeScript Audio   | `cd apps/typescript && npm run build:all`               | Open `public/index.html` via HTTP server        | Browser audio + spectrogram     |
 | WebAssembly        | `cd apps/wasm && ./build.sh`                           | Serve directory, open in WebGPU browser         | Browser particle visualization  |
-| PHP Snapshot       | (none)                                                 | `cd apps/php && php -S 0.0.0.0:8080 server.php` | HTTP on port 8080              |
+| PHP Snapshot       | (none)                                                 | `cd apps/php && php -S localhost:8080 server.php` | HTTP on port 8080              |
 | Swift iOS          | `cd apps/swift && swift build`                         | Run via Xcode on device/simulator               | iOS/iPadOS/tvOS app             |
 | Kotlin Android     | `cd apps/kotlin && ./gradlew assembleRelease`          | Install APK via adb                             | Android app                     |
 | macOS Screensaver  | `cd apps/screensaver-macos && make`                    | `make install`, select in System Preferences    | .saver bundle                   |

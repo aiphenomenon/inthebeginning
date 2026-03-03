@@ -3,13 +3,15 @@
 This document describes planned future features and enhancements for the
 "In The Beginning" cosmic physics simulator project.
 
-## Current State (v0.4.0)
+## Current State (v0.7.0)
 
 - 15 language implementations of the cosmic physics simulator
 - AST-passing architecture for AI-assisted development
 - Comprehensive test suites across all languages
 - CI/CD with cross-platform releases
 - Session logging and steering infrastructure
+- Audio Radio Engine v7 with 500+ instruments and MIDI sampling
+- Audio composition engine with bar-oriented multi-track architecture
 
 ## Near-Term Roadmap
 

@@ -4,6 +4,84 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.7.0 — 2026-03-03 — Radio Engine v7 + Comprehensive Markdown Audit
+
+### Summary
+
+Radio engine v7 with improved musical quality: 1.5-2.5x tempo (down from 2-4x),
+2-4 instrument small band ensembles (down from 6-16), mood segments at multiples
+of 42 seconds, 7 rondo structures with 6 arpeggio forms, Hartmann consonance
+enforcement, anti-click processing, diverse instrument family selection, and
+comprehensive 32-issue markdown audit fixing all stale references across the project.
+
+### Changes
+
+- **Radio Engine v7** (`apps/audio/radio_engine.py`):
+  - Tempo multiplier: 1.5x-2.5x (was 2x-4x) for more natural pacing
+  - Instruments per mood: 2-4 small band (was 6-16) for tighter ensemble
+  - Mood duration: multiples of 42s (42, 84, 126, 168, 210s) for longer development
+  - 7 rondo patterns: ABACA, ABACADA, ABCBA, AABBA, ABCDA, ABACBA, AABA (was 2)
+  - 6 arpeggio forms: block, ascending, descending, alberti, broken, pendulum
+  - Hartmann consonance enforcement: rejects tritones in bass, enforces consonant intervals
+  - Anti-click processing: 2ms micro-fades on notes, DC offset removal, 2-4s cosine crossfades
+  - Diverse instrument families: strings, brass, woodwinds, keys, pitched percussion
+  - 8kHz gentle lowpass on all loop output for smoother sound
+  - Fixed piano/non-piano alternation with weighted family selection
+- **32-issue markdown audit** (HIGH/MEDIUM/LOW):
+  - Fixed test counts: Node.js 44→194, Perl 56→376
+  - Fixed Perl filename: `simulator.pl` → `simulate.pl`
+  - Fixed C++ standard: C++17 → C++20
+  - Added audio app to README, CLAUDE.md, docs/apps_overview.md, docs/build_guide.md
+  - Added 4 missing AST doc entries to AGENTS.md (wasm, typescript, swift, kotlin)
+  - Updated roadmap version from v0.4.0 to v0.7.0
+  - Fixed temperature inconsistencies (Quark ~10^6 K, Inflation ~10^9 K)
+  - Fixed PHP server bind address documentation
+  - Aligned compaction ratios between ast_introspection.md and ast_passing_efficiency.md
+  - Updated app count from 15 to 16
+  - Fixed Swift build commands (xcodeproj → SPM)
+  - Created apps/audio/README.md
+- **8 new v7 tests** in `test_radio_engine.py`:
+  - Rondo patterns expanded (7 patterns)
+  - Arpeggio forms (6 forms, ascending/descending verified)
+  - Tempo multiplier range (1.5-2.5x)
+  - Mood duration at 42s multiples
+  - Plan segments at 42s multiples
+- **30-minute cosmic radio v7 MP3** (`cosmic_radio_v7.mp3`)
+
+### Test Results
+
+- Python reference: 400 passed
+- Audio radio engine: 36 passed (quick) + 8 new v7 tests
+- Audio composer: 67 passed
+- Audio music engine: 62 passed
+- Total quick tests: 573+
+
+### Files Created
+
+- `apps/audio/README.md` — Audio engine documentation
+- `apps/audio/cosmic_radio_v7.mp3` — 30-minute cosmic radio v7
+
+### Files Modified
+
+- `apps/audio/radio_engine.py` — Radio engine v7 improvements
+- `apps/audio/test_radio_engine.py` — 8 new v7 tests, updated assertions
+- `README.md` — Audio app added, test counts updated, app count updated
+- `CLAUDE.md` — Audio test command, app count, file structure
+- `AGENTS.md` — 4 missing AST doc entries added
+- `RELEASE_HISTORY.md` — This entry
+- `docs/apps_overview.md` — Audio section, test counts, temperature fixes
+- `docs/build_guide.md` — Audio section, C++20, simulate.pl, test counts
+- `docs/roadmap.md` — Version updated to v0.7.0
+- `docs/ast_introspection.md` — Compaction ratios aligned
+- `docs/ast_passing_efficiency.md` — Compaction ratios aligned
+- `apps/nodejs/README.md` — Test count 44→194
+- `apps/perl/README.md` — Test count 56→376, added 07_environment.t
+- `apps/php/server.php` — Bind address documentation
+- `apps/php/README.md` — Bind address documentation
+- `apps/swift/README.md` — Build commands updated to SPM
+
+---
+
 ## v0.6.0 — 2026-03-01 — Structured Music Engine + 40 Instrument Samples + Spectral Safety
 
 ### Summary

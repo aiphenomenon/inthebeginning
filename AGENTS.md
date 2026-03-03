@@ -344,6 +344,10 @@ authoritative reference for architecture, build procedures, and project directio
 | `docs/rust_ast.md` | Rust AST parser -- regex + `rustc` nightly fallback |
 | `docs/perl_ast.md` | Perl AST parser -- regex + `B::Deparse` fallback |
 | `docs/php_ast.md` | PHP AST parser -- regex + `token_get_all` fallback |
+| `docs/wasm_ast.md` | WebAssembly (WAT) AST parser -- S-expression parsing |
+| `docs/typescript_ast.md` | TypeScript AST parser -- regex + `tsc` fallback |
+| `docs/swift_ast.md` | Swift AST parser -- regex + `swiftc -dump-ast` fallback |
+| `docs/kotlin_ast.md` | Kotlin AST parser -- regex + `kotlinc` fallback |
 
 ### Accuracy Requirement
 

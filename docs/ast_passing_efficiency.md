@@ -29,9 +29,9 @@ This matters in practice for:
 The `ast_dsl/introspect.py` module provides a universal introspection
 interface that walks an application directory, identifies source files by
 extension, and parses each file with the appropriate language-specific AST
-parser. The project includes 13 AST parsers covering C, C++, Go, Java,
-JavaScript, Kotlin, Perl, PHP, Python, Rust, Swift, TypeScript, and
-WebAssembly.
+parser. The project includes 12 AST parsers covering 13 languages: C, C++,
+Go, Java, JavaScript, Kotlin, Perl, PHP, Python, Rust, Swift, TypeScript,
+and WebAssembly (C and C++ share a single parser).
 
 For each file the introspection module:
 

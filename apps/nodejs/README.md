@@ -44,7 +44,7 @@ Uses the built-in Node.js test runner (`node:test`):
 node --test test/test_simulator.js
 ```
 
-The test suite contains 44 tests covering constants, quantum fields, atomic
+The test suite contains 194 tests covering constants, quantum fields, atomic
 systems, chemistry, biology, environment, and universe orchestration.
 
 ## Notes
