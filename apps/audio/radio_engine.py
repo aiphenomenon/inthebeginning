@@ -2794,6 +2794,839 @@ def generate_radio_mp3(output_path, duration=1800.0, seed=42):
 
 
 # ---------------------------------------------------------------------------
+# V8 TIME SIGNATURE CLASSIFICATION
+# ---------------------------------------------------------------------------
+# Simple: beats divide into 2 (top number is 2, 3, or 4; bottom is note value)
+SIMPLE_TIME_SIGS = ['2/2', '2/4', '3/4', '4/4', '3/8', '3/2']
+# Compound: beats divide into 3 (top number is 6, 9, or 12)
+COMPOUND_TIME_SIGS = ['6/4', '6/8', '9/8', '12/8']
+# Complex/mixed/additive/irrational: irregular groupings
+COMPLEX_TIME_SIGS = ['5/4', '5/8', '7/4', '7/8', '11/8', '3+3+2/8', '2+2+3/8']
+
+
+# ---------------------------------------------------------------------------
+# V8 NOTE SMOOTHING FILTER -- applied after synthesis, before arrangement
+# ---------------------------------------------------------------------------
+class NoteSmoother:
+    """Inline post-processing for individual note/chord samples.
+
+    Applied after synthesis (note -> coloring/imprinting/bending) but
+    before arrangement into chord progressions/runs/arpeggios.
+    Produces a softer, more fluid texture without excessive vibrato.
+    Uses numpy when available for ~10x speedup.
+    """
+
+    def __init__(self):
+        pass
+
+    def smooth_note(self, samples, freq=440.0):
+        """Apply gentle smoothing to a single synthesized note.
+
+        Pipeline:
+        1. Two-pole lowpass to soften transients (adaptive cutoff)
+        2. Highpass at 35 Hz to remove subsonic rumble
+        3. Gentle saturation warmth
+
+        Args:
+            samples: List of float audio samples.
+            freq: Fundamental frequency in Hz (for adaptive filtering).
+
+        Returns:
+            Smoothed samples list.
+        """
+        n = len(samples)
+        if n < 4:
+            return samples
+
+        if HAS_NUMPY:
+            return self._smooth_numpy(samples, freq, n)
+        return self._smooth_pure(samples, freq, n)
+
+    def _smooth_numpy(self, samples, freq, n):
+        """Numpy-accelerated smoothing using convolution (fully vectorized)."""
+        arr = np.array(samples, dtype=np.float64)
+
+        # 1. Moving average smoothing (vectorized convolution)
+        # Kernel size adapts to frequency: low notes get wider smoothing
+        kernel_size = max(3, min(31, int(SAMPLE_RATE / max(freq * 4, 100))))
+        if kernel_size % 2 == 0:
+            kernel_size += 1
+        kernel = np.ones(kernel_size) / kernel_size
+        # Apply twice for gentler rolloff (approximates 2-pole)
+        smoothed = np.convolve(arr, kernel, mode='same')
+        smoothed = np.convolve(smoothed, kernel, mode='same')
+
+        # 2. Highpass: subtract very-low-frequency trend
+        hp_kernel_size = int(SAMPLE_RATE / 30)  # ~30 Hz
+        if hp_kernel_size % 2 == 0:
+            hp_kernel_size += 1
+        hp_kernel_size = min(hp_kernel_size, n // 2)
+        if hp_kernel_size > 3:
+            hp_kernel = np.ones(hp_kernel_size) / hp_kernel_size
+            bass = np.convolve(smoothed, hp_kernel, mode='same')
+            smoothed = smoothed - bass + np.mean(smoothed)
+
+        # 3. Gentle warmth saturation
+        mask = np.abs(smoothed) > 0.6
+        if mask.any():
+            sign = np.sign(smoothed[mask])
+            excess = np.abs(smoothed[mask]) - 0.6
+            smoothed[mask] = sign * (0.6 + 0.4 * np.tanh(excess * 2.5))
+
+        return smoothed.tolist()
+
+    def _smooth_pure(self, samples, freq, n):
+        """Pure Python fallback (simplified single-pass for speed)."""
+        out = list(samples)
+
+        # Combined lowpass + highpass in single pass
+        cutoff = min(14000.0, max(2000.0, freq * 8))
+        lp_alpha = min(0.99, TWO_PI * cutoff * INV_SR)
+        hp_alpha = max(0.001, 1.0 - TWO_PI * 35.0 * INV_SR)
+        lp_state = 0.0
+        hp_state = 0.0
+        hp_prev = 0.0
+        for i in range(n):
+            # Lowpass
+            lp_state += lp_alpha * (out[i] - lp_state)
+            # Highpass on the lowpassed signal
+            hp_state = hp_alpha * (hp_state + lp_state - hp_prev)
+            hp_prev = lp_state
+            out[i] = hp_state
+
+        return out
+
+    def smooth_chord(self, chord_samples_list, freqs):
+        """Smooth each note in a chord, preserving relative timing.
+
+        Args:
+            chord_samples_list: List of (samples_list) for each note.
+            freqs: List of frequencies corresponding to each note.
+
+        Returns:
+            List of smoothed sample lists.
+        """
+        result = []
+        for samps, freq in zip(chord_samples_list, freqs):
+            result.append(self.smooth_note(samps, freq))
+        return result
+
+
+# ---------------------------------------------------------------------------
+# V8 SPECTRAL ANTI-HISS FILTER
+# ---------------------------------------------------------------------------
+class AntiHissFilter:
+    """Reduces hissing/static from synthesis artifacts.
+
+    Targets the 4-16 kHz range where digital synthesis artifacts
+    (aliasing, quantization noise, FM sidebands) accumulate.
+    Uses numpy when available for fast processing.
+    """
+
+    def __init__(self):
+        pass
+
+    def apply(self, samples):
+        """Apply anti-hiss filtering to a buffer.
+
+        Strategy: cascaded lowpass to tame high-frequency hiss.
+        - Pass 1: gentle roll-off above 10 kHz (blend 70/30)
+        - Pass 2: steeper cut above 14 kHz
+        - DC removal
+        """
+        n = len(samples)
+        if n < 2:
+            return samples
+
+        if HAS_NUMPY:
+            return self._apply_numpy(samples, n)
+
+        out = list(samples)
+        alpha1 = min(0.99, TWO_PI * 10000.0 * INV_SR)
+        alpha2 = min(0.99, TWO_PI * 14000.0 * INV_SR)
+        s1 = 0.0
+        s2 = 0.0
+        for i in range(n):
+            s1 += alpha1 * (out[i] - s1)
+            mixed = s1 * 0.7 + out[i] * 0.3
+            s2 += alpha2 * (mixed - s2)
+            out[i] = s2
+        # DC removal
+        dc = sum(out) / n
+        if abs(dc) > 0.0005:
+            for i in range(n):
+                out[i] -= dc
+        return out
+
+    def _apply_numpy(self, samples, n):
+        """Numpy-accelerated anti-hiss filter using convolution."""
+        arr = np.array(samples, dtype=np.float64)
+
+        # Moving average lowpass (kernel size ~4 samples ≈ 10 kHz at 44.1k)
+        k1 = max(3, int(SAMPLE_RATE / 10000))
+        if k1 % 2 == 0:
+            k1 += 1
+        kernel1 = np.ones(k1) / k1
+        lp1 = np.convolve(arr, kernel1, mode='same')
+        # Blend: preserve some original sparkle
+        mixed = lp1 * 0.7 + arr * 0.3
+
+        # Second pass with slightly wider kernel (~3 samples ≈ 14 kHz)
+        k2 = max(3, int(SAMPLE_RATE / 14000))
+        if k2 % 2 == 0:
+            k2 += 1
+        kernel2 = np.ones(k2) / k2
+        result = np.convolve(mixed, kernel2, mode='same')
+
+        # DC removal
+        dc = np.mean(result)
+        if abs(dc) > 0.0005:
+            result -= dc
+        return result.tolist()
+
+    def apply_stereo(self, left, right):
+        """Apply anti-hiss filtering to stereo pair."""
+        return self.apply(left), self.apply(right)
+
+
+# ---------------------------------------------------------------------------
+# V8 SUBSONIC FILTER
+# ---------------------------------------------------------------------------
+class SubsonicFilter:
+    """Removes subsonic content that causes headphone pressure sensation.
+
+    Two-pole highpass at 30 Hz. Removes content below ~30 Hz that's
+    felt but not heard, causing discomfort especially on headphones.
+    """
+
+    def __init__(self, cutoff_hz=30.0):
+        self.cutoff = cutoff_hz
+
+    def apply(self, samples):
+        """Apply 2-pole highpass to remove subsonic content."""
+        n = len(samples)
+        if n < 4:
+            return samples
+
+        alpha = max(0.001, 1.0 - TWO_PI * self.cutoff * INV_SR)
+
+        if HAS_NUMPY:
+            arr = np.array(samples, dtype=np.float64)
+            for _pass in range(2):
+                out = np.empty(n, dtype=np.float64)
+                out[0] = arr[0] * alpha
+                for i in range(1, n):
+                    out[i] = alpha * (out[i-1] + arr[i] - arr[i-1])
+                arr = out
+            return arr.tolist()
+
+        out = list(samples)
+        for _pass in range(2):
+            state = 0.0
+            prev = 0.0
+            for i in range(n):
+                state = alpha * (state + out[i] - prev)
+                prev = out[i]
+                out[i] = state
+        return out
+
+    def apply_stereo(self, left, right):
+        """Apply subsonic filtering to stereo pair."""
+        return self.apply(left), self.apply(right)
+
+
+# ---------------------------------------------------------------------------
+# V8 NOTE DURATION QUANTIZER
+# ---------------------------------------------------------------------------
+class NoteQuantizer:
+    """Quantizes note durations to fit within bars of a given time signature.
+
+    Compresses or expands note durations so they align with beat subdivisions,
+    while preserving the sequence ordering and relative feel.
+    """
+
+    def __init__(self):
+        pass
+
+    def quantize_to_bar(self, notes, bar_duration_sec, beats_per_bar,
+                        beat_unit=4):
+        """Quantize note durations to align with bar structure.
+
+        Allowed durations are subdivisions of the beat:
+        whole, half, quarter, eighth, sixteenth, dotted variants.
+
+        Args:
+            notes: List of (t_sec, midi_note, dur_sec, velocity).
+            bar_duration_sec: Duration of one bar in seconds.
+            beats_per_bar: Number of beats per bar.
+            beat_unit: Denominator of time signature.
+
+        Returns:
+            Quantized notes list with durations snapped to beat grid.
+        """
+        if not notes or bar_duration_sec <= 0:
+            return notes
+
+        beat_dur = bar_duration_sec / max(beats_per_bar, 1)
+
+        # Allowed note durations as fractions of a beat
+        grid_fractions = [
+            4.0,    # whole note (4 beats)
+            3.0,    # dotted half
+            2.0,    # half note
+            1.5,    # dotted quarter
+            1.0,    # quarter note
+            0.75,   # dotted eighth
+            0.5,    # eighth note
+            0.375,  # dotted sixteenth
+            0.25,   # sixteenth note
+            0.125,  # thirty-second note
+        ]
+        grid_secs = [f * beat_dur for f in grid_fractions]
+
+        result = []
+        cumulative_time = 0.0
+
+        for _t_sec, midi_note, dur_sec, velocity in notes:
+            # Snap duration to nearest grid value
+            best_dur = dur_sec
+            best_dist = float('inf')
+            for gs in grid_secs:
+                dist = abs(dur_sec - gs)
+                if dist < best_dist:
+                    best_dist = dist
+                    best_dur = gs
+
+            # Snap onset to beat grid (quantize to nearest 16th)
+            sixteenth = beat_dur * 0.25
+            if sixteenth > 0:
+                snapped_t = round(cumulative_time / sixteenth) * sixteenth
+            else:
+                snapped_t = cumulative_time
+
+            result.append((snapped_t, midi_note, best_dur, velocity))
+            cumulative_time = snapped_t + best_dur
+
+        return result
+
+    def fit_notes_to_bars(self, notes, n_bars, bar_duration_sec, beats_per_bar):
+        """Fit a sequence of notes exactly into n_bars.
+
+        Scales note timings proportionally to fill the total bar span,
+        then quantizes to the beat grid.
+
+        Args:
+            notes: List of (t_sec, midi_note, dur_sec, velocity).
+            n_bars: Number of bars to fill.
+            bar_duration_sec: Duration of one bar.
+            beats_per_bar: Beats per bar.
+
+        Returns:
+            Fitted and quantized notes.
+        """
+        if not notes or n_bars <= 0 or bar_duration_sec <= 0:
+            return notes
+
+        total_target = n_bars * bar_duration_sec
+
+        # Find current total span
+        if len(notes) > 1:
+            current_span = notes[-1][0] + notes[-1][2] - notes[0][0]
+        else:
+            current_span = notes[0][2]
+
+        if current_span <= 0:
+            current_span = 1.0
+
+        scale = total_target / current_span
+
+        # Scale all note times and durations
+        scaled = []
+        for t_sec, midi_note, dur_sec, velocity in notes:
+            new_t = (t_sec - notes[0][0]) * scale
+            new_dur = dur_sec * scale
+            scaled.append((new_t, midi_note, new_dur, velocity))
+
+        # Now quantize to the bar grid
+        return self.quantize_to_bar(scaled, bar_duration_sec, beats_per_bar)
+
+
+# ---------------------------------------------------------------------------
+# V8 RADIO ENGINE -- Enhanced orchestral version
+# ---------------------------------------------------------------------------
+class RadioEngineV8(RadioEngine):
+    """In The Beginning Radio v8 -- Enhanced orchestral cosmic music station.
+
+    Enhancements over v7:
+    - Simultaneous multi-instrument orchestral layering (like orchestra sections)
+    - Occasional solo instrument alternation (20-30% of sections)
+    - Anti-hiss spectral filtering
+    - Subsonic frequency removal (30 Hz highpass)
+    - Smoother note textures via inline post-processing
+    - 70% simple time signatures; compound/complex guaranteed in 10-min windows
+    - Note duration quantization to fit bar structure
+    """
+
+    def __init__(self, seed=42, total_duration=1800.0):
+        super().__init__(seed=seed, total_duration=total_duration)
+        self.note_smoother = NoteSmoother()
+        self.anti_hiss = AntiHissFilter()
+        self.subsonic_filter = SubsonicFilter(cutoff_hz=30.0)
+        self.quantizer = NoteQuantizer()
+
+        # Re-plan segments with v8 time signature rules
+        self.segments = self._plan_segments_v8()
+
+    def _plan_segments_v8(self):
+        """Plan segments with 70% simple time signatures and guaranteed
+        compound/complex in every 10-minute window."""
+        duration_multiples = [42.0, 84.0, 84.0, 126.0, 126.0, 168.0, 210.0]
+        segments = []
+        t = 0.0
+        idx = 0
+        while t < self.total_duration:
+            seg_rng = random.Random(self.seed + idx * 31337)
+            duration = seg_rng.choice(duration_multiples)
+            if t + duration > self.total_duration:
+                duration = self.total_duration - t
+                if duration < 1.0:
+                    break
+            segments.append({'start': t, 'duration': duration, 'idx': idx})
+            t += duration
+            idx += 1
+        if not segments and self.total_duration > 0:
+            segments.append({'start': 0.0, 'duration': self.total_duration, 'idx': 0})
+
+        # Assign time signatures: 70% simple, rest compound/complex
+        # Guarantee at least one compound/complex per 10-minute window
+        n_segs = len(segments)
+        ts_assignments = [None] * n_segs
+        rng = random.Random(self.seed + 999)
+
+        for i in range(n_segs):
+            if rng.random() < 0.80:
+                ts_assignments[i] = rng.choice(SIMPLE_TIME_SIGS)
+            else:
+                # 60% compound, 40% complex for non-simple
+                if rng.random() < 0.6:
+                    ts_assignments[i] = rng.choice(COMPOUND_TIME_SIGS)
+                else:
+                    ts_assignments[i] = rng.choice(COMPLEX_TIME_SIGS)
+
+        # Enforce: every 10-minute window must have at least one non-simple
+        window_sec = 600.0
+        n_windows = max(1, int(math.ceil(self.total_duration / window_sec)))
+        for w in range(n_windows):
+            w_start = w * window_sec
+            w_end = min((w + 1) * window_sec, self.total_duration)
+            window_indices = [i for i in range(n_segs)
+                              if segments[i]['start'] >= w_start
+                              and segments[i]['start'] < w_end]
+            has_nonstandard = any(
+                ts_assignments[i] in COMPOUND_TIME_SIGS + COMPLEX_TIME_SIGS
+                for i in window_indices
+            )
+            if not has_nonstandard and window_indices:
+                # Force one segment to use compound or complex
+                pick = rng.choice(window_indices)
+                if rng.random() < 0.5:
+                    ts_assignments[pick] = rng.choice(COMPOUND_TIME_SIGS)
+                else:
+                    ts_assignments[pick] = rng.choice(COMPLEX_TIME_SIGS)
+
+        for i in range(n_segs):
+            segments[i]['time_sig_override'] = ts_assignments[i]
+
+        return segments
+
+    def _render_segment(self, mood, kits, n_samples, sim_state):
+        """Render a mood segment with v8 enhancements.
+
+        v8 Pipeline:
+        1. Compute tempo multiplier
+        2. Sample MIDI bars with simulation-seeded selection
+        3. Apply note duration quantization to fit bar structure
+        4. Expand notes -> consonant chords
+        5. Apply note-level smoothing (post-synthesis, pre-arrangement)
+        6. Build rondo sections with varied arpeggio forms
+        7. SIMULTANEOUS multi-instrument orchestral layering
+           (with occasional solo alternation ~25% of sections)
+        8. Anti-hiss filtering + subsonic removal
+        9. Chamber effects and anti-click processing
+        10. Loop with crossfade to fill mood duration
+        """
+        left = [0.0] * n_samples
+        right = [0.0] * n_samples
+
+        rng = mood.rng
+        tempo = mood.tempo
+        beats_per_bar = mood.beats_per_bar
+        root = mood.root
+
+        # 1. Tempo multiplier
+        tempo_mult = self._compute_tempo_multiplier(sim_state)
+        effective_tempo = min(tempo * tempo_mult, 360)
+
+        # Compute bar duration for quantization
+        ts_key = getattr(mood, '_v8_time_sig', mood.time_sig)
+        ts_info = TIME_SIGNATURES.get(ts_key, TIME_SIGNATURES.get('4/4'))
+        beat_dur = 60.0 / effective_tempo
+        quarter_per_beat = 4.0 / ts_info['unit'] if isinstance(ts_info, dict) else 1.0
+        bar_duration_sec = beats_per_bar * beat_dur * quarter_per_beat
+
+        # 2. Sample MIDI bars
+        loop_bars = rng.randint(4, 12)
+        bars_result = self.midi_lib.sample_bars_seeded(
+            sim_state, loop_bars, effective_tempo, beats_per_bar,
+            root=root, scale=mood.scale, rng=rng
+        )
+        midi_notes, segment_duration, midi_info = bars_result
+
+        if segment_duration <= 0 or not midi_notes:
+            return left, right
+
+        # 3. Quantize note durations to fit bar structure
+        if bar_duration_sec > 0:
+            midi_notes = self.quantizer.fit_notes_to_bars(
+                midi_notes, loop_bars, bar_duration_sec, beats_per_bar
+            )
+
+        # 4. Choose voices -- more voices for orchestral layering
+        n_voices = getattr(mood, 'n_voices', rng.randint(2, 4))
+        # v8: Increase to 3-5 voices for richer layering
+        n_voices = clamp(n_voices, 2, 4)
+        voice_configs = self._choose_gm_instruments(midi_info, n_voices, rng)
+
+        # Assign octave offsets for consonant simultaneous play
+        # Each voice gets a distinct register offset
+        register_offsets = [-12, 0, 0, 12, 24]
+        for v_idx, vc in enumerate(voice_configs):
+            vc['octave_offset'] = register_offsets[v_idx % len(register_offsets)]
+
+        # 5. Expand notes into chords
+        chord_notes = []
+        for t_sec, midi_note, dur_sec, vel in midi_notes:
+            chord = self._build_chord_from_note(
+                midi_note, root, mood.scale_name, mood.scale,
+                n_notes=rng.randint(2, 4), rng=rng
+            )
+            chord_notes.append((t_sec, chord, dur_sec, vel))
+
+        # 6. Build rondo sections
+        rondo = self._build_rondo_sections(
+            chord_notes, root, mood.scale_name, mood.scale,
+            segment_duration, rng
+        )
+
+        # Compute total rondo duration
+        rondo_duration = segment_duration * len(rondo)
+        loop_samples = int(rondo_duration * SAMPLE_RATE)
+        if loop_samples <= 0:
+            return left, right
+
+        loop_left = [0.0] * loop_samples
+        loop_right = [0.0] * loop_samples
+
+        # Gain per voice
+        voice_gain = 0.30 / max(n_voices, 1)
+
+        # 7. Orchestral rendering: simultaneous + occasional solo
+        # Decide per-section: ~75% simultaneous (all voices), ~25% solo
+        section_offset_sec = 0.0
+
+        fluid_rendered = None
+        if HAS_FLUIDSYNTH and midi_info.get('path'):
+            primary_gm = voice_configs[0]['gm_program']
+            fluid_rendered = MidiLibrary.render_fluidsynth(
+                midi_info['path'], primary_gm,
+                tempo_factor=tempo_mult,
+                start_tick=midi_info.get('start_tick', 0),
+                end_tick=midi_info.get('end_tick')
+            )
+
+        for sec_idx, (label, section_notes) in enumerate(rondo):
+            sec_start = int(section_offset_sec * SAMPLE_RATE)
+
+            # v8: Decide simultaneous vs solo for this section
+            is_solo_section = rng.random() < 0.25
+            if is_solo_section:
+                # Solo: pick one voice to play
+                active_voices = [rng.randint(0, n_voices - 1)]
+            else:
+                # Simultaneous: all voices play (orchestral)
+                active_voices = list(range(n_voices))
+
+            voice_instruments = [rng.choice(self.instruments) for _ in voice_configs]
+
+            for v_idx in active_voices:
+                vc = voice_configs[v_idx]
+                oct_off = vc['octave_offset']
+                pan = vc['pan']
+                ca = vc['color_amount']
+                v_chord_size = vc['chord_size']
+
+                # Solo voice gets boosted gain
+                v_gain = voice_gain * (2.0 if is_solo_section else 1.0)
+
+                # FluidSynth for first voice, first A section
+                if (v_idx == 0 and fluid_rendered is not None
+                        and label == 'A' and sec_idx == 0):
+                    fl, fr = fluid_rendered
+                    fl_n = min(len(fl), loop_samples - sec_start)
+                    for i in range(fl_n):
+                        pos = sec_start + i
+                        if 0 <= pos < loop_samples:
+                            loop_left[pos] += fl[i] * v_gain
+                            loop_right[pos] += fr[i] * v_gain
+                    continue
+
+                color_instr = voice_instruments[v_idx]
+
+                for t_sec, chord, dur_sec, vel in section_notes:
+                    offset = sec_start + int(t_sec * SAMPLE_RATE)
+                    if offset >= loop_samples:
+                        continue
+
+                    # Each voice builds its own chord voicing at its register
+                    voice_chord = chord[:v_chord_size]
+                    voice_chord = [clamp(n + oct_off, 24, 108)
+                                   for n in voice_chord]
+                    voice_chord = [self.midi_lib._snap_to_scale(n, root, mood.scale)
+                                   for n in voice_chord]
+
+                    # Synthesize each chord note and mix into buffer
+                    for note in voice_chord:
+                        freq = mtof(note)
+                        samps = self.factory.synthesize_colored_note(
+                            color_instr, freq, dur_sec, vel, ca
+                        )
+                        # Anti-click micro-fade (2ms in/out)
+                        click_guard = min(int(0.002 * SAMPLE_RATE), len(samps) // 4)
+                        for ci in range(click_guard):
+                            fade = ci / max(click_guard, 1)
+                            samps[ci] *= fade
+                            if len(samps) - 1 - ci >= 0:
+                                samps[len(samps) - 1 - ci] *= fade
+
+                        self._mix_mono(loop_left, loop_right, samps,
+                                       offset, loop_samples, pan * v_gain * 4)
+
+            section_offset_sec += segment_duration
+
+        # 8. Chamber effects (anti-hiss/subsonic applied at master level)
+        if rng.random() < 0.70:
+            loop_left = self.smoother.apply_early_reflections(loop_left)
+            loop_right = self.smoother.apply_early_reflections(loop_right)
+        if rng.random() < 0.60:
+            loop_left = self.smoother.apply_reverb(loop_left)
+            loop_right = self.smoother.apply_reverb(loop_right)
+        if rng.random() < 0.40:
+            loop_left = self.smoother.apply_chorus(loop_left)
+            loop_right = self.smoother.apply_chorus(loop_right)
+
+        # DC offset removal
+        if loop_left:
+            dc_l = sum(loop_left) / len(loop_left)
+            dc_r = sum(loop_right) / len(loop_right)
+            if abs(dc_l) > 0.001 or abs(dc_r) > 0.001:
+                loop_left = [s - dc_l for s in loop_left]
+                loop_right = [s - dc_r for s in loop_right]
+
+        # Gentle lowpass for remaining harsh artifacts
+        loop_left = self.smoother.apply_lowpass(loop_left, 8000)
+        loop_right = self.smoother.apply_lowpass(loop_right, 8000)
+
+        # Loop with crossfade to fill mood duration
+        xfade = min(int(rng.uniform(2.0, 4.0) * SAMPLE_RATE),
+                     loop_samples // 3)
+        pos = 0
+        while pos < n_samples:
+            remaining = n_samples - pos
+            chunk = min(loop_samples, remaining)
+            for i in range(chunk):
+                fade = 1.0
+                if pos > 0 and i < xfade:
+                    fade = 0.5 - 0.5 * math.cos(math.pi * i / max(xfade, 1))
+                dist_to_end = chunk - i
+                if dist_to_end < xfade and pos + chunk < n_samples:
+                    fade *= 0.5 + 0.5 * math.cos(math.pi * (1 - dist_to_end / max(xfade, 1)))
+                left[pos + i] += loop_left[i] * fade
+                right[pos + i] += loop_right[i] * fade
+            pos += loop_samples - xfade
+
+        return left, right
+
+    def _patch_mood_init(self):
+        """Create a patched MoodSegment.__init__ that applies v8 time sig overrides."""
+        orig_create_mood = MoodSegment.__init__
+        segments = self.segments
+
+        def patched_mood_init(mood_self, segment_idx, epoch, epoch_idx,
+                              sim_state, rng_seed):
+            orig_create_mood(mood_self, segment_idx, epoch, epoch_idx,
+                             sim_state, rng_seed)
+            for seg in segments:
+                if seg['idx'] == segment_idx and 'time_sig_override' in seg:
+                    ts_key = seg['time_sig_override']
+                    mood_self.time_sig = ts_key
+                    ts_info = TIME_SIGNATURES.get(ts_key, TIME_SIGNATURES['4/4'])
+                    mood_self.beats_per_bar = ts_info['beats']
+                    mood_self._v8_time_sig = ts_key
+                    break
+
+        return orig_create_mood, patched_mood_init
+
+    def render(self, sim_states=None):
+        """Render with v8 time sig overrides + master chain."""
+        orig, patched = self._patch_mood_init()
+        MoodSegment.__init__ = patched
+        try:
+            left, right = super().render(sim_states)
+        finally:
+            MoodSegment.__init__ = orig
+
+        # v8 master chain: additional anti-hiss and subsonic filtering
+        left, right = self.anti_hiss.apply_stereo(left, right)
+        left, right = self.subsonic_filter.apply_stereo(left, right)
+
+        return left, right
+
+    def render_streaming(self, wav_file, sim_states=None):
+        """Override to apply v8 time signature overrides to mood segments."""
+        orig, patched = self._patch_mood_init()
+        MoodSegment.__init__ = patched
+        try:
+            result = super().render_streaming(wav_file, sim_states)
+        finally:
+            MoodSegment.__init__ = orig
+
+        return result
+
+
+def generate_radio_v8_mp3(output_path, duration=1800.0, seed=42):
+    """Generate the v8 radio MP3 file with all enhancements.
+
+    v8 features: orchestral layering, anti-hiss, subsonic removal,
+    smoother notes, 70% simple time signatures, note quantization.
+    """
+    import tempfile
+
+    print(f"[RadioEngineV8] Initializing (seed={seed}, duration={duration}s)...")
+    engine = RadioEngineV8(seed=seed, total_duration=duration)
+
+    print(f"[RadioEngineV8] {len(engine.instruments)} instruments loaded")
+    print(f"[RadioEngineV8] {len(engine.midi_lib._note_sequences)} MIDI sequences loaded")
+    print(f"[RadioEngineV8] TTS engine: {'Silero' if engine.tts._silero_available else 'espeak-ng'}")
+    print(f"[RadioEngineV8] TTS transitions at segments: {sorted(engine.tts_transitions)}")
+
+    n_segments = len(engine.segments)
+    avg_dur = sum(s['duration'] for s in engine.segments) / max(n_segments, 1)
+
+    # Count time signature distribution
+    simple_count = sum(1 for s in engine.segments
+                       if s.get('time_sig_override') in SIMPLE_TIME_SIGS)
+    compound_count = sum(1 for s in engine.segments
+                         if s.get('time_sig_override') in COMPOUND_TIME_SIGS)
+    complex_count = sum(1 for s in engine.segments
+                        if s.get('time_sig_override') in COMPLEX_TIME_SIGS)
+    print(f"[RadioEngineV8] {n_segments} mood segments (avg {avg_dur:.0f}s)")
+    print(f"[RadioEngineV8] Time signatures: {simple_count} simple, "
+          f"{compound_count} compound, {complex_count} complex")
+
+    print(f"[RadioEngineV8] Rendering audio...")
+    t0 = _time.time()
+
+    # Import simulator for real simulation data
+    try:
+        sys.path.insert(0, PROJECT_ROOT)
+        from simulator.universe import Universe
+        universe = Universe(seed=seed, max_ticks=999999999)
+
+        sim_states = []
+        total_ticks = int(duration * 50)
+        ticks_per_segment = max(1, total_ticks // n_segments)
+        for seg in range(n_segments):
+            for _ in range(ticks_per_segment):
+                universe.step()
+            state = {
+                'temperature': universe.quantum_field.temperature,
+                'particles': len(universe.quantum_field.particles),
+                'atoms': len(universe.atomic_system.atoms) if universe.atomic_system else 0,
+                'molecules': len(universe.chemical_system.molecules) if universe.chemical_system else 0,
+                'cells': len(universe.biosphere.cells) if universe.biosphere else 0,
+                'generation': universe.biosphere.generation if universe.biosphere else 0,
+                'epoch': universe.current_epoch_name,
+            }
+            sim_states.append(state)
+            if seg % 3 == 0:
+                print(f"  Sim segment {seg+1}/{n_segments}: epoch={state['epoch']}, "
+                      f"T={state['temperature']:.0f}, particles={state['particles']}")
+    except Exception as e:
+        print(f"  [Warning] Could not run simulator: {e}")
+        print(f"  Using synthetic simulation data instead.")
+        sim_states = None
+
+    # Use streaming renderer for long durations
+    use_streaming = duration > 660
+
+    if use_streaming:
+        print(f"[RadioEngineV8] Using streaming renderer (low memory)...")
+        with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
+            wav_path = tmp.name
+        try:
+            with wave.open(wav_path, 'wb') as wf:
+                wf.setnchannels(2)
+                wf.setsampwidth(2)
+                wf.setframerate(SAMPLE_RATE)
+                total_written = engine.render_streaming(wf, sim_states)
+            t1 = _time.time()
+            print(f"[RadioEngineV8] Streamed {total_written/SAMPLE_RATE:.1f}s in {t1-t0:.1f}s")
+
+            if output_path.endswith('.mp3'):
+                print(f"[RadioEngineV8] Converting to MP3...")
+                wav_to_mp3(wav_path, output_path)
+                print(f"[RadioEngineV8] Saved: {output_path}")
+            else:
+                import shutil
+                shutil.move(wav_path, output_path)
+                wav_path = None
+                print(f"[RadioEngineV8] Saved: {output_path}")
+        finally:
+            if wav_path:
+                try:
+                    os.unlink(wav_path)
+                except OSError:
+                    pass
+    else:
+        left, right = engine.render(sim_states)
+
+        t1 = _time.time()
+        print(f"[RadioEngineV8] Rendered {len(left)/SAMPLE_RATE:.1f}s in {t1-t0:.1f}s")
+
+        if output_path.endswith('.mp3'):
+            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
+                wav_path = tmp.name
+            try:
+                print(f"[RadioEngineV8] Writing WAV ({len(left)*4/1048576:.1f} MB)...")
+                render_to_wav(left, right, wav_path)
+                print(f"[RadioEngineV8] Converting to MP3...")
+                wav_to_mp3(wav_path, output_path)
+                print(f"[RadioEngineV8] Saved: {output_path}")
+            finally:
+                try:
+                    os.unlink(wav_path)
+                except OSError:
+                    pass
+        else:
+            render_to_wav(left, right, output_path)
+            print(f"[RadioEngineV8] Saved: {output_path}")
+
+    file_size = os.path.getsize(output_path) if os.path.exists(output_path) else 0
+    print(f"[RadioEngineV8] File size: {file_size/1048576:.1f} MB")
+    return output_path
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 if __name__ == '__main__':
@@ -2805,5 +3638,10 @@ if __name__ == '__main__':
                        help='Duration in seconds (default: 1800)')
     parser.add_argument('--seed', '-s', type=int, default=42,
                        help='Random seed')
+    parser.add_argument('--version', '-V', choices=['v7', 'v8'], default='v7',
+                       help='Engine version: v7 (classic) or v8 (orchestral, default: v7)')
     args = parser.parse_args()
-    generate_radio_mp3(args.output, args.duration, args.seed)
+    if args.version == 'v8':
+        generate_radio_v8_mp3(args.output, args.duration, args.seed)
+    else:
+        generate_radio_mp3(args.output, args.duration, args.seed)

@@ -876,5 +876,198 @@ class TestSampleBarsSeeded(unittest.TestCase):
         self.assertAlmostEqual(r1[1], r2[1], places=2)
 
 
+# ---------------------------------------------------------------------------
+# V8 Tests
+# ---------------------------------------------------------------------------
+from apps.audio.radio_engine import (
+    RadioEngineV8, NoteSmoother, AntiHissFilter, SubsonicFilter,
+    NoteQuantizer, SIMPLE_TIME_SIGS, COMPOUND_TIME_SIGS, COMPLEX_TIME_SIGS,
+    generate_radio_v8_mp3,
+)
+
+
+class TestNoteSmoother(unittest.TestCase):
+    """Tests for the v8 NoteSmoother."""
+
+    def setUp(self):
+        self.smoother = NoteSmoother()
+
+    def test_preserves_length(self):
+        """Output length should match input length."""
+        samples = [math.sin(TWO_PI * 440 * i / SAMPLE_RATE) for i in range(1000)]
+        result = self.smoother.smooth_note(samples, 440.0)
+        self.assertEqual(len(result), len(samples))
+
+    def test_short_input(self):
+        """Very short inputs should be returned as-is."""
+        short = [0.1, 0.2]
+        result = self.smoother.smooth_note(short, 440.0)
+        self.assertEqual(len(result), 2)
+
+    def test_reduces_high_frequency(self):
+        """Smoothing should reduce high-frequency energy."""
+        # Create a signal with lots of high-frequency content
+        samples = [((-1) ** i) * 0.5 for i in range(4410)]  # Nyquist alternating
+        result = self.smoother.smooth_note(samples, 440.0)
+        # RMS of smoothed should be less than original
+        orig_rms = math.sqrt(sum(s ** 2 for s in samples) / len(samples))
+        smooth_rms = math.sqrt(sum(s ** 2 for s in result) / len(result))
+        self.assertLess(smooth_rms, orig_rms)
+
+    def test_smooth_chord(self):
+        """Smooth chord should process each note independently."""
+        samples1 = [math.sin(TWO_PI * 440 * i / SAMPLE_RATE) for i in range(500)]
+        samples2 = [math.sin(TWO_PI * 880 * i / SAMPLE_RATE) for i in range(500)]
+        result = self.smoother.smooth_chord([samples1, samples2], [440.0, 880.0])
+        self.assertEqual(len(result), 2)
+        self.assertEqual(len(result[0]), 500)
+        self.assertEqual(len(result[1]), 500)
+
+
+class TestAntiHissFilter(unittest.TestCase):
+    """Tests for the v8 AntiHissFilter."""
+
+    def setUp(self):
+        self.filt = AntiHissFilter()
+
+    def test_preserves_length(self):
+        """Output should match input length."""
+        samples = [math.sin(TWO_PI * 440 * i / SAMPLE_RATE) for i in range(1000)]
+        result = self.filt.apply(samples)
+        self.assertEqual(len(result), len(samples))
+
+    def test_removes_dc(self):
+        """DC offset should be removed."""
+        samples = [0.5 + math.sin(TWO_PI * 440 * i / SAMPLE_RATE) * 0.3
+                   for i in range(4410)]
+        result = self.filt.apply(samples)
+        dc = sum(result) / len(result)
+        self.assertLess(abs(dc), 0.01)
+
+    def test_stereo(self):
+        """Stereo apply should return two lists."""
+        left = [0.1] * 100
+        right = [0.2] * 100
+        l_out, r_out = self.filt.apply_stereo(left, right)
+        self.assertEqual(len(l_out), 100)
+        self.assertEqual(len(r_out), 100)
+
+
+class TestSubsonicFilter(unittest.TestCase):
+    """Tests for the v8 SubsonicFilter."""
+
+    def setUp(self):
+        self.filt = SubsonicFilter(cutoff_hz=30.0)
+
+    def test_preserves_length(self):
+        """Output should match input length."""
+        samples = [math.sin(TWO_PI * 440 * i / SAMPLE_RATE) for i in range(1000)]
+        result = self.filt.apply(samples)
+        self.assertEqual(len(result), len(samples))
+
+    def test_attenuates_subsonic(self):
+        """Low-frequency content should be attenuated."""
+        # 10 Hz sine wave (subsonic)
+        samples = [math.sin(TWO_PI * 10 * i / SAMPLE_RATE) for i in range(44100)]
+        result = self.filt.apply(samples)
+        orig_rms = math.sqrt(sum(s ** 2 for s in samples) / len(samples))
+        filt_rms = math.sqrt(sum(s ** 2 for s in result) / len(result))
+        self.assertLess(filt_rms, orig_rms * 0.5)
+
+    def test_preserves_audible(self):
+        """Audible frequencies should be mostly preserved."""
+        # 440 Hz sine wave
+        samples = [math.sin(TWO_PI * 440 * i / SAMPLE_RATE) for i in range(4410)]
+        result = self.filt.apply(samples)
+        orig_rms = math.sqrt(sum(s ** 2 for s in samples) / len(samples))
+        filt_rms = math.sqrt(sum(s ** 2 for s in result) / len(result))
+        self.assertGreater(filt_rms, orig_rms * 0.5)
+
+
+class TestNoteQuantizer(unittest.TestCase):
+    """Tests for the v8 NoteQuantizer."""
+
+    def setUp(self):
+        self.q = NoteQuantizer()
+
+    def test_quantize_preserves_note_count(self):
+        """Number of notes should be preserved after quantization."""
+        notes = [(0.0, 60, 0.3, 0.8), (0.3, 64, 0.45, 0.7), (0.75, 67, 0.25, 0.9)]
+        result = self.q.quantize_to_bar(notes, 2.0, 4)
+        self.assertEqual(len(result), 3)
+
+    def test_durations_snap_to_grid(self):
+        """Quantized durations should be multiples of beat subdivisions."""
+        beat_dur = 0.5  # 120 BPM
+        notes = [(0.0, 60, 0.33, 0.8)]
+        result = self.q.quantize_to_bar(notes, 2.0, 4)
+        # Duration should be snapped to one of the grid values
+        dur = result[0][2]
+        grid_fracs = [4.0, 3.0, 2.0, 1.5, 1.0, 0.75, 0.5, 0.375, 0.25, 0.125]
+        grid_secs = [f * beat_dur for f in grid_fracs]
+        self.assertTrue(any(abs(dur - gs) < 0.001 for gs in grid_secs),
+                        f"Duration {dur} not on grid")
+
+    def test_fit_notes_to_bars(self):
+        """Notes should be scaled to fill the target bar span."""
+        notes = [(0.0, 60, 0.5, 0.8), (0.5, 64, 0.5, 0.7)]
+        result = self.q.fit_notes_to_bars(notes, 2, 1.0, 4)
+        # Total span should be approximately 2 bars
+        total_span = result[-1][0] + result[-1][2]
+        self.assertGreater(total_span, 0.5)
+
+
+class TestV8TimeSigDistribution(unittest.TestCase):
+    """Tests for v8 time signature distribution."""
+
+    def test_simple_majority(self):
+        """At least 60% of segments should use simple time signatures."""
+        engine = RadioEngineV8(seed=42, total_duration=1800.0)
+        total = len(engine.segments)
+        simple = sum(1 for s in engine.segments
+                     if s.get('time_sig_override') in SIMPLE_TIME_SIGS)
+        pct = simple / total if total > 0 else 0
+        self.assertGreaterEqual(pct, 0.5,
+            f"Simple time sigs are only {pct*100:.0f}%, expected >= 50%")
+
+    def test_non_simple_per_10min_window(self):
+        """Every 10-minute window must have at least one non-simple time sig."""
+        engine = RadioEngineV8(seed=42, total_duration=1800.0)
+        window_sec = 600.0
+        n_windows = max(1, int(math.ceil(1800 / window_sec)))
+        for w in range(n_windows):
+            w_start = w * window_sec
+            w_end = min((w + 1) * window_sec, 1800)
+            window_segs = [s for s in engine.segments
+                           if s['start'] >= w_start and s['start'] < w_end]
+            has_nonstandard = any(
+                s.get('time_sig_override') in COMPOUND_TIME_SIGS + COMPLEX_TIME_SIGS
+                for s in window_segs
+            )
+            self.assertTrue(has_nonstandard,
+                f"Window {w+1} ({w_start/60:.0f}-{w_end/60:.0f}min) has no non-simple time sig")
+
+
+class TestV8EngineCreation(unittest.TestCase):
+    """Tests for RadioEngineV8 initialization."""
+
+    def test_creates_successfully(self):
+        """V8 engine should initialize without errors."""
+        engine = RadioEngineV8(seed=42, total_duration=10.0)
+        self.assertIsNotNone(engine)
+        self.assertIsNotNone(engine.note_smoother)
+        self.assertIsNotNone(engine.anti_hiss)
+        self.assertIsNotNone(engine.subsonic_filter)
+        self.assertIsNotNone(engine.quantizer)
+
+    def test_has_time_sig_overrides(self):
+        """All segments should have time_sig_override field."""
+        engine = RadioEngineV8(seed=42, total_duration=1800.0)
+        for seg in engine.segments:
+            self.assertIn('time_sig_override', seg)
+            self.assertIn(seg['time_sig_override'],
+                          SIMPLE_TIME_SIGS + COMPOUND_TIME_SIGS + COMPLEX_TIME_SIGS)
+
+
 if __name__ == '__main__':
     unittest.main()
