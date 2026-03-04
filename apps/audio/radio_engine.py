@@ -339,6 +339,152 @@ def _adsr(n, attack=0.02, decay=0.05, sustain_level=0.8, release=0.1):
     return env
 
 
+def _adsr_np(n, attack=0.02, decay=0.05, sustain_level=0.8, release=0.1):
+    """Generate ADSR envelope as numpy array (vectorized, ~50x faster)."""
+    if not HAS_NUMPY:
+        return np.array(_adsr(n, attack, decay, sustain_level, release))
+    env = np.zeros(n, dtype=np.float64)
+    a_samples = int(attack * SAMPLE_RATE)
+    d_samples = int(decay * SAMPLE_RATE)
+    r_samples = int(release * SAMPLE_RATE)
+    s_start = a_samples + d_samples
+    r_start = max(0, n - r_samples)
+    # Attack
+    if a_samples > 0:
+        end_a = min(a_samples, n)
+        env[:end_a] = np.linspace(0, 1, end_a, endpoint=False)
+    # Decay
+    if s_start > a_samples:
+        end_d = min(s_start, n)
+        if end_d > a_samples:
+            env[a_samples:end_d] = np.linspace(1, sustain_level, end_d - a_samples,
+                                                 endpoint=False)
+    # Sustain
+    if r_start > s_start:
+        env[s_start:r_start] = sustain_level
+    # Release
+    if n > r_start:
+        env[r_start:n] = np.linspace(sustain_level, 0, n - r_start)
+    return env
+
+
+def _synth_note_np(freq, duration, harmonics, env_params, velocity=0.8,
+                   vib_rate=5.0, vib_depth=0.0003, vib_delay=0.5,
+                   noise_level=0.0, distortion=0.0, freq_mult=1.0):
+    """Numpy-vectorized note synthesis (~50-100x faster than pure Python).
+
+    Args:
+        freq: Fundamental frequency in Hz.
+        duration: Duration in seconds.
+        harmonics: List of (harmonic_number, amplitude) tuples.
+        env_params: Dict with attack, decay, sustain, release.
+        velocity: Note velocity 0-1.
+        vib_rate: Vibrato rate Hz.
+        vib_depth: Vibrato depth (fraction of freq).
+        vib_delay: Vibrato onset delay seconds.
+        noise_level: Noise amplitude.
+        distortion: Distortion amount (0 = none).
+        freq_mult: Frequency multiplier.
+
+    Returns:
+        numpy array of float64 samples.
+    """
+    n = int(SAMPLE_RATE * duration)
+    if n <= 0:
+        return np.zeros(0, dtype=np.float64)
+
+    f = freq * freq_mult
+    t = np.arange(n, dtype=np.float64) * INV_SR
+
+    # ADSR envelope
+    env = _adsr_np(n, env_params.get('attack', 0.02),
+                   env_params.get('decay', 0.05),
+                   env_params.get('sustain', 0.8),
+                   env_params.get('release', 0.1))
+
+    # Vibrato
+    vib_env = np.minimum(1.0, t / max(vib_delay, 0.001))
+    vib = vib_depth * vib_env * np.sin(TWO_PI * vib_rate * t)
+    ff = f * (1.0 + vib)
+
+    # Sum harmonics
+    signal = np.zeros(n, dtype=np.float64)
+    for h_data in harmonics:
+        if h_data[0] == 'fm' or h_data[0] == 'noise':
+            continue
+        h_num, h_amp = h_data[0], h_data[1]
+        h_freq = ff * h_num
+        # Skip if above Nyquist for the whole note
+        if f * h_num >= SAMPLE_RATE / 2:
+            break
+        signal += h_amp * np.sin(TWO_PI * h_freq * t)
+
+    # Add noise
+    if noise_level > 0:
+        rng = np.random.RandomState(int(freq * 1000) & 0xFFFF)
+        signal += noise_level * (rng.random(n) * 2 - 1)
+
+    # Apply distortion
+    if distortion > 0:
+        signal = np.tanh(signal * distortion) / max(0.1, distortion * 0.5)
+
+    return signal * env * velocity
+
+
+def _synth_colored_note_np(freq, duration, instr, velocity=0.8, color_amount=0.25):
+    """Numpy-vectorized colored note synthesis.
+
+    Blends a clean additive base with the instrument's harmonic profile.
+    """
+    n = int(duration * SAMPLE_RATE)
+    if n <= 0:
+        return np.zeros(0, dtype=np.float64)
+
+    f = freq
+    ca = max(0.0, min(1.0, color_amount))
+    t = np.arange(n, dtype=np.float64) * INV_SR
+
+    # Base tone: clean 8-harmonic additive
+    base_env = _adsr_np(n, 0.01, 0.05, 0.7, 0.08)
+    base = np.zeros(n, dtype=np.float64)
+    for h in range(1, 9):
+        h_freq = f * h
+        if h_freq >= SAMPLE_RATE / 2:
+            break
+        amp = 1.0 / (h ** 1.2)
+        base += amp * np.sin(TWO_PI * h_freq * t)
+    base *= base_env * velocity
+
+    if ca == 0.0:
+        return base
+
+    # Color: instrument harmonics (no noise/distortion for cleanliness)
+    env_params = {
+        'attack': instr['attack'], 'decay': instr['decay'],
+        'sustain': instr['sustain'], 'release': instr['release'],
+    }
+    harmonics = instr['harmonics']
+    # Filter out FM/noise special harmonics for the additive path
+    clean_harmonics = [h for h in harmonics if not isinstance(h[0], str)]
+    if not clean_harmonics:
+        clean_harmonics = [(1, 1.0), (2, 0.5), (3, 0.33)]
+
+    color = _synth_note_np(
+        freq, duration, clean_harmonics, env_params,
+        velocity=velocity,
+        vib_rate=instr['vib_rate'], vib_depth=instr['vib_depth'],
+        vib_delay=instr['vib_delay'], noise_level=0.0,
+        distortion=min(instr.get('distortion', 0) * 0.3, 0.1),
+        freq_mult=instr['freq_mult']
+    )
+
+    # Blend
+    cn = min(len(color), n)
+    result = base * (1.0 - ca)
+    result[:cn] += color[:cn] * ca
+    return result
+
+
 def _write_wav(path, samples, sample_rate=SAMPLE_RATE):
     """Write mono float samples to 16-bit WAV."""
     with wave.open(path, 'wb') as wf:
@@ -3397,16 +3543,28 @@ class RadioEngineV8(RadioEngine):
                     # Synthesize each chord note and mix into buffer
                     for note in voice_chord:
                         freq = mtof(note)
-                        samps = self.factory.synthesize_colored_note(
-                            color_instr, freq, dur_sec, vel, ca
-                        )
-                        # Anti-click micro-fade (2ms in/out)
-                        click_guard = min(int(0.002 * SAMPLE_RATE), len(samps) // 4)
-                        for ci in range(click_guard):
-                            fade = ci / max(click_guard, 1)
-                            samps[ci] *= fade
-                            if len(samps) - 1 - ci >= 0:
-                                samps[len(samps) - 1 - ci] *= fade
+                        # v8: use numpy-accelerated synthesis
+                        if HAS_NUMPY:
+                            samps_arr = _synth_colored_note_np(
+                                freq, dur_sec, color_instr, vel, ca
+                            )
+                            # Anti-click micro-fade
+                            cg = min(int(0.002 * SAMPLE_RATE), len(samps_arr) // 4)
+                            if cg > 0:
+                                fade_in = np.linspace(0, 1, cg)
+                                samps_arr[:cg] *= fade_in
+                                samps_arr[-cg:] *= fade_in[::-1]
+                            samps = samps_arr.tolist()
+                        else:
+                            samps = self.factory.synthesize_colored_note(
+                                color_instr, freq, dur_sec, vel, ca
+                            )
+                            cg = min(int(0.002 * SAMPLE_RATE), len(samps) // 4)
+                            for ci in range(cg):
+                                fade = ci / max(cg, 1)
+                                samps[ci] *= fade
+                                if len(samps) - 1 - ci >= 0:
+                                    samps[len(samps) - 1 - ci] *= fade
 
                         self._mix_mono(loop_left, loop_right, samps,
                                        offset, loop_samples, pan * v_gain * 4)
