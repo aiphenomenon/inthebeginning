@@ -291,6 +291,25 @@ def _soft_limit(x, knee=0.8):
 
 ---
 
+## 9. Milestones
+
+### Milestone 1: V11 Implementation — COMPLETE (Turn 1)
+- All 5 phases implemented (gain staging, consonance, bar grid, orchestration, effects)
+- 25 new tests passing across 7 test classes
+- CLI `--version v11` wired up
+
+### Milestone 2: V11 MP3 Generation — IN PROGRESS (Turn 2)
+- Generating 30-minute MP3s: seed 42 + random seed
+- Both renders running in parallel (~6-10 min each)
+
+### Milestone 3: Steering Self-Cue Improvement — COMPLETE (Turn 2)
+- Diagnosed gap: no start-of-turn housekeeping enforcement
+- Added Start-of-Turn Protocol to CLAUDE.md, AGENTS.md, steering-check.sh
+- PostToolUse hook now emits lightweight reminder on first Bash call
+- Triple cross-check verified
+
+---
+
 ## 4. Implementation Order
 
 ### Phase 1: Gain Architecture (most impactful — fixes noise bursts)

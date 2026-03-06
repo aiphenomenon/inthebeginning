@@ -20,9 +20,16 @@ PHASE="${1:-unknown}"
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 # Only emit the full checklist on "stop" (end of turn) or "notification" events.
-# On "post-tool" events, emit a lightweight reminder.
+# On "post-tool" events, emit a lightweight START-OF-TURN reminder.
 if [ "$PHASE" = "post-tool" ]; then
-    # Lightweight: no output unless something is clearly wrong
+    # Lightweight start-of-turn cue: remind the agent to do housekeeping FIRST.
+    # This fires on the first Bash call of each turn, nudging the agent before
+    # it dives into work without updating session logs / future memories / release.
+    echo "[START-OF-TURN CUE] Have you done your per-turn housekeeping?"
+    echo "  1. Update/create session_logs/v{VERSION}-session.md (append new turn)"
+    echo "  2. Update future_memories/ plan file (if work is in progress)"
+    echo "  3. Update RELEASE_HISTORY.md (append turn summary)"
+    echo "  Do these BEFORE diving into the main task. Skip only if already done this turn."
     exit 0
 fi
 
@@ -101,6 +108,7 @@ echo "             3. .claude/steering-check.sh (gVisor self-cueing hooks)"
 echo "           When ANY new steering is introduced anywhere in the repo,"
 echo "           propagate it to all three. This is the enforcement guarantee."
 echo "           Specific items that must be in all three:"
+echo "             - Start-of-turn protocol: session log + future memories + release history BEFORE work"
 echo "             - Session log generation per turn"
 echo "             - Release history update per turn"
 echo "             - Markdown consistency review per turn"

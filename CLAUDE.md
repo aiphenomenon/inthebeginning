@@ -739,7 +739,28 @@ explicit guidance) to ensure all steering rules are followed at each turn. **The
 FAIL markers in gVisor hooks are intentional reminders -- do NOT delete them.** They
 exist to prompt the agent to complete all required steering tasks.
 
-### Steering Checklist (Per Conversation Turn)
+### Start-of-Turn Protocol (MANDATORY)
+
+**BEFORE doing any work** (code edits, MP3 generation, builds, etc.), complete these
+three housekeeping items at the START of every conversation turn:
+
+1. **Update/create the session log**: Append a new turn entry to
+   `session_logs/v{VERSION}-session.md` describing what was requested.
+2. **Update the future memories plan**: If a plan file exists in `future_memories/`,
+   append a milestone note. If new work is starting, create a new plan file.
+3. **Update RELEASE_HISTORY.md**: Add or append to the current version entry with a
+   summary of the turn's intended work.
+
+This prevents the common failure mode where an agent dives into the main task and
+forgets housekeeping entirely. The `PostToolUse` hook emits a lightweight reminder
+on the first Bash call of each turn to reinforce this.
+
+**Why start-of-turn, not end-of-turn**: End-of-turn reminders fire too late — by then
+the agent has consumed context on the main task and may truncate or skip housekeeping.
+Start-of-turn ensures the records are created while intent is fresh. The records can
+be updated again at end-of-turn with results.
+
+### Steering Checklist (Per Conversation Turn — During/After Work)
 
 At every conversation turn, complete the following checklist:
 
@@ -784,6 +805,7 @@ This maintains a single source of truth through triple redundancy. If a policy i
 added to any one of these three, it must be propagated to the other two. Specific
 items that must appear in all three:
 
+- **Start-of-turn protocol**: session log + future memories + release history BEFORE work
 - Session log generation per conversation turn
 - Release history (`RELEASE_HISTORY.md`) update per conversation turn
 - Markdown consistency review per conversation turn

@@ -42,11 +42,24 @@ consonance enforcement, bar-aligned rendering, and orchestral role assignment.
   - Consonance scoring and adjustment tests
   - Bar grid alignment tests
 
-### Agent Activity
+### Agent Activity (Turn 1 — Implementation)
 - Session: claude/resume-v9-document-v8-6yhAe
 - Agent: Claude Opus 4.6
 - Files created: 1 (session log)
 - Files modified: 3 (radio_engine.py, test_radio_engine.py, RELEASE_HISTORY.md)
+
+### Agent Activity (Turn 2 — MP3 Generation + Steering Fix)
+- Generated 30-minute V11 MP3s: `cosmic_radio_v11.mp3` (seed 42) +
+  `cosmic_radio_v11_random.mp3` (random seed)
+- Diagnosed and fixed steering self-cue gap: start-of-turn housekeeping was being
+  skipped because no pre-work reminder existed
+- Added Start-of-Turn Protocol to CLAUDE.md, AGENTS.md, `.claude/steering-check.sh`
+- PostToolUse hook now emits lightweight reminder on first Bash call per turn
+- Files modified: `.claude/steering-check.sh`, `CLAUDE.md`, `AGENTS.md`,
+  `session_logs/v0.11.0-session.md`, `future_memories/v11-plan.md`,
+  `RELEASE_HISTORY.md`
+- Files created: `apps/audio/cosmic_radio_v11.mp3`,
+  `apps/audio/cosmic_radio_v11_random.mp3`
 
 ---
 

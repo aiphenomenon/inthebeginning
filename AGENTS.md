@@ -517,7 +517,22 @@ signals** -- they are not bugs or errors. Do not delete, suppress, or work
 around them. They exist to trigger the agent's attention and ensure protocol
 compliance.
 
-### Steering Checklist Per Turn
+### Start-of-Turn Protocol (MANDATORY)
+
+**BEFORE doing any work** at the start of every conversation turn, agents MUST:
+
+1. **Update/create the session log**: Append a new turn entry to
+   `session_logs/v{VERSION}-session.md` describing what was requested.
+2. **Update the future memories plan**: If a plan file exists in `future_memories/`,
+   append a milestone note. If starting new work, create a new plan file.
+3. **Update RELEASE_HISTORY.md**: Add or append to the current version entry with
+   the turn's intended work.
+
+This prevents the failure mode where an agent dives into the main task and forgets
+housekeeping. The `PostToolUse` hook in `.claude/settings.json` emits a lightweight
+start-of-turn reminder on the first Bash call to reinforce this protocol.
+
+### Steering Checklist Per Turn (During/After Work)
 
 At every conversation turn, every agent (primary or subagent) must verify the
 following items:
@@ -546,6 +561,7 @@ New steering information must be maintained in **ALL THREE** locations:
 If a new protocol or constraint is added to any one of these three, it must be
 propagated to the other two. Specific items that must appear in all three:
 
+- **Start-of-turn protocol**: session log + future memories + release history BEFORE work
 - Session log generation per conversation turn
 - Release history (`RELEASE_HISTORY.md`) update per conversation turn
 - Markdown consistency review per conversation turn
