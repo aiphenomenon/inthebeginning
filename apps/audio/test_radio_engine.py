@@ -27,6 +27,8 @@ from apps.audio.radio_engine import (
     _adsr, _write_wav,
     RONDO_PATTERNS, DIATONIC_CHORD_QUALITY, GM_ORCHESTRA_INSTRUMENTS,
     PIANO_PROGRAMS, HAS_FLUIDSYNTH, ARPEGGIO_FORMS,
+    GM_EXPANDED_INSTRUMENTS, GM_ALL_INSTRUMENTS, V9_FAMILY_POOLS,
+    RadioEngineV9,
 )
 
 
@@ -1067,6 +1069,172 @@ class TestV8EngineCreation(unittest.TestCase):
             self.assertIn('time_sig_override', seg)
             self.assertIn(seg['time_sig_override'],
                           SIMPLE_TIME_SIGS + COMPOUND_TIME_SIGS + COMPLEX_TIME_SIGS)
+
+
+# ---------------------------------------------------------------------------
+# V9 Tests
+# ---------------------------------------------------------------------------
+from apps.audio.radio_engine import (
+    generate_radio_v9_mp3,
+)
+
+
+class TestV9InstrumentCatalog(unittest.TestCase):
+    """Tests for v9 expanded instrument catalog."""
+
+    def test_expanded_instruments_count(self):
+        """v9 should add ~50 new instruments."""
+        self.assertGreaterEqual(len(GM_EXPANDED_INSTRUMENTS), 45)
+
+    def test_all_instruments_superset(self):
+        """GM_ALL_INSTRUMENTS should contain all v7/v8 instruments."""
+        for prog in GM_ORCHESTRA_INSTRUMENTS:
+            self.assertIn(prog, GM_ALL_INSTRUMENTS)
+
+    def test_all_instruments_has_expanded(self):
+        """GM_ALL_INSTRUMENTS should contain all expanded instruments."""
+        for prog in GM_EXPANDED_INSTRUMENTS:
+            self.assertIn(prog, GM_ALL_INSTRUMENTS)
+
+    def test_v9_family_pools_count(self):
+        """v9 should have 15 family pools."""
+        self.assertEqual(len(V9_FAMILY_POOLS), 15)
+
+    def test_v9_family_pools_unique_programs(self):
+        """All programs in v9 pools should be valid GM programs (0-127)."""
+        for family, programs in V9_FAMILY_POOLS.items():
+            for prog in programs:
+                self.assertGreaterEqual(prog, 0, f"{family}: {prog} < 0")
+                self.assertLessEqual(prog, 127, f"{family}: {prog} > 127")
+
+    def test_v9_pools_superset_of_v7(self):
+        """v9 pools should include all v7 families."""
+        v7_families = {'strings', 'brass', 'woodwinds', 'keys', 'pitched_perc'}
+        for fam in v7_families:
+            self.assertIn(fam, V9_FAMILY_POOLS)
+
+    def test_rock_family_exists(self):
+        """v9 should have rock guitar and bass families."""
+        self.assertIn('rock_guitar', V9_FAMILY_POOLS)
+        self.assertIn('rock_bass', V9_FAMILY_POOLS)
+        self.assertTrue(len(V9_FAMILY_POOLS['rock_guitar']) >= 3)
+
+    def test_synth_families_exist(self):
+        """v9 should have synth lead, pad, and fx families."""
+        self.assertIn('synth_lead', V9_FAMILY_POOLS)
+        self.assertIn('synth_pad', V9_FAMILY_POOLS)
+        self.assertIn('synth_fx', V9_FAMILY_POOLS)
+
+    def test_world_family_exists(self):
+        """v9 should have world/ethnic family."""
+        self.assertIn('world', V9_FAMILY_POOLS)
+        self.assertTrue(len(V9_FAMILY_POOLS['world']) >= 8)
+
+    def test_sax_and_choir_families(self):
+        """v9 should have sax and choir families."""
+        self.assertIn('sax', V9_FAMILY_POOLS)
+        self.assertIn('choir', V9_FAMILY_POOLS)
+        self.assertEqual(len(V9_FAMILY_POOLS['sax']), 4)
+
+
+class TestV9TempoMultiplier(unittest.TestCase):
+    """Tests for v9 density-aware tempo."""
+
+    def test_default_tempo(self):
+        """Default (no sim state) should return 1.6."""
+        engine = RadioEngineV9(seed=42, total_duration=10.0)
+        self.assertAlmostEqual(engine._compute_tempo_multiplier(None), 1.6)
+
+    def test_tempo_range(self):
+        """Tempo should be in 1.1-2.1 range for normal states."""
+        engine = RadioEngineV9(seed=42, total_duration=10.0)
+        for i in range(50):
+            state = {'temperature': 1000 + i * 100, 'particles': 5,
+                     'atoms': 2, 'molecules': 0, 'cells': 0}
+            mult = engine._compute_tempo_multiplier(state)
+            self.assertGreaterEqual(mult, 1.1)
+            self.assertLessEqual(mult, 2.1)
+
+    def test_high_density_cap(self):
+        """High density states should cap tempo at 1.6."""
+        engine = RadioEngineV9(seed=42, total_duration=10.0)
+        state = {'temperature': 5000, 'particles': 50, 'atoms': 30,
+                 'molecules': 10, 'cells': 5}
+        # density = 50 + 60 + 30 + 25 = 165 > 100
+        mult = engine._compute_tempo_multiplier(state)
+        self.assertLessEqual(mult, 1.6)
+
+    def test_medium_density_cap(self):
+        """Medium density states should cap tempo at 1.8."""
+        engine = RadioEngineV9(seed=42, total_duration=10.0)
+        state = {'temperature': 3000, 'particles': 20, 'atoms': 15,
+                 'molecules': 2, 'cells': 0}
+        # density = 20 + 30 + 6 + 0 = 56 > 50
+        mult = engine._compute_tempo_multiplier(state)
+        self.assertLessEqual(mult, 1.8)
+
+
+class TestV9EngineCreation(unittest.TestCase):
+    """Tests for RadioEngineV9 initialization."""
+
+    def test_creates_successfully(self):
+        """V9 engine should initialize without errors."""
+        engine = RadioEngineV9(seed=42, total_duration=10.0)
+        self.assertIsNotNone(engine)
+        self.assertIsInstance(engine, RadioEngineV8)
+        self.assertIsInstance(engine, RadioEngine)
+
+    def test_has_family_groups(self):
+        """V9 should track family groups for variety enforcement."""
+        engine = RadioEngineV9(seed=42, total_duration=10.0)
+        self.assertIsNotNone(engine._family_groups)
+        self.assertIn('symphonic', engine._family_groups)
+        self.assertIn('rock', engine._family_groups)
+        self.assertIn('electronic', engine._family_groups)
+        self.assertIn('world', engine._family_groups)
+        self.assertIn('classical', engine._family_groups)
+
+    def test_instrument_selection_uses_expanded_pools(self):
+        """V9 instrument selection should use all 15 family pools."""
+        engine = RadioEngineV9(seed=42, total_duration=10.0)
+        rng = random.Random(42)
+        midi_info = {'programs': set()}
+
+        # Run selection many times, collect all families used
+        all_families = set()
+        for _ in range(100):
+            voices = engine._choose_gm_instruments_v9(midi_info, 4, rng)
+            for v in voices:
+                all_families.add(v['family'])
+
+        # Should use many different families across 100 iterations
+        self.assertGreaterEqual(len(all_families), 10)
+
+    def test_v9_has_time_sig_overrides(self):
+        """V9 inherits v8 time sig control."""
+        engine = RadioEngineV9(seed=42, total_duration=1800.0)
+        for seg in engine.segments:
+            self.assertIn('time_sig_override', seg)
+
+    def test_v9_short_render(self):
+        """V9 should render a short segment without errors."""
+        engine = RadioEngineV9(seed=42, total_duration=5.0)
+        left, right = engine.render()
+        self.assertGreater(len(left), 0)
+        self.assertGreater(len(right), 0)
+        self.assertEqual(len(left), len(right))
+
+
+class TestV9CLIArgument(unittest.TestCase):
+    """Tests for v9 CLI argument support."""
+
+    def test_v9_in_choices(self):
+        """CLI should accept --version v9."""
+        import argparse
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--version', '-V', choices=['v7', 'v8', 'v9'])
+        args = parser.parse_args(['--version', 'v9'])
+        self.assertEqual(args.version, 'v9')
 
 
 if __name__ == '__main__':

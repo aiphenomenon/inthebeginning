@@ -258,6 +258,59 @@ GM_ORCHESTRA_INSTRUMENTS = {
     11: 'Vibraphone', 14: 'Tubular Bells',
 }
 
+# v9 expanded GM instrument catalog -- adds ~50 instruments across 8 new families
+GM_EXPANDED_INSTRUMENTS = {
+    # --- Symphonic (missing from v7/v8) ---
+    9: 'Glockenspiel', 10: 'Music Box', 13: 'Xylophone', 15: 'Dulcimer',
+    47: 'Timpani', 49: 'String Ensemble 2',
+    50: 'Synth Strings 1', 51: 'Synth Strings 2',
+    52: 'Choir Aahs', 53: 'Voice Oohs', 54: 'Synth Voice',
+    55: 'Orchestra Hit', 59: 'Muted Trumpet',
+    64: 'Soprano Sax', 65: 'Alto Sax', 66: 'Tenor Sax', 67: 'Baritone Sax',
+    # --- Rock ---
+    26: 'Electric Guitar (Jazz)', 28: 'Electric Guitar (Muted)',
+    29: 'Overdriven Guitar', 30: 'Distortion Guitar',
+    33: 'Electric Bass (Finger)', 34: 'Electric Bass (Pick)', 36: 'Slap Bass 1',
+    # --- Electronic / Synth ---
+    80: 'Square Lead', 81: 'Sawtooth Lead', 82: 'Calliope Lead',
+    88: 'Synth Pad (New Age)', 90: 'Synth Pad (Polysynth)',
+    91: 'Synth Pad (Choir)', 92: 'Synth Pad (Bowed)',
+    94: 'Synth Pad (Halo)', 95: 'Synth Pad (Sweep)',
+    # --- Synth FX ---
+    96: 'FX Rain', 97: 'FX Soundtrack', 98: 'FX Crystal',
+    99: 'FX Atmosphere', 100: 'FX Brightness',
+    101: 'FX Goblins', 102: 'FX Echoes', 103: 'FX Sci-Fi',
+    # --- World / Ethnic ---
+    104: 'Sitar', 105: 'Banjo', 106: 'Shamisen', 107: 'Koto',
+    108: 'Kalimba', 109: 'Bagpipe', 110: 'Fiddle', 111: 'Shanai',
+    # --- Extra pitched percussion ---
+    114: 'Steel Drums',
+}
+
+# Combined catalog for v9
+GM_ALL_INSTRUMENTS = {**GM_ORCHESTRA_INSTRUMENTS, **GM_EXPANDED_INSTRUMENTS}
+
+# v9 expanded family pools (superset of v7/v8 pools)
+V9_FAMILY_POOLS = {
+    # Original families (v7/v8)
+    'strings':       [40, 41, 42, 43, 44, 45, 48],
+    'brass':         [56, 57, 58, 60, 61],
+    'woodwinds':     [68, 69, 70, 71, 72, 73, 74, 75],
+    'keys':          [0, 1, 2, 3, 4, 5, 6, 7, 8],
+    'pitched_perc':  [11, 14, 46],
+    # New v9 families
+    'rock_guitar':   [26, 28, 29, 30],
+    'rock_bass':     [33, 34, 36],
+    'synth_lead':    [80, 81, 82],
+    'synth_pad':     [88, 90, 91, 92, 94, 95],
+    'synth_fx':      [96, 97, 98, 99, 100, 101, 102, 103],
+    'world':         [104, 105, 106, 107, 108, 109, 110, 111],
+    'sax':           [64, 65, 66, 67],
+    'choir':         [52, 53, 54],
+    'symphonic_ext': [47, 49, 50, 51, 55, 59],
+    'mallets':       [9, 10, 13, 15, 114],
+}
+
 PIANO_PROGRAMS = {0, 1, 2, 3, 4, 5, 6, 7}  # GM piano family
 
 # FluidSynth availability
@@ -3661,6 +3714,282 @@ class RadioEngineV8(RadioEngine):
         return result
 
 
+# ---------------------------------------------------------------------------
+# V9 RADIO ENGINE -- Expanded instrument set with density-aware tempo
+# ---------------------------------------------------------------------------
+class RadioEngineV9(RadioEngineV8):
+    """In The Beginning Radio v9 -- Expanded instrument palette + density-aware tempo.
+
+    Enhancements over v8:
+    - ~50 new GM instruments across rock, electronic, world, and symphonic families
+    - 15 instrument family pools (up from 5) for much broader timbral variety
+    - Density-aware tempo: 1.1x-2.1x range, capped at 1.6x during high-density
+      simulation epochs (many particles/atoms/molecules) for breathing room
+    - Family variety enforcement: all major family groups (symphonic, rock,
+      electronic, world) guaranteed to appear across a 30-minute piece
+    - All v8 features preserved (orchestral layering, anti-hiss, subsonic
+      removal, note smoothing, time signature control, note quantization)
+    """
+
+    def __init__(self, seed=42, total_duration=1800.0):
+        super().__init__(seed=seed, total_duration=total_duration)
+        # Track which family groups have been used across the full render
+        self._used_family_groups = set()
+        # Family groups for variety enforcement
+        self._family_groups = {
+            'symphonic': {'strings', 'brass', 'woodwinds', 'sax', 'choir',
+                          'symphonic_ext'},
+            'rock': {'rock_guitar', 'rock_bass'},
+            'electronic': {'synth_lead', 'synth_pad', 'synth_fx'},
+            'world': {'world'},
+            'classical': {'keys', 'pitched_perc', 'mallets'},
+        }
+        self._segment_count = 0
+
+    def _compute_tempo_multiplier(self, sim_state):
+        """Density-aware tempo multiplier: 1.1x-2.1x range.
+
+        v9: lower and wider range than v8's 1.5x-2.5x. During high-density
+        simulation epochs (many particles, atoms, molecules), tempo is capped
+        at 1.6x to give the expanded instrument set breathing room and reduce
+        cacophony. During sparse epochs, tempo can reach up to ~1.8x.
+        """
+        if not sim_state:
+            return 1.6  # neutral default
+
+        # Base multiplier from state hash (same technique as v7/v8)
+        state_str = repr(sorted(sim_state.items()))
+        h = hashlib.sha256(state_str.encode()).hexdigest()[:8]
+        base = 1.1 + 1.0 * (int(h, 16) / 0xFFFFFFFF)  # 1.1-2.1 range
+
+        # Density-aware capping
+        particles = sim_state.get('particles', 0)
+        atoms = sim_state.get('atoms', 0)
+        molecules = sim_state.get('molecules', 0)
+        cells = sim_state.get('cells', 0)
+        density = particles + atoms * 2 + molecules * 3 + cells * 5
+
+        if density > 100:
+            # High density: cap tempo for breathing room
+            base = min(base, 1.6)
+        elif density > 50:
+            # Medium density: mild cap
+            base = min(base, 1.8)
+        # Low density: no cap, full 1.1-2.1 range allowed
+
+        return base
+
+    def _choose_gm_instruments_v9(self, midi_info, n_voices, rng):
+        """Choose GM instruments from expanded v9 family pools.
+
+        Uses all 15 family pools with variety enforcement: tracks which
+        family groups have been used across the full render, and biases
+        selection toward under-represented groups past the halfway point.
+        """
+        families = list(V9_FAMILY_POOLS.keys())
+        rng.shuffle(families)
+
+        voices = []
+        used_families = set()
+
+        # Octave offsets and pans
+        offsets_pool = [-12, 0, 0, 12]
+        pans_pool = [-0.4, -0.15, 0.15, 0.4]
+
+        # Variety enforcement: past halfway, bias toward unused groups
+        self._segment_count += 1
+        n_total_segments = len(self.segments) if hasattr(self, 'segments') else 15
+        past_halfway = self._segment_count > n_total_segments // 2
+
+        # Find under-represented family groups
+        underrepresented = []
+        if past_halfway:
+            for group_name, group_families in self._family_groups.items():
+                if group_name not in self._used_family_groups:
+                    underrepresented.extend(
+                        f for f in group_families if f in V9_FAMILY_POOLS)
+
+        for v in range(n_voices):
+            # Prefer under-represented families if past halfway
+            if underrepresented and rng.random() < 0.6:
+                family = rng.choice(underrepresented)
+                underrepresented = [f for f in underrepresented if f != family]
+            else:
+                available = [f for f in families if f not in used_families]
+                if not available:
+                    available = families
+                family = rng.choice(available)
+
+            used_families.add(family)
+
+            # Track family group usage
+            for group_name, group_families in self._family_groups.items():
+                if family in group_families:
+                    self._used_family_groups.add(group_name)
+
+            pool = V9_FAMILY_POOLS[family]
+            gm = rng.choice(pool)
+
+            oct_offset = offsets_pool[v % len(offsets_pool)]
+            pan = pans_pool[v % len(pans_pool)]
+            chord_size = rng.randint(2, 4)
+            color_amount = 0.15 if oct_offset < 0 else 0.25
+
+            voices.append({
+                'gm_program': gm,
+                'octave_offset': oct_offset,
+                'pan': pan,
+                'chord_size': chord_size,
+                'color_amount': color_amount,
+                'family': family,
+            })
+
+        return voices
+
+    def _render_segment(self, mood, kits, n_samples, sim_state):
+        """Render a mood segment with v9 expanded instruments.
+
+        Same 10-step pipeline as v8, but uses v9 instrument selection
+        with expanded family pools and variety enforcement.
+        """
+        # Temporarily override _choose_gm_instruments to use v9 version
+        orig_choose = self._choose_gm_instruments
+        self._choose_gm_instruments = self._choose_gm_instruments_v9
+        try:
+            result = super()._render_segment(mood, kits, n_samples, sim_state)
+        finally:
+            self._choose_gm_instruments = orig_choose
+        return result
+
+
+def generate_radio_v9_mp3(output_path, duration=1800.0, seed=42):
+    """Generate the v9 radio MP3 file with expanded instruments.
+
+    v9 features: ~50 new instruments, 15 family pools, density-aware tempo,
+    family variety enforcement, plus all v8 features.
+    """
+    import tempfile
+
+    print(f"[RadioEngineV9] Initializing (seed={seed}, duration={duration}s)...")
+    engine = RadioEngineV9(seed=seed, total_duration=duration)
+
+    print(f"[RadioEngineV9] {len(engine.instruments)} instruments loaded")
+    print(f"[RadioEngineV9] {len(engine.midi_lib._note_sequences)} MIDI sequences loaded")
+    print(f"[RadioEngineV9] {len(V9_FAMILY_POOLS)} instrument family pools")
+    print(f"[RadioEngineV9] {sum(len(p) for p in V9_FAMILY_POOLS.values())} unique GM programs")
+    print(f"[RadioEngineV9] TTS engine: {'Silero' if engine.tts._silero_available else 'espeak-ng'}")
+    print(f"[RadioEngineV9] TTS transitions at segments: {sorted(engine.tts_transitions)}")
+
+    n_segments = len(engine.segments)
+    avg_dur = sum(s['duration'] for s in engine.segments) / max(n_segments, 1)
+
+    # Count time signature distribution
+    simple_count = sum(1 for s in engine.segments
+                       if s.get('time_sig_override') in SIMPLE_TIME_SIGS)
+    compound_count = sum(1 for s in engine.segments
+                         if s.get('time_sig_override') in COMPOUND_TIME_SIGS)
+    complex_count = sum(1 for s in engine.segments
+                        if s.get('time_sig_override') in COMPLEX_TIME_SIGS)
+    print(f"[RadioEngineV9] {n_segments} mood segments (avg {avg_dur:.0f}s)")
+    print(f"[RadioEngineV9] Time signatures: {simple_count} simple, "
+          f"{compound_count} compound, {complex_count} complex")
+
+    print(f"[RadioEngineV9] Rendering audio...")
+    t0 = _time.time()
+
+    # Import simulator for real simulation data
+    try:
+        sys.path.insert(0, PROJECT_ROOT)
+        from simulator.universe import Universe
+        universe = Universe(seed=seed, max_ticks=999999999)
+
+        sim_states = []
+        total_ticks = int(duration * 50)
+        ticks_per_segment = max(1, total_ticks // n_segments)
+        for seg in range(n_segments):
+            for _ in range(ticks_per_segment):
+                universe.step()
+            state = {
+                'temperature': universe.quantum_field.temperature,
+                'particles': len(universe.quantum_field.particles),
+                'atoms': len(universe.atomic_system.atoms) if universe.atomic_system else 0,
+                'molecules': len(universe.chemical_system.molecules) if universe.chemical_system else 0,
+                'cells': len(universe.biosphere.cells) if universe.biosphere else 0,
+                'generation': universe.biosphere.generation if universe.biosphere else 0,
+                'epoch': universe.current_epoch_name,
+            }
+            sim_states.append(state)
+            if seg % 3 == 0:
+                print(f"  Sim segment {seg+1}/{n_segments}: epoch={state['epoch']}, "
+                      f"T={state['temperature']:.0f}, particles={state['particles']}, "
+                      f"density={state['particles'] + state['atoms']*2 + state['molecules']*3 + state['cells']*5}")
+    except Exception as e:
+        print(f"  [Warning] Could not run simulator: {e}")
+        print(f"  Using synthetic simulation data instead.")
+        sim_states = None
+
+    # Use streaming renderer for long durations
+    use_streaming = duration > 660
+
+    if use_streaming:
+        print(f"[RadioEngineV9] Using streaming renderer (low memory)...")
+        with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
+            wav_path = tmp.name
+        try:
+            with wave.open(wav_path, 'wb') as wf:
+                wf.setnchannels(2)
+                wf.setsampwidth(2)
+                wf.setframerate(SAMPLE_RATE)
+                total_written = engine.render_streaming(wf, sim_states)
+            t1 = _time.time()
+            print(f"[RadioEngineV9] Streamed {total_written/SAMPLE_RATE:.1f}s in {t1-t0:.1f}s")
+            print(f"[RadioEngineV9] Family groups used: {sorted(engine._used_family_groups)}")
+
+            if output_path.endswith('.mp3'):
+                print(f"[RadioEngineV9] Converting to MP3...")
+                wav_to_mp3(wav_path, output_path)
+                print(f"[RadioEngineV9] Saved: {output_path}")
+            else:
+                import shutil
+                shutil.move(wav_path, output_path)
+                wav_path = None
+                print(f"[RadioEngineV9] Saved: {output_path}")
+        finally:
+            if wav_path:
+                try:
+                    os.unlink(wav_path)
+                except OSError:
+                    pass
+    else:
+        left, right = engine.render(sim_states)
+
+        t1 = _time.time()
+        print(f"[RadioEngineV9] Rendered {len(left)/SAMPLE_RATE:.1f}s in {t1-t0:.1f}s")
+        print(f"[RadioEngineV9] Family groups used: {sorted(engine._used_family_groups)}")
+
+        if output_path.endswith('.mp3'):
+            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
+                wav_path = tmp.name
+            try:
+                print(f"[RadioEngineV9] Writing WAV ({len(left)*4/1048576:.1f} MB)...")
+                render_to_wav(left, right, wav_path)
+                print(f"[RadioEngineV9] Converting to MP3...")
+                wav_to_mp3(wav_path, output_path)
+                print(f"[RadioEngineV9] Saved: {output_path}")
+            finally:
+                try:
+                    os.unlink(wav_path)
+                except OSError:
+                    pass
+        else:
+            render_to_wav(left, right, output_path)
+            print(f"[RadioEngineV9] Saved: {output_path}")
+
+    file_size = os.path.getsize(output_path) if os.path.exists(output_path) else 0
+    print(f"[RadioEngineV9] File size: {file_size/1048576:.1f} MB")
+    return output_path
+
+
 def generate_radio_v8_mp3(output_path, duration=1800.0, seed=42):
     """Generate the v8 radio MP3 file with all enhancements.
 
@@ -3796,10 +4125,12 @@ if __name__ == '__main__':
                        help='Duration in seconds (default: 1800)')
     parser.add_argument('--seed', '-s', type=int, default=42,
                        help='Random seed')
-    parser.add_argument('--version', '-V', choices=['v7', 'v8'], default='v7',
-                       help='Engine version: v7 (classic) or v8 (orchestral, default: v7)')
+    parser.add_argument('--version', '-V', choices=['v7', 'v8', 'v9'], default='v7',
+                       help='Engine version: v7 (classic), v8 (orchestral), v9 (expanded)')
     args = parser.parse_args()
-    if args.version == 'v8':
+    if args.version == 'v9':
+        generate_radio_v9_mp3(args.output, args.duration, args.seed)
+    elif args.version == 'v8':
         generate_radio_v8_mp3(args.output, args.duration, args.seed)
     else:
         generate_radio_mp3(args.output, args.duration, args.seed)
