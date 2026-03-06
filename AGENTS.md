@@ -582,6 +582,8 @@ propagated to the other two. Specific items that must appear in all three:
 - CI flake detection and repair
 - AMD64 build verification (best-effort)
 - Audio engine quality gate (when modifying radio_engine.py)
+- Audio engine v12 is the current version: natural instrument character with
+  acoustic bias (70/30), frequency ceiling C6, master lowpass 7kHz, legato durations
 
 This triple cross-check principle prevents drift between human-readable
 documentation and machine-enforced hooks.
