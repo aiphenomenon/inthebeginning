@@ -4,6 +4,105 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.10.0 — 2026-03-06 — Radio Engine v10: GM-Timbre-Aware Synthesis + Expanded Library
+
+### Summary
+
+Radio engine v10 with GM-timbre-aware synthesis: each of the 15 GM instrument families
+now gets a distinct ADSR envelope, harmonic structure, and brightness profile instead
+of the generic additive synthesis that made everything sound organ-y. Features tempo
+range narrowed to 1.2x-1.8x, 85% orchestral simultaneous layering with 4-6 voices
+per segment, 8-second morph transitions between moods, and minimum 3 family groups
+per segment.
+
+The MIDI library was tripled from 249 to 744 files spanning 26 composers across 500
+years of Western music (Renaissance through Late Romantic). 20 new instrument samples
+added (60 total). espeak-ng TTS installed for spoken word announcements.
+
+### Changes
+
+- **Radio Engine v10** (`apps/audio/radio_engine.py`):
+  - New `RadioEngineV10` class extending `RadioEngineV9`
+  - `GM_TIMBRE_PROFILES`: 15 GM timbre profiles with distinct attack, decay, sustain,
+    release, harmonic ratios, brightness, and vibrato per instrument family (piano,
+    mallets, organ, guitar, bass, strings, ensemble, brass, reed, pipe, synth_lead,
+    synth_pad, synth_fx, world, percussive)
+  - `_gm_program_to_timbre()`: Maps any GM program 0-127 to its timbre profile
+  - `_synth_gm_note_np()`: New synthesis function using family-specific parameters
+    instead of generic 8-harmonic additive base
+  - Tempo range 1.2x-1.8x flat (no density-dependent capping)
+  - 85% simultaneous orchestral layering (up from 75% in v8/v9)
+  - 4-6 voices per segment (up from 2-4) with minimum 3 family groups
+  - Register spread widened to -24/+24 semitones
+  - 8s morph transitions (up from 6s), 6s fade-in, 10s fade-out
+  - 3-5s crossfade between loop iterations (up from 2-4s)
+  - CLI: `--version v10` flag
+  - `generate_radio_v10_mp3()` convenience function
+  - All v9/v8 features preserved (expanded instruments, family variety, time signature
+    control, anti-hiss, subsonic removal, note smoothing, note quantization, rondo
+    structures, arpeggio forms, Hartmann consonance, MIDI sampling)
+- **23 new v10 tests** in `test_radio_engine.py`:
+  - GM timbre profiles: count, required keys, program mapping coverage
+  - Piano/strings/brass/synth_pad mapping tests
+  - Distinct envelope shapes verification
+  - GM synthesis: audio production, different-programs-different-output
+  - Tempo range 1.2-1.8x, no density capping
+  - Engine creation, morph duration, fade durations
+  - Instrument diversity (3+ families per segment)
+  - Short render integration test
+  - CLI v10 argument acceptance
+- **MIDI library expanded** (249 → 744 files, 14 → 26 composers):
+  - Added from narcisse-dev/classical_ancient_midifiles: Bach (+45), Beethoven (+45),
+    Chopin (+30), Corelli (55, new), Haydn (+55), Hummel (24, new), Joplin (47, new),
+    Mozart (+45), Scarlatti (55, new)
+  - Added Renaissance composers: Josquin (45), DuFay (19), Ockeghem (23), Isaac (5),
+    Obrecht (7), Busnoys (10), Brumel (3), Compère (10), Mouton (10)
+  - Synthetic Handel (10), Haydn (12), Mendelssohn (8), Tchaikovsky (15) via mido
+- **20 new instrument samples** (40 → 60):
+  - Saxophones: alto, tenor, soprano
+  - Guitars: acoustic, electric clean, overdriven
+  - Keyboards: pipe organ, marimba, xylophone, steel drums
+  - Brass: muted trumpet, tuba, English horn, piccolo
+  - World: banjo, shamisen, bagpipe
+  - Synth: sawtooth lead, square lead, synth strings
+- **gVisor steering updates** (`.claude/steering-check.sh`):
+  - Added future memories early-stage orchestration cue (#14)
+  - Added audio engine quality gate cue (#15)
+- **30-minute cosmic radio v10 MP3s**:
+  - `cosmic_radio_v10.mp3`: Seed 42, 1800 seconds
+  - `cosmic_radio_v10_random.mp3`: Random seed, 1800 seconds
+
+### Agent Activity
+
+- Agent: Claude Opus 4.6 via Claude Code CLI
+- Session: claude/resume-v9-document-v8-6yhAe
+- Subagents spawned: 1 (codebase exploration)
+- External repos cloned: narcisse-dev/classical_ancient_midifiles (4,723 MIDI files)
+- espeak-ng installed for TTS
+- Test results: 141 radio engine tests (23 new v10), 400 Python reference tests pass
+- MP3 render time: ~595s per 30-min piece (numpy-accelerated)
+
+### Files Created
+
+- `future_memories/v0.10.0-plan.md`
+- `apps/audio/cosmic_radio_v10.mp3`
+- `apps/audio/cosmic_radio_v10_random.mp3`
+- `session_logs/v0.10.0-session.md`
+- 20 new instrument samples in `apps/audio/samples/`
+- 495 new MIDI files across 12 new composer directories
+- MIDI library: Corelli/, Hummel/, Joplin/, Scarlatti/, Josquin/, DuFay/, Ockeghem/,
+  Isaac/, Obrecht/, Busnoys/, Brumel/, Compère/, Mouton/
+
+### Files Modified
+
+- `apps/audio/radio_engine.py` — v10 engine class, GM timbre profiles, CLI update
+- `apps/audio/test_radio_engine.py` — 23 new v10 tests
+- `apps/audio/midi_library/ATTRIBUTION.md` — expanded attribution
+- `.claude/steering-check.sh` — two new steering cues
+- `RELEASE_HISTORY.md` — this entry
+
+---
+
 ## v0.9.0 — 2026-03-06 — Radio Engine v9: Expanded Instruments + Density-Aware Tempo
 
 ### Summary

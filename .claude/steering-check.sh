@@ -134,6 +134,30 @@ echo "           Fix if possible, add TODOs if not, notify user of broken builds
 echo "[FAIL-CUE] AMD64 builds: Attempt to verify AMD64 builds (Go, Rust, C, C++)"
 echo "           Best-effort -- add TODOs for broken builds, do not block session"
 
+# 14. Future memories — EARLY STAGE ORCHESTRATION
+echo "[FAIL-CUE] Future memories — early stage orchestration:"
+echo "           BEFORE mutating ANY source code in the repository:"
+echo "             1. Write future_memories/v{VERSION}-plan.md with full intent"
+echo "             2. Commit AND push the plan file to the working branch"
+echo "             3. Only THEN proceed with code changes"
+echo "           UPDATE the plan file at significant milestones."
+echo "           This ensures session restoration if interrupted."
+echo "           The gVisor machinery + agent cooperate via this protocol:"
+echo "             - gVisor hooks remind the agent of the protocol"
+echo "             - Agent writes plan -> commits -> pushes -> codes"
+echo "             - If session interrupted, next agent reads committed plan"
+
+# 15. Audio engine quality gate
+echo "[FAIL-CUE] Audio quality: When modifying radio_engine.py, verify:"
+echo "           - Musical structure preserved (scales, rondo, arpeggio, bars)"
+echo "           - MIDI sampling from 744+ files across 26 composers"
+echo "           - GM-timbre-aware synthesis (15 distinct profiles)"
+echo "           - Orchestral layering (85% simultaneous, 4-6 voices)"
+echo "           - TTS announcements between moods (once per 10-min span)"
+echo "           - Mood durations are multiples of 42s"
+echo "           - Good fades between moods (8s morph transitions)"
+echo "           Run: python -m unittest apps.audio.test_radio_engine -v"
+
 echo ""
 echo "=================================================================="
 echo " These FAIL-CUE markers are INTENTIONAL self-cueing signals."
