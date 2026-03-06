@@ -56,6 +56,23 @@ lightweight Docker Compose works for the non-graphical simulator applications.
 - Goal: maximize agent working memory utilization for bigger tasks with
   rock-solid correctness
 
+### Audio Engine: Multicore Rendering (TODO)
+
+The radio engine's streaming renderer is single-threaded pure Python. On a 16-core
+machine, each 30-minute render uses 1 core and takes ~16 minutes. Potential speedup:
+
+- **Parallel segment rendering**: Each mood segment (15-18 per composition) is
+  largely independent. Render segments in parallel using `multiprocessing.Pool`
+  with 12-14 workers, then stitch WAV chunks with crossfade at boundaries.
+- **Estimated speedup**: 8-12x on 16 cores (16 min -> ~2 min per render)
+- **Complexity**: Moderate (~100-150 lines). Main challenge is crossfade/morph
+  regions at segment boundaries, which need samples from adjacent segments.
+- **Approach**: Render each segment to a temp WAV with extra overlap (morph
+  duration), then stitch with crossfade in a final serial pass.
+- **Risk**: Python GIL prevents threading gains; must use multiprocessing.
+  Shared state (instrument pool, MIDI library) would need to be serialized
+  or shared via `multiprocessing.Manager`.
+
 ## Medium-Term Roadmap
 
 ### Cross-Language Physics Consistency Automation

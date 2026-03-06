@@ -517,6 +517,12 @@ signals** -- they are not bugs or errors. Do not delete, suppress, or work
 around them. They exist to trigger the agent's attention and ensure protocol
 compliance.
 
+### Central Time Timestamps
+
+All agent responses should include a **Central Time (US)** datetime stamp in the
+format `[YYYY-MM-DD HH:MM CT]` at key progress points (render starts/finishes,
+commits, pushes, milestone completions). Use `TZ='America/Chicago' date` to generate.
+
 ### Start-of-Turn Protocol (MANDATORY)
 
 **BEFORE doing any work** at the start of every conversation turn, agents MUST:
@@ -561,6 +567,7 @@ New steering information must be maintained in **ALL THREE** locations:
 If a new protocol or constraint is added to any one of these three, it must be
 propagated to the other two. Specific items that must appear in all three:
 
+- **Central Time timestamps**: `[YYYY-MM-DD HH:MM CT]` in agent responses
 - **Start-of-turn protocol**: session log + future memories + release history BEFORE work
 - Session log generation per conversation turn
 - Release history (`RELEASE_HISTORY.md`) update per conversation turn

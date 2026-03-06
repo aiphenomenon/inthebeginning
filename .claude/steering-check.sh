@@ -29,6 +29,7 @@ if [ "$PHASE" = "post-tool" ]; then
     echo "  1. Update/create session_logs/v{VERSION}-session.md (append new turn)"
     echo "  2. Update future_memories/ plan file (if work is in progress)"
     echo "  3. Update RELEASE_HISTORY.md (append turn summary)"
+    echo "  4. Include [YYYY-MM-DD HH:MM CT] timestamps in responses"
     echo "  Do these BEFORE diving into the main task. Skip only if already done this turn."
     exit 0
 fi
@@ -108,6 +109,7 @@ echo "             3. .claude/steering-check.sh (gVisor self-cueing hooks)"
 echo "           When ANY new steering is introduced anywhere in the repo,"
 echo "           propagate it to all three. This is the enforcement guarantee."
 echo "           Specific items that must be in all three:"
+echo "             - Central Time timestamps: [YYYY-MM-DD HH:MM CT] in agent responses"
 echo "             - Start-of-turn protocol: session log + future memories + release history BEFORE work"
 echo "             - Session log generation per turn"
 echo "             - Release history update per turn"

@@ -739,6 +739,13 @@ explicit guidance) to ensure all steering rules are followed at each turn. **The
 FAIL markers in gVisor hooks are intentional reminders -- do NOT delete them.** They
 exist to prompt the agent to complete all required steering tasks.
 
+### Central Time Timestamps
+
+All agent responses should include a **Central Time (US)** datetime stamp in the
+format `[YYYY-MM-DD HH:MM CT]` at key progress points. This helps the user gauge
+timing of renders, builds, and other long-running operations. Use
+`TZ='America/Chicago' date '+%Y-%m-%d %H:%M CT'` to generate timestamps.
+
 ### Start-of-Turn Protocol (MANDATORY)
 
 **BEFORE doing any work** (code edits, MP3 generation, builds, etc.), complete these
@@ -805,6 +812,7 @@ This maintains a single source of truth through triple redundancy. If a policy i
 added to any one of these three, it must be propagated to the other two. Specific
 items that must appear in all three:
 
+- **Central Time timestamps**: `[YYYY-MM-DD HH:MM CT]` in agent responses
 - **Start-of-turn protocol**: session log + future memories + release history BEFORE work
 - Session log generation per conversation turn
 - Release history (`RELEASE_HISTORY.md`) update per conversation turn
