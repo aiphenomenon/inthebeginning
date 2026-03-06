@@ -40,7 +40,7 @@ added (60 total). espeak-ng TTS installed for spoken word announcements.
   - `generate_radio_v10_mp3()` convenience function
   - All v9/v8 features preserved (expanded instruments, family variety, time signature
     control, anti-hiss, subsonic removal, note smoothing, note quantization, rondo
-    structures, arpeggio forms, Hartmann consonance, MIDI sampling)
+    structures, arpeggio forms, harmonic consonance (Helmholtz/Hartmann), MIDI sampling)
 - **23 new v10 tests** in `test_radio_engine.py`:
   - GM timbre profiles: count, required keys, program mapping coverage
   - Piano/strings/brass/synth_pad mapping tests
@@ -262,7 +262,7 @@ to bar structure, and numpy-accelerated synthesis achieving ~7x speedup.
 
 Radio engine v7 with improved musical quality: 1.5-2.5x tempo (down from 2-4x),
 2-4 instrument small band ensembles (down from 6-16), mood segments at multiples
-of 42 seconds, 7 rondo structures with 6 arpeggio forms, Hartmann consonance
+of 42 seconds, 7 rondo structures with 6 arpeggio forms, harmonic consonance (Helmholtz/Hartmann)
 enforcement, anti-click processing, diverse instrument family selection, and
 comprehensive 32-issue markdown audit fixing all stale references across the project.
 
@@ -274,7 +274,7 @@ comprehensive 32-issue markdown audit fixing all stale references across the pro
   - Mood duration: multiples of 42s (42, 84, 126, 168, 210s) for longer development
   - 7 rondo patterns: ABACA, ABACADA, ABCBA, AABBA, ABCDA, ABACBA, AABA (was 2)
   - 6 arpeggio forms: block, ascending, descending, alberti, broken, pendulum
-  - Hartmann consonance enforcement: rejects tritones in bass, enforces consonant intervals
+  - harmonic consonance (Helmholtz/Hartmann) enforcement: rejects tritones in bass, enforces consonant intervals
   - Anti-click processing: 2ms micro-fades on notes, DC offset removal, 2-4s cosine crossfades
   - Diverse instrument families: strings, brass, woodwinds, keys, pitched percussion
   - 8kHz gentle lowpass on all loop output for smoother sound

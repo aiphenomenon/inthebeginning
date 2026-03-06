@@ -12,7 +12,7 @@ simulation state. It features:
     - 7 rondo structures (ABACA, ABACADA, ABCBA, AABBA, ABCDA, ABACBA, AABA)
     - 6 arpeggio forms (block, ascending, descending, alberti, broken, pendulum)
     - Tempo multiplier 1.5x-2.5x for natural pacing
-    - Hartmann consonance enforcement on all chord voicings
+    - harmonic consonance (Helmholtz/Hartmann) enforcement on all chord voicings
     - Anti-click processing: micro-fades, DC offset removal, cosine crossfades
     - Classical music scales and well-known time signatures (from Wikipedia)
     - Diverse instrument family selection (strings, brass, woodwinds, keys, perc)
@@ -1915,7 +1915,7 @@ class RadioEngine:
 
     Generates continuously evolving music with mood segments at multiples
     of 42 seconds, morph transitions, 2-4 instrument small band ensembles,
-    7 rondo forms with 6 arpeggio variations, Hartmann consonance enforcement,
+    7 rondo forms with 6 arpeggio variations, harmonic consonance (Helmholtz/Hartmann) enforcement,
     anti-click processing, diverse instrument family selection, MIDI sampling,
     and TTS injection during mood transitions.
     """
@@ -2353,7 +2353,7 @@ class RadioEngine:
             note = clamp(note, 24, 108)
             chord.append(note)
 
-        # v7: Enhanced Hartmann consonance enforcement
+        # v7: Enhanced harmonic consonance (Helmholtz/Hartmann) enforcement
         # Reject minor 2nd (semitone), tritone in bass, and enforce
         # that intervals between voices are consonant (3rds, 4ths, 5ths, 6ths, octaves)
         CONSONANT_INTERVALS = {3, 4, 5, 7, 8, 9, 12, 15, 16}  # semitones
