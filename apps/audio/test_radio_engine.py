@@ -34,6 +34,8 @@ from apps.audio.radio_engine import (
     RadioEngineV12, GM_TIMBRE_PROFILES_V12,
     RadioEngineV13,
     RadioEngineV14,
+    RadioEngineV15,
+    RadioEngineV16,
 )
 
 
@@ -1992,6 +1994,119 @@ class TestV14CLIArgument(unittest.TestCase):
                           choices=['v7', 'v8', 'v9', 'v10', 'v11', 'v12', 'v13', 'v14'])
         args = parser.parse_args(['--version', 'v14'])
         self.assertEqual(args.version, 'v14')
+
+
+class TestRadioEngineV15(unittest.TestCase):
+    """Tests for RadioEngineV15 -- True original V8 synthesis + V12 tempo."""
+
+    def test_v15_inherits_from_v8(self):
+        """V15 should inherit from RadioEngineV8."""
+        from apps.audio.radio_engine import RadioEngineV8
+        self.assertTrue(issubclass(RadioEngineV15, RadioEngineV8))
+
+    def test_v15_instantiation(self):
+        """V15 should instantiate without errors."""
+        engine = RadioEngineV15(seed=42, total_duration=10.0)
+        self.assertIsNotNone(engine)
+
+    def test_v15_tempo_range(self):
+        """V15 tempo should be in 1.1-1.7 range."""
+        engine = RadioEngineV15(seed=42, total_duration=10.0)
+        for particles in [0, 50, 100, 300, 600]:
+            sim_state = {'particles': particles, 'atoms': 0,
+                         'molecules': 0, 'cells': 0}
+            tempo = engine._compute_tempo_multiplier(sim_state)
+            self.assertGreaterEqual(tempo, 1.1)
+            self.assertLessEqual(tempo, 1.7)
+
+    def test_v15_uses_original_synthesis(self):
+        """V15 _render_segment should use factory.synthesize_colored_note, not numpy."""
+        engine = RadioEngineV15(seed=42, total_duration=10.0)
+        import inspect
+        src = inspect.getsource(engine._render_segment)
+        self.assertIn('factory.synthesize_colored_note', src)
+        self.assertNotIn('_synth_colored_note_np', src)
+
+    def test_v15_has_537_instruments(self):
+        """V15 should have 537 instruments."""
+        engine = RadioEngineV15(seed=42, total_duration=10.0)
+        self.assertEqual(len(engine.instruments), 537)
+
+    def test_v15_short_render(self):
+        """V15 should render a short clip successfully."""
+        engine = RadioEngineV15(seed=42, total_duration=2.0)
+        left, right = engine.render()
+        self.assertIsInstance(left, list)
+        self.assertIsInstance(right, list)
+        self.assertGreater(len(left), 0)
+        self.assertEqual(len(left), len(right))
+
+
+class TestRadioEngineV16(unittest.TestCase):
+    """Tests for RadioEngineV16 -- True original V8 synthesis + expanded palette."""
+
+    def test_v16_inherits_from_v15(self):
+        """V16 should inherit from RadioEngineV15."""
+        self.assertTrue(issubclass(RadioEngineV16, RadioEngineV15))
+
+    def test_v16_instantiation(self):
+        """V16 should instantiate without errors."""
+        engine = RadioEngineV16(seed=42, total_duration=10.0)
+        self.assertIsNotNone(engine)
+
+    def test_v16_has_family_tracking(self):
+        """V16 should have V12's family tracking."""
+        engine = RadioEngineV16(seed=42, total_duration=10.0)
+        self.assertIsInstance(engine._used_family_groups, set)
+        self.assertIsInstance(engine._family_groups, dict)
+        self.assertEqual(len(engine._family_groups), 5)
+
+    def test_v16_uses_expanded_instruments(self):
+        """V16 should use V12's 15-family instrument selection."""
+        engine = RadioEngineV16(seed=42, total_duration=10.0)
+        rng = random.Random(42)
+        voices = engine._choose_gm_instruments({}, 5, rng)
+        self.assertEqual(len(voices), 5)
+        families = {v['family'] for v in voices}
+        self.assertGreaterEqual(len(families), 3)
+
+    def test_v16_uses_original_synthesis(self):
+        """V16 _render_segment should use factory.synthesize_colored_note."""
+        engine = RadioEngineV16(seed=42, total_duration=10.0)
+        import inspect
+        src = inspect.getsource(engine._render_segment)
+        self.assertIn('factory.synthesize_colored_note', src)
+        self.assertNotIn('_synth_colored_note_np', src)
+
+    def test_v16_short_render(self):
+        """V16 should render a short clip successfully."""
+        engine = RadioEngineV16(seed=42, total_duration=2.0)
+        left, right = engine.render()
+        self.assertIsInstance(left, list)
+        self.assertIsInstance(right, list)
+        self.assertGreater(len(left), 0)
+
+
+class TestV15V16CLIArguments(unittest.TestCase):
+    """Tests for v15/v16 CLI argument support."""
+
+    def test_v15_in_choices(self):
+        """CLI should accept --version v15."""
+        import argparse
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--version', '-V',
+                          choices=['v7', 'v8', 'v9', 'v10', 'v11', 'v12', 'v13', 'v14', 'v15', 'v16'])
+        args = parser.parse_args(['--version', 'v15'])
+        self.assertEqual(args.version, 'v15')
+
+    def test_v16_in_choices(self):
+        """CLI should accept --version v16."""
+        import argparse
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--version', '-V',
+                          choices=['v7', 'v8', 'v9', 'v10', 'v11', 'v12', 'v13', 'v14', 'v15', 'v16'])
+        args = parser.parse_args(['--version', 'v16'])
+        self.assertEqual(args.version, 'v16')
 
 
 if __name__ == '__main__':

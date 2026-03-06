@@ -4,6 +4,51 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.16.0 — 2026-03-06 — Radio Engine v16: True Original V8 Synthesis + Expanded Palette
+
+### Summary
+
+Radio engine v16 restores the **original V8 synthesis** (`InstrumentFactory.synthesize_colored_note`)
+from git commit 348bf29, combined with V12's expanded 15-family instrument palette and 744 MIDI files.
+The current V8 class uses numpy-accelerated `_synth_colored_note_np()` (added in commit 45791bd for ~7x
+speedup) which produces subtly different audio. V16 gives the authentic original V8 sound with the
+richest instrument variety.
+
+### Changes
+
+- **Radio Engine v16** (`apps/audio/radio_engine.py`):
+  - `RadioEngineV16(RadioEngineV15)` — inherits from V15 (true V8 synthesis)
+  - Original `factory.synthesize_colored_note()` path (pure Python, no numpy)
+  - V12's 15 instrument family pools with variety enforcement
+  - V12's density-aware tempo (1.1x-1.7x)
+  - All 744 MIDI files, 537 instruments
+  - Serial rendering (V8's streaming path)
+- **Tests**: V16 unit tests added
+- **MP3s**: Two 30-minute renders (seed 42 + random seed)
+
+---
+
+## v0.15.0 — 2026-03-06 — Radio Engine v15: True Original V8 Synthesis + V12 Tempo
+
+### Summary
+
+Radio engine v15 restores the **original V8 synthesis** (`InstrumentFactory.synthesize_colored_note`)
+from git commit 348bf29, with V12's density-aware tempo. Like V13 but uses the authentic original
+synthesis path instead of the numpy-accelerated version.
+
+### Changes
+
+- **Radio Engine v15** (`apps/audio/radio_engine.py`):
+  - `RadioEngineV15(RadioEngineV8)` — inherits from V8
+  - Original `factory.synthesize_colored_note()` (pure Python, from 348bf29)
+  - V8's 5 instrument families, 537 instruments
+  - V12's density-aware tempo (1.1x-1.7x)
+  - Serial rendering
+- **Tests**: V15 unit tests added
+- **MP3s**: Two 30-minute renders (seed 42 + random seed)
+
+---
+
 ## v0.14.0 — 2026-03-06 — Radio Engine v14: Full Palette Serial Render
 
 ### Summary
