@@ -4,29 +4,27 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
-## v0.12.0 — 2026-03-06 — Radio Engine v12: Natural Instrument Character Overhaul
+## v0.12.0 — 2026-03-06 — Radio Engine v12: V8 Synthesis + Expanded Palette + Speed
 
 ### Summary
 
-Radio engine v12 returns to v8's natural instrument sound while keeping v11's mixing
-improvements. The primary goal is warm, acoustic-forward timbre with natural harmonic
-detuning and noise/breath layers for organic texture. A frequency ceiling at C6
-(1047 Hz) prevents ear-piercing highs, and a master lowpass at 7kHz tames brightness.
+Radio engine v12 returns to v8's proven `_synth_colored_note_np()` synthesis (the
+InstrumentFactory timbre blending that produces natural instrument character), combined
+with v9's expanded instrument catalog (15 families, 82 GM programs), v10's MIDI
+library (744 files from 26 composers), and v11's gain staging. Multiprocessing renders
+all 15 segments in parallel across available CPU cores (~3x speedup on 16 cores).
 
 ### Changes
 
 - **Radio Engine v12** (`apps/audio/radio_engine.py`):
-  - New `RadioEngineV12` class returning to natural instrument character
-  - Natural harmonic detuning for organic, less-synthetic sound
-  - Noise and breath layers added to synthesis for realism
-  - Frequency ceiling at C6 (1047 Hz) prevents ear-piercing high notes
-  - Acoustic instrument family bias: 70% acoustic, 30% synth instrument selection
-  - Reduced melody register offset (+7 semitones instead of +12)
-  - Master lowpass filter at 7kHz for warmth
-  - Every ensemble guaranteed a bass/foundation instrument
-  - Longer note durations for legato character
-  - Retains all v11 mixing improvements (per-voice RMS normalization, soft-knee
-    limiting, consonance enforcement, bar-aligned rendering, orchestral roles)
+  - `RadioEngineV12(RadioEngineV8)` — inherits directly from V8
+  - Uses v8's `_synth_colored_note_np()` synthesis (InstrumentFactory blending)
+  - V9's 15 family pools with variety enforcement (min 3 families per segment)
+  - V10's MIDI library integration (827 sequences loaded)
+  - V11's GainStage with per-voice RMS normalization and master bus soft-knee limiting
+  - Tempo clamped to 1.1x-1.7x (density-aware: high-density epochs cap at 1.4-1.5x)
+  - Multiprocessing: `render_streaming_parallel()` with `mp.Pool`
+  - Top-level `_render_segment_worker()` for pickle-safe parallel rendering
   - CT timestamps in all script output
   - CLI `--version v12` support
 

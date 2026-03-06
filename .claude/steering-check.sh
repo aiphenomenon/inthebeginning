@@ -159,8 +159,8 @@ echo "             - If session interrupted, next agent reads committed plan"
 
 # 15. Audio engine quality gate (v12 is current)
 echo "[FAIL-CUE] Audio quality: When modifying radio_engine.py, verify:"
-echo "           - v12 natural instrument character (acoustic bias 70/30)"
-echo "           - Frequency ceiling at C6 (1047 Hz), master lowpass 7kHz"
+echo "           - v12 uses v8 synthesis (_synth_colored_note_np) + expanded palette"
+echo "           - Tempo clamped 1.1x-1.7x, multiprocessing parallel render"
 echo "           - Natural harmonic detuning + noise/breath layers"
 echo "           - Every ensemble has bass/foundation instrument"
 echo "           - Longer note durations for legato character"
