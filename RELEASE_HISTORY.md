@@ -4,6 +4,34 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.14.0 — 2026-03-06 — Radio Engine v14: Full Palette Serial Render
+
+### Summary
+
+Radio engine v14 combines V12's full instrument palette (15 families, 744 MIDI files)
+with V8/V13's clean serial rendering path (no per-segment limiting, no multiprocessing).
+User discovered that serial rendering eliminates the bitcrusher artifacts that plagued
+V12's parallel approach. V14 gives the richest instrument variety without audio artifacts.
+
+### Changes
+
+- **Radio Engine v14** (`apps/audio/radio_engine.py`):
+  - `RadioEngineV14(RadioEngineV8)` — inherits directly from V8
+  - V12's 15 instrument family pools with variety enforcement
+  - V12's density-aware tempo (1.1x-1.7x)
+  - V8's clean `_render_segment()` — no per-segment `master_limit`
+  - V8's serial `render_streaming()` — no multiprocessing
+  - All 744 MIDI files from 26 composers active
+- **Tests**: V14 unit tests added
+- **MP3s**: Two 30-minute renders (seed 42 + random seed)
+
+### Agent Activity
+
+- Serial rendering eliminates bitcrusher noise discovered in V12/V13 analysis
+- Full palette restoration from V12 with V8's clean audio pipeline
+
+---
+
 ## v0.13.0 — 2026-03-06 — Radio Engine v13: V8 Core Restoration with V12 Tempo
 
 ### Summary

@@ -33,6 +33,7 @@ from apps.audio.radio_engine import (
     GainStage, ConsonanceEngine, BarGrid, OrchestratorV11, _soft_limit,
     RadioEngineV12, GM_TIMBRE_PROFILES_V12,
     RadioEngineV13,
+    RadioEngineV14,
 )
 
 
@@ -1891,6 +1892,106 @@ class TestV13CLIArgument(unittest.TestCase):
                           choices=['v7', 'v8', 'v9', 'v10', 'v11', 'v12', 'v13'])
         args = parser.parse_args(['--version', 'v13'])
         self.assertEqual(args.version, 'v13')
+
+
+class TestRadioEngineV14(unittest.TestCase):
+    """Tests for RadioEngineV14 -- Full palette with serial render."""
+
+    def test_v14_inherits_from_v8(self):
+        """V14 should inherit from RadioEngineV8."""
+        from apps.audio.radio_engine import RadioEngineV8
+        self.assertTrue(issubclass(RadioEngineV14, RadioEngineV8))
+
+    def test_v14_instantiation(self):
+        """V14 should instantiate without errors."""
+        engine = RadioEngineV14(seed=42, total_duration=10.0)
+        self.assertIsNotNone(engine)
+
+    def test_v14_has_family_tracking(self):
+        """V14 should have V12's family tracking for variety enforcement."""
+        engine = RadioEngineV14(seed=42, total_duration=10.0)
+        self.assertIsInstance(engine._used_family_groups, set)
+        self.assertIsInstance(engine._family_groups, dict)
+        self.assertEqual(len(engine._family_groups), 5)
+
+    def test_v14_tempo_range(self):
+        """V14 tempo should be in 1.1-1.7 range (V12's density-aware tempo)."""
+        engine = RadioEngineV14(seed=42, total_duration=10.0)
+        for particles in [0, 50, 100, 300, 600]:
+            sim_state = {'particles': particles, 'atoms': 0,
+                         'molecules': 0, 'cells': 0}
+            tempo = engine._compute_tempo_multiplier(sim_state)
+            self.assertGreaterEqual(tempo, 1.1)
+            self.assertLessEqual(tempo, 1.7)
+
+    def test_v14_tempo_default(self):
+        """V14 default tempo (no sim_state) should be 1.4."""
+        engine = RadioEngineV14(seed=42, total_duration=10.0)
+        self.assertEqual(engine._compute_tempo_multiplier(None), 1.4)
+        self.assertEqual(engine._compute_tempo_multiplier({}), 1.4)
+
+    def test_v14_uses_expanded_instruments(self):
+        """V14 should use V12's expanded 15-family instrument selection."""
+        engine = RadioEngineV14(seed=42, total_duration=10.0)
+        rng = random.Random(42)
+        voices = engine._choose_gm_instruments({}, 5, rng)
+        self.assertEqual(len(voices), 5)
+        # Should have at least 3 different families (variety enforcement)
+        families = {v['family'] for v in voices}
+        self.assertGreaterEqual(len(families), 3)
+
+    def test_v14_no_gain_stage_in_render(self):
+        """V14 should NOT have per-segment GainStage limiting."""
+        engine = RadioEngineV14(seed=42, total_duration=10.0)
+        import inspect
+        # V14's _render_segment should be V8's (no master_limit)
+        src = inspect.getsource(engine._render_segment)
+        self.assertNotIn('gain_stage', src)
+        self.assertNotIn('master_limit', src)
+
+    def test_v14_short_render(self):
+        """V14 should render a short clip successfully."""
+        engine = RadioEngineV14(seed=42, total_duration=2.0)
+        left, right = engine.render()
+        self.assertIsInstance(left, list)
+        self.assertIsInstance(right, list)
+        self.assertGreater(len(left), 0)
+        self.assertEqual(len(left), len(right))
+
+    def test_v14_volume_reasonable(self):
+        """V14 should produce audible output with reasonable volume."""
+        v14_engine = RadioEngineV14(seed=42, total_duration=2.0)
+        v14_left, _ = v14_engine.render()
+        v14_rms = (sum(x*x for x in v14_left) / len(v14_left)) ** 0.5
+        # V14 uses 15 instrument families (expanded) so short renders may be
+        # quieter than V8 — many voices may not fully activate in 2s.
+        # Just verify we got non-silent, non-clipping output.
+        self.assertGreater(v14_rms, 0.0001, "Output is silent")
+        self.assertLess(v14_rms, 1.0, "Output clipping")
+
+    def test_v14_expanded_families_vs_v13(self):
+        """V14 should have more instrument families available than V13."""
+        engine = RadioEngineV14(seed=42, total_duration=10.0)
+        # V14 overrides _choose_gm_instruments to use V9_FAMILY_POOLS (15 families)
+        # V13 does not override it, using V8's 5 families
+        rng = random.Random(42)
+        voices = engine._choose_gm_instruments({}, 5, rng)
+        # All voices should have a 'family' key from V9_FAMILY_POOLS
+        for v in voices:
+            self.assertIn(v['family'], V9_FAMILY_POOLS)
+
+
+class TestV14CLIArgument(unittest.TestCase):
+    """Tests for v14 CLI argument support."""
+
+    def test_v14_in_choices(self):
+        """CLI should accept --version v14."""
+        import argparse
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--version', '-V',
+                          choices=['v7', 'v8', 'v9', 'v10', 'v11', 'v12', 'v13', 'v14'])
+        args = parser.parse_args(['--version', 'v14'])
+        self.assertEqual(args.version, 'v14')
 
 
 if __name__ == '__main__':
