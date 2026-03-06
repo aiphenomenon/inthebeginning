@@ -97,12 +97,34 @@ Key requirements:
 - Verify frequency ceiling enforcement
 - Verify acoustic instrument bias
 
+## REVISION: User Rejected Initial Approach (Turn 2)
+
+**Time**: 2026-03-06 19:40 UTC (13:40 CT)
+
+User said: "That's not so great. Go back to the v8 approach."
+
+### Revised Architecture
+- `RadioEngineV12(RadioEngineV8)` — inherits directly from V8, NOT V11
+- Uses V8's `_synth_colored_note_np()` synthesis (InstrumentFactory timbre blending)
+- Removed: `_synth_gm_note_v12_np()`, `V12_ACOUSTIC_FAMILIES`, `V12_MAX_MIDI_NOTE`,
+  `V12_MIN_MIDI_NOTE` — all deleted
+- Kept: `GM_TIMBRE_PROFILES_V12` dict (reference data)
+- Added: V9 family pools, V10 MIDI library, V11 gain staging, multiprocessing
+- Tempo: 1.1x-1.7x (density-aware capping)
+- Parallel render: `render_streaming_parallel()` with `mp.Pool(15 workers)`
+
+### Key Fix (Turn 3)
+- `render_streaming_parallel()` passed `None` as mood to TTS injection — crash
+- Fixed with lightweight mood stand-in object with seeded RNG
+
 ## Milestone Tracking
 
-- [ ] Future memories plan written and pushed
-- [ ] V12 code implementation
-- [ ] Tests passing
-- [ ] MP3 generation (seed 42)
+- [x] Future memories plan written and pushed
+- [x] V12 code implementation (initial)
+- [x] V12 code revision (v8 synthesis approach)
+- [x] TTS crash fix
+- [x] Tests updated for revised approach
+- [ ] MP3 generation (seed 42) — rendering in progress
 - [ ] MP3 generation (random seed)
 - [ ] Steering updates
 - [ ] Session log updates
@@ -111,7 +133,11 @@ Key requirements:
 ## Recovery Notes
 
 If session is interrupted:
-- The v12 code lives in apps/audio/radio_engine.py after the v11 section
-- Key new items: _synth_gm_note_v12_np(), RadioEngineV12, generate_radio_v12_mp3()
-- All v8-v11 code remains intact for comparison
+- RadioEngineV12 inherits from RadioEngineV8 (NOT V11)
+- Synthesis: v8's _synth_colored_note_np() + InstrumentFactory
+- Key methods: _compute_tempo_multiplier(), _choose_gm_instruments() (overridden
+  to use V9_FAMILY_POOLS), _render_segment() (calls super then gain staging),
+  render_streaming_parallel(), _render_segment_worker() (top-level for mp)
+- generate_radio_v12_mp3() uses parallel render for duration > 660s
 - The branch is claude/resume-v9-document-v8-6yhAe
+- Commits: ffa8a13 (revision), 8f70739 (TTS fix + test updates)
