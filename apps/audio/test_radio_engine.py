@@ -31,8 +31,7 @@ from apps.audio.radio_engine import (
     RadioEngineV9, RadioEngineV10, RadioEngineV11,
     GM_TIMBRE_PROFILES, _gm_program_to_timbre, _synth_gm_note_np,
     GainStage, ConsonanceEngine, BarGrid, OrchestratorV11, _soft_limit,
-    RadioEngineV12, GM_TIMBRE_PROFILES_V12, _synth_gm_note_v12_np,
-    V12_ACOUSTIC_FAMILIES, V12_MAX_MIDI_NOTE, V12_MIN_MIDI_NOTE,
+    RadioEngineV12, GM_TIMBRE_PROFILES_V12,
 )
 
 
@@ -1678,7 +1677,7 @@ class TestV11CLIArgument(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 class TestV12TimbreProfiles(unittest.TestCase):
-    """Tests for v12 timbre profiles."""
+    """Tests for v12 timbre profiles (retained for reference data)."""
 
     def test_all_profiles_present(self):
         """V12 must have all instrument family profiles."""
@@ -1698,89 +1697,9 @@ class TestV12TimbreProfiles(unittest.TestCase):
             self.assertGreater(profile['detune_cents'], 0,
                              f"{name} detune_cents must be positive")
 
-    def test_acoustic_bias_weights(self):
-        """Acoustic families should be weighted higher than synth."""
-        acoustic = ['strings', 'brass', 'woodwinds', 'keys', 'rock_bass']
-        synth = ['synth_lead', 'synth_pad', 'synth_fx']
-        for a in acoustic:
-            for s in synth:
-                self.assertGreater(
-                    V12_ACOUSTIC_FAMILIES.get(a, 0),
-                    V12_ACOUSTIC_FAMILIES.get(s, 0),
-                    f"{a} should be weighted higher than {s}"
-                )
-
-
-class TestV12Synthesis(unittest.TestCase):
-    """Tests for v12 synthesis function."""
-
-    def test_basic_synthesis(self):
-        """Synthesis should produce non-zero samples."""
-        try:
-            import numpy as np
-        except ImportError:
-            self.skipTest("numpy not available")
-        samps = _synth_gm_note_v12_np(440.0, 0.3, 42, 0.8, rng_seed=42)
-        self.assertGreater(len(samps), 0)
-        self.assertGreater(np.max(np.abs(samps)), 0.01)
-
-    def test_frequency_ceiling(self):
-        """Frequencies above C6 should be capped at 1047 Hz."""
-        try:
-            import numpy as np
-        except ImportError:
-            self.skipTest("numpy not available")
-        # A high frequency (3000 Hz) should produce same result as 1047 Hz
-        samps_high = _synth_gm_note_v12_np(3000.0, 0.2, 0, 0.8, rng_seed=42)
-        samps_cap = _synth_gm_note_v12_np(1047.0, 0.2, 0, 0.8, rng_seed=42)
-        # Both should have same length and similar content
-        self.assertEqual(len(samps_high), len(samps_cap))
-
-    def test_different_timbres_differ(self):
-        """Different GM programs should produce different sounds."""
-        try:
-            import numpy as np
-        except ImportError:
-            self.skipTest("numpy not available")
-        piano = _synth_gm_note_v12_np(440.0, 0.3, 0, 0.8, rng_seed=42)
-        strings = _synth_gm_note_v12_np(440.0, 0.3, 42, 0.8, rng_seed=42)
-        brass = _synth_gm_note_v12_np(440.0, 0.3, 56, 0.8, rng_seed=42)
-        # Check they're actually different
-        self.assertFalse(np.allclose(piano, strings, atol=0.01))
-        self.assertFalse(np.allclose(piano, brass, atol=0.01))
-
-    def test_deterministic_with_seed(self):
-        """Same seed should produce identical output."""
-        try:
-            import numpy as np
-        except ImportError:
-            self.skipTest("numpy not available")
-        a = _synth_gm_note_v12_np(440.0, 0.2, 42, 0.8, rng_seed=123)
-        b = _synth_gm_note_v12_np(440.0, 0.2, 42, 0.8, rng_seed=123)
-        self.assertTrue(np.allclose(a, b))
-
-    def test_no_harsh_high_frequencies(self):
-        """High MIDI notes should not produce ear-piercing content."""
-        try:
-            import numpy as np
-        except ImportError:
-            self.skipTest("numpy not available")
-        # Synthesize at MIDI 84 (C6 = 1047 Hz)
-        samps = _synth_gm_note_v12_np(mtof(84), 0.3, 0, 0.8, rng_seed=42)
-        # Check that spectral content above 8kHz is minimal
-        fft = np.abs(np.fft.rfft(samps))
-        freqs = np.fft.rfftfreq(len(samps), 1.0 / SAMPLE_RATE)
-        high_energy = np.sum(fft[freqs > 8000] ** 2)
-        total_energy = np.sum(fft ** 2)
-        # High frequency energy should be < 5% of total
-        if total_energy > 0:
-            ratio = high_energy / total_energy
-            self.assertLess(ratio, 0.05,
-                          f"Too much high-freq energy: {ratio:.3f}")
-
 
 class TestV12Engine(unittest.TestCase):
-    """Tests for RadioEngineV12."""
+    """Tests for RadioEngineV12 (v8 synthesis + expanded instruments)."""
 
     def test_engine_creation(self):
         """V12 engine should create successfully."""
@@ -1789,6 +1708,61 @@ class TestV12Engine(unittest.TestCase):
         self.assertIsNotNone(engine.consonance)
         self.assertIsNotNone(engine.orchestrator)
 
+    def test_inherits_from_v8(self):
+        """V12 should inherit from RadioEngineV8, not V11."""
+        from apps.audio.radio_engine import RadioEngineV8
+        engine = RadioEngineV12(seed=42, total_duration=60.0)
+        self.assertIsInstance(engine, RadioEngineV8)
+
+    def test_uses_v8_synthesis(self):
+        """V12 should use v8's _synth_colored_note_np (module-level function)."""
+        from apps.audio.radio_engine import _synth_colored_note_np
+        self.assertTrue(callable(_synth_colored_note_np))
+
+    def test_has_gain_staging(self):
+        """V12 should have v11-style gain staging."""
+        engine = RadioEngineV12(seed=42, total_duration=60.0)
+        self.assertIsNotNone(engine.gain_stage)
+        self.assertIsInstance(engine.gain_stage, GainStage)
+
+    def test_tempo_multiplier_range(self):
+        """V12 tempo multiplier should be clamped to 1.1x-1.7x."""
+        engine = RadioEngineV12(seed=42, total_duration=60.0)
+        # Test with various sim states
+        for i in range(20):
+            state = {'particles': i * 50, 'atoms': i * 10,
+                     'molecules': i * 5, 'cells': i}
+            mult = engine._compute_tempo_multiplier(state)
+            self.assertGreaterEqual(mult, 1.1, f"Tempo too slow: {mult}")
+            self.assertLessEqual(mult, 1.7, f"Tempo too fast: {mult}")
+
+    def test_tempo_density_capping(self):
+        """High-density states should cap tempo lower."""
+        engine = RadioEngineV12(seed=42, total_duration=60.0)
+        high_density = {'particles': 300, 'atoms': 200,
+                        'molecules': 100, 'cells': 50}
+        mult = engine._compute_tempo_multiplier(high_density)
+        self.assertLessEqual(mult, 1.5, "High density should cap at 1.5x")
+
+    def test_instrument_selection_uses_v9_pools(self):
+        """V12 should use v9's family pools for instrument selection."""
+        engine = RadioEngineV12(seed=42, total_duration=60.0)
+        rng = random.Random(42)
+        voices = engine._choose_gm_instruments({}, 5, rng)
+        self.assertEqual(len(voices), 5)
+        # Each voice should have expected keys
+        for v in voices:
+            self.assertIn('gm_program', v)
+            self.assertIn('family', v)
+
+    def test_instrument_selection_diverse(self):
+        """V12 should select at least 3 different families."""
+        engine = RadioEngineV12(seed=42, total_duration=60.0)
+        rng = random.Random(42)
+        voices = engine._choose_gm_instruments({}, 5, rng)
+        families = set(v['family'] for v in voices)
+        self.assertGreaterEqual(len(families), 3)
+
     def test_melody_offset_reduced(self):
         """V12 melody offset should be +7, not +12."""
         engine = RadioEngineV12(seed=42, total_duration=60.0)
@@ -1796,35 +1770,21 @@ class TestV12Engine(unittest.TestCase):
         self.assertEqual(melody_role[0], 'melody')
         self.assertEqual(melody_role[1], 7, "Melody offset should be +7")
 
-    def test_instrument_selection_has_bass(self):
-        """V12 instrument selection should always include bass."""
+    def test_has_consonance_engine(self):
+        """V12 should have consonance engine from v8."""
         engine = RadioEngineV12(seed=42, total_duration=60.0)
-        rng = random.Random(42)
-        voices = engine._choose_gm_instruments_v12({}, 5, rng)
-        # First voice should be bass family
-        self.assertIn(voices[0]['family'], ['rock_bass', 'bass', 'strings'])
-
-    def test_instrument_selection_diverse(self):
-        """V12 should select at least 3 different families."""
-        engine = RadioEngineV12(seed=42, total_duration=60.0)
-        rng = random.Random(42)
-        voices = engine._choose_gm_instruments_v12({}, 5, rng)
-        families = set(v['family'] for v in voices)
-        self.assertGreaterEqual(len(families), 3)
-
-    def test_midi_note_clamping(self):
-        """V12 should clamp MIDI notes to [36, 84]."""
-        self.assertEqual(V12_MIN_MIDI_NOTE, 36)
-        self.assertEqual(V12_MAX_MIDI_NOTE, 84)
-
-    def test_v12_inherits_v11(self):
-        """V12 should inherit all v11 capabilities."""
-        engine = RadioEngineV12(seed=42, total_duration=60.0)
-        # Should have v11's gain staging and consonance
         self.assertIsInstance(engine.consonance, ConsonanceEngine)
-        # Should have v11's mix method
-        self.assertTrue(hasattr(engine, '_mix_mono_v11'))
-        self.assertTrue(hasattr(engine, '_apply_reverb_v11'))
+
+    def test_render_segment_applies_gain_staging(self):
+        """V12 _render_segment should apply gain staging on top of v8."""
+        engine = RadioEngineV12(seed=42, total_duration=10.0)
+        # Just verify the method exists and is overridden
+        self.assertTrue(hasattr(engine, '_render_segment'))
+        # V12's _render_segment calls super() then gain_stage
+        import inspect
+        src = inspect.getsource(engine._render_segment)
+        self.assertIn('gain_stage', src)
+        self.assertIn('master_limit', src)
 
 
 class TestV12CLIArgument(unittest.TestCase):

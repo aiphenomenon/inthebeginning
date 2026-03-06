@@ -5553,9 +5553,16 @@ class RadioEngineV12(RadioEngineV8):
             # TTS injection
             if seg_idx in self.tts_transitions:
                 trans_start = seg_global_start + seg_len - morph_samples
+                # Create a lightweight mood stand-in with an RNG
+                seg_info = self.segments[seg_idx]
+                _tts_mood = type('_Mood', (), {
+                    'rng': random.Random(self.seed + seg_idx)
+                })()
+                epoch_idx = EPOCH_ORDER.index(seg_info.get('epoch', 'Planck')) \
+                    if seg_info.get('epoch') in EPOCH_ORDER else 0
                 self._inject_tts_into_buf(
                     buf_left, buf_right, buf_global_start,
-                    trans_start, total_samples, None, 0
+                    trans_start, total_samples, _tts_mood, epoch_idx
                 )
 
             # Flush completed audio
