@@ -4,6 +4,79 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.8.0 — 2026-03-04 — Radio Engine v8: Orchestral Layering + Numpy Acceleration
+
+### Summary
+
+Radio engine v8 with orchestral layering: simultaneous multi-instrument sections
+(~75% of segments) with occasional solo passages (~25%) for variety, anti-hiss
+spectral filtering (cascaded lowpass at 10kHz/14kHz), subsonic removal (2-pole
+highpass at 30Hz), note texture smoothing, time signature control (70%+ simple
+with guaranteed compound/complex per 10-minute window), note duration quantization
+to bar structure, and numpy-accelerated synthesis achieving ~7x speedup.
+
+### Changes
+
+- **Radio Engine v8** (`apps/audio/radio_engine.py`):
+  - New `RadioEngineV8` class extending `RadioEngine` with orchestral layering
+  - Simultaneous multi-instrument orchestral sections (~75% of segments)
+  - Solo instrument alternation (~25%) for variety and contrast
+  - Consonant octave offsets between simultaneous voices (-12, 0, 0, 12, 24 semitones)
+  - `NoteSmoother` class: post-synthesis buffer-level lowpass for smoother note textures
+  - `AntiHissFilter` class: cascaded lowpass at 10kHz/14kHz for spectral cleanliness
+  - `SubsonicFilter` class: 2-pole highpass at 30Hz removing subsonic rumble
+  - `NoteQuantizer` class: duration quantization to fit bar structure (snap to beat grid)
+  - Time signature rules: 70-80% simple (2/4, 3/4, 4/4), guaranteed compound/complex
+    (6/8, 5/4, 7/8) in every 10-minute window per Wikipedia classification
+  - CLI: `--version v8` flag (v7 remains default)
+- **Numpy-accelerated synthesis** (`apps/audio/radio_engine.py`):
+  - Vectorized ADSR envelope generation using numpy arrays
+  - Vectorized harmonic synthesis (all harmonics computed in parallel)
+  - Vectorized colored note generation replacing per-sample Python loops
+  - ~7x speedup: 30-minute MP3 renders in ~6 minutes (was ~60 minutes)
+  - Falls back gracefully to pure-Python when numpy unavailable
+- **17 new v8 tests** in `test_radio_engine.py`:
+  - `NoteSmoother` output validation
+  - `AntiHissFilter` frequency response verification
+  - `SubsonicFilter` low-frequency attenuation
+  - `NoteQuantizer` beat grid snapping
+  - `RadioEngineV8` instantiation and orchestral section generation
+  - Time signature distribution validation (70%+ simple)
+  - Compound/complex time signature guarantee per 10-minute window
+  - All numpy acceleration paths tested
+- **30-minute cosmic radio v8 MP3** (`cosmic_radio_v8.mp3`):
+  - Seed 42, 1800 seconds, rendered with numpy acceleration
+  - 73% simple time signatures (11/15 segments)
+
+### Test Results
+
+- Python reference: 400 passed
+- Audio radio engine: 97 passed (80 v7 + 17 new v8)
+- Audio composer: 67 passed
+- Audio music engine: 62 passed
+- Total quick tests: 626+
+
+### Files Created
+
+- `apps/audio/cosmic_radio_v8.mp3` — 30-minute cosmic radio v8 (~41 MB)
+
+### Files Modified
+
+- `apps/audio/radio_engine.py` — +1,200 lines: RadioEngineV8, NoteSmoother,
+  AntiHissFilter, SubsonicFilter, NoteQuantizer, numpy acceleration
+- `apps/audio/test_radio_engine.py` — +193 lines: 17 new v8 tests
+
+### Agent Activity
+
+- Session: `018qG8DYYWiDnmYdJZjN5GqX` (Claude Code native app)
+- Branch: `claude/ast-physics-simulator-IWFs4`
+- 3 commits: `348bf29`, `45791bd`, `88a543d`
+- Note: Release notes and session log were not generated during the original session
+  due to a UI bug in the Claude Code iOS app that caused the session to hang.
+  This entry was reverse-engineered from git history on 2026-03-06.
+
+---
+
 ## v0.7.0 — 2026-03-03 — Radio Engine v7 + Comprehensive Markdown Audit
 
 ### Summary
