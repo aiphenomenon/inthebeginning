@@ -4,6 +4,52 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.11.0 — 2026-03-06 — Radio Engine v11: Comprehensive Audio Quality Overhaul
+
+### Summary
+
+Radio engine v11 addresses 19 audio quality issues identified through deep code
+review. The primary fix resolves the "radio static at full volume" effect caused by
+pan parameter overflow in `_mix_mono` which produced phase-inverted channels. V11
+introduces per-voice RMS normalization, master bus soft-knee limiting, inter-voice
+consonance enforcement, bar-aligned rendering, and orchestral role assignment.
+
+### Changes
+
+- **Radio Engine v11** (`apps/audio/radio_engine.py`):
+  - New `RadioEngineV11` class extending `RadioEngineV10`
+  - `GainStage`: Per-voice RMS normalization + master bus soft-knee limiting
+  - `ConsonanceEngine`: Inter-voice consonance scoring (Helmholtz model) with
+    iterative adjustment to ensure composite harmony exceeds 0.55 threshold
+  - `BarGrid`: Absolute time grid ensuring note onsets and rondo sections align
+    to 16th-note metric positions
+  - `OrchestratorV11`: Orchestral role assignment (foundation, harmony_low,
+    harmony_mid, melody, color) with distinct register offsets and gain weights
+  - `_soft_limit()`: Soft-knee limiter replacing `math.tanh` in streaming renderer
+  - `_mix_mono_v11()`: Separated pan [-1,1] and gain parameters (fixes phase inversion)
+  - `_apply_reverb_v11()`: Reduced comb feedback (0.55-0.65), pre-reverb 150Hz highpass
+  - `_apply_early_reflections_v11()`: Reduced amplitudes (0.05-0.20)
+  - Compression applied AFTER reverb (fixes pumping effect)
+  - Minimum MIDI note raised to 36/C2 (prevents subsonic fundamentals)
+  - Anti-click fades increased to 5ms (from 2ms)
+  - Crossfade duration extended to 4-6s (from 2-4s)
+  - Voice leading: smooth chord transitions (min-movement algorithm)
+  - CLI `--version v11` support
+  - `generate_radio_v11_mp3()` helper function
+- **Tests** (`apps/audio/test_radio_engine.py`):
+  - 25 new tests across 7 test classes for V11 components
+  - Phase inversion verification test
+  - Consonance scoring and adjustment tests
+  - Bar grid alignment tests
+
+### Agent Activity
+- Session: claude/resume-v9-document-v8-6yhAe
+- Agent: Claude Opus 4.6
+- Files created: 1 (session log)
+- Files modified: 3 (radio_engine.py, test_radio_engine.py, RELEASE_HISTORY.md)
+
+---
+
 ## v0.10.0 — 2026-03-06 — Radio Engine v10: GM-Timbre-Aware Synthesis + Expanded Library
 
 ### Summary

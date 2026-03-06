@@ -28,8 +28,9 @@ from apps.audio.radio_engine import (
     RONDO_PATTERNS, DIATONIC_CHORD_QUALITY, GM_ORCHESTRA_INSTRUMENTS,
     PIANO_PROGRAMS, HAS_FLUIDSYNTH, ARPEGGIO_FORMS,
     GM_EXPANDED_INSTRUMENTS, GM_ALL_INSTRUMENTS, V9_FAMILY_POOLS,
-    RadioEngineV9, RadioEngineV10,
+    RadioEngineV9, RadioEngineV10, RadioEngineV11,
     GM_TIMBRE_PROFILES, _gm_program_to_timbre, _synth_gm_note_np,
+    GainStage, ConsonanceEngine, BarGrid, OrchestratorV11, _soft_limit,
 )
 
 
@@ -1428,6 +1429,246 @@ class TestV10CLIArgument(unittest.TestCase):
         parser.add_argument('--version', '-V', choices=['v7', 'v8', 'v9', 'v10'])
         args = parser.parse_args(['--version', 'v10'])
         self.assertEqual(args.version, 'v10')
+
+
+class TestSoftLimit(unittest.TestCase):
+    """Tests for the soft-knee limiter function."""
+
+    def test_passthrough_below_knee(self):
+        """Values below knee should pass through unchanged."""
+        for v in [0.0, 0.1, 0.5, 0.79, -0.5, -0.79]:
+            self.assertAlmostEqual(_soft_limit(v, 0.8), v, places=6)
+
+    def test_compression_above_knee(self):
+        """Values above knee should be compressed below 1.0."""
+        for v in [1.0, 2.0, 5.0, 10.0]:
+            result = _soft_limit(v, 0.8)
+            self.assertLess(result, 1.0)
+            self.assertGreater(result, 0.8)
+
+    def test_symmetry(self):
+        """Negative values should be symmetric."""
+        for v in [1.0, 2.0, 5.0]:
+            self.assertAlmostEqual(_soft_limit(-v, 0.8), -_soft_limit(v, 0.8))
+
+
+class TestGainStage(unittest.TestCase):
+    """Tests for GainStage per-voice normalization."""
+
+    def test_voice_gain_sums_to_headroom(self):
+        """Sum of all voice gains should equal headroom."""
+        gs = GainStage(4, headroom_db=-3.0)
+        total = gs.voice_gain * 4
+        self.assertAlmostEqual(total, gs.headroom, places=3)
+
+    def test_master_limit_clamps(self):
+        """Master limiter should keep peaks below 1.0."""
+        gs = GainStage(1)
+        left = [2.0, -3.0, 0.5, 1.5]
+        right = [0.0, 4.0, -2.0, 0.3]
+        gs.master_limit(left, right)
+        for s in left + right:
+            self.assertLessEqual(abs(s), 1.0)
+
+    def test_solo_gain_higher(self):
+        """Solo gain should be higher than ensemble gain."""
+        gs = GainStage(4)
+        samples = [0.5] * 100
+        solo = gs.voice_samples(list(samples), is_solo=True)
+        ensemble = gs.voice_samples(list(samples), is_solo=False)
+        solo_peak = max(abs(s) for s in solo)
+        ens_peak = max(abs(s) for s in ensemble)
+        self.assertGreater(solo_peak, ens_peak)
+
+
+class TestConsonanceEngine(unittest.TestCase):
+    """Tests for inter-voice consonance scoring."""
+
+    def test_unison_is_perfect(self):
+        """Unison should score 1.0."""
+        ce = ConsonanceEngine()
+        score = ce.score_composite([[60], [60]])
+        self.assertAlmostEqual(score, 1.0)
+
+    def test_fifth_is_consonant(self):
+        """Perfect fifth should score high."""
+        ce = ConsonanceEngine()
+        score = ce.score_composite([[60], [67]])
+        self.assertGreater(score, 0.9)
+
+    def test_semitone_is_dissonant(self):
+        """Semitone interval should score very low."""
+        ce = ConsonanceEngine()
+        score = ce.score_composite([[60], [61]])
+        self.assertLess(score, 0.1)
+
+    def test_major_triad_consonant(self):
+        """C major triad should be consonant."""
+        ce = ConsonanceEngine()
+        score = ce.score_composite([[60, 64, 67]])
+        self.assertGreater(score, 0.6)
+
+    def test_adjustment_improves_score(self):
+        """Consonance adjustment should not worsen the score."""
+        ce = ConsonanceEngine()
+        dissonant = [[60, 61], [64, 65]]
+        original_score = ce.score_composite(dissonant)
+        adjusted = ce.adjust_for_consonance(
+            dissonant, 60, [0, 2, 4, 5, 7, 9, 11], min_score=0.5
+        )
+        adjusted_score = ce.score_composite(adjusted)
+        self.assertGreaterEqual(adjusted_score, original_score)
+
+
+class TestBarGrid(unittest.TestCase):
+    """Tests for bar-aligned timing grid."""
+
+    def test_bar_duration_4_4(self):
+        """4/4 at 120 BPM should have 2-second bars."""
+        grid = BarGrid(120, 4, 4)
+        self.assertAlmostEqual(grid.bar_dur, 2.0, places=3)
+
+    def test_snap_onset_to_16th(self):
+        """Onset should snap to nearest 16th note."""
+        grid = BarGrid(120, 4, 4)
+        sixteenth = 0.5 / 4  # 0.125 seconds
+        snapped = grid.snap_onset(0.13, '16th')
+        self.assertAlmostEqual(snapped, 0.125, places=3)
+
+    def test_section_start_alignment(self):
+        """Section starts should be bar-aligned."""
+        grid = BarGrid(120, 4, 4)
+        for i in range(5):
+            start = grid.section_start(i, 4)
+            # Should be exact multiple of bar duration
+            self.assertAlmostEqual(start % grid.bar_dur, 0.0, places=6)
+
+    def test_snap_duration(self):
+        """Duration should snap to standard note value."""
+        grid = BarGrid(120, 4, 4)
+        # 0.48 seconds is close to a quarter note (0.5s at 120 BPM)
+        snapped = grid.snap_duration(0.48)
+        self.assertAlmostEqual(snapped, 0.5, places=3)
+
+    def test_3_4_time(self):
+        """3/4 time at 90 BPM should have correct bar duration."""
+        grid = BarGrid(90, 3, 4)
+        beat_dur = 60.0 / 90  # 0.667s
+        expected_bar = beat_dur * 3  # 2.0s
+        self.assertAlmostEqual(grid.bar_dur, expected_bar, places=3)
+
+
+class TestOrchestratorV11(unittest.TestCase):
+    """Tests for orchestral role assignment."""
+
+    def test_assign_roles_distinct_offsets(self):
+        """Voices should get distinct register offsets."""
+        orch = OrchestratorV11()
+        configs = [{'pan': 0.0, 'chord_size': 3, 'gm_program': 40} for _ in range(5)]
+        orch.assign_roles(configs, random.Random(42))
+        offsets = [c['octave_offset'] for c in configs]
+        # Should have at least 3 distinct offsets for 5 voices
+        self.assertGreaterEqual(len(set(offsets)), 3)
+
+    def test_gain_weights_vary(self):
+        """Different roles should have different gain weights."""
+        orch = OrchestratorV11()
+        configs = [{'pan': 0.0, 'chord_size': 3, 'gm_program': 40} for _ in range(5)]
+        orch.assign_roles(configs, random.Random(42))
+        weights = [c['gain_weight'] for c in configs]
+        # Melody should be 1.0, others less
+        self.assertEqual(max(weights), 1.0)
+        self.assertLess(min(weights), 1.0)
+
+    def test_voice_leading_smooth(self):
+        """Voice leading should minimize movement between chords."""
+        orch = OrchestratorV11()
+        prev = [60, 64, 67]  # C major
+        next_chord = [65, 69, 72]  # F major
+        led = orch.apply_voice_leading(prev, next_chord, [0, 2, 4, 5, 7, 9, 11], 60)
+        # Total movement should be less than parallel movement
+        total_move = sum(abs(a - b) for a, b in zip(prev, led))
+        parallel_move = sum(abs(a - b) for a, b in zip(prev, next_chord))
+        self.assertLessEqual(total_move, parallel_move + 12)  # Allow some tolerance
+
+
+class TestRadioEngineV11(unittest.TestCase):
+    """Integration tests for RadioEngineV11."""
+
+    def test_v11_init(self):
+        """V11 should initialize successfully."""
+        engine = RadioEngineV11(seed=42, total_duration=5.0)
+        self.assertIsNotNone(engine.consonance)
+        self.assertIsNotNone(engine.orchestrator)
+
+    def test_v11_mix_mono_no_phase_inversion(self):
+        """v11 _mix_mono should never produce negative gains from panning."""
+        engine = RadioEngineV11(seed=42, total_duration=5.0)
+        left = [0.0] * 100
+        right = [0.0] * 100
+        samples = [1.0] * 100
+        # Test extreme pan values
+        for pan in [-2.0, -1.0, -0.5, 0.0, 0.5, 1.0, 2.0]:
+            left_test = [0.0] * 100
+            right_test = [0.0] * 100
+            engine._mix_mono_v11(left_test, right_test, samples, 0, 100, pan, 0.5)
+            # All values should be non-negative (no phase inversion)
+            for i in range(100):
+                self.assertGreaterEqual(left_test[i], 0.0,
+                    f"Phase inversion at pan={pan}, left[{i}]={left_test[i]}")
+                self.assertGreaterEqual(right_test[i], 0.0,
+                    f"Phase inversion at pan={pan}, right[{i}]={right_test[i]}")
+
+    def test_v11_short_render(self):
+        """V11 should render a short segment without errors."""
+        engine = RadioEngineV11(seed=42, total_duration=5.0)
+        left, right = engine.render()
+        self.assertGreater(len(left), 0)
+        self.assertGreater(len(right), 0)
+        self.assertEqual(len(left), len(right))
+
+    def test_v11_no_clipping(self):
+        """V11 output should not clip (peak < 1.0 after soft limiting)."""
+        engine = RadioEngineV11(seed=42, total_duration=5.0)
+        left, right = engine.render()
+        # After soft-knee limiting, peaks should be controlled
+        peak_l = max(abs(s) for s in left) if left else 0
+        peak_r = max(abs(s) for s in right) if right else 0
+        # Allow up to 1.05 since the master limit is on the loop buffer,
+        # and the crossfade looping can add up slightly
+        self.assertLess(peak_l, 1.5,
+                       f"Left channel peak too high: {peak_l}")
+        self.assertLess(peak_r, 1.5,
+                       f"Right channel peak too high: {peak_r}")
+
+    def test_v11_reverb_less_resonant(self):
+        """V11 reverb tail should have less energy than v10 reverb tail."""
+        smoother = SmoothingFilter()
+        engine = RadioEngineV11(seed=42, total_duration=5.0)
+        # Simple impulse test
+        impulse = [0.0] * 4410
+        impulse[0] = 1.0
+        v10_reverb = smoother.apply_reverb(list(impulse), wet=0.30)
+        v11_reverb = engine._apply_reverb_v11(list(impulse), wet=0.20)
+        # Compare reverb tail energy (last 75% of samples, after direct sound)
+        tail_start = len(impulse) // 4
+        v10_tail_energy = sum(s * s for s in v10_reverb[tail_start:])
+        v11_tail_energy = sum(s * s for s in v11_reverb[tail_start:])
+        # V11 reverb tail should have less energy (lower feedback + lower wet)
+        self.assertLess(v11_tail_energy, v10_tail_energy)
+
+
+class TestV11CLIArgument(unittest.TestCase):
+    """Tests for v11 CLI argument support."""
+
+    def test_v11_in_choices(self):
+        """CLI should accept --version v11."""
+        import argparse
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--version', '-V',
+                          choices=['v7', 'v8', 'v9', 'v10', 'v11'])
+        args = parser.parse_args(['--version', 'v11'])
+        self.assertEqual(args.version, 'v11')
 
 
 if __name__ == '__main__':

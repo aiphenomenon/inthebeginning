@@ -4363,6 +4363,1029 @@ class RadioEngineV10(RadioEngineV9):
         return left, right
 
 
+# ---------------------------------------------------------------------------
+# V11 HELPER CLASSES -- Gain staging, consonance, bar grid, orchestration
+# ---------------------------------------------------------------------------
+
+def _soft_limit(x, knee=0.8):
+    """Soft-knee limiter: transparent below knee, exponential saturation above.
+
+    Replaces hard tanh limiting which introduces harmonics and distortion.
+    """
+    ax = abs(x)
+    if ax <= knee:
+        return x
+    sign = 1.0 if x >= 0 else -1.0
+    excess = ax - knee
+    return sign * (knee + (1.0 - knee) * (1.0 - math.exp(-excess * 3.0)))
+
+
+class GainStage:
+    """Per-voice gain normalization with master bus limiting.
+
+    Solves the root cause of the 'radio static' effect: uncontrolled gain
+    accumulation from multiple voices summing into the same buffer.
+
+    Architecture:
+    - Each voice is RMS-normalized to a target level
+    - Voice gain = headroom / n_voices (prevents summing above headroom)
+    - Master bus applies brick-wall soft-knee limiting
+    """
+
+    def __init__(self, n_voices, headroom_db=-3.0):
+        self.n_voices = max(n_voices, 1)
+        self.headroom = 10 ** (headroom_db / 20.0)  # -3dB = 0.708
+        self.voice_gain = self.headroom / self.n_voices
+
+    def voice_samples(self, samples, target_rms=0.15, is_solo=False):
+        """Normalize a voice to target RMS, then apply voice gain.
+
+        For solo sections, use full headroom instead of per-voice gain.
+        """
+        gain = self.headroom * 0.8 if is_solo else self.voice_gain
+        n = len(samples)
+        if n == 0:
+            return samples
+
+        # Compute RMS
+        sum_sq = 0.0
+        for s in samples:
+            sum_sq += s * s
+        rms = math.sqrt(sum_sq / n)
+
+        if rms > 0.001:
+            scale = target_rms / rms
+            scale = min(scale, 2.0)  # Don't boost more than 6dB
+            return [s * scale * gain for s in samples]
+        return [s * gain for s in samples]
+
+    def master_limit(self, left, right, knee=0.80):
+        """Soft-knee limiter on the master bus.
+
+        Processes in-place for memory efficiency.
+        """
+        n = len(left)
+        for i in range(n):
+            left[i] = _soft_limit(left[i], knee)
+            right[i] = _soft_limit(right[i], knee)
+        return left, right
+
+
+class ConsonanceEngine:
+    """Inter-voice consonance scoring and adjustment.
+
+    Solves the dissonance problem: multiple voices independently building
+    chords that form dissonant composites when stacked vertically.
+    """
+
+    # Consonance scores per interval class (0=dissonant, 1=perfect)
+    INTERVAL_CONSONANCE = {
+        0: 1.0,    # unison
+        1: 0.05,   # minor 2nd (harsh)
+        2: 0.3,    # major 2nd
+        3: 0.7,    # minor 3rd
+        4: 0.75,   # major 3rd
+        5: 0.8,    # perfect 4th
+        6: 0.15,   # tritone
+        7: 0.95,   # perfect 5th
+        8: 0.7,    # minor 6th
+        9: 0.75,   # major 6th
+        10: 0.3,   # minor 7th
+        11: 0.2,   # major 7th
+    }
+
+    def score_composite(self, all_voice_notes):
+        """Score consonance of all notes sounding simultaneously.
+
+        Returns float in [0, 1] where higher = more consonant.
+        """
+        all_notes = []
+        for voice_notes in all_voice_notes:
+            all_notes.extend(voice_notes)
+        if len(all_notes) < 2:
+            return 1.0
+
+        total_score = 0.0
+        pairs = 0
+        for i in range(len(all_notes)):
+            for j in range(i + 1, len(all_notes)):
+                interval = abs(all_notes[i] - all_notes[j]) % 12
+                total_score += self.INTERVAL_CONSONANCE[interval]
+                pairs += 1
+        return total_score / max(pairs, 1)
+
+    def adjust_for_consonance(self, voice_chords, root, scale_intervals,
+                              min_score=0.55, snap_fn=None):
+        """Adjust voice chords until composite consonance exceeds threshold.
+
+        Iteratively adjusts the most dissonant voice by shifting notes
+        to more consonant intervals. Returns adjusted voice_chords.
+        """
+        if len(voice_chords) < 2:
+            return voice_chords
+
+        score = self.score_composite(voice_chords)
+        if score >= min_score:
+            return voice_chords
+
+        # Up to 5 adjustment passes
+        adjusted = [list(vc) for vc in voice_chords]
+        for _pass in range(5):
+            if score >= min_score:
+                break
+
+            # Find the voice with worst consonance against others
+            worst_voice = 0
+            worst_score = 1.0
+            for vi in range(len(adjusted)):
+                others = []
+                for vj in range(len(adjusted)):
+                    if vj != vi:
+                        others.append(adjusted[vj])
+                vs = self.score_composite([adjusted[vi]] + others)
+                if vs < worst_score:
+                    worst_score = vs
+                    worst_voice = vi
+
+            # Adjust worst voice: try shifting each note to consonant intervals
+            vc = adjusted[worst_voice]
+            # Collect all notes from other voices
+            other_notes = []
+            for vi in range(len(adjusted)):
+                if vi != worst_voice:
+                    other_notes.extend(adjusted[vi])
+
+            for ni in range(len(vc)):
+                note = vc[ni]
+                best_note = note
+                best_s = 0.0
+                # Try +/- 1, 2 semitones
+                for delta in [0, 1, -1, 2, -2]:
+                    candidate = note + delta
+                    if snap_fn:
+                        candidate = snap_fn(candidate, root, scale_intervals)
+                    candidate = clamp(candidate, 24, 108)
+                    # Score this candidate against other notes
+                    cs = 0.0
+                    for on in other_notes:
+                        iv = abs(candidate - on) % 12
+                        cs += self.INTERVAL_CONSONANCE[iv]
+                    cs /= max(len(other_notes), 1)
+                    if cs > best_s:
+                        best_s = cs
+                        best_note = candidate
+                vc[ni] = best_note
+
+            score = self.score_composite(adjusted)
+
+        return adjusted
+
+
+class BarGrid:
+    """Absolute time grid for bar/beat alignment.
+
+    Ensures all note onsets and section boundaries land on metric grid
+    positions, solving the beat/bar misalignment problem.
+    """
+
+    def __init__(self, tempo, beats_per_bar, beat_unit=4):
+        self.tempo = tempo
+        self.beats_per_bar = beats_per_bar
+        self.beat_unit = beat_unit
+        self.beat_dur = 60.0 / tempo
+        quarter_per_beat = 4.0 / beat_unit
+        self.bar_dur = self.beat_dur * beats_per_bar * quarter_per_beat
+        self.sixteenth = self.beat_dur / 4
+
+    def snap_onset(self, t_sec, resolution='16th'):
+        """Snap a time to the nearest grid position."""
+        if resolution == '16th':
+            grid = self.sixteenth
+        elif resolution == '8th':
+            grid = self.beat_dur / 2
+        elif resolution == 'beat':
+            grid = self.beat_dur
+        elif resolution == 'bar':
+            grid = self.bar_dur
+        else:
+            grid = self.sixteenth
+        if grid <= 0:
+            return t_sec
+        return round(t_sec / grid) * grid
+
+    def snap_duration(self, dur_sec, min_dur=None):
+        """Snap duration to nearest standard note value."""
+        if min_dur is None:
+            min_dur = self.sixteenth * 0.5
+        # Standard note durations relative to beat
+        standards = [
+            self.bar_dur,                    # whole
+            self.bar_dur * 0.75,             # dotted half
+            self.beat_dur * 2,               # half
+            self.beat_dur * 1.5,             # dotted quarter
+            self.beat_dur,                   # quarter
+            self.beat_dur * 0.75,            # dotted 8th
+            self.beat_dur * 0.5,             # 8th
+            self.beat_dur * 0.25,            # 16th
+        ]
+        # Find closest
+        best = dur_sec
+        best_diff = float('inf')
+        for s in standards:
+            if s < min_dur:
+                continue
+            diff = abs(dur_sec - s)
+            if diff < best_diff:
+                best_diff = diff
+                best = s
+        return best
+
+    def section_start(self, section_idx, bars_per_section):
+        """Get exact bar-aligned start time for a rondo section."""
+        return section_idx * bars_per_section * self.bar_dur
+
+    def bars_in_duration(self, duration_sec):
+        """How many complete bars fit in a duration."""
+        if self.bar_dur <= 0:
+            return 1
+        return max(1, int(duration_sec / self.bar_dur))
+
+
+class OrchestratorV11:
+    """Coordinates multiple voices into a coherent ensemble.
+
+    Assigns complementary orchestral roles with coordinated envelopes,
+    register separation, and gain weighting. Solves the 'instruments
+    not playing together' problem.
+    """
+
+    # (register_offset_semitones, rhythmic_role, gain_weight)
+    ROLE_CONFIGS = [
+        ('foundation',  -12, 'sustained', 0.80),
+        ('harmony_low',   0, 'chordal',   0.55),
+        ('harmony_mid',   0, 'chordal',   0.50),
+        ('melody',       12, 'melodic',   1.00),
+        ('color',        12, 'textural',  0.30),
+        ('bass_deep',   -24, 'sustained', 0.70),
+    ]
+
+    # GM families suited to each role
+    ROLE_FAMILIES = {
+        'foundation': ['strings', 'brass', 'bass', 'ensemble'],
+        'harmony_low': ['strings', 'reed', 'ensemble', 'organ'],
+        'harmony_mid': ['strings', 'reed', 'pipe', 'guitar'],
+        'melody': ['pipe', 'strings', 'brass', 'synth_lead'],
+        'color': ['synth_pad', 'mallets', 'world', 'ensemble'],
+        'bass_deep': ['bass', 'strings', 'organ', 'brass'],
+    }
+
+    def assign_roles(self, voice_configs, rng):
+        """Assign orchestral roles ensuring complementary voicing.
+
+        Each voice gets a distinct register offset and gain weight.
+        No two melody voices; at most one foundation voice.
+        """
+        n = len(voice_configs)
+        # For small ensembles, use a focused subset
+        if n <= 3:
+            roles = [self.ROLE_CONFIGS[0], self.ROLE_CONFIGS[1],
+                     self.ROLE_CONFIGS[3]]  # foundation, harmony, melody
+        elif n <= 4:
+            roles = [self.ROLE_CONFIGS[0], self.ROLE_CONFIGS[1],
+                     self.ROLE_CONFIGS[2], self.ROLE_CONFIGS[3]]
+        elif n <= 5:
+            roles = self.ROLE_CONFIGS[:5]
+        else:
+            roles = list(self.ROLE_CONFIGS)
+
+        for i, vc in enumerate(voice_configs):
+            role = roles[i % len(roles)]
+            vc['role_name'] = role[0]
+            vc['octave_offset'] = role[1]
+            vc['rhythmic_role'] = role[2]
+            vc['gain_weight'] = role[3]
+
+    def apply_voice_leading(self, prev_chord, next_chord, scale_intervals,
+                            root, snap_fn=None):
+        """Move each voice to the nearest available note in the new chord.
+
+        Minimizes total voice movement (smooth voice leading) instead of
+        jumping all voices in parallel.
+        """
+        if not prev_chord or not next_chord:
+            return next_chord
+
+        result = list(next_chord)
+        # For each note in prev_chord, find closest in next_chord
+        used = set()
+        for pi, pn in enumerate(prev_chord):
+            if pi >= len(result):
+                break
+            best_idx = -1
+            best_dist = 999
+            for ni, nn in enumerate(result):
+                if ni in used:
+                    continue
+                dist = abs(nn - pn)
+                if dist < best_dist:
+                    best_dist = dist
+                    best_idx = ni
+            if best_idx >= 0:
+                used.add(best_idx)
+                # If the movement is large (> octave), try octave transposition
+                if best_dist > 12 and snap_fn:
+                    candidate = result[best_idx]
+                    while candidate - pn > 6:
+                        candidate -= 12
+                    while pn - candidate > 6:
+                        candidate += 12
+                    candidate = clamp(candidate, 24, 108)
+                    if snap_fn:
+                        candidate = snap_fn(candidate, root, scale_intervals)
+                    result[best_idx] = candidate
+
+        return result
+
+
+# ---------------------------------------------------------------------------
+# V11 RADIO ENGINE -- Gain-staged, harmonically coherent, bar-aligned
+# ---------------------------------------------------------------------------
+class RadioEngineV11(RadioEngineV10):
+    """In The Beginning Radio v11 -- Comprehensive audio quality overhaul.
+
+    Fixes over v10:
+    - Per-voice RMS normalization + master bus soft-knee limiting (no clipping)
+    - Separated pan and gain in _mix_mono (fixes phase inversion from pan overflow)
+    - Inter-voice consonance engine (no random dissonance between voices)
+    - BarGrid-aligned rendering (notes/sections land on beat grid)
+    - Orchestral role assignment (voices complement, not compete)
+    - Reduced reverb resonance (comb feedback 0.55-0.65 down from 0.70-0.75)
+    - Pre-reverb highpass at 150 Hz to prevent low-frequency mud
+    - Reverb wet reduced to 0.20 (from 0.30)
+    - Early reflection amplitudes reduced (0.05-0.20 from 0.08-0.35)
+    - Quality-gated instrument selection (no noise_perc in harmonic voices)
+    - freq_mult restricted to [0.5, 1.0, 2.0] (no extreme register shifts)
+    - Longer anti-click fades (5ms, up from 2ms) for low-frequency content
+    - Soft-knee limiter replaces tanh distortion in streaming renderer
+    - Crossfade duration increased to 4-6 seconds
+    - Minimum MIDI note raised to 36 (C2) to prevent subsonic fundamentals
+    """
+
+    MORPH_DURATION = 8.0
+    FADE_IN_DURATION = 6.0
+    FADE_OUT_DURATION = 10.0
+
+    def __init__(self, seed=42, total_duration=1800.0):
+        super().__init__(seed=seed, total_duration=total_duration)
+        self.consonance = ConsonanceEngine()
+        self.orchestrator = OrchestratorV11()
+
+    def _mix_mono_v11(self, left, right, samples, offset, total_samples,
+                      pan, gain):
+        """Mix mono samples into stereo buffers with SEPARATED pan and gain.
+
+        Unlike v7-v10's _mix_mono which overloaded the pan parameter with
+        gain info (pan * v_gain * 4), this version keeps pan in [-1, 1]
+        and gain as a separate scalar.
+
+        Pan law: equal-power cosine/sine panning.
+        """
+        # Clamp pan to [-1, 1] to prevent phase inversion
+        pan = max(-1.0, min(1.0, pan))
+        # Equal-power pan law
+        l_gain = math.cos((pan + 1) * math.pi / 4) * gain
+        r_gain = math.sin((pan + 1) * math.pi / 4) * gain
+        n = len(samples)
+        end = min(offset + n, total_samples)
+        start = max(offset, 0)
+        for i in range(start, end):
+            si = i - offset
+            if 0 <= si < n:
+                left[i] += samples[si] * l_gain
+                right[i] += samples[si] * r_gain
+
+    def _apply_reverb_v11(self, samples, wet=0.20, sr=SAMPLE_RATE):
+        """Schroeder reverb with reduced resonance.
+
+        v11 changes vs v7-v10:
+        - Comb filter feedback: 0.55-0.65 (was 0.70-0.75)
+        - Wet mix: 0.20 (was 0.30)
+        - Pre-reverb highpass at 150 Hz to prevent low-freq mud
+        """
+        n = len(samples)
+        if n == 0:
+            return samples
+        dry = 1.0 - wet
+
+        # Pre-reverb highpass at 150 Hz
+        hp_alpha = max(0.0, 1.0 - TWO_PI * 150.0 * INV_SR)
+        hp_prev_in = 0.0
+        hp_prev_out = 0.0
+        hp_signal = [0.0] * n
+        for i in range(n):
+            hp_prev_out = hp_alpha * (hp_prev_out + samples[i] - hp_prev_in)
+            hp_prev_in = samples[i]
+            hp_signal[i] = hp_prev_out
+
+        # Comb filters with reduced feedback
+        comb_delays = [int(d * sr / 1000) for d in [30, 37, 41, 44]]
+        comb_gains = [0.62, 0.60, 0.58, 0.55]  # Reduced from 0.75/0.72/0.70/0.68
+
+        comb_outputs = []
+        for delay, gain_c in zip(comb_delays, comb_gains):
+            buf = [0.0] * (n + delay)
+            for i in range(n):
+                buf[i + delay] = hp_signal[i] + gain_c * buf[i]
+            comb_outputs.append(buf[:n])
+
+        # Sum comb outputs
+        mixed = [0.0] * n
+        for i in range(n):
+            for co in comb_outputs:
+                mixed[i] += co[i]
+            mixed[i] /= len(comb_outputs)
+
+        # Allpass filters
+        ap_delays = [int(d * sr / 1000) for d in [5, 1.7]]
+        ap_gain = 0.6  # Reduced from 0.7
+        for delay in ap_delays:
+            if delay < 1:
+                delay = 1
+            buf_in = list(mixed)
+            buf_out = [0.0] * n
+            for i in range(n):
+                delayed = buf_out[i - delay] if i >= delay else 0.0
+                buf_out[i] = -ap_gain * buf_in[i] + (buf_in[i - delay] if i >= delay else buf_in[i])
+                buf_out[i] += ap_gain * delayed
+            mixed = buf_out
+
+        # Blend dry + wet
+        out = [0.0] * n
+        for i in range(n):
+            out[i] = samples[i] * dry + mixed[i] * wet
+        # Normalize if needed
+        peak = max((abs(s) for s in out), default=1.0)
+        if peak > 1.0:
+            inv_peak = 1.0 / peak
+            for i in range(n):
+                out[i] *= inv_peak
+        return out
+
+    def _apply_early_reflections_v11(self, samples, sr=SAMPLE_RATE):
+        """Early reflections with reduced amplitudes.
+
+        v11: Amplitudes reduced to 0.05-0.20 (from 0.08-0.35).
+        """
+        delays_ms = [11, 17, 23, 31, 41]
+        amps = [0.20, 0.15, 0.10, 0.07, 0.05]  # Reduced
+        n = len(samples)
+        out = list(samples)
+        for delay_ms, amp in zip(delays_ms, amps):
+            d = int(delay_ms * sr / 1000)
+            for i in range(d, n):
+                out[i] += samples[i - d] * amp
+        peak = max((abs(s) for s in out), default=1.0)
+        if peak > 1.0:
+            inv_peak = 1.0 / peak
+            for i in range(n):
+                out[i] *= inv_peak
+        return out
+
+    def _render_segment(self, mood, kits, n_samples, sim_state):
+        """Render a mood segment with v11 comprehensive fixes.
+
+        v11 Pipeline:
+        1. Compute tempo multiplier (1.2x-1.8x, inherited from v10)
+        2. Create BarGrid for metric alignment
+        3. Sample MIDI bars
+        4. Quantize notes to bar grid
+        5. Choose 4-6 voices with v10 diversity
+        6. Assign orchestral roles (register, gain, rhythmic role)
+        7. Expand notes -> consonant chords with inter-voice checking
+        8. Build rondo sections with bar-aligned offsets
+        9. Apply voice leading between chord changes
+        10. Per-voice RMS normalization + separated pan/gain mixing
+        11. v11 effects chain (reduced reverb, highpass, soft limiting)
+        12. Master bus soft-knee limiting
+        13. Loop with extended crossfade (4-6s)
+        """
+        left = [0.0] * n_samples
+        right = [0.0] * n_samples
+
+        rng = mood.rng
+        tempo = mood.tempo
+        beats_per_bar = mood.beats_per_bar
+        root = mood.root
+
+        # 1. Tempo multiplier (inherited from v10)
+        tempo_mult = self._compute_tempo_multiplier(sim_state)
+        effective_tempo = min(tempo * tempo_mult, 360)
+
+        # 2. Create bar grid
+        ts_key = getattr(mood, '_v8_time_sig', mood.time_sig)
+        ts_info = TIME_SIGNATURES.get(ts_key, TIME_SIGNATURES.get('4/4'))
+        beat_unit = ts_info['unit'] if isinstance(ts_info, dict) else 4
+        grid = BarGrid(effective_tempo, beats_per_bar, beat_unit)
+        bar_duration_sec = grid.bar_dur
+
+        # 3. Sample MIDI bars
+        loop_bars = rng.randint(4, 12)
+        bars_result = self.midi_lib.sample_bars_seeded(
+            sim_state, loop_bars, effective_tempo, beats_per_bar,
+            root=root, scale=mood.scale, rng=rng
+        )
+        midi_notes, segment_duration, midi_info = bars_result
+
+        if segment_duration <= 0 or not midi_notes:
+            return left, right
+
+        # 4. Quantize notes to bar grid
+        if bar_duration_sec > 0:
+            midi_notes = self.quantizer.fit_notes_to_bars(
+                midi_notes, loop_bars, bar_duration_sec, beats_per_bar
+            )
+        # Additional grid-snap: ensure onsets are on 16th-note grid
+        snapped_notes = []
+        for t_sec, midi_note, dur_sec, vel in midi_notes:
+            t_snapped = grid.snap_onset(t_sec, '16th')
+            dur_snapped = grid.snap_duration(dur_sec)
+            snapped_notes.append((t_snapped, midi_note, dur_snapped, vel))
+        midi_notes = snapped_notes
+
+        # 5. Choose voices with v10 diversity
+        n_voices = clamp(rng.randint(4, 6), 4, 6)
+        voice_configs = self._choose_gm_instruments_v10(midi_info, n_voices, rng)
+
+        # 6. Assign orchestral roles (replaces random register assignment)
+        self.orchestrator.assign_roles(voice_configs, rng)
+
+        # 7. Expand notes into chords with inter-voice consonance
+        chord_notes = []
+        for t_sec, midi_note, dur_sec, vel in midi_notes:
+            chord = self._build_chord_from_note(
+                midi_note, root, mood.scale_name, mood.scale,
+                n_notes=rng.randint(2, 4), rng=rng
+            )
+            chord_notes.append((t_sec, chord, dur_sec, vel))
+
+        # 8. Build rondo sections
+        rondo = self._build_rondo_sections(
+            chord_notes, root, mood.scale_name, mood.scale,
+            segment_duration, rng
+        )
+
+        # Use bar-aligned section offsets instead of accumulated segment_duration
+        bars_per_section = grid.bars_in_duration(segment_duration)
+        rondo_duration = bars_per_section * grid.bar_dur * len(rondo)
+        loop_samples = int(rondo_duration * SAMPLE_RATE)
+        if loop_samples <= 0:
+            return left, right
+
+        loop_left = [0.0] * loop_samples
+        loop_right = [0.0] * loop_samples
+
+        # Create gain stage
+        gain_stage = GainStage(n_voices, headroom_db=-3.0)
+
+        # FluidSynth for primary voice
+        fluid_rendered = None
+        if HAS_FLUIDSYNTH and midi_info.get('path'):
+            primary_gm = voice_configs[0]['gm_program']
+            fluid_rendered = MidiLibrary.render_fluidsynth(
+                midi_info['path'], primary_gm,
+                tempo_factor=tempo_mult,
+                start_tick=midi_info.get('start_tick', 0),
+                end_tick=midi_info.get('end_tick')
+            )
+
+        # 9-10. Render voices with orchestral roles and proper gain staging
+        prev_voice_chords = {}  # Track previous chord per voice for voice leading
+
+        for sec_idx, (label, section_notes) in enumerate(rondo):
+            # Bar-aligned section start
+            sec_start = int(grid.section_start(sec_idx, bars_per_section) * SAMPLE_RATE)
+
+            # 85% simultaneous, 15% solo
+            is_solo_section = rng.random() < 0.15
+            if is_solo_section:
+                active_voices = [rng.randint(0, n_voices - 1)]
+            else:
+                active_voices = list(range(n_voices))
+
+            for v_idx in active_voices:
+                vc = voice_configs[v_idx]
+                oct_off = vc['octave_offset']
+                pan = vc.get('pan', 0.0)
+                gm_program = vc['gm_program']
+                v_chord_size = vc['chord_size']
+                gain_weight = vc.get('gain_weight', 1.0)
+
+                # FluidSynth for first voice, first A section
+                if (v_idx == 0 and fluid_rendered is not None
+                        and label == 'A' and sec_idx == 0):
+                    fl, fr = fluid_rendered
+                    fl_n = min(len(fl), loop_samples - sec_start)
+                    fl_gain = gain_stage.voice_gain * gain_weight
+                    for i in range(fl_n):
+                        pos = sec_start + i
+                        if 0 <= pos < loop_samples:
+                            loop_left[pos] += fl[i] * fl_gain
+                            loop_right[pos] += fr[i] * fl_gain
+                    continue
+
+                # Collect all notes this voice will play for consonance check
+                voice_note_groups = []
+                for t_sec, chord, dur_sec, vel in section_notes:
+                    voice_chord = chord[:v_chord_size]
+                    # v11: minimum MIDI 36 (C2) instead of 24 to prevent
+                    # subsonic fundamentals being stripped by the filter
+                    voice_chord = [clamp(n + oct_off, 36, 108)
+                                   for n in voice_chord]
+                    voice_chord = [self.midi_lib._snap_to_scale(n, root, mood.scale)
+                                   for n in voice_chord]
+                    voice_note_groups.append(voice_chord)
+
+                # Apply voice leading: smooth transitions between chords
+                prev_chord = prev_voice_chords.get(v_idx)
+                for gi in range(len(voice_note_groups)):
+                    if prev_chord and len(prev_chord) > 0:
+                        voice_note_groups[gi] = self.orchestrator.apply_voice_leading(
+                            prev_chord, voice_note_groups[gi],
+                            mood.scale, root, self.midi_lib._snap_to_scale
+                        )
+                    prev_chord = voice_note_groups[gi]
+                if voice_note_groups:
+                    prev_voice_chords[v_idx] = voice_note_groups[-1]
+
+                # Inter-voice consonance: check this voice against active others
+                # (lightweight: only check first chord of section)
+                if not is_solo_section and len(active_voices) > 1 and voice_note_groups:
+                    other_chords = []
+                    for ov in active_voices:
+                        if ov != v_idx and ov in prev_voice_chords:
+                            other_chords.append(prev_voice_chords[ov])
+                    if other_chords:
+                        adjusted = self.consonance.adjust_for_consonance(
+                            [voice_note_groups[0]] + other_chords,
+                            root, mood.scale, min_score=0.55,
+                            snap_fn=self.midi_lib._snap_to_scale
+                        )
+                        # Apply adjustment to first chord group
+                        if adjusted:
+                            voice_note_groups[0] = adjusted[0]
+
+                # Synthesize and mix
+                for ni, (t_sec, chord, dur_sec, vel) in enumerate(section_notes):
+                    offset = sec_start + int(t_sec * SAMPLE_RATE)
+                    if offset >= loop_samples:
+                        continue
+
+                    voice_chord = voice_note_groups[ni] if ni < len(voice_note_groups) else chord[:v_chord_size]
+
+                    for note in voice_chord:
+                        freq = mtof(note)
+                        samps = _synth_gm_note_np(freq, dur_sec, gm_program, vel)
+                        if HAS_NUMPY:
+                            samps = samps.tolist()
+
+                        # v11: longer anti-click fades (5ms, up from 2ms)
+                        cg = min(int(0.005 * SAMPLE_RATE), len(samps) // 4)
+                        if cg > 1:
+                            for ci in range(cg):
+                                fade = ci / cg
+                                samps[ci] *= fade
+                                if len(samps) - 1 - ci >= 0:
+                                    samps[len(samps) - 1 - ci] *= fade
+
+                        # Per-voice RMS normalization
+                        samps = gain_stage.voice_samples(
+                            samps, target_rms=0.15, is_solo=is_solo_section
+                        )
+
+                        # v11: separated pan and gain (no more pan * v_gain * 4)
+                        self._mix_mono_v11(
+                            loop_left, loop_right, samps,
+                            offset, loop_samples,
+                            pan, gain_weight
+                        )
+
+        # 11. v11 effects chain
+        if rng.random() < 0.70:
+            loop_left = self._apply_early_reflections_v11(loop_left)
+            loop_right = self._apply_early_reflections_v11(loop_right)
+        if rng.random() < 0.60:
+            loop_left = self._apply_reverb_v11(loop_left)
+            loop_right = self._apply_reverb_v11(loop_right)
+        if rng.random() < 0.40:
+            loop_left = self.smoother.apply_chorus(loop_left)
+            loop_right = self.smoother.apply_chorus(loop_right)
+
+        # Gentle compression AFTER reverb (fixes pumping from compression-then-reverb)
+        loop_left = self.smoother.apply_gentle_compression(loop_left, ratio=3.0, threshold=0.5)
+        loop_right = self.smoother.apply_gentle_compression(loop_right, ratio=3.0, threshold=0.5)
+
+        # DC offset removal
+        if loop_left:
+            dc_l = sum(loop_left) / len(loop_left)
+            dc_r = sum(loop_right) / len(loop_right)
+            if abs(dc_l) > 0.001 or abs(dc_r) > 0.001:
+                loop_left = [s - dc_l for s in loop_left]
+                loop_right = [s - dc_r for s in loop_right]
+
+        loop_left = self.smoother.apply_lowpass(loop_left, 8000)
+        loop_right = self.smoother.apply_lowpass(loop_right, 8000)
+
+        # Anti-hiss + subsonic
+        loop_left_l, loop_right_l = self.anti_hiss.apply_stereo(loop_left, loop_right)
+        loop_left, loop_right = self.subsonic_filter.apply_stereo(loop_left_l, loop_right_l)
+
+        # 12. Master bus soft-knee limiting
+        gain_stage.master_limit(loop_left, loop_right, knee=0.80)
+
+        # 13. Loop with extended crossfade (4-6 seconds)
+        xfade = min(int(rng.uniform(4.0, 6.0) * SAMPLE_RATE),
+                     loop_samples // 3)
+        pos = 0
+        while pos < n_samples:
+            remaining = n_samples - pos
+            chunk = min(loop_samples, remaining)
+            for i in range(chunk):
+                fade = 1.0
+                if pos > 0 and i < xfade:
+                    fade = 0.5 - 0.5 * math.cos(math.pi * i / max(xfade, 1))
+                dist_to_end = chunk - i
+                if dist_to_end < xfade and pos + chunk < n_samples:
+                    fade *= 0.5 + 0.5 * math.cos(math.pi * (1 - dist_to_end / max(xfade, 1)))
+                left[pos + i] += loop_left[i] * fade
+                right[pos + i] += loop_right[i] * fade
+            pos += loop_samples - xfade
+
+        return left, right
+
+    def render_streaming(self, wav_file, sim_states=None):
+        """Streaming renderer with soft-knee limiting (replaces tanh).
+
+        Overrides the base streaming renderer to use _soft_limit instead
+        of math.tanh for the per-sample output limiter.
+        """
+        total_samples = int(self.total_duration * SAMPLE_RATE)
+        n_segments = len(self.segments)
+        morph_samples = int(self.MORPH_DURATION * SAMPLE_RATE)
+        fade_in_samples = int(self.FADE_IN_DURATION * SAMPLE_RATE)
+        fade_out_samples = int(self.FADE_OUT_DURATION * SAMPLE_RATE)
+
+        if sim_states is None:
+            sim_states = self._generate_sim_states(n_segments)
+
+        # Apply v8 time sig overrides
+        orig, patched = self._patch_mood_init()
+        MoodSegment.__init__ = patched
+
+        try:
+            max_seg_samples = int(220 * SAMPLE_RATE)
+            buf_len = max_seg_samples + morph_samples * 2
+            buf_left = [0.0] * buf_len
+            buf_right = [0.0] * buf_len
+            buf_global_start = 0
+            samples_written = 0
+
+            for seg_idx in range(n_segments):
+                seg_info = self.segments[seg_idx]
+                seg_global_start = int(seg_info['start'] * SAMPLE_RATE)
+                seg_duration = seg_info['duration']
+                segment_samples = int(seg_duration * SAMPLE_RATE)
+                if seg_global_start >= total_samples:
+                    break
+
+                time_pos = seg_info['start']
+                epoch_idx = int(time_pos / self.total_duration * 12.999)
+                epoch_idx = clamp(epoch_idx, 0, 12)
+                epoch = EPOCH_ORDER[epoch_idx]
+                sim_state = sim_states[min(seg_idx, len(sim_states) - 1)]
+
+                mood = MoodSegment(
+                    seg_idx, epoch, epoch_idx, sim_state,
+                    self.seed + seg_idx * 31337
+                )
+                selected = self._select_instruments(mood)
+                kits = InstrumentKit.build_kits(
+                    selected, mood.scale, mood.root, mood.n_kits, mood.rng
+                )
+                seg_left, seg_right = self._render_segment(
+                    mood, kits, segment_samples, sim_state
+                )
+
+                if mood.dampen:
+                    seg_left = self.smoother.apply_lowpass(seg_left, 5000)
+                    seg_right = self.smoother.apply_lowpass(seg_right, 5000)
+                    seg_left = self.smoother.apply_gentle_compression(seg_left)
+                    seg_right = self.smoother.apply_gentle_compression(seg_right)
+
+                seg_end_global = min(seg_global_start + len(seg_left), total_samples)
+                seg_len = seg_end_global - seg_global_start
+
+                for i in range(seg_len):
+                    global_i = seg_global_start + i
+                    buf_i = global_i - buf_global_start
+                    while buf_i >= len(buf_left):
+                        buf_left.append(0.0)
+                        buf_right.append(0.0)
+
+                    fade = 1.0
+                    if i < morph_samples and seg_idx > 0:
+                        fade = 0.5 - 0.5 * math.cos(math.pi * i / morph_samples)
+                    remaining = seg_len - i
+                    if remaining < morph_samples and seg_idx < n_segments - 1:
+                        fade *= 0.5 + 0.5 * math.cos(math.pi * (1 - remaining / morph_samples))
+
+                    if global_i < fade_in_samples:
+                        fade *= global_i / fade_in_samples
+                    elif global_i >= total_samples - fade_out_samples:
+                        fade *= (total_samples - global_i) / fade_out_samples
+
+                    buf_left[buf_i] += seg_left[i] * fade
+                    buf_right[buf_i] += seg_right[i] * fade
+
+                if seg_idx in self.tts_transitions:
+                    trans_start = seg_global_start + seg_len - morph_samples
+                    self._inject_tts_into_buf(
+                        buf_left, buf_right, buf_global_start,
+                        trans_start, total_samples, mood, epoch_idx
+                    )
+
+                # Flush completed audio
+                if seg_idx < n_segments - 1:
+                    next_seg_start = int(self.segments[seg_idx + 1]['start'] * SAMPLE_RATE)
+                    flush_up_to = next_seg_start - morph_samples
+                else:
+                    flush_up_to = total_samples
+
+                flush_end = min(flush_up_to, total_samples)
+                flush_count = flush_end - samples_written
+                if flush_count > 0:
+                    data = bytearray(flush_count * 4)
+                    for j in range(flush_count):
+                        buf_j = (samples_written + j) - buf_global_start
+                        lv = buf_left[buf_j] if 0 <= buf_j < len(buf_left) else 0.0
+                        rv = buf_right[buf_j] if 0 <= buf_j < len(buf_right) else 0.0
+                        lv, rv = lv * 0.9 + rv * 0.1, rv * 0.9 + lv * 0.1
+                        # v11: soft-knee limiter instead of tanh
+                        li = int(_soft_limit(lv, 0.8) * 32767)
+                        ri = int(_soft_limit(rv, 0.8) * 32767)
+                        struct.pack_into('<hh', data, j * 4,
+                                       max(-32767, min(32767, li)),
+                                       max(-32767, min(32767, ri)))
+                    wav_file.writeframes(bytes(data))
+                    samples_written = flush_end
+
+                    # Shift buffer
+                    shift = flush_end - buf_global_start
+                    if shift > 0 and shift < len(buf_left):
+                        buf_left = buf_left[shift:] + [0.0] * shift
+                        buf_right = buf_right[shift:] + [0.0] * shift
+                        buf_global_start = flush_end
+                    elif shift >= len(buf_left):
+                        buf_left = [0.0] * buf_len
+                        buf_right = [0.0] * buf_len
+                        buf_global_start = flush_end
+
+        finally:
+            MoodSegment.__init__ = orig
+
+        return samples_written
+
+
+def generate_radio_v11_mp3(output_path, duration=1800.0, seed=42):
+    """Generate the v11 radio MP3 file with comprehensive audio quality fixes.
+
+    v11 features: per-voice RMS normalization, master bus soft-knee limiting,
+    separated pan/gain mixing, inter-voice consonance, bar-aligned rendering,
+    orchestral role assignment, reduced reverb resonance, plus all v10 features.
+    """
+    import tempfile
+
+    print(f"[RadioEngineV11] Initializing (seed={seed}, duration={duration}s)...")
+    engine = RadioEngineV11(seed=seed, total_duration=duration)
+
+    print(f"[RadioEngineV11] {len(engine.instruments)} instruments loaded")
+    print(f"[RadioEngineV11] {len(engine.midi_lib._note_sequences)} MIDI sequences loaded")
+    print(f"[RadioEngineV11] {len(V9_FAMILY_POOLS)} instrument family pools")
+    print(f"[RadioEngineV11] {sum(len(p) for p in V9_FAMILY_POOLS.values())} unique GM programs")
+    print(f"[RadioEngineV11] {len(GM_TIMBRE_PROFILES)} GM timbre profiles")
+    print(f"[RadioEngineV11] Tempo range: 1.2x-1.8x (flat)")
+    print(f"[RadioEngineV11] Morph duration: {engine.MORPH_DURATION}s")
+    print(f"[RadioEngineV11] TTS engine: {'Silero' if engine.tts._silero_available else 'espeak-ng'}")
+    print(f"[RadioEngineV11] TTS transitions at segments: {sorted(engine.tts_transitions)}")
+    print(f"[RadioEngineV11] V11 fixes: gain staging, consonance, bar grid, orchestral roles")
+
+    n_segments = len(engine.segments)
+    avg_dur = sum(s['duration'] for s in engine.segments) / max(n_segments, 1)
+
+    simple_count = sum(1 for s in engine.segments
+                       if s.get('time_sig_override') in SIMPLE_TIME_SIGS)
+    compound_count = sum(1 for s in engine.segments
+                         if s.get('time_sig_override') in COMPOUND_TIME_SIGS)
+    complex_count = sum(1 for s in engine.segments
+                        if s.get('time_sig_override') in COMPLEX_TIME_SIGS)
+    print(f"[RadioEngineV11] {n_segments} mood segments (avg {avg_dur:.0f}s)")
+    print(f"[RadioEngineV11] Time signatures: {simple_count} simple, "
+          f"{compound_count} compound, {complex_count} complex")
+
+    print(f"[RadioEngineV11] Rendering audio...")
+    t0 = _time.time()
+
+    # Import simulator
+    try:
+        sys.path.insert(0, PROJECT_ROOT)
+        from simulator.universe import Universe
+        universe = Universe(seed=seed, max_ticks=999999999)
+
+        sim_states = []
+        total_ticks = int(duration * 50)
+        ticks_per_segment = max(1, total_ticks // n_segments)
+        for seg in range(n_segments):
+            for _ in range(ticks_per_segment):
+                universe.step()
+            state = {
+                'temperature': universe.quantum_field.temperature,
+                'particles': len(universe.quantum_field.particles),
+                'atoms': len(universe.atomic_system.atoms) if universe.atomic_system else 0,
+                'molecules': len(universe.chemical_system.molecules) if universe.chemical_system else 0,
+                'cells': len(universe.biosphere.cells) if universe.biosphere else 0,
+                'generation': universe.biosphere.generation if universe.biosphere else 0,
+                'epoch': universe.current_epoch_name,
+            }
+            sim_states.append(state)
+            if seg % 3 == 0:
+                print(f"  Sim segment {seg+1}/{n_segments}: epoch={state['epoch']}, "
+                      f"T={state['temperature']:.0f}, particles={state['particles']}, "
+                      f"density={state['particles'] + state['atoms']*2 + state['molecules']*3 + state['cells']*5}")
+    except Exception as e:
+        print(f"  [Warning] Could not run simulator: {e}")
+        print(f"  Using synthetic simulation data instead.")
+        sim_states = None
+
+    use_streaming = duration > 660
+
+    if use_streaming:
+        print(f"[RadioEngineV11] Using streaming renderer (low memory)...")
+        with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
+            wav_path = tmp.name
+        try:
+            with wave.open(wav_path, 'wb') as wf:
+                wf.setnchannels(2)
+                wf.setsampwidth(2)
+                wf.setframerate(SAMPLE_RATE)
+                total_written = engine.render_streaming(wf, sim_states)
+            t1 = _time.time()
+            print(f"[RadioEngineV11] Streamed {total_written/SAMPLE_RATE:.1f}s in {t1-t0:.1f}s")
+            print(f"[RadioEngineV11] Family groups used: {sorted(engine._used_family_groups)}")
+
+            if output_path.endswith('.mp3'):
+                print(f"[RadioEngineV11] Converting to MP3...")
+                wav_to_mp3(wav_path, output_path)
+                print(f"[RadioEngineV11] Saved: {output_path}")
+            else:
+                import shutil
+                shutil.move(wav_path, output_path)
+                wav_path = None
+                print(f"[RadioEngineV11] Saved: {output_path}")
+        finally:
+            if wav_path:
+                try:
+                    os.unlink(wav_path)
+                except OSError:
+                    pass
+    else:
+        left, right = engine.render(sim_states)
+
+        t1 = _time.time()
+        print(f"[RadioEngineV11] Rendered {len(left)/SAMPLE_RATE:.1f}s in {t1-t0:.1f}s")
+        print(f"[RadioEngineV11] Family groups used: {sorted(engine._used_family_groups)}")
+
+        if output_path.endswith('.mp3'):
+            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
+                wav_path = tmp.name
+            try:
+                print(f"[RadioEngineV11] Writing WAV ({len(left)*4/1048576:.1f} MB)...")
+                render_to_wav(left, right, wav_path)
+                print(f"[RadioEngineV11] Converting to MP3...")
+                wav_to_mp3(wav_path, output_path)
+                print(f"[RadioEngineV11] Saved: {output_path}")
+            finally:
+                try:
+                    os.unlink(wav_path)
+                except OSError:
+                    pass
+        else:
+            render_to_wav(left, right, output_path)
+            print(f"[RadioEngineV11] Saved: {output_path}")
+
+    file_size = os.path.getsize(output_path) if os.path.exists(output_path) else 0
+    print(f"[RadioEngineV11] File size: {file_size/1048576:.1f} MB")
+    return output_path
+
+
 def generate_radio_v10_mp3(output_path, duration=1800.0, seed=42):
     """Generate the v10 radio MP3 file with GM-timbre-aware synthesis.
 
@@ -4755,10 +5778,12 @@ if __name__ == '__main__':
                        help='Duration in seconds (default: 1800)')
     parser.add_argument('--seed', '-s', type=int, default=42,
                        help='Random seed')
-    parser.add_argument('--version', '-V', choices=['v7', 'v8', 'v9', 'v10'], default='v7',
-                       help='Engine version: v7 (classic), v8 (orchestral), v9 (expanded), v10 (GM-timbre)')
+    parser.add_argument('--version', '-V', choices=['v7', 'v8', 'v9', 'v10', 'v11'], default='v7',
+                       help='Engine version: v7 (classic), v8 (orchestral), v9 (expanded), v10 (GM-timbre), v11 (gain-staged)')
     args = parser.parse_args()
-    if args.version == 'v10':
+    if args.version == 'v11':
+        generate_radio_v11_mp3(args.output, args.duration, args.seed)
+    elif args.version == 'v10':
         generate_radio_v10_mp3(args.output, args.duration, args.seed)
     elif args.version == 'v9':
         generate_radio_v9_mp3(args.output, args.duration, args.seed)
