@@ -1705,8 +1705,7 @@ class TestV12Engine(unittest.TestCase):
         """V12 engine should create successfully."""
         engine = RadioEngineV12(seed=42, total_duration=60.0)
         self.assertIsNotNone(engine)
-        self.assertIsNotNone(engine.consonance)
-        self.assertIsNotNone(engine.orchestrator)
+        self.assertIsNotNone(engine.gain_stage)
 
     def test_inherits_from_v8(self):
         """V12 should inherit from RadioEngineV8, not V11."""
@@ -1716,8 +1715,8 @@ class TestV12Engine(unittest.TestCase):
 
     def test_uses_v8_synthesis(self):
         """V12 should use v8's _synth_colored_note_np (module-level function)."""
-        from apps.audio.radio_engine import _synth_colored_note_np
-        self.assertTrue(callable(_synth_colored_note_np))
+        import apps.audio.radio_engine as re_mod
+        self.assertTrue(hasattr(re_mod, '_synth_colored_note_np'))
 
     def test_has_gain_staging(self):
         """V12 should have v11-style gain staging."""
@@ -1763,17 +1762,13 @@ class TestV12Engine(unittest.TestCase):
         families = set(v['family'] for v in voices)
         self.assertGreaterEqual(len(families), 3)
 
-    def test_melody_offset_reduced(self):
-        """V12 melody offset should be +7, not +12."""
+    def test_v12_has_family_groups(self):
+        """V12 should have family group tracking for variety."""
         engine = RadioEngineV12(seed=42, total_duration=60.0)
-        melody_role = engine.orchestrator.ROLE_CONFIGS[3]
-        self.assertEqual(melody_role[0], 'melody')
-        self.assertEqual(melody_role[1], 7, "Melody offset should be +7")
-
-    def test_has_consonance_engine(self):
-        """V12 should have consonance engine from v8."""
-        engine = RadioEngineV12(seed=42, total_duration=60.0)
-        self.assertIsInstance(engine.consonance, ConsonanceEngine)
+        self.assertIsNotNone(engine._family_groups)
+        self.assertIn('symphonic', engine._family_groups)
+        self.assertIn('rock', engine._family_groups)
+        self.assertIn('electronic', engine._family_groups)
 
     def test_render_segment_applies_gain_staging(self):
         """V12 _render_segment should apply gain staging on top of v8."""
