@@ -4,6 +4,86 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.9.0 — 2026-03-06 — Radio Engine v9: Expanded Instruments + Density-Aware Tempo
+
+### Summary
+
+Radio engine v9 with ~50 new GM instruments across 15 family pools (up from 5),
+density-aware tempo multiplier (1.1x-2.1x range with caps during busy simulation
+epochs), and family variety enforcement ensuring symphonic, rock, electronic, and
+world instrument groups all appear across a 30-minute piece.
+
+Also introduces the **future memories** protocol for durable session restoration,
+CI flake detection steering, and AMD64 build verification guidance.
+
+### Changes
+
+- **Radio Engine v9** (`apps/audio/radio_engine.py`):
+  - New `RadioEngineV9` class extending `RadioEngineV8` with expanded instrument palette
+  - `GM_EXPANDED_INSTRUMENTS`: ~50 new GM instruments across rock, electronic, synth FX,
+    world/ethnic, symphonic, sax, choir, and mallet families
+  - `GM_ALL_INSTRUMENTS`: combined v7/v8 + v9 instrument catalog
+  - `V9_FAMILY_POOLS`: 15 instrument family pools (strings, brass, woodwinds, keys,
+    pitched_perc, rock_guitar, rock_bass, synth_lead, synth_pad, synth_fx, world,
+    sax, choir, symphonic_ext, mallets)
+  - Density-aware tempo: `_compute_tempo_multiplier` returns 1.1x-2.1x, capped at
+    1.6x for high-density epochs (>100 density score) and 1.8x for medium density
+  - Family variety enforcement: tracks used family groups across render, biases toward
+    under-represented groups past the halfway point
+  - CLI: `--version v9` flag (v7 remains default)
+  - `generate_radio_v9_mp3()` convenience function
+  - All v8 features preserved (orchestral layering, anti-hiss, subsonic removal,
+    note smoothing, time signature control, note quantization)
+- **19 new v9 tests** in `test_radio_engine.py`:
+  - Instrument catalog validation (count, superset, GM range)
+  - 15 family pools verification
+  - Rock, synth, world, sax, choir family existence
+  - Density-aware tempo range, high/medium density caps
+  - V9 engine creation, family group tracking, expanded pool coverage
+  - Short render integration test
+  - CLI v9 argument acceptance
+- **Future memories protocol** (`future_memories/`):
+  - New directory for verbose plan files committed before code mutation
+  - `future_memories/README.md` explaining the protocol
+  - `future_memories/v0.9.0-plan.md` documenting the full implementation plan
+- **Steering updates** (CLAUDE.md, AGENTS.md, .claude/steering-check.sh):
+  - Future memories: iterative plan commits before code mutation
+  - CI flake detection and repair protocol
+  - AMD64 build verification (best-effort)
+  - Input quality caveat for typos/speech-to-text/ambiguity
+  - Archive strategy: single tar.gz rebuilt each time, no orphan files
+- **30-minute cosmic radio v9 MP3s**:
+  - `cosmic_radio_v9.mp3`: Seed 42, 1800 seconds
+  - `cosmic_radio_v9_random.mp3`: Random seed, 1800 seconds
+
+### Agent Activity
+
+- Agent: Claude Opus 4.6 via Claude Code CLI
+- Session: Resuming interrupted v9 implementation from previous session
+- Subagents spawned: 2 (codebase exploration, radio engine structure analysis)
+- Test results: 117/118 radio engine tests pass (1 pre-existing espeak-ng skip),
+  400/400 Python reference tests pass
+- AMD64 builds verified: Go, Rust, C, C++
+
+### Files Created
+
+- `future_memories/README.md`
+- `future_memories/v0.9.0-plan.md`
+- `cosmic_radio_v9.mp3`
+- `cosmic_radio_v9_random.mp3`
+- `session_logs/v0.9.0-session.md`
+
+### Files Modified
+
+- `apps/audio/radio_engine.py` — v9 engine class, expanded instruments, CLI
+- `apps/audio/test_radio_engine.py` — 19 new v9 tests
+- `AGENTS.md` — future memories, CI flakes, AMD64 builds steering
+- `CLAUDE.md` — matching steering updates
+- `.claude/steering-check.sh` — matching hook updates
+- `RELEASE_HISTORY.md` — this entry
+
+---
+
 ## v0.8.0 — 2026-03-04 — Radio Engine v8: Orchestral Layering + Numpy Acceleration
 
 ### Summary
