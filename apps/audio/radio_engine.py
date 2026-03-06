@@ -5709,6 +5709,195 @@ GM_TIMBRE_PROFILES_V12 = {
     },
 }
 
+# ---------------------------------------------------------------------------
+# V13 RADIO ENGINE -- V8 core restoration with V12 density-aware tempo
+# ---------------------------------------------------------------------------
+
+class RadioEngineV13(RadioEngineV8):
+    """In The Beginning Radio v13 -- V8 audio with V12 tempo.
+
+    V12 introduced double soft-knee limiting (per-segment master_limit + streaming
+    writer _soft_limit) that caused pronounced bitcrusher artifacts. V13 reverts
+    to V8's clean audio pipeline (instruments, synthesis, mixing, volume) and
+    overrides only the tempo multiplier to use V12's density-aware tempo range
+    (1.1x-1.7x).
+
+    This engine produces output matching V8's volume and spectral profile, with
+    the slower, density-responsive tempo pacing from V12.
+    """
+
+    def _compute_tempo_multiplier(self, sim_state):
+        """Density-aware tempo multiplier clamped to 1.1x-1.7x.
+
+        Inherited from v12's tempo design:
+        - Range: 1.1x-1.7x (slower than v8's 1.5x-2.5x)
+        - Default: 1.4x (neutral, no sim_state)
+        - Density-aware: high-density epochs cap at 1.4-1.5x
+        """
+        if not sim_state:
+            return 1.4  # neutral default
+
+        state_str = repr(sorted(sim_state.items()))
+        h = hashlib.sha256(state_str.encode()).hexdigest()[:8]
+        base = 1.1 + 0.6 * (int(h, 16) / 0xFFFFFFFF)  # 1.1-1.7 range
+
+        # Density-aware capping
+        particles = sim_state.get('particles', 0)
+        atoms = sim_state.get('atoms', 0)
+        molecules = sim_state.get('molecules', 0)
+        cells = sim_state.get('cells', 0)
+        density = particles + atoms * 2 + molecules * 3 + cells * 5
+        if density > 200:
+            base = min(base, 1.5)
+        if density > 500:
+            base = min(base, 1.4)
+
+        return base
+
+
+def generate_radio_v13_mp3(output_path, duration=1800.0, seed=42):
+    """Generate the v13 radio MP3 -- V8 core audio with V12 density-aware tempo.
+
+    v13 uses v8's complete audio pipeline (instruments, synthesis, mixing, volume)
+    with only the tempo multiplier overridden to v12's density-aware 1.1x-1.7x range.
+    No per-segment limiting, no double limiting, no expanded instrument palette.
+    """
+    import tempfile
+
+    ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
+                            _time.localtime(_time.time()))
+    print(f"[{ct_now}] [RadioEngineV13] Initializing (seed={seed}, duration={duration}s)...")
+    engine = RadioEngineV13(seed=seed, total_duration=duration)
+
+    print(f"[{ct_now}] [RadioEngineV13] {len(engine.instruments)} instruments loaded")
+    print(f"[{ct_now}] [RadioEngineV13] {len(engine.midi_lib._note_sequences)} MIDI sequences loaded")
+    print(f"[{ct_now}] [RadioEngineV13] TTS engine: {'Silero' if engine.tts._silero_available else 'espeak-ng'}")
+    print(f"[{ct_now}] [RadioEngineV13] TTS transitions at segments: {sorted(engine.tts_transitions)}")
+
+    n_segments = len(engine.segments)
+    avg_dur = sum(s['duration'] for s in engine.segments) / max(n_segments, 1)
+
+    simple_count = sum(1 for s in engine.segments
+                       if s.get('time_sig_override') in SIMPLE_TIME_SIGS)
+    compound_count = sum(1 for s in engine.segments
+                         if s.get('time_sig_override') in COMPOUND_TIME_SIGS)
+    complex_count = sum(1 for s in engine.segments
+                        if s.get('time_sig_override') in COMPLEX_TIME_SIGS)
+    print(f"[{ct_now}] [RadioEngineV13] {n_segments} mood segments (avg {avg_dur:.0f}s)")
+    print(f"[{ct_now}] [RadioEngineV13] Time signatures: {simple_count} simple, "
+          f"{compound_count} compound, {complex_count} complex")
+    print(f"[{ct_now}] [RadioEngineV13] Synthesis: v8 colored note (InstrumentFactory)")
+    print(f"[{ct_now}] [RadioEngineV13] Instruments: v8 5-pool orchestral palette")
+    print(f"[{ct_now}] [RadioEngineV13] Tempo range: 1.1x-1.7x (density-aware, from v12)")
+    print(f"[{ct_now}] [RadioEngineV13] Volume: v8 levels (no per-segment limiting)")
+
+    ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
+                            _time.localtime(_time.time()))
+    print(f"[{ct_now}] [RadioEngineV13] Rendering audio...")
+    t0 = _time.time()
+
+    # Import simulator
+    try:
+        sys.path.insert(0, PROJECT_ROOT)
+        from simulator.universe import Universe
+        universe = Universe(seed=seed, max_ticks=999999999)
+
+        sim_states = []
+        total_ticks = int(duration * 50)
+        ticks_per_segment = max(1, total_ticks // n_segments)
+        for seg in range(n_segments):
+            for _ in range(ticks_per_segment):
+                universe.step()
+            state = {
+                'temperature': universe.quantum_field.temperature,
+                'particles': len(universe.quantum_field.particles),
+                'atoms': len(universe.atomic_system.atoms) if universe.atomic_system else 0,
+                'molecules': len(universe.chemical_system.molecules) if universe.chemical_system else 0,
+                'cells': len(universe.biosphere.cells) if universe.biosphere else 0,
+                'generation': universe.biosphere.generation if universe.biosphere else 0,
+                'epoch': universe.current_epoch_name,
+            }
+            sim_states.append(state)
+            if seg % 3 == 0:
+                ct_seg = _time.strftime('%Y-%m-%d %H:%M CT',
+                                        _time.localtime(_time.time()))
+                print(f"  [{ct_seg}] Sim segment {seg+1}/{n_segments}: epoch={state['epoch']}, "
+                      f"T={state['temperature']:.0f}, particles={state['particles']}")
+    except Exception as e:
+        print(f"  [Warning] Could not run simulator: {e}")
+        print(f"  Using synthetic simulation data instead.")
+        sim_states = None
+
+    # Use streaming renderer for long durations (V8's clean streaming path)
+    use_streaming = duration > 660
+
+    if use_streaming:
+        ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
+                                _time.localtime(_time.time()))
+        print(f"[{ct_now}] [RadioEngineV13] Using streaming renderer (V8 path, no double limiting)...")
+        with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
+            wav_path = tmp.name
+        try:
+            with wave.open(wav_path, 'wb') as wf:
+                wf.setnchannels(2)
+                wf.setsampwidth(2)
+                wf.setframerate(SAMPLE_RATE)
+                total_written = engine.render_streaming(wf, sim_states)
+            t1 = _time.time()
+            ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
+                                    _time.localtime(_time.time()))
+            print(f"[{ct_now}] [RadioEngineV13] Streamed {total_written/SAMPLE_RATE:.1f}s in {t1-t0:.1f}s")
+
+            if output_path.endswith('.mp3'):
+                print(f"[{ct_now}] [RadioEngineV13] Converting to MP3...")
+                wav_to_mp3(wav_path, output_path)
+                ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
+                                        _time.localtime(_time.time()))
+                print(f"[{ct_now}] [RadioEngineV13] Saved: {output_path}")
+            else:
+                import shutil
+                shutil.move(wav_path, output_path)
+                wav_path = None
+                print(f"[{ct_now}] [RadioEngineV13] Saved: {output_path}")
+        finally:
+            if wav_path:
+                try:
+                    os.unlink(wav_path)
+                except OSError:
+                    pass
+    else:
+        left, right = engine.render(sim_states)
+
+        t1 = _time.time()
+        ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
+                                _time.localtime(_time.time()))
+        print(f"[{ct_now}] [RadioEngineV13] Rendered {len(left)/SAMPLE_RATE:.1f}s in {t1-t0:.1f}s")
+
+        if output_path.endswith('.mp3'):
+            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
+                wav_path = tmp.name
+            try:
+                print(f"[{ct_now}] [RadioEngineV13] Writing WAV ({len(left)*4/1048576:.1f} MB)...")
+                render_to_wav(left, right, wav_path)
+                print(f"[{ct_now}] [RadioEngineV13] Converting to MP3...")
+                wav_to_mp3(wav_path, output_path)
+                ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
+                                        _time.localtime(_time.time()))
+                print(f"[{ct_now}] [RadioEngineV13] Saved: {output_path}")
+            finally:
+                try:
+                    os.unlink(wav_path)
+                except OSError:
+                    pass
+        else:
+            render_to_wav(left, right, output_path)
+            print(f"[{ct_now}] [RadioEngineV13] Saved: {output_path}")
+
+    file_size = os.path.getsize(output_path) if os.path.exists(output_path) else 0
+    print(f"[{ct_now}] [RadioEngineV13] File size: {file_size/1048576:.1f} MB")
+    return output_path
+
+
 def generate_radio_v12_mp3(output_path, duration=1800.0, seed=42):
     """Generate the v12 radio MP3 -- v8 synthesis + expanded instruments + multiprocessing.
 
@@ -6382,10 +6571,12 @@ if __name__ == '__main__':
                        help='Duration in seconds (default: 1800)')
     parser.add_argument('--seed', '-s', type=int, default=42,
                        help='Random seed')
-    parser.add_argument('--version', '-V', choices=['v7', 'v8', 'v9', 'v10', 'v11', 'v12'], default='v7',
-                       help='Engine version: v7-v12 (v12=natural instruments)')
+    parser.add_argument('--version', '-V', choices=['v7', 'v8', 'v9', 'v10', 'v11', 'v12', 'v13'], default='v7',
+                       help='Engine version: v7-v13 (v13=v8 core + v12 tempo)')
     args = parser.parse_args()
-    if args.version == 'v12':
+    if args.version == 'v13':
+        generate_radio_v13_mp3(args.output, args.duration, args.seed)
+    elif args.version == 'v12':
         generate_radio_v12_mp3(args.output, args.duration, args.seed)
     elif args.version == 'v11':
         generate_radio_v11_mp3(args.output, args.duration, args.seed)

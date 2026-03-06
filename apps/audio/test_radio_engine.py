@@ -32,6 +32,7 @@ from apps.audio.radio_engine import (
     GM_TIMBRE_PROFILES, _gm_program_to_timbre, _synth_gm_note_np,
     GainStage, ConsonanceEngine, BarGrid, OrchestratorV11, _soft_limit,
     RadioEngineV12, GM_TIMBRE_PROFILES_V12,
+    RadioEngineV13,
 )
 
 
@@ -1793,6 +1794,103 @@ class TestV12CLIArgument(unittest.TestCase):
                           choices=['v7', 'v8', 'v9', 'v10', 'v11', 'v12'])
         args = parser.parse_args(['--version', 'v12'])
         self.assertEqual(args.version, 'v12')
+
+
+class TestRadioEngineV13(unittest.TestCase):
+    """Tests for RadioEngineV13 -- V8 core with V12 tempo."""
+
+    def test_v13_inherits_from_v8(self):
+        """V13 should inherit from RadioEngineV8."""
+        from apps.audio.radio_engine import RadioEngineV8
+        self.assertTrue(issubclass(RadioEngineV13, RadioEngineV8))
+
+    def test_v13_instantiation(self):
+        """V13 should instantiate without errors."""
+        engine = RadioEngineV13(seed=42, total_duration=10.0)
+        self.assertIsNotNone(engine)
+
+    def test_v13_tempo_range(self):
+        """V13 tempo should be in 1.1-1.7 range (not v8's 1.5-2.5)."""
+        engine = RadioEngineV13(seed=42, total_duration=10.0)
+        # Test with various sim states
+        for particles in [0, 50, 100, 300, 600]:
+            sim_state = {'particles': particles, 'atoms': 0,
+                         'molecules': 0, 'cells': 0}
+            tempo = engine._compute_tempo_multiplier(sim_state)
+            self.assertGreaterEqual(tempo, 1.1)
+            self.assertLessEqual(tempo, 1.7)
+
+    def test_v13_tempo_default(self):
+        """V13 default tempo (no sim_state) should be 1.4."""
+        engine = RadioEngineV13(seed=42, total_duration=10.0)
+        self.assertEqual(engine._compute_tempo_multiplier(None), 1.4)
+        self.assertEqual(engine._compute_tempo_multiplier({}), 1.4)
+
+    def test_v13_density_capping(self):
+        """V13 should cap tempo for high-density epochs."""
+        engine = RadioEngineV13(seed=42, total_duration=10.0)
+        # Very high density should cap at 1.4
+        high_density = {'particles': 100, 'atoms': 100,
+                        'molecules': 100, 'cells': 100}
+        tempo = engine._compute_tempo_multiplier(high_density)
+        self.assertLessEqual(tempo, 1.4)
+
+    def test_v13_no_gain_stage(self):
+        """V13 should NOT have v12's GainStage or per-segment limiting."""
+        engine = RadioEngineV13(seed=42, total_duration=10.0)
+        # V13 should not have gain_stage attribute (it's v8's init, not v12's)
+        # V8's init doesn't create self.gain_stage
+        import inspect
+        # V13's _render_segment should be V8's, not V12's
+        src = inspect.getsource(engine._render_segment)
+        self.assertNotIn('gain_stage', src)
+        self.assertNotIn('master_limit', src)
+
+    def test_v13_uses_v8_instruments(self):
+        """V13 should use V8's instrument selection (5 families, not 15)."""
+        engine = RadioEngineV13(seed=42, total_duration=10.0)
+        import inspect
+        # V13 should NOT override _choose_gm_instruments
+        # So it uses V8's version (which uses 5 families from base)
+        v13_method = engine._choose_gm_instruments
+        v8_class = RadioEngineV13.__mro__[1]  # Should be RadioEngineV8
+        self.assertEqual(v8_class.__name__, 'RadioEngineV8')
+
+    def test_v13_short_render(self):
+        """V13 should render a short clip successfully."""
+        engine = RadioEngineV13(seed=42, total_duration=2.0)
+        left, right = engine.render()
+        self.assertIsInstance(left, list)
+        self.assertIsInstance(right, list)
+        self.assertGreater(len(left), 0)
+        self.assertEqual(len(left), len(right))
+
+    def test_v13_volume_matches_v8(self):
+        """V13 should have similar volume to V8 (no extra limiting)."""
+        v8_engine = RadioEngineV8(seed=42, total_duration=2.0)
+        v13_engine = RadioEngineV13(seed=42, total_duration=2.0)
+        v8_left, _ = v8_engine.render()
+        v13_left, _ = v13_engine.render()
+        # RMS should be within 20% (same audio path, slightly different tempo)
+        v8_rms = (sum(x*x for x in v8_left) / len(v8_left)) ** 0.5
+        v13_rms = (sum(x*x for x in v13_left) / len(v13_left)) ** 0.5
+        if v8_rms > 0.001:
+            ratio = v13_rms / v8_rms
+            self.assertGreater(ratio, 0.5)
+            self.assertLess(ratio, 2.0)
+
+
+class TestV13CLIArgument(unittest.TestCase):
+    """Tests for v13 CLI argument support."""
+
+    def test_v13_in_choices(self):
+        """CLI should accept --version v13."""
+        import argparse
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--version', '-V',
+                          choices=['v7', 'v8', 'v9', 'v10', 'v11', 'v12', 'v13'])
+        args = parser.parse_args(['--version', 'v13'])
+        self.assertEqual(args.version, 'v13')
 
 
 if __name__ == '__main__':

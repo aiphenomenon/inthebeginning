@@ -4,6 +4,37 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.13.0 — 2026-03-06 — Radio Engine v13: V8 Core Restoration with V12 Tempo
+
+### Summary
+
+Radio engine v13 reverts to v8's core audio pipeline (instruments, synthesis, mixing,
+volume) while keeping v12's density-aware tempo (1.1x-1.7x range). The v12 engine
+introduced double soft-knee limiting (per-segment + streaming writer) that caused
+pronounced bitcrusher/spiky artifacts. V13 eliminates this by using v8's render path
+directly, with only the tempo multiplier overridden.
+
+### Changes
+
+- **Radio Engine v13** (`apps/audio/radio_engine.py`):
+  - `RadioEngineV13(RadioEngineV8)` — inherits directly from V8
+  - Uses v8's `_synth_colored_note_np()` synthesis unchanged
+  - Uses v8's 5 instrument family pools (not v12's 15)
+  - Uses v8's `_render_segment()` — no per-segment `master_limit`
+  - Uses v8's `render()` — anti-hiss + subsonic filter, no double limiting
+  - Overrides only `_compute_tempo_multiplier` for v12's density-aware tempo
+  - Volume/gain matches v8 output levels
+- **Tests**: Updated test suite for v13 engine
+- **MP3s**: Two 30-minute renders (seed 42 + random seed)
+
+### Agent Activity
+
+- Spectral analysis comparing v8 vs v12 MP3s
+- Code review of V8 vs V12 class differences
+- Root cause: double soft-knee limiting in v12
+
+---
+
 ## v0.12.0 — 2026-03-06 — Radio Engine v12: V8 Synthesis + Expanded Palette + Speed
 
 ### Summary
