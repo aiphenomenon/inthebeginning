@@ -5255,6 +5255,804 @@ class RadioEngineV11(RadioEngineV10):
         return samples_written
 
 
+# ---------------------------------------------------------------------------
+# V12 RADIO ENGINE -- Natural instrument character with v11 mixing quality
+# ---------------------------------------------------------------------------
+
+# V12 timbre profiles: richer harmonics, natural detuning, noise/breath,
+# no harsh brightness emphasis. Each profile adds 'detune_cents' for natural
+# warmth and 'noise_amount' for breath/bow/hammer noise.
+GM_TIMBRE_PROFILES_V12 = {
+    'piano': {
+        'attack': 0.005, 'decay': 0.25, 'sustain': 0.25, 'release': 0.35,
+        'harmonics': [(1, 1.0), (2, 0.55), (3, 0.18), (4, 0.12), (5, 0.06),
+                      (6, 0.03), (7, 0.015)],
+        'detune_cents': 1.5, 'noise_amount': 0.008, 'vib_depth': 0.0,
+        'warmth': 0.6,
+    },
+    'mallets': {
+        'attack': 0.002, 'decay': 0.12, 'sustain': 0.08, 'release': 0.2,
+        'harmonics': [(1, 1.0), (2.76, 0.45), (5.4, 0.2), (8.93, 0.08)],
+        'detune_cents': 0.8, 'noise_amount': 0.005, 'vib_depth': 0.0,
+        'warmth': 0.5,
+    },
+    'organ': {
+        'attack': 0.025, 'decay': 0.03, 'sustain': 0.8, 'release': 0.1,
+        'harmonics': [(1, 1.0), (2, 0.7), (3, 0.5), (4, 0.35), (5, 0.2),
+                      (6, 0.15), (8, 0.1)],
+        'detune_cents': 2.0, 'noise_amount': 0.003, 'vib_depth': 0.003,
+        'warmth': 0.55,
+    },
+    'guitar': {
+        'attack': 0.003, 'decay': 0.3, 'sustain': 0.15, 'release': 0.35,
+        'harmonics': [(1, 1.0), (2, 0.45), (3, 0.3), (4, 0.18), (5, 0.1),
+                      (6, 0.06), (7, 0.03)],
+        'detune_cents': 1.2, 'noise_amount': 0.012, 'vib_depth': 0.001,
+        'warmth': 0.65,
+    },
+    'bass': {
+        'attack': 0.008, 'decay': 0.15, 'sustain': 0.55, 'release': 0.18,
+        'harmonics': [(1, 1.0), (2, 0.45), (3, 0.18), (4, 0.06)],
+        'detune_cents': 0.5, 'noise_amount': 0.006, 'vib_depth': 0.0003,
+        'warmth': 0.8,
+    },
+    'strings': {
+        'attack': 0.12, 'decay': 0.15, 'sustain': 0.7, 'release': 0.3,
+        'harmonics': [(1, 1.0), (2, 0.65), (3, 0.45), (4, 0.22), (5, 0.12),
+                      (6, 0.06), (7, 0.03), (8, 0.015)],
+        'detune_cents': 2.5, 'noise_amount': 0.015, 'vib_depth': 0.005,
+        'warmth': 0.55,
+    },
+    'ensemble': {
+        'attack': 0.15, 'decay': 0.2, 'sustain': 0.65, 'release': 0.35,
+        'harmonics': [(1, 1.0), (2, 0.6), (3, 0.4), (4, 0.25), (5, 0.15),
+                      (6, 0.08), (7, 0.04)],
+        'detune_cents': 3.0, 'noise_amount': 0.01, 'vib_depth': 0.006,
+        'warmth': 0.5,
+    },
+    'brass': {
+        'attack': 0.04, 'decay': 0.1, 'sustain': 0.65, 'release': 0.15,
+        'harmonics': [(1, 1.0), (2, 0.85), (3, 0.65), (4, 0.45), (5, 0.28),
+                      (6, 0.15), (7, 0.08), (8, 0.04)],
+        'detune_cents': 1.0, 'noise_amount': 0.02, 'vib_depth': 0.003,
+        'warmth': 0.45,
+    },
+    'reed': {
+        'attack': 0.03, 'decay': 0.08, 'sustain': 0.6, 'release': 0.12,
+        'harmonics': [(1, 1.0), (2, 0.25), (3, 0.55), (4, 0.12), (5, 0.35),
+                      (6, 0.06), (7, 0.18)],
+        'detune_cents': 1.5, 'noise_amount': 0.025, 'vib_depth': 0.004,
+        'warmth': 0.5,
+    },
+    'pipe': {
+        'attack': 0.05, 'decay': 0.06, 'sustain': 0.65, 'release': 0.18,
+        'harmonics': [(1, 1.0), (2, 0.08), (3, 0.25), (5, 0.05)],
+        'detune_cents': 0.8, 'noise_amount': 0.03, 'vib_depth': 0.003,
+        'warmth': 0.6,
+    },
+    'synth_lead': {
+        'attack': 0.008, 'decay': 0.12, 'sustain': 0.55, 'release': 0.1,
+        'harmonics': [(1, 1.0), (2, 0.45), (3, 0.28), (4, 0.2), (5, 0.15),
+                      (6, 0.1), (7, 0.07)],
+        'detune_cents': 2.0, 'noise_amount': 0.005, 'vib_depth': 0.002,
+        'warmth': 0.4,
+    },
+    'synth_pad': {
+        'attack': 0.25, 'decay': 0.35, 'sustain': 0.75, 'release': 0.6,
+        'harmonics': [(1, 1.0), (2, 0.4), (3, 0.18), (4, 0.08), (5, 0.04)],
+        'detune_cents': 3.5, 'noise_amount': 0.008, 'vib_depth': 0.007,
+        'warmth': 0.65,
+    },
+    'synth_fx': {
+        'attack': 0.015, 'decay': 0.25, 'sustain': 0.35, 'release': 0.35,
+        'harmonics': [(1, 1.0), (1.41, 0.35), (2.23, 0.25), (3.17, 0.15),
+                      (4.59, 0.08)],
+        'detune_cents': 4.0, 'noise_amount': 0.015, 'vib_depth': 0.005,
+        'warmth': 0.4,
+    },
+    'world': {
+        'attack': 0.006, 'decay': 0.22, 'sustain': 0.2, 'release': 0.25,
+        'harmonics': [(1, 1.0), (2, 0.5), (3, 0.35), (4, 0.25), (5, 0.12),
+                      (6.2, 0.06)],
+        'detune_cents': 2.0, 'noise_amount': 0.018, 'vib_depth': 0.003,
+        'warmth': 0.55,
+    },
+    'percussive': {
+        'attack': 0.001, 'decay': 0.06, 'sustain': 0.04, 'release': 0.12,
+        'harmonics': [(1, 1.0), (2.3, 0.5), (4.1, 0.25), (6.7, 0.1)],
+        'detune_cents': 0.5, 'noise_amount': 0.02, 'vib_depth': 0.0,
+        'warmth': 0.3,
+    },
+}
+
+# V12 acoustic family weights: bias toward natural instruments
+V12_ACOUSTIC_FAMILIES = {
+    'strings': 1.0, 'brass': 0.9, 'woodwinds': 0.9, 'keys': 0.8,
+    'rock_bass': 0.8, 'world': 0.7, 'pitched_perc': 0.6,
+    'sax': 0.7, 'choir': 0.6, 'symphonic_ext': 0.8,
+    'rock_guitar': 0.5, 'mallets': 0.5,
+    # Reduced synth weights
+    'synth_lead': 0.2, 'synth_pad': 0.25, 'synth_fx': 0.1,
+}
+
+# Maximum MIDI note for v12 (C6 = 84, ~1047 Hz fundamental)
+V12_MAX_MIDI_NOTE = 84
+# Minimum MIDI note for v12 (C2 = 36, ~65 Hz fundamental)
+V12_MIN_MIDI_NOTE = 36
+
+
+def _synth_gm_note_v12_np(freq, duration, gm_program, velocity=0.8, rng_seed=0):
+    """V12 synthesis: natural instrument character with warmth and breath.
+
+    Improvements over v10/v11's _synth_gm_note_np:
+    - Slight harmonic detuning (±detune_cents) for natural beating/warmth
+    - Per-instrument noise layer (breath, bow noise, hammer noise)
+    - No brightness-based odd harmonic emphasis (removes ear-piercing highs)
+    - Frequency ceiling at ~1047 Hz (C6) to prevent painful harmonics
+    - Frequency-dependent timbre: higher notes are purer (fewer harmonics)
+    - Natural vibrato with randomized rate (4-7 Hz)
+    - Warmth parameter controls lowpass rolloff of higher harmonics
+    """
+    n = int(duration * SAMPLE_RATE)
+    if n <= 0:
+        return np.zeros(0, dtype=np.float64) if HAS_NUMPY else []
+
+    # Cap frequency at C6 (~1047 Hz)
+    freq = min(freq, 1047.0)
+
+    profile_name = _gm_program_to_timbre(gm_program)
+    profile = GM_TIMBRE_PROFILES_V12[profile_name]
+
+    if HAS_NUMPY:
+        t = np.arange(n, dtype=np.float64) * INV_SR
+        env = _adsr_np(n, profile['attack'], profile['decay'],
+                       profile['sustain'], profile['release'])
+
+        # Natural vibrato with randomized rate
+        vib_depth = profile['vib_depth']
+        if vib_depth > 0:
+            rng_local = np.random.RandomState((rng_seed + int(freq * 100)) & 0x7FFFFFFF)
+            vib_rate = 4.0 + rng_local.random() * 3.0  # 4-7 Hz
+            vib_delay = 0.2 + rng_local.random() * 0.3  # 0.2-0.5s delay
+            vib_env = np.minimum(1.0, t / max(vib_delay, 0.001))
+            vib = vib_depth * vib_env * np.sin(TWO_PI * vib_rate * t)
+            ff = freq * (1.0 + vib)
+        else:
+            ff = freq
+
+        # Harmonic detuning: natural beating
+        detune_cents = profile['detune_cents']
+        rng_h = np.random.RandomState((rng_seed + int(freq * 50)) & 0x7FFFFFFF)
+
+        signal = np.zeros(n, dtype=np.float64)
+        warmth = profile['warmth']
+
+        for h_data in profile['harmonics']:
+            h_num, h_amp = h_data[0], h_data[1]
+            h_freq_base = freq * h_num
+
+            # Skip harmonics above Nyquist
+            if h_freq_base >= SAMPLE_RATE / 2:
+                continue
+
+            # Frequency-dependent harmonic rolloff: higher fundamentals
+            # use fewer harmonics (purer tone, less harshness)
+            freq_rolloff = max(0.1, 1.0 - (freq / 2000.0) * (h_num - 1) * 0.15)
+
+            # Warmth rolloff: reduce high harmonics for warmer sound
+            warmth_rolloff = 1.0 / (1.0 + (h_num - 1) * warmth * 0.3)
+
+            effective_amp = h_amp * freq_rolloff * warmth_rolloff
+
+            if effective_amp < 0.005:
+                continue
+
+            # Apply slight random detuning per harmonic
+            detune_factor = 1.0
+            if detune_cents > 0 and h_num > 1:
+                cents_offset = rng_h.uniform(-detune_cents, detune_cents)
+                detune_factor = 2.0 ** (cents_offset / 1200.0)
+
+            h_freq = ff * h_num * detune_factor
+            signal += effective_amp * np.sin(TWO_PI * h_freq * t)
+
+        # Add noise/breath layer (filtered to sound natural)
+        noise_amount = profile['noise_amount']
+        if noise_amount > 0:
+            rng_noise = np.random.RandomState((rng_seed + int(freq * 200)) & 0x7FFFFFFF)
+            noise = rng_noise.randn(n) * noise_amount
+            # Simple lowpass on noise (makes it sound like breath, not hiss)
+            alpha_n = min(0.99, max(0.01, freq * 3.0 / SAMPLE_RATE))
+            for i in range(1, n):
+                noise[i] = alpha_n * noise[i] + (1.0 - alpha_n) * noise[i - 1]
+            signal += noise * env  # Noise follows envelope
+
+        result = signal * env * velocity
+
+        # Anti-click micro-fades (5ms for v12)
+        cg = min(int(0.005 * SAMPLE_RATE), n // 4)
+        if cg > 0:
+            fade_in = np.linspace(0, 1, cg)
+            result[:cg] *= fade_in
+            result[-cg:] *= fade_in[::-1]
+
+        return result
+    else:
+        # Pure Python fallback
+        env = _adsr(n, profile['attack'], profile['decay'],
+                    profile['sustain'], profile['release'])
+        signal = [0.0] * n
+        warmth = profile['warmth']
+        py_rng = random.Random(rng_seed + int(freq * 50))
+        for i in range(n):
+            t_sec = i * INV_SR
+            for h_data in profile['harmonics']:
+                h_num, h_amp = h_data[0], h_data[1]
+                if freq * h_num >= SAMPLE_RATE / 2:
+                    continue
+                freq_rolloff = max(0.1, 1.0 - (freq / 2000.0) * (h_num - 1) * 0.15)
+                warmth_rolloff = 1.0 / (1.0 + (h_num - 1) * warmth * 0.3)
+                effective_amp = h_amp * freq_rolloff * warmth_rolloff
+                if effective_amp < 0.005:
+                    continue
+                signal[i] += effective_amp * math.sin(TWO_PI * freq * h_num * t_sec)
+            signal[i] *= env[i] * velocity
+        cg = min(int(0.005 * SAMPLE_RATE), n // 4)
+        for ci in range(cg):
+            fade = ci / max(cg, 1)
+            signal[ci] *= fade
+            if n - 1 - ci >= 0:
+                signal[n - 1 - ci] *= fade
+        return signal
+
+
+class RadioEngineV12(RadioEngineV11):
+    """In The Beginning Radio v12 -- Natural instrument character overhaul.
+
+    Returns to v8's natural instrument sound while keeping all v11 mixing
+    improvements. Key changes from v11:
+
+    - V12 timbre profiles with natural detuning and noise/breath layers
+    - Frequency ceiling at C6 (1047 Hz) to prevent ear-piercing highs
+    - Acoustic instrument family bias (70% acoustic, 30% synth)
+    - Reduced melody register offset (+7 instead of +12)
+    - Master lowpass at 7kHz (down from 8kHz)
+    - Longer minimum note durations for more legato character
+    - Every ensemble guaranteed at least one bass/foundation instrument
+    - V12 synthesis function with warmth control
+
+    Preserved from v11: gain staging, consonance engine, bar grid,
+    orchestral role assignment, separated pan/gain, reduced reverb,
+    soft-knee limiting.
+    """
+
+    # Override orchestrator roles: reduce melody offset from +12 to +7
+    V12_ROLE_CONFIGS = [
+        ('foundation',  -12, 'sustained', 0.85),
+        ('harmony_low',  -5, 'chordal',   0.55),
+        ('harmony_mid',   0, 'chordal',   0.50),
+        ('melody',        7, 'melodic',   0.95),
+        ('color',         5, 'textural',  0.30),
+        ('bass_deep',   -19, 'sustained', 0.75),
+    ]
+
+    def __init__(self, seed=42, total_duration=1800.0):
+        super().__init__(seed=seed, total_duration=total_duration)
+        # Override orchestrator role configs for v12
+        self.orchestrator.ROLE_CONFIGS = self.V12_ROLE_CONFIGS
+
+    def _choose_gm_instruments_v12(self, midi_info, n_voices, rng):
+        """Choose GM instruments with v12 acoustic bias.
+
+        - 70% chance of acoustic families (strings, brass, woodwinds, bass, etc.)
+        - 30% chance of synth families
+        - Always include at least one bass/foundation instrument
+        - Minimum 3 different family groups (from v10)
+        """
+        families = list(V9_FAMILY_POOLS.keys())
+
+        # Build weighted family list using V12 acoustic weights
+        weighted_families = []
+        for f in families:
+            weight = V12_ACOUSTIC_FAMILIES.get(f, 0.3)
+            weighted_families.append((f, weight))
+
+        voices = []
+        used_families = set()
+
+        # Pan positions for clear stereo separation
+        pans_pool = [-0.5, -0.2, 0.0, 0.2, 0.5, -0.35]
+
+        # Variety enforcement from v9
+        self._segment_count += 1
+        n_total_segments = len(self.segments) if hasattr(self, 'segments') else 15
+        past_halfway = self._segment_count > n_total_segments // 2
+
+        underrepresented = []
+        if past_halfway:
+            for group_name, group_families in self._family_groups.items():
+                if group_name not in self._used_family_groups:
+                    underrepresented.extend(
+                        f for f in group_families if f in V9_FAMILY_POOLS)
+
+        # First voice is ALWAYS a bass or foundation instrument
+        bass_families = ['rock_bass', 'bass', 'strings']
+        bass_family = rng.choice([f for f in bass_families if f in V9_FAMILY_POOLS])
+        bass_pool = V9_FAMILY_POOLS.get(bass_family, V9_FAMILY_POOLS['strings'])
+        bass_gm = rng.choice(bass_pool)
+        voices.append({
+            'gm_program': bass_gm,
+            'octave_offset': -12,
+            'pan': pans_pool[0],
+            'chord_size': rng.randint(1, 2),
+            'color_amount': 0.15,
+            'family': bass_family,
+        })
+        used_families.add(bass_family)
+        for group_name, group_fams in self._family_groups.items():
+            if bass_family in group_fams:
+                self._used_family_groups.add(group_name)
+
+        for v in range(1, n_voices):
+            # Weighted random family selection
+            if v < 3:
+                # Ensure minimum 3 different families
+                available = [(f, w) for f, w in weighted_families
+                             if f not in used_families]
+                if not available:
+                    available = weighted_families
+            elif underrepresented and rng.random() < 0.6:
+                available = [(f, V12_ACOUSTIC_FAMILIES.get(f, 0.3))
+                             for f in underrepresented]
+            else:
+                available = [(f, w) for f, w in weighted_families
+                             if f not in used_families]
+                if not available:
+                    available = weighted_families
+
+            # Weighted selection
+            total_weight = sum(w for _, w in available)
+            r = rng.random() * total_weight
+            cumulative = 0.0
+            family = available[0][0]
+            for f, w in available:
+                cumulative += w
+                if r <= cumulative:
+                    family = f
+                    break
+
+            used_families.add(family)
+            for group_name, group_fams in self._family_groups.items():
+                if family in group_fams:
+                    self._used_family_groups.add(group_name)
+
+            pool = V9_FAMILY_POOLS[family]
+            gm = rng.choice(pool)
+            pan = pans_pool[v % len(pans_pool)]
+            chord_size = rng.randint(2, 4)
+
+            voices.append({
+                'gm_program': gm,
+                'octave_offset': 0,  # Will be overridden by orchestrator
+                'pan': pan,
+                'chord_size': chord_size,
+                'color_amount': 0.2,
+                'family': family,
+            })
+
+        return voices
+
+    def _render_segment(self, mood, kits, n_samples, sim_state):
+        """Render a mood segment with v12 natural instrument synthesis.
+
+        v12 changes from v11:
+        - Uses _synth_gm_note_v12_np instead of _synth_gm_note_np
+        - Clamps MIDI notes to [36, 84] (C2-C6) range
+        - Uses v12 instrument selection with acoustic bias
+        - Master lowpass at 7kHz instead of 8kHz
+        - Slightly longer note durations (1.3x) for more legato
+        """
+        left = [0.0] * n_samples
+        right = [0.0] * n_samples
+
+        rng = mood.rng
+        tempo = mood.tempo
+        beats_per_bar = mood.beats_per_bar
+        root = mood.root
+
+        # 1. Tempo multiplier (inherited: 1.2x-1.8x)
+        tempo_mult = self._compute_tempo_multiplier(sim_state)
+        effective_tempo = min(tempo * tempo_mult, 360)
+
+        # 2. Create bar grid
+        ts_key = getattr(mood, '_v8_time_sig', mood.time_sig)
+        ts_info = TIME_SIGNATURES.get(ts_key, TIME_SIGNATURES.get('4/4'))
+        beat_unit = ts_info['unit'] if isinstance(ts_info, dict) else 4
+        grid = BarGrid(effective_tempo, beats_per_bar, beat_unit)
+        bar_duration_sec = grid.bar_dur
+
+        # 3. Sample MIDI bars
+        loop_bars = rng.randint(4, 12)
+        bars_result = self.midi_lib.sample_bars_seeded(
+            sim_state, loop_bars, effective_tempo, beats_per_bar,
+            root=root, scale=mood.scale, rng=rng
+        )
+        midi_notes, segment_duration, midi_info = bars_result
+
+        if segment_duration <= 0 or not midi_notes:
+            return left, right
+
+        # 4. Quantize notes to bar grid
+        if bar_duration_sec > 0:
+            midi_notes = self.quantizer.fit_notes_to_bars(
+                midi_notes, loop_bars, bar_duration_sec, beats_per_bar
+            )
+        snapped_notes = []
+        for t_sec, midi_note, dur_sec, vel in midi_notes:
+            t_snapped = grid.snap_onset(t_sec, '16th')
+            dur_snapped = grid.snap_duration(dur_sec)
+            # v12: slightly longer notes for legato character (1.3x)
+            dur_snapped = min(dur_snapped * 1.3, bar_duration_sec)
+            snapped_notes.append((t_snapped, midi_note, dur_snapped, vel))
+        midi_notes = snapped_notes
+
+        # 5. Choose voices with v12 acoustic bias
+        n_voices = clamp(rng.randint(4, 6), 4, 6)
+        voice_configs = self._choose_gm_instruments_v12(midi_info, n_voices, rng)
+
+        # 6. Assign orchestral roles (with v12 reduced melody offset)
+        self.orchestrator.assign_roles(voice_configs, rng)
+
+        # 7. Expand notes into chords with inter-voice consonance
+        chord_notes = []
+        for t_sec, midi_note, dur_sec, vel in midi_notes:
+            chord = self._build_chord_from_note(
+                midi_note, root, mood.scale_name, mood.scale,
+                n_notes=rng.randint(2, 4), rng=rng
+            )
+            chord_notes.append((t_sec, chord, dur_sec, vel))
+
+        # 8. Build rondo sections
+        rondo = self._build_rondo_sections(
+            chord_notes, root, mood.scale_name, mood.scale,
+            segment_duration, rng
+        )
+
+        # Bar-aligned section offsets
+        bars_per_section = grid.bars_in_duration(segment_duration)
+        rondo_duration = bars_per_section * grid.bar_dur * len(rondo)
+        loop_samples = int(rondo_duration * SAMPLE_RATE)
+        if loop_samples <= 0:
+            return left, right
+
+        loop_left = [0.0] * loop_samples
+        loop_right = [0.0] * loop_samples
+
+        # Create gain stage
+        gain_stage = GainStage(n_voices, headroom_db=-3.0)
+
+        # FluidSynth for primary voice
+        fluid_rendered = None
+        if HAS_FLUIDSYNTH and midi_info.get('path'):
+            primary_gm = voice_configs[0]['gm_program']
+            fluid_rendered = MidiLibrary.render_fluidsynth(
+                midi_info['path'], primary_gm,
+                tempo_factor=tempo_mult,
+                start_tick=midi_info.get('start_tick', 0),
+                end_tick=midi_info.get('end_tick')
+            )
+
+        # Render voices with orchestral roles and proper gain staging
+        prev_voice_chords = {}
+        synth_rng_base = rng.randint(0, 999999)
+
+        for sec_idx, (label, section_notes) in enumerate(rondo):
+            sec_start = int(grid.section_start(sec_idx, bars_per_section) * SAMPLE_RATE)
+
+            # 85% simultaneous, 15% solo
+            is_solo_section = rng.random() < 0.15
+            if is_solo_section:
+                active_voices = [rng.randint(0, n_voices - 1)]
+            else:
+                active_voices = list(range(n_voices))
+
+            for v_idx in active_voices:
+                vc = voice_configs[v_idx]
+                oct_off = vc['octave_offset']
+                pan = vc.get('pan', 0.0)
+                gm_program = vc['gm_program']
+                v_chord_size = vc['chord_size']
+                gain_weight = vc.get('gain_weight', 1.0)
+
+                # FluidSynth for first voice, first A section
+                if (v_idx == 0 and fluid_rendered is not None
+                        and label == 'A' and sec_idx == 0):
+                    fl, fr = fluid_rendered
+                    fl_n = min(len(fl), loop_samples - sec_start)
+                    fl_gain = gain_stage.voice_gain * gain_weight
+                    for i in range(fl_n):
+                        pos = sec_start + i
+                        if 0 <= pos < loop_samples:
+                            loop_left[pos] += fl[i] * fl_gain
+                            loop_right[pos] += fr[i] * fl_gain
+                    continue
+
+                # Collect notes for consonance check
+                voice_note_groups = []
+                for t_sec, chord, dur_sec, vel in section_notes:
+                    voice_chord = chord[:v_chord_size]
+                    # v12: clamp to [36, 84] (C2-C6) -- prevents ear-piercing highs
+                    voice_chord = [clamp(n + oct_off, V12_MIN_MIDI_NOTE, V12_MAX_MIDI_NOTE)
+                                   for n in voice_chord]
+                    voice_chord = [self.midi_lib._snap_to_scale(n, root, mood.scale)
+                                   for n in voice_chord]
+                    voice_note_groups.append(voice_chord)
+
+                # Voice leading
+                prev_chord = prev_voice_chords.get(v_idx)
+                for gi in range(len(voice_note_groups)):
+                    if prev_chord and len(prev_chord) > 0:
+                        voice_note_groups[gi] = self.orchestrator.apply_voice_leading(
+                            prev_chord, voice_note_groups[gi],
+                            mood.scale, root, self.midi_lib._snap_to_scale
+                        )
+                    prev_chord = voice_note_groups[gi]
+                if voice_note_groups:
+                    prev_voice_chords[v_idx] = voice_note_groups[-1]
+
+                # Inter-voice consonance
+                if not is_solo_section and len(active_voices) > 1 and voice_note_groups:
+                    other_chords = []
+                    for ov in active_voices:
+                        if ov != v_idx and ov in prev_voice_chords:
+                            other_chords.append(prev_voice_chords[ov])
+                    if other_chords:
+                        adjusted = self.consonance.adjust_for_consonance(
+                            [voice_note_groups[0]] + other_chords,
+                            root, mood.scale, min_score=0.55,
+                            snap_fn=self.midi_lib._snap_to_scale
+                        )
+                        if adjusted:
+                            voice_note_groups[0] = adjusted[0]
+
+                # Synthesize and mix using v12 synthesis
+                for ni, (t_sec, chord, dur_sec, vel) in enumerate(section_notes):
+                    offset = sec_start + int(t_sec * SAMPLE_RATE)
+                    if offset >= loop_samples:
+                        continue
+
+                    voice_chord = (voice_note_groups[ni]
+                                   if ni < len(voice_note_groups)
+                                   else chord[:v_chord_size])
+
+                    for note in voice_chord:
+                        freq = mtof(note)
+                        # v12: use natural synthesis with detuning and noise
+                        samps = _synth_gm_note_v12_np(
+                            freq, dur_sec, gm_program, vel,
+                            rng_seed=synth_rng_base + sec_idx * 100 + v_idx * 10 + ni
+                        )
+                        if HAS_NUMPY:
+                            samps = samps.tolist()
+
+                        # Per-voice RMS normalization (from v11)
+                        samps = gain_stage.voice_samples(
+                            samps, target_rms=0.15, is_solo=is_solo_section
+                        )
+
+                        # v11: separated pan and gain
+                        self._mix_mono_v11(
+                            loop_left, loop_right, samps,
+                            offset, loop_samples,
+                            pan, gain_weight
+                        )
+
+        # Effects chain (from v11, with v12 adjustments)
+        if rng.random() < 0.70:
+            loop_left = self._apply_early_reflections_v11(loop_left)
+            loop_right = self._apply_early_reflections_v11(loop_right)
+        if rng.random() < 0.60:
+            loop_left = self._apply_reverb_v11(loop_left)
+            loop_right = self._apply_reverb_v11(loop_right)
+        if rng.random() < 0.35:
+            loop_left = self.smoother.apply_chorus(loop_left)
+            loop_right = self.smoother.apply_chorus(loop_right)
+
+        # Gentle compression AFTER reverb
+        loop_left = self.smoother.apply_gentle_compression(loop_left, ratio=3.0, threshold=0.5)
+        loop_right = self.smoother.apply_gentle_compression(loop_right, ratio=3.0, threshold=0.5)
+
+        # DC offset removal
+        if loop_left:
+            dc_l = sum(loop_left) / len(loop_left)
+            dc_r = sum(loop_right) / len(loop_right)
+            if abs(dc_l) > 0.001 or abs(dc_r) > 0.001:
+                loop_left = [s - dc_l for s in loop_left]
+                loop_right = [s - dc_r for s in loop_right]
+
+        # v12: master lowpass at 7kHz (gentler than v11's 8kHz)
+        loop_left = self.smoother.apply_lowpass(loop_left, 7000)
+        loop_right = self.smoother.apply_lowpass(loop_right, 7000)
+
+        # Anti-hiss + subsonic
+        loop_left_l, loop_right_l = self.anti_hiss.apply_stereo(loop_left, loop_right)
+        loop_left, loop_right = self.subsonic_filter.apply_stereo(loop_left_l, loop_right_l)
+
+        # Master bus soft-knee limiting
+        gain_stage.master_limit(loop_left, loop_right, knee=0.80)
+
+        # Loop with extended crossfade (4-6 seconds)
+        xfade = min(int(rng.uniform(4.0, 6.0) * SAMPLE_RATE),
+                     loop_samples // 3)
+        pos = 0
+        while pos < n_samples:
+            remaining = n_samples - pos
+            chunk = min(loop_samples, remaining)
+            for i in range(chunk):
+                fade = 1.0
+                if pos > 0 and i < xfade:
+                    fade = 0.5 - 0.5 * math.cos(math.pi * i / max(xfade, 1))
+                dist_to_end = chunk - i
+                if dist_to_end < xfade and pos + chunk < n_samples:
+                    fade *= 0.5 + 0.5 * math.cos(math.pi * (1 - dist_to_end / max(xfade, 1)))
+                left[pos + i] += loop_left[i] * fade
+                right[pos + i] += loop_right[i] * fade
+            pos += loop_samples - xfade
+
+        return left, right
+
+
+def generate_radio_v12_mp3(output_path, duration=1800.0, seed=42):
+    """Generate the v12 radio MP3 -- natural instrument character + v11 mixing.
+
+    v12 features: natural detuning, noise/breath layers, acoustic instrument
+    bias, frequency ceiling at C6, reduced melody offset, 7kHz master lowpass,
+    plus all v11 mixing improvements.
+    """
+    import tempfile
+
+    ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
+                            _time.localtime(_time.time()))
+    utc_now = _time.strftime('%Y-%m-%d %H:%M UTC',
+                             _time.gmtime(_time.time()))
+    print(f"[{ct_now}] [RadioEngineV12] Initializing (seed={seed}, duration={duration}s)...")
+    engine = RadioEngineV12(seed=seed, total_duration=duration)
+
+    print(f"[{ct_now}] [RadioEngineV12] {len(engine.instruments)} instruments loaded")
+    print(f"[{ct_now}] [RadioEngineV12] {len(engine.midi_lib._note_sequences)} MIDI sequences loaded")
+    print(f"[{ct_now}] [RadioEngineV12] {len(V9_FAMILY_POOLS)} instrument family pools")
+    print(f"[{ct_now}] [RadioEngineV12] {len(GM_TIMBRE_PROFILES_V12)} v12 timbre profiles")
+    print(f"[{ct_now}] [RadioEngineV12] Frequency ceiling: C6 (1047 Hz)")
+    print(f"[{ct_now}] [RadioEngineV12] MIDI note range: {V12_MIN_MIDI_NOTE}-{V12_MAX_MIDI_NOTE}")
+    print(f"[{ct_now}] [RadioEngineV12] Master lowpass: 7kHz")
+    print(f"[{ct_now}] [RadioEngineV12] Acoustic bias: {sum(1 for v in V12_ACOUSTIC_FAMILIES.values() if v >= 0.6)}/{len(V12_ACOUSTIC_FAMILIES)} families weighted >= 0.6")
+    print(f"[{ct_now}] [RadioEngineV12] TTS engine: {'Silero' if engine.tts._silero_available else 'espeak-ng'}")
+    print(f"[{ct_now}] [RadioEngineV12] V12: natural detuning + noise layers + acoustic bias")
+
+    n_segments = len(engine.segments)
+    avg_dur = sum(s['duration'] for s in engine.segments) / max(n_segments, 1)
+
+    simple_count = sum(1 for s in engine.segments
+                       if s.get('time_sig_override') in SIMPLE_TIME_SIGS)
+    compound_count = sum(1 for s in engine.segments
+                         if s.get('time_sig_override') in COMPOUND_TIME_SIGS)
+    complex_count = sum(1 for s in engine.segments
+                        if s.get('time_sig_override') in COMPLEX_TIME_SIGS)
+    print(f"[{ct_now}] [RadioEngineV12] {n_segments} mood segments (avg {avg_dur:.0f}s)")
+    print(f"[{ct_now}] [RadioEngineV12] Time signatures: {simple_count} simple, "
+          f"{compound_count} compound, {complex_count} complex")
+
+    ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
+                            _time.localtime(_time.time()))
+    print(f"[{ct_now}] [RadioEngineV12] Rendering audio...")
+    t0 = _time.time()
+
+    # Import simulator
+    try:
+        sys.path.insert(0, PROJECT_ROOT)
+        from simulator.universe import Universe
+        universe = Universe(seed=seed, max_ticks=999999999)
+
+        sim_states = []
+        total_ticks = int(duration * 50)
+        ticks_per_segment = max(1, total_ticks // n_segments)
+        for seg in range(n_segments):
+            for _ in range(ticks_per_segment):
+                universe.step()
+            state = {
+                'temperature': universe.quantum_field.temperature,
+                'particles': len(universe.quantum_field.particles),
+                'atoms': len(universe.atomic_system.atoms) if universe.atomic_system else 0,
+                'molecules': len(universe.chemical_system.molecules) if universe.chemical_system else 0,
+                'cells': len(universe.biosphere.cells) if universe.biosphere else 0,
+                'generation': universe.biosphere.generation if universe.biosphere else 0,
+                'epoch': universe.current_epoch_name,
+            }
+            sim_states.append(state)
+            if seg % 3 == 0:
+                ct_seg = _time.strftime('%Y-%m-%d %H:%M CT',
+                                        _time.localtime(_time.time()))
+                print(f"  [{ct_seg}] Sim segment {seg+1}/{n_segments}: epoch={state['epoch']}, "
+                      f"T={state['temperature']:.0f}, particles={state['particles']}, "
+                      f"density={state['particles'] + state['atoms']*2 + state['molecules']*3 + state['cells']*5}")
+    except Exception as e:
+        print(f"  [Warning] Could not run simulator: {e}")
+        print(f"  Using synthetic simulation data instead.")
+        sim_states = None
+
+    use_streaming = duration > 660
+
+    if use_streaming:
+        ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
+                                _time.localtime(_time.time()))
+        print(f"[{ct_now}] [RadioEngineV12] Using streaming renderer (low memory)...")
+        with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
+            wav_path = tmp.name
+        try:
+            with wave.open(wav_path, 'wb') as wf:
+                wf.setnchannels(2)
+                wf.setsampwidth(2)
+                wf.setframerate(SAMPLE_RATE)
+                total_written = engine.render_streaming(wf, sim_states)
+            t1 = _time.time()
+            ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
+                                    _time.localtime(_time.time()))
+            print(f"[{ct_now}] [RadioEngineV12] Streamed {total_written/SAMPLE_RATE:.1f}s in {t1-t0:.1f}s")
+            print(f"[{ct_now}] [RadioEngineV12] Family groups used: {sorted(engine._used_family_groups)}")
+
+            if output_path.endswith('.mp3'):
+                print(f"[{ct_now}] [RadioEngineV12] Converting to MP3...")
+                wav_to_mp3(wav_path, output_path)
+                ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
+                                        _time.localtime(_time.time()))
+                print(f"[{ct_now}] [RadioEngineV12] Saved: {output_path}")
+            else:
+                import shutil
+                shutil.move(wav_path, output_path)
+                wav_path = None
+                print(f"[{ct_now}] [RadioEngineV12] Saved: {output_path}")
+        finally:
+            if wav_path:
+                try:
+                    os.unlink(wav_path)
+                except OSError:
+                    pass
+    else:
+        left, right = engine.render(sim_states)
+
+        t1 = _time.time()
+        ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
+                                _time.localtime(_time.time()))
+        print(f"[{ct_now}] [RadioEngineV12] Rendered {len(left)/SAMPLE_RATE:.1f}s in {t1-t0:.1f}s")
+        print(f"[{ct_now}] [RadioEngineV12] Family groups used: {sorted(engine._used_family_groups)}")
+
+        if output_path.endswith('.mp3'):
+            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
+                wav_path = tmp.name
+            try:
+                print(f"[{ct_now}] [RadioEngineV12] Writing WAV ({len(left)*4/1048576:.1f} MB)...")
+                render_to_wav(left, right, wav_path)
+                print(f"[{ct_now}] [RadioEngineV12] Converting to MP3...")
+                wav_to_mp3(wav_path, output_path)
+                ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
+                                        _time.localtime(_time.time()))
+                print(f"[{ct_now}] [RadioEngineV12] Saved: {output_path}")
+            finally:
+                try:
+                    os.unlink(wav_path)
+                except OSError:
+                    pass
+        else:
+            render_to_wav(left, right, output_path)
+            print(f"[{ct_now}] [RadioEngineV12] Saved: {output_path}")
+
+    file_size = os.path.getsize(output_path) if os.path.exists(output_path) else 0
+    ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
+                            _time.localtime(_time.time()))
+    print(f"[{ct_now}] [RadioEngineV12] File size: {file_size/1048576:.1f} MB")
+    return output_path
+
+
 def generate_radio_v11_mp3(output_path, duration=1800.0, seed=42):
     """Generate the v11 radio MP3 file with comprehensive audio quality fixes.
 
@@ -5778,10 +6576,12 @@ if __name__ == '__main__':
                        help='Duration in seconds (default: 1800)')
     parser.add_argument('--seed', '-s', type=int, default=42,
                        help='Random seed')
-    parser.add_argument('--version', '-V', choices=['v7', 'v8', 'v9', 'v10', 'v11'], default='v7',
-                       help='Engine version: v7 (classic), v8 (orchestral), v9 (expanded), v10 (GM-timbre), v11 (gain-staged)')
+    parser.add_argument('--version', '-V', choices=['v7', 'v8', 'v9', 'v10', 'v11', 'v12'], default='v7',
+                       help='Engine version: v7-v12 (v12=natural instruments)')
     args = parser.parse_args()
-    if args.version == 'v11':
+    if args.version == 'v12':
+        generate_radio_v12_mp3(args.output, args.duration, args.seed)
+    elif args.version == 'v11':
         generate_radio_v11_mp3(args.output, args.duration, args.seed)
     elif args.version == 'v10':
         generate_radio_v10_mp3(args.output, args.duration, args.seed)
