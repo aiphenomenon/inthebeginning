@@ -389,6 +389,62 @@ Each log entry must include:
 - **Append-only**: Never rewrite or modify old session log entries. New
   information is appended as new conversation turns. If a correction is needed,
   add a new turn noting the correction rather than editing the original.
+- **Input quality caveat**: Session logs and future memories may contain typos,
+  autocomplete artifacts, speech-to-text errors, and exploratory/ambiguous
+  language from the user. Preserve quoted user input as-is (except for
+  redacting sensitive information).
+
+---
+
+## Future Memories Protocol
+
+The `future_memories/` directory holds verbose plan files written **before and
+during** implementation. They serve as durable restoration context if a session
+is interrupted, times out, or must be resumed by a different agent.
+
+### Iterative Plan Commits
+
+**Before mutating any source code**, agents must:
+
+1. Write a plan file to `future_memories/v{VERSION}-plan.md` with the full
+   intended work, architectural decisions, and user context.
+2. **Commit and push** the plan file before proceeding with code changes.
+3. Update the plan file and commit again at significant milestones.
+4. Multiple plan commits per conversation turn is expected and encouraged.
+
+### Archival
+
+- Raw plan files remain in the working tree while in-progress.
+- After version completion, archive into `future_memories/archive.tar.gz`.
+- The archive is **rebuilt** (not appended) to contain full history. The old
+  archive is replaced in-place -- no orphan files in git history.
+- Same strategy for `session_logs/archive.tar.gz`.
+
+### Content
+
+Future memories are intentionally verbose. They may include speculative notes,
+alternative approaches, and reasoning chains. Scrub sensitive information with
+`[REDACTED: <reason>]` markers.
+
+---
+
+## CI Flake Detection and Repair
+
+At each conversation turn, if GitHub CI is accessible:
+
+1. Check for flaked builds from the previous version using `gh run list`.
+2. Fix flakes if possible (flaky tests, transient failures).
+3. Add TODOs for unfixable flakes and notify the user.
+4. Update steering if new CI patterns are discovered.
+
+### AMD64 Build Verification
+
+When feasible, verify AMD64 builds from CI:
+
+1. Download or build locally for AMD64 (Go, Rust, C, C++).
+2. Run basic smoke tests.
+3. If broken, add TODOs and notify the user.
+4. Best-effort -- do not block the session.
 
 ---
 
@@ -498,6 +554,9 @@ propagated to the other two. Specific items that must appear in all three:
 - AST-guided code generation (bug prevention)
 - Cross-language consistency for physics changes
 - Commit format rules
+- Future memories: iterative plan commits before code mutation
+- CI flake detection and repair
+- AMD64 build verification (best-effort)
 
 This triple cross-check principle prevents drift between human-readable
 documentation and machine-enforced hooks.

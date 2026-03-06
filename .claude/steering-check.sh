@@ -109,6 +109,30 @@ echo "             - AST introspection on changed files"
 echo "             - AST-guided code generation (bug prevention)"
 echo "             - Cross-language consistency for physics changes"
 echo "             - Commit format rules"
+echo "             - Future memories: iterative plan commits before code mutation"
+echo "             - CI flake detection and repair"
+echo "             - AMD64 build verification (best-effort)"
+
+# 11. Future memories — iterative plan commits before code mutation
+if [ -d "$PROJECT_ROOT/future_memories" ]; then
+    LATEST_PLAN=$(ls -t "$PROJECT_ROOT/future_memories/"*-plan.md 2>/dev/null | head -1)
+    if [ -n "$LATEST_PLAN" ]; then
+        echo "[CHECK] Future memory plan exists: $(basename "$LATEST_PLAN")"
+    else
+        echo "[FAIL-CUE] Future memories: Write a plan file before mutating code"
+    fi
+else
+    echo "[FAIL-CUE] Future memories: Create future_memories/ directory and write plan"
+fi
+echo "[FAIL-CUE] Future memories: Ensure plan is committed and pushed BEFORE code changes"
+
+# 12. CI flake detection
+echo "[FAIL-CUE] CI flakes: Check GitHub CI for flaked builds from prior version (gh run list)"
+echo "           Fix if possible, add TODOs if not, notify user of broken builds"
+
+# 13. AMD64 build verification (best-effort)
+echo "[FAIL-CUE] AMD64 builds: Attempt to verify AMD64 builds (Go, Rust, C, C++)"
+echo "           Best-effort -- add TODOs for broken builds, do not block session"
 
 echo ""
 echo "=================================================================="

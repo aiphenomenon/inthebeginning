@@ -622,6 +622,74 @@ Session logs are **append-only** per conversation turn. Do not rewrite old sessi
 during the markdown review step or any other automated process. They are historical
 records generated once per conversation turn.
 
+### Input Quality Caveat
+
+Session logs and future memories may reflect user input that contains typos,
+autocomplete artifacts, speech-to-text transcription errors, and deliberately
+exploratory or ambiguous language. The user is aware of this and has noted that they
+sometimes work through ideas on the fly. Do not "clean up" quoted user input beyond
+redacting sensitive information -- preserve it as-is for historical accuracy.
+
+---
+
+## Future Memories Protocol
+
+The `future_memories/` directory contains verbose, speculative plan files written
+**before and during** implementation. They serve as durable restoration context if a
+session is interrupted.
+
+### Iterative Plan Commits
+
+**Before mutating any source code**, agents must:
+
+1. Write a plan file to `future_memories/v{VERSION}-plan.md` describing the full
+   intended work, architectural decisions, and user context.
+2. **Commit and push** the plan file to the working branch.
+3. Only then proceed with code changes.
+4. Update the plan file and commit again as significant milestones are reached.
+
+This ensures that if a session is interrupted, the next agent can restore full context
+from the committed plan file rather than starting from scratch.
+
+### Archival Strategy
+
+- Raw plan files remain in the working tree while the version is in-progress.
+- After a version ships, the plan file is archived into
+  `future_memories/archive.tar.gz`.
+- The archive is **rebuilt** (not appended) each time to contain the complete history
+  of all prior plan files. The old archive is replaced in-place.
+- This means git only ever has **one archive file at HEAD** -- no trail of orphan
+  zip/tar files accumulating in git history.
+- The same strategy applies to `session_logs/archive.tar.gz`.
+
+### Content Guidelines
+
+Future memories are intentionally verbose and stream-of-consciousness. They may
+include speculative notes, alternative approaches considered, and reasoning chains.
+Scrub sensitive information with `[REDACTED: <reason>]` markers before committing.
+
+---
+
+## CI Flake Detection and Repair
+
+At each conversation turn, if GitHub CI results are accessible:
+
+1. **Check for flaked builds** from the previous version/cut using `gh run list` or
+   similar.
+2. **Fix flakes if possible** -- flaky tests, transient build failures, etc.
+3. **Add TODOs** for flakes that cannot be fixed immediately, and notify the user.
+4. **Update this steering** if new CI patterns are discovered that should be
+   monitored in future sessions.
+
+### AMD64 Build Verification
+
+When feasible, attempt to run or verify AMD64 builds produced by GitHub CI:
+
+1. Download or build locally for AMD64 (Go, Rust, C, C++).
+2. Run a basic smoke test (e.g., `./simulator --help` or short simulation).
+3. If builds are broken, add TODOs and notify the user.
+4. This is best-effort -- do not block the session on build verification.
+
 ---
 
 ## Markdown Consistency Check
@@ -724,6 +792,9 @@ items that must appear in all three:
 - AST-guided code generation (bug prevention)
 - Cross-language consistency for physics changes
 - Commit format rules
+- Future memories: iterative plan commits before code mutation
+- CI flake detection and repair
+- AMD64 build verification (best-effort)
 
 ---
 
@@ -801,6 +872,7 @@ ast_captures/        Pre-computed AST snapshots for reference
 tests/               Python test suite
 docs/                Architecture documentation
 session_logs/        Per-turn session and transcript logs
+future_memories/     Verbose plan files for session restoration
 .github/workflows/   CI/CD pipelines
 .claude/             gVisor hook scripts and settings
 ```
