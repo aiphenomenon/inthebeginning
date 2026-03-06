@@ -555,8 +555,10 @@ propagated to the other two. Specific items that must appear in all three:
 - Cross-language consistency for physics changes
 - Commit format rules
 - Future memories: iterative plan commits before code mutation
+- Future memories: early-stage orchestration (plan committed BEFORE code changes)
 - CI flake detection and repair
 - AMD64 build verification (best-effort)
+- Audio engine quality gate (when modifying radio_engine.py)
 
 This triple cross-check principle prevents drift between human-readable
 documentation and machine-enforced hooks.
