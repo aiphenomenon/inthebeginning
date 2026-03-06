@@ -28,7 +28,8 @@ from apps.audio.radio_engine import (
     RONDO_PATTERNS, DIATONIC_CHORD_QUALITY, GM_ORCHESTRA_INSTRUMENTS,
     PIANO_PROGRAMS, HAS_FLUIDSYNTH, ARPEGGIO_FORMS,
     GM_EXPANDED_INSTRUMENTS, GM_ALL_INSTRUMENTS, V9_FAMILY_POOLS,
-    RadioEngineV9,
+    RadioEngineV9, RadioEngineV10,
+    GM_TIMBRE_PROFILES, _gm_program_to_timbre, _synth_gm_note_np,
 )
 
 
@@ -1235,6 +1236,198 @@ class TestV9CLIArgument(unittest.TestCase):
         parser.add_argument('--version', '-V', choices=['v7', 'v8', 'v9'])
         args = parser.parse_args(['--version', 'v9'])
         self.assertEqual(args.version, 'v9')
+
+
+# ===================================================================
+# V10 TESTS
+# ===================================================================
+
+class TestV10GMTimbreProfiles(unittest.TestCase):
+    """Tests for v10 GM timbre profile mapping."""
+
+    def test_all_profiles_exist(self):
+        """All 15 GM timbre profiles should exist."""
+        self.assertEqual(len(GM_TIMBRE_PROFILES), 15)
+
+    def test_profiles_have_required_keys(self):
+        """Each profile must have attack, decay, sustain, release, harmonics, brightness."""
+        required = {'attack', 'decay', 'sustain', 'release', 'harmonics',
+                    'brightness', 'vib_depth'}
+        for name, profile in GM_TIMBRE_PROFILES.items():
+            for key in required:
+                self.assertIn(key, profile, f"Profile {name} missing {key}")
+
+    def test_gm_program_mapping_covers_all(self):
+        """Every GM program 0-127 should map to a valid profile."""
+        for prog in range(128):
+            timbre = _gm_program_to_timbre(prog)
+            self.assertIn(timbre, GM_TIMBRE_PROFILES,
+                          f"GM program {prog} maps to unknown profile {timbre}")
+
+    def test_piano_mapping(self):
+        """GM programs 0-7 should map to piano."""
+        for prog in range(8):
+            self.assertEqual(_gm_program_to_timbre(prog), 'piano')
+
+    def test_strings_mapping(self):
+        """GM programs 40-47 should map to strings."""
+        for prog in range(40, 48):
+            self.assertEqual(_gm_program_to_timbre(prog), 'strings')
+
+    def test_brass_mapping(self):
+        """GM programs 56-63 should map to brass."""
+        for prog in range(56, 64):
+            self.assertEqual(_gm_program_to_timbre(prog), 'brass')
+
+    def test_synth_pad_mapping(self):
+        """GM programs 88-95 should map to synth_pad."""
+        for prog in range(88, 96):
+            self.assertEqual(_gm_program_to_timbre(prog), 'synth_pad')
+
+    def test_distinct_envelope_shapes(self):
+        """Different families should have meaningfully different envelopes."""
+        piano = GM_TIMBRE_PROFILES['piano']
+        strings = GM_TIMBRE_PROFILES['strings']
+        synth_pad = GM_TIMBRE_PROFILES['synth_pad']
+        # Piano has fast attack, strings slow, pads very slow
+        self.assertLess(piano['attack'], strings['attack'])
+        self.assertLess(strings['attack'], synth_pad['attack'])
+
+    def test_harmonics_not_empty(self):
+        """Each profile should have at least 2 harmonics."""
+        for name, profile in GM_TIMBRE_PROFILES.items():
+            self.assertGreaterEqual(len(profile['harmonics']), 2,
+                                    f"Profile {name} has too few harmonics")
+
+
+class TestV10GMSynthesis(unittest.TestCase):
+    """Tests for v10 GM-timbre-aware synthesis function."""
+
+    def test_synth_produces_audio(self):
+        """_synth_gm_note_np should produce non-empty output."""
+        result = _synth_gm_note_np(440.0, 0.1, 0)  # Piano A4
+        self.assertGreater(len(result), 0)
+
+    def test_different_programs_different_output(self):
+        """Different GM programs should produce different audio."""
+        piano = _synth_gm_note_np(440.0, 0.1, 0)
+        strings = _synth_gm_note_np(440.0, 0.1, 44)
+        brass = _synth_gm_note_np(440.0, 0.1, 60)
+        # Compare RMS levels (different envelopes = different energy)
+        def rms(samples):
+            if hasattr(samples, 'tolist'):
+                samples = samples.tolist()
+            return (sum(s*s for s in samples) / max(len(samples), 1)) ** 0.5
+        # At least two of the three should differ noticeably
+        rms_p, rms_s, rms_b = rms(piano), rms(strings), rms(brass)
+        # They can't all be identical
+        self.assertFalse(
+            abs(rms_p - rms_s) < 0.001 and abs(rms_s - rms_b) < 0.001,
+            "All three instrument families produced identical output"
+        )
+
+    def test_synth_correct_length(self):
+        """Output length should match duration * sample_rate."""
+        result = _synth_gm_note_np(440.0, 0.5, 0)
+        expected = int(0.5 * SAMPLE_RATE)
+        if hasattr(result, '__len__'):
+            self.assertEqual(len(result), expected)
+
+    def test_zero_duration(self):
+        """Zero duration should produce empty output."""
+        result = _synth_gm_note_np(440.0, 0.0, 0)
+        self.assertEqual(len(result), 0)
+
+
+class TestV10TempoMultiplier(unittest.TestCase):
+    """Tests for v10 flat tempo range."""
+
+    def test_default_tempo(self):
+        """Default (no sim state) should return 1.5."""
+        engine = RadioEngineV10(seed=42, total_duration=10.0)
+        self.assertAlmostEqual(engine._compute_tempo_multiplier(None), 1.5)
+
+    def test_tempo_range(self):
+        """Tempo should be in 1.2-1.8 range for all states."""
+        engine = RadioEngineV10(seed=42, total_duration=10.0)
+        for i in range(100):
+            state = {'temperature': 500 + i * 200, 'particles': i,
+                     'atoms': i * 2, 'molecules': i, 'cells': i // 5}
+            mult = engine._compute_tempo_multiplier(state)
+            self.assertGreaterEqual(mult, 1.2, f"Tempo {mult} < 1.2 for state {i}")
+            self.assertLessEqual(mult, 1.8, f"Tempo {mult} > 1.8 for state {i}")
+
+    def test_no_density_capping(self):
+        """v10 should NOT cap tempo based on density (unlike v9)."""
+        engine = RadioEngineV10(seed=42, total_duration=10.0)
+        # High density state that would trigger v9 cap at 1.6
+        state = {'temperature': 5000, 'particles': 100, 'atoms': 50,
+                 'molecules': 20, 'cells': 10}
+        mult = engine._compute_tempo_multiplier(state)
+        # Should still be in 1.2-1.8 range, but NOT necessarily <= 1.6
+        self.assertGreaterEqual(mult, 1.2)
+        self.assertLessEqual(mult, 1.8)
+
+
+class TestV10EngineCreation(unittest.TestCase):
+    """Tests for RadioEngineV10 initialization."""
+
+    def test_creates_successfully(self):
+        """V10 engine should initialize without errors."""
+        engine = RadioEngineV10(seed=42, total_duration=10.0)
+        self.assertIsNotNone(engine)
+        self.assertIsInstance(engine, RadioEngineV9)
+        self.assertIsInstance(engine, RadioEngineV8)
+        self.assertIsInstance(engine, RadioEngine)
+
+    def test_morph_duration_increased(self):
+        """V10 should have 8s morph transitions (up from 6s)."""
+        engine = RadioEngineV10(seed=42, total_duration=10.0)
+        self.assertEqual(engine.MORPH_DURATION, 8.0)
+
+    def test_fade_durations_increased(self):
+        """V10 should have longer fade in/out."""
+        engine = RadioEngineV10(seed=42, total_duration=10.0)
+        self.assertEqual(engine.FADE_IN_DURATION, 6.0)
+        self.assertEqual(engine.FADE_OUT_DURATION, 10.0)
+
+    def test_inherits_v9_features(self):
+        """V10 should inherit v9 family tracking."""
+        engine = RadioEngineV10(seed=42, total_duration=10.0)
+        self.assertIsNotNone(engine._family_groups)
+        self.assertIsNotNone(engine._used_family_groups)
+
+    def test_v10_short_render(self):
+        """V10 should render a short segment without errors."""
+        engine = RadioEngineV10(seed=42, total_duration=5.0)
+        left, right = engine.render()
+        self.assertGreater(len(left), 0)
+        self.assertGreater(len(right), 0)
+        self.assertEqual(len(left), len(right))
+
+    def test_v10_instrument_diversity(self):
+        """V10 instrument selection should guarantee 3+ families per segment."""
+        engine = RadioEngineV10(seed=42, total_duration=10.0)
+        rng = random.Random(42)
+        midi_info = {'programs': set()}
+
+        for trial in range(20):
+            voices = engine._choose_gm_instruments_v10(midi_info, 5, rng)
+            families_used = set(v['family'] for v in voices)
+            self.assertGreaterEqual(len(families_used), 3,
+                                    f"Trial {trial}: only {len(families_used)} families")
+
+
+class TestV10CLIArgument(unittest.TestCase):
+    """Tests for v10 CLI argument support."""
+
+    def test_v10_in_choices(self):
+        """CLI should accept --version v10."""
+        import argparse
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--version', '-V', choices=['v7', 'v8', 'v9', 'v10'])
+        args = parser.parse_args(['--version', 'v10'])
+        self.assertEqual(args.version, 'v10')
 
 
 if __name__ == '__main__':

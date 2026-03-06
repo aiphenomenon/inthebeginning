@@ -3862,6 +3862,636 @@ class RadioEngineV9(RadioEngineV8):
         return result
 
 
+# ---------------------------------------------------------------------------
+# GM TIMBRE PROFILES -- Distinct synthesis parameters per instrument family
+# ---------------------------------------------------------------------------
+# Each profile maps a GM program range to specific ADSR, harmonic structure,
+# and brightness settings. This prevents all instruments sounding "organ-y"
+# by giving each family a distinct sonic character.
+GM_TIMBRE_PROFILES = {
+    # Piano (0-7): percussive attack, quick decay, bell-like harmonics
+    'piano':      {'attack': 0.003, 'decay': 0.15, 'sustain': 0.3, 'release': 0.25,
+                   'harmonics': [(1, 1.0), (2, 0.6), (3, 0.2), (4, 0.15), (5, 0.08),
+                                 (7, 0.03)], 'brightness': 0.7, 'vib_depth': 0.0001},
+    # Chromatic percussion (8-15): very percussive, short notes
+    'mallets':    {'attack': 0.001, 'decay': 0.08, 'sustain': 0.1, 'release': 0.15,
+                   'harmonics': [(1, 1.0), (2.76, 0.5), (5.4, 0.25), (8.93, 0.12)],
+                   'brightness': 0.9, 'vib_depth': 0.0},
+    # Organ (16-23): sustained, many harmonics, classic drawbar tone
+    'organ':      {'attack': 0.02, 'decay': 0.02, 'sustain': 0.85, 'release': 0.08,
+                   'harmonics': [(1, 1.0), (2, 0.8), (3, 0.6), (4, 0.4), (5, 0.3),
+                                 (6, 0.2), (8, 0.15)], 'brightness': 0.5, 'vib_depth': 0.003},
+    # Guitar (24-31): plucked, fast attack, moderate decay
+    'guitar':     {'attack': 0.002, 'decay': 0.2, 'sustain': 0.2, 'release': 0.3,
+                   'harmonics': [(1, 1.0), (2, 0.5), (3, 0.35), (4, 0.2), (5, 0.15),
+                                 (6, 0.08)], 'brightness': 0.65, 'vib_depth': 0.0005},
+    # Bass (32-39): deep, warm, strong fundamental
+    'bass':       {'attack': 0.005, 'decay': 0.12, 'sustain': 0.5, 'release': 0.15,
+                   'harmonics': [(1, 1.0), (2, 0.4), (3, 0.15), (4, 0.05)],
+                   'brightness': 0.3, 'vib_depth': 0.0002},
+    # Strings (40-47): slow attack, rich sustained harmonics
+    'strings':    {'attack': 0.08, 'decay': 0.1, 'sustain': 0.75, 'release': 0.2,
+                   'harmonics': [(1, 1.0), (2, 0.7), (3, 0.5), (4, 0.25), (5, 0.15),
+                                 (6, 0.08), (7, 0.04)], 'brightness': 0.45, 'vib_depth': 0.004},
+    # Ensemble (48-55): lush, blended, wide
+    'ensemble':   {'attack': 0.1, 'decay': 0.15, 'sustain': 0.7, 'release': 0.25,
+                   'harmonics': [(1, 1.0), (2, 0.65), (3, 0.45), (4, 0.3), (5, 0.18),
+                                 (6, 0.1)], 'brightness': 0.4, 'vib_depth': 0.005},
+    # Brass (56-63): bold, medium attack, strong mid harmonics
+    'brass':      {'attack': 0.03, 'decay': 0.08, 'sustain': 0.7, 'release': 0.12,
+                   'harmonics': [(1, 1.0), (2, 0.9), (3, 0.75), (4, 0.55), (5, 0.35),
+                                 (6, 0.2), (7, 0.12), (8, 0.06)], 'brightness': 0.8,
+                   'vib_depth': 0.002},
+    # Reed (64-71): warm, slightly nasal, moderate brightness
+    'reed':       {'attack': 0.025, 'decay': 0.06, 'sustain': 0.65, 'release': 0.1,
+                   'harmonics': [(1, 1.0), (2, 0.3), (3, 0.65), (4, 0.15), (5, 0.4),
+                                 (6, 0.08), (7, 0.2)], 'brightness': 0.55, 'vib_depth': 0.003},
+    # Pipe (72-79): pure, hollow, few harmonics
+    'pipe':       {'attack': 0.04, 'decay': 0.05, 'sustain': 0.7, 'release': 0.15,
+                   'harmonics': [(1, 1.0), (2, 0.1), (3, 0.3), (5, 0.08)],
+                   'brightness': 0.35, 'vib_depth': 0.002},
+    # Synth lead (80-87): instant attack, bright, sawtooth-like
+    'synth_lead': {'attack': 0.001, 'decay': 0.1, 'sustain': 0.6, 'release': 0.08,
+                   'harmonics': [(1, 1.0), (2, 0.5), (3, 0.33), (4, 0.25), (5, 0.2),
+                                 (6, 0.17), (7, 0.14), (8, 0.12)], 'brightness': 0.85,
+                   'vib_depth': 0.001},
+    # Synth pad (88-95): very slow attack, deep sustain, atmospheric
+    'synth_pad':  {'attack': 0.2, 'decay': 0.3, 'sustain': 0.8, 'release': 0.5,
+                   'harmonics': [(1, 1.0), (2, 0.45), (3, 0.2), (4, 0.1), (5, 0.05)],
+                   'brightness': 0.25, 'vib_depth': 0.006},
+    # Synth FX (96-103): varied experimental sounds
+    'synth_fx':   {'attack': 0.01, 'decay': 0.2, 'sustain': 0.4, 'release': 0.3,
+                   'harmonics': [(1, 1.0), (1.41, 0.4), (2.23, 0.3), (3.17, 0.2),
+                                 (4.59, 0.1)], 'brightness': 0.6, 'vib_depth': 0.004},
+    # Ethnic/World (104-111): plucked/struck, bright attack
+    'world':      {'attack': 0.004, 'decay': 0.18, 'sustain': 0.25, 'release': 0.2,
+                   'harmonics': [(1, 1.0), (2, 0.55), (3, 0.4), (4, 0.3), (5, 0.15),
+                                 (6.2, 0.08)], 'brightness': 0.7, 'vib_depth': 0.002},
+    # Percussive (112-119): very short, impact-like
+    'percussive': {'attack': 0.001, 'decay': 0.05, 'sustain': 0.05, 'release': 0.1,
+                   'harmonics': [(1, 1.0), (2.3, 0.6), (4.1, 0.3), (6.7, 0.15)],
+                   'brightness': 0.75, 'vib_depth': 0.0},
+}
+
+
+def _gm_program_to_timbre(gm_program):
+    """Map a GM program number (0-127) to a timbre profile name.
+
+    Returns the profile key from GM_TIMBRE_PROFILES.
+    """
+    if gm_program <= 7:
+        return 'piano'
+    elif gm_program <= 15:
+        return 'mallets'
+    elif gm_program <= 23:
+        return 'organ'
+    elif gm_program <= 31:
+        return 'guitar'
+    elif gm_program <= 39:
+        return 'bass'
+    elif gm_program <= 47:
+        return 'strings'
+    elif gm_program <= 55:
+        return 'ensemble'
+    elif gm_program <= 63:
+        return 'brass'
+    elif gm_program <= 71:
+        return 'reed'
+    elif gm_program <= 79:
+        return 'pipe'
+    elif gm_program <= 87:
+        return 'synth_lead'
+    elif gm_program <= 95:
+        return 'synth_pad'
+    elif gm_program <= 103:
+        return 'synth_fx'
+    elif gm_program <= 111:
+        return 'world'
+    else:
+        return 'percussive'
+
+
+def _synth_gm_note_np(freq, duration, gm_program, velocity=0.8):
+    """Synthesize a note using GM-specific timbre profiles.
+
+    Unlike _synth_colored_note_np which uses a generic 8-harmonic additive
+    base for all instruments (producing an organ-y tone), this function
+    uses the GM_TIMBRE_PROFILES to give each instrument family a distinct
+    attack, decay, harmonic structure, and brightness.
+    """
+    n = int(duration * SAMPLE_RATE)
+    if n <= 0:
+        return np.zeros(0, dtype=np.float64) if HAS_NUMPY else []
+
+    profile_name = _gm_program_to_timbre(gm_program)
+    profile = GM_TIMBRE_PROFILES[profile_name]
+
+    if HAS_NUMPY:
+        t = np.arange(n, dtype=np.float64) * INV_SR
+        env = _adsr_np(n, profile['attack'], profile['decay'],
+                       profile['sustain'], profile['release'])
+
+        # Vibrato
+        vib_depth = profile['vib_depth']
+        if vib_depth > 0:
+            vib_delay = 0.3
+            vib_env = np.minimum(1.0, t / max(vib_delay, 0.001))
+            vib = vib_depth * vib_env * np.sin(TWO_PI * 5.0 * t)
+            ff = freq * (1.0 + vib)
+        else:
+            ff = freq
+
+        signal = np.zeros(n, dtype=np.float64)
+        for h_data in profile['harmonics']:
+            h_num, h_amp = h_data[0], h_data[1]
+            h_freq = ff * h_num
+            if isinstance(h_freq, (int, float)):
+                if freq * h_num >= SAMPLE_RATE / 2:
+                    continue
+            signal += h_amp * np.sin(TWO_PI * h_freq * t)
+
+        # Brightness control: subtle highpass boost or cut
+        brightness = profile['brightness']
+        if brightness > 0.6:
+            # Bright: add slight odd-harmonic emphasis
+            emphasis_h = freq * 5
+            if emphasis_h < SAMPLE_RATE / 2:
+                signal += (brightness - 0.5) * 0.15 * np.sin(TWO_PI * emphasis_h * t)
+
+        result = signal * env * velocity
+
+        # Anti-click micro-fades
+        cg = min(int(0.002 * SAMPLE_RATE), n // 4)
+        if cg > 0:
+            fade_in = np.linspace(0, 1, cg)
+            result[:cg] *= fade_in
+            result[-cg:] *= fade_in[::-1]
+
+        return result
+    else:
+        # Pure Python fallback
+        env = _adsr(n, profile['attack'], profile['decay'],
+                    profile['sustain'], profile['release'])
+        signal = [0.0] * n
+        for i in range(n):
+            t_sec = i * INV_SR
+            for h_data in profile['harmonics']:
+                h_num, h_amp = h_data[0], h_data[1]
+                if freq * h_num >= SAMPLE_RATE / 2:
+                    continue
+                signal[i] += h_amp * math.sin(TWO_PI * freq * h_num * t_sec)
+            signal[i] *= env[i] * velocity
+        cg = min(int(0.002 * SAMPLE_RATE), n // 4)
+        for ci in range(cg):
+            fade = ci / max(cg, 1)
+            signal[ci] *= fade
+            if n - 1 - ci >= 0:
+                signal[n - 1 - ci] *= fade
+        return signal
+
+
+# ---------------------------------------------------------------------------
+# V10 RADIO ENGINE -- GM-timbre-aware synthesis with orchestral layering
+# ---------------------------------------------------------------------------
+class RadioEngineV10(RadioEngineV9):
+    """In The Beginning Radio v10 -- GM-timbre-aware orchestral radio.
+
+    Enhancements over v9:
+    - Tempo range narrowed to 1.2x-1.8x (from v9's 1.1x-2.1x)
+    - GM-timbre-aware synthesis: each MIDI instrument gets distinct attack,
+      decay, harmonic structure, and brightness instead of generic additive
+      synthesis that sounds organ-y
+    - 85% orchestral simultaneous layering (up from 75% in v8/v9)
+    - 4-6 voices per segment (up from 2-4) for richer orchestral sections
+    - Minimum 3 family groups per segment for true section diversity
+    - Wider register spread: -24 to +24 semitones
+    - 8-second morph transitions between moods (up from 6s)
+    - All v9 features preserved (expanded instruments, family variety,
+      time signature control, anti-hiss, subsonic removal)
+    """
+
+    MORPH_DURATION = 8.0     # Longer morph for smoother transitions
+    FADE_IN_DURATION = 6.0   # Slightly longer fade-in
+    FADE_OUT_DURATION = 10.0 # Longer fade-out for gentle ending
+
+    def __init__(self, seed=42, total_duration=1800.0):
+        super().__init__(seed=seed, total_duration=total_duration)
+
+    def _compute_tempo_multiplier(self, sim_state):
+        """Flat tempo multiplier: 1.2x-1.8x range.
+
+        v10: Narrower range than v9 (1.1x-2.1x). No density-dependent
+        capping — just a consistent moderate pace.
+        """
+        if not sim_state:
+            return 1.5  # neutral default
+
+        # Base multiplier from state hash
+        state_str = repr(sorted(sim_state.items()))
+        h = hashlib.sha256(state_str.encode()).hexdigest()[:8]
+        base = 1.2 + 0.6 * (int(h, 16) / 0xFFFFFFFF)  # 1.2-1.8 range
+        return base
+
+    def _choose_gm_instruments_v10(self, midi_info, n_voices, rng):
+        """Choose GM instruments with v10 diversity requirements.
+
+        - 4-6 voices per segment
+        - Minimum 3 different family groups
+        - Wider register spread (-24, -12, 0, +12, +24)
+        """
+        families = list(V9_FAMILY_POOLS.keys())
+        rng.shuffle(families)
+
+        voices = []
+        used_families = set()
+
+        # Wider register spread for orchestral separation
+        offsets_pool = [-24, -12, 0, 0, 12, 24]
+        pans_pool = [-0.6, -0.3, -0.1, 0.1, 0.3, 0.6]
+
+        # Variety enforcement from v9
+        self._segment_count += 1
+        n_total_segments = len(self.segments) if hasattr(self, 'segments') else 15
+        past_halfway = self._segment_count > n_total_segments // 2
+
+        underrepresented = []
+        if past_halfway:
+            for group_name, group_families in self._family_groups.items():
+                if group_name not in self._used_family_groups:
+                    underrepresented.extend(
+                        f for f in group_families if f in V9_FAMILY_POOLS)
+
+        for v in range(n_voices):
+            # Ensure minimum 3 different families
+            if v < 3:
+                available = [f for f in families if f not in used_families]
+                if not available:
+                    available = families
+                family = rng.choice(available)
+            elif underrepresented and rng.random() < 0.6:
+                family = rng.choice(underrepresented)
+                underrepresented = [f for f in underrepresented if f != family]
+            else:
+                available = [f for f in families if f not in used_families]
+                if not available:
+                    available = families
+                family = rng.choice(available)
+
+            used_families.add(family)
+
+            # Track family group usage
+            for group_name, group_families in self._family_groups.items():
+                if family in group_families:
+                    self._used_family_groups.add(group_name)
+
+            pool = V9_FAMILY_POOLS[family]
+            gm = rng.choice(pool)
+
+            oct_offset = offsets_pool[v % len(offsets_pool)]
+            pan = pans_pool[v % len(pans_pool)]
+            chord_size = rng.randint(2, 4)
+            color_amount = 0.15 if oct_offset < 0 else 0.25
+
+            voices.append({
+                'gm_program': gm,
+                'octave_offset': oct_offset,
+                'pan': pan,
+                'chord_size': chord_size,
+                'color_amount': color_amount,
+                'family': family,
+            })
+
+        return voices
+
+    def _render_segment(self, mood, kits, n_samples, sim_state):
+        """Render a mood segment with v10 GM-timbre-aware synthesis.
+
+        v10 Pipeline:
+        1. Compute tempo multiplier (1.2x-1.8x)
+        2. Sample MIDI bars
+        3. Quantize note durations
+        4. Choose 4-6 voices with v10 diversity (min 3 family groups)
+        5. Expand notes -> consonant chords
+        6. Build rondo sections
+        7. 85% simultaneous orchestral layering / 15% solo
+        8. GM-timbre-aware synthesis (distinct per instrument)
+        9. Chamber effects + anti-click
+        10. Loop with crossfade
+        """
+        left = [0.0] * n_samples
+        right = [0.0] * n_samples
+
+        rng = mood.rng
+        tempo = mood.tempo
+        beats_per_bar = mood.beats_per_bar
+        root = mood.root
+
+        # 1. Tempo multiplier (v10: 1.2-1.8x flat)
+        tempo_mult = self._compute_tempo_multiplier(sim_state)
+        effective_tempo = min(tempo * tempo_mult, 360)
+
+        # Bar duration
+        ts_key = getattr(mood, '_v8_time_sig', mood.time_sig)
+        ts_info = TIME_SIGNATURES.get(ts_key, TIME_SIGNATURES.get('4/4'))
+        beat_dur = 60.0 / effective_tempo
+        quarter_per_beat = 4.0 / ts_info['unit'] if isinstance(ts_info, dict) else 1.0
+        bar_duration_sec = beats_per_bar * beat_dur * quarter_per_beat
+
+        # 2. Sample MIDI bars
+        loop_bars = rng.randint(4, 12)
+        bars_result = self.midi_lib.sample_bars_seeded(
+            sim_state, loop_bars, effective_tempo, beats_per_bar,
+            root=root, scale=mood.scale, rng=rng
+        )
+        midi_notes, segment_duration, midi_info = bars_result
+
+        if segment_duration <= 0 or not midi_notes:
+            return left, right
+
+        # 3. Quantize
+        if bar_duration_sec > 0:
+            midi_notes = self.quantizer.fit_notes_to_bars(
+                midi_notes, loop_bars, bar_duration_sec, beats_per_bar
+            )
+
+        # 4. Choose voices: v10 uses 4-6 voices for orchestral richness
+        n_voices = clamp(rng.randint(4, 6), 4, 6)
+        voice_configs = self._choose_gm_instruments_v10(midi_info, n_voices, rng)
+
+        # Assign register offsets for clear separation
+        register_offsets = [-24, -12, 0, 0, 12, 24]
+        for v_idx, vc in enumerate(voice_configs):
+            vc['octave_offset'] = register_offsets[v_idx % len(register_offsets)]
+
+        # 5. Expand notes into chords
+        chord_notes = []
+        for t_sec, midi_note, dur_sec, vel in midi_notes:
+            chord = self._build_chord_from_note(
+                midi_note, root, mood.scale_name, mood.scale,
+                n_notes=rng.randint(2, 4), rng=rng
+            )
+            chord_notes.append((t_sec, chord, dur_sec, vel))
+
+        # 6. Build rondo sections
+        rondo = self._build_rondo_sections(
+            chord_notes, root, mood.scale_name, mood.scale,
+            segment_duration, rng
+        )
+
+        rondo_duration = segment_duration * len(rondo)
+        loop_samples = int(rondo_duration * SAMPLE_RATE)
+        if loop_samples <= 0:
+            return left, right
+
+        loop_left = [0.0] * loop_samples
+        loop_right = [0.0] * loop_samples
+
+        voice_gain = 0.25 / max(n_voices, 1)
+
+        # 7 + 8. Orchestral rendering with GM-timbre-aware synthesis
+        section_offset_sec = 0.0
+
+        # FluidSynth for primary voice
+        fluid_rendered = None
+        if HAS_FLUIDSYNTH and midi_info.get('path'):
+            primary_gm = voice_configs[0]['gm_program']
+            fluid_rendered = MidiLibrary.render_fluidsynth(
+                midi_info['path'], primary_gm,
+                tempo_factor=tempo_mult,
+                start_tick=midi_info.get('start_tick', 0),
+                end_tick=midi_info.get('end_tick')
+            )
+
+        for sec_idx, (label, section_notes) in enumerate(rondo):
+            sec_start = int(section_offset_sec * SAMPLE_RATE)
+
+            # v10: 85% simultaneous, 15% solo
+            is_solo_section = rng.random() < 0.15
+            if is_solo_section:
+                active_voices = [rng.randint(0, n_voices - 1)]
+            else:
+                active_voices = list(range(n_voices))
+
+            for v_idx in active_voices:
+                vc = voice_configs[v_idx]
+                oct_off = vc['octave_offset']
+                pan = vc['pan']
+                gm_program = vc['gm_program']
+                v_chord_size = vc['chord_size']
+
+                v_gain = voice_gain * (2.5 if is_solo_section else 1.0)
+
+                # FluidSynth for first voice, first A section
+                if (v_idx == 0 and fluid_rendered is not None
+                        and label == 'A' and sec_idx == 0):
+                    fl, fr = fluid_rendered
+                    fl_n = min(len(fl), loop_samples - sec_start)
+                    for i in range(fl_n):
+                        pos = sec_start + i
+                        if 0 <= pos < loop_samples:
+                            loop_left[pos] += fl[i] * v_gain
+                            loop_right[pos] += fr[i] * v_gain
+                    continue
+
+                for t_sec, chord, dur_sec, vel in section_notes:
+                    offset = sec_start + int(t_sec * SAMPLE_RATE)
+                    if offset >= loop_samples:
+                        continue
+
+                    voice_chord = chord[:v_chord_size]
+                    voice_chord = [clamp(n + oct_off, 24, 108)
+                                   for n in voice_chord]
+                    voice_chord = [self.midi_lib._snap_to_scale(n, root, mood.scale)
+                                   for n in voice_chord]
+
+                    for note in voice_chord:
+                        freq = mtof(note)
+                        # v10: GM-timbre-aware synthesis
+                        samps = _synth_gm_note_np(freq, dur_sec, gm_program, vel)
+                        if HAS_NUMPY:
+                            samps = samps.tolist()
+
+                        self._mix_mono(loop_left, loop_right, samps,
+                                       offset, loop_samples, pan * v_gain * 4)
+
+            section_offset_sec += segment_duration
+
+        # 9. Chamber effects
+        if rng.random() < 0.70:
+            loop_left = self.smoother.apply_early_reflections(loop_left)
+            loop_right = self.smoother.apply_early_reflections(loop_right)
+        if rng.random() < 0.60:
+            loop_left = self.smoother.apply_reverb(loop_left)
+            loop_right = self.smoother.apply_reverb(loop_right)
+        if rng.random() < 0.40:
+            loop_left = self.smoother.apply_chorus(loop_left)
+            loop_right = self.smoother.apply_chorus(loop_right)
+
+        # DC offset removal
+        if loop_left:
+            dc_l = sum(loop_left) / len(loop_left)
+            dc_r = sum(loop_right) / len(loop_right)
+            if abs(dc_l) > 0.001 or abs(dc_r) > 0.001:
+                loop_left = [s - dc_l for s in loop_left]
+                loop_right = [s - dc_r for s in loop_right]
+
+        loop_left = self.smoother.apply_lowpass(loop_left, 8000)
+        loop_right = self.smoother.apply_lowpass(loop_right, 8000)
+
+        # v10: anti-hiss + subsonic at segment level too
+        loop_left_l, loop_right_l = self.anti_hiss.apply_stereo(loop_left, loop_right)
+        loop_left, loop_right = self.subsonic_filter.apply_stereo(loop_left_l, loop_right_l)
+
+        # 10. Loop with crossfade
+        xfade = min(int(rng.uniform(3.0, 5.0) * SAMPLE_RATE),
+                     loop_samples // 3)
+        pos = 0
+        while pos < n_samples:
+            remaining = n_samples - pos
+            chunk = min(loop_samples, remaining)
+            for i in range(chunk):
+                fade = 1.0
+                if pos > 0 and i < xfade:
+                    fade = 0.5 - 0.5 * math.cos(math.pi * i / max(xfade, 1))
+                dist_to_end = chunk - i
+                if dist_to_end < xfade and pos + chunk < n_samples:
+                    fade *= 0.5 + 0.5 * math.cos(math.pi * (1 - dist_to_end / max(xfade, 1)))
+                left[pos + i] += loop_left[i] * fade
+                right[pos + i] += loop_right[i] * fade
+            pos += loop_samples - xfade
+
+        return left, right
+
+
+def generate_radio_v10_mp3(output_path, duration=1800.0, seed=42):
+    """Generate the v10 radio MP3 file with GM-timbre-aware synthesis.
+
+    v10 features: tempo 1.2x-1.8x, GM-specific timbres, 85% orchestral
+    layering, 4-6 voices, 8s morph fades, plus all v9 features.
+    """
+    import tempfile
+
+    print(f"[RadioEngineV10] Initializing (seed={seed}, duration={duration}s)...")
+    engine = RadioEngineV10(seed=seed, total_duration=duration)
+
+    print(f"[RadioEngineV10] {len(engine.instruments)} instruments loaded")
+    print(f"[RadioEngineV10] {len(engine.midi_lib._note_sequences)} MIDI sequences loaded")
+    print(f"[RadioEngineV10] {len(V9_FAMILY_POOLS)} instrument family pools")
+    print(f"[RadioEngineV10] {sum(len(p) for p in V9_FAMILY_POOLS.values())} unique GM programs")
+    print(f"[RadioEngineV10] {len(GM_TIMBRE_PROFILES)} GM timbre profiles")
+    print(f"[RadioEngineV10] Tempo range: 1.2x-1.8x (flat)")
+    print(f"[RadioEngineV10] Morph duration: {engine.MORPH_DURATION}s")
+    print(f"[RadioEngineV10] TTS engine: {'Silero' if engine.tts._silero_available else 'espeak-ng'}")
+    print(f"[RadioEngineV10] TTS transitions at segments: {sorted(engine.tts_transitions)}")
+
+    n_segments = len(engine.segments)
+    avg_dur = sum(s['duration'] for s in engine.segments) / max(n_segments, 1)
+
+    simple_count = sum(1 for s in engine.segments
+                       if s.get('time_sig_override') in SIMPLE_TIME_SIGS)
+    compound_count = sum(1 for s in engine.segments
+                         if s.get('time_sig_override') in COMPOUND_TIME_SIGS)
+    complex_count = sum(1 for s in engine.segments
+                        if s.get('time_sig_override') in COMPLEX_TIME_SIGS)
+    print(f"[RadioEngineV10] {n_segments} mood segments (avg {avg_dur:.0f}s)")
+    print(f"[RadioEngineV10] Time signatures: {simple_count} simple, "
+          f"{compound_count} compound, {complex_count} complex")
+
+    print(f"[RadioEngineV10] Rendering audio...")
+    t0 = _time.time()
+
+    # Import simulator
+    try:
+        sys.path.insert(0, PROJECT_ROOT)
+        from simulator.universe import Universe
+        universe = Universe(seed=seed, max_ticks=999999999)
+
+        sim_states = []
+        total_ticks = int(duration * 50)
+        ticks_per_segment = max(1, total_ticks // n_segments)
+        for seg in range(n_segments):
+            for _ in range(ticks_per_segment):
+                universe.step()
+            state = {
+                'temperature': universe.quantum_field.temperature,
+                'particles': len(universe.quantum_field.particles),
+                'atoms': len(universe.atomic_system.atoms) if universe.atomic_system else 0,
+                'molecules': len(universe.chemical_system.molecules) if universe.chemical_system else 0,
+                'cells': len(universe.biosphere.cells) if universe.biosphere else 0,
+                'generation': universe.biosphere.generation if universe.biosphere else 0,
+                'epoch': universe.current_epoch_name,
+            }
+            sim_states.append(state)
+            if seg % 3 == 0:
+                print(f"  Sim segment {seg+1}/{n_segments}: epoch={state['epoch']}, "
+                      f"T={state['temperature']:.0f}, particles={state['particles']}, "
+                      f"density={state['particles'] + state['atoms']*2 + state['molecules']*3 + state['cells']*5}")
+    except Exception as e:
+        print(f"  [Warning] Could not run simulator: {e}")
+        print(f"  Using synthetic simulation data instead.")
+        sim_states = None
+
+    use_streaming = duration > 660
+
+    if use_streaming:
+        print(f"[RadioEngineV10] Using streaming renderer (low memory)...")
+        with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
+            wav_path = tmp.name
+        try:
+            with wave.open(wav_path, 'wb') as wf:
+                wf.setnchannels(2)
+                wf.setsampwidth(2)
+                wf.setframerate(SAMPLE_RATE)
+                total_written = engine.render_streaming(wf, sim_states)
+            t1 = _time.time()
+            print(f"[RadioEngineV10] Streamed {total_written/SAMPLE_RATE:.1f}s in {t1-t0:.1f}s")
+            print(f"[RadioEngineV10] Family groups used: {sorted(engine._used_family_groups)}")
+
+            if output_path.endswith('.mp3'):
+                print(f"[RadioEngineV10] Converting to MP3...")
+                wav_to_mp3(wav_path, output_path)
+                print(f"[RadioEngineV10] Saved: {output_path}")
+            else:
+                import shutil
+                shutil.move(wav_path, output_path)
+                wav_path = None
+                print(f"[RadioEngineV10] Saved: {output_path}")
+        finally:
+            if wav_path:
+                try:
+                    os.unlink(wav_path)
+                except OSError:
+                    pass
+    else:
+        left, right = engine.render(sim_states)
+
+        t1 = _time.time()
+        print(f"[RadioEngineV10] Rendered {len(left)/SAMPLE_RATE:.1f}s in {t1-t0:.1f}s")
+        print(f"[RadioEngineV10] Family groups used: {sorted(engine._used_family_groups)}")
+
+        if output_path.endswith('.mp3'):
+            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
+                wav_path = tmp.name
+            try:
+                print(f"[RadioEngineV10] Writing WAV ({len(left)*4/1048576:.1f} MB)...")
+                render_to_wav(left, right, wav_path)
+                print(f"[RadioEngineV10] Converting to MP3...")
+                wav_to_mp3(wav_path, output_path)
+                print(f"[RadioEngineV10] Saved: {output_path}")
+            finally:
+                try:
+                    os.unlink(wav_path)
+                except OSError:
+                    pass
+        else:
+            render_to_wav(left, right, output_path)
+            print(f"[RadioEngineV10] Saved: {output_path}")
+
+    file_size = os.path.getsize(output_path) if os.path.exists(output_path) else 0
+    print(f"[RadioEngineV10] File size: {file_size/1048576:.1f} MB")
+    return output_path
+
+
 def generate_radio_v9_mp3(output_path, duration=1800.0, seed=42):
     """Generate the v9 radio MP3 file with expanded instruments.
 
@@ -4125,10 +4755,12 @@ if __name__ == '__main__':
                        help='Duration in seconds (default: 1800)')
     parser.add_argument('--seed', '-s', type=int, default=42,
                        help='Random seed')
-    parser.add_argument('--version', '-V', choices=['v7', 'v8', 'v9'], default='v7',
-                       help='Engine version: v7 (classic), v8 (orchestral), v9 (expanded)')
+    parser.add_argument('--version', '-V', choices=['v7', 'v8', 'v9', 'v10'], default='v7',
+                       help='Engine version: v7 (classic), v8 (orchestral), v9 (expanded), v10 (GM-timbre)')
     args = parser.parse_args()
-    if args.version == 'v9':
+    if args.version == 'v10':
+        generate_radio_v10_mp3(args.output, args.duration, args.seed)
+    elif args.version == 'v9':
         generate_radio_v9_mp3(args.output, args.duration, args.seed)
     elif args.version == 'v8':
         generate_radio_v8_mp3(args.output, args.duration, args.seed)
