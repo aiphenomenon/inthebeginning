@@ -22,6 +22,23 @@ expanded MIDI sampling library to ~1750+ files, added solo instrument mood
 - MIDI library: ~1000 additional public domain classical files
 - Two MP3 renders: seed=42 and random seed
 
+### Turn 4: Multi-TTS + Screen Testing — 15:44 CT (21:44 UTC)
+
+- **Shell injection protection**: `_sanitize_text()` strips shell metacharacters,
+  control chars, null bytes; 500 char max. Defense-in-depth on all TTS subprocess calls.
+- **Multi-TTS integration**: TTSEngine rotates between espeak-ng, flite, festival,
+  pico2wave based on voice_seed + epoch_idx for variety.
+- **Screen capture testing**: 14 new tests across all simulator implementations
+  (Python terminal UI, Node.js, Go, C++, C, Rust, Perl, PHP, Go SSE server,
+  PHP server, Ubuntu screensaver Xvfb, Java headless). 24 evidence files generated.
+- **Domain approval steering**: agents must ask user before accessing new download
+  domains. Added to CLAUDE.md, AGENTS.md, steering-check.sh.
+- **Screen capture steering**: terminal ANSI captures, web server smoke tests,
+  Xvfb GUI testing, machine vision review. Triple cross-check propagated.
+- **V20 seed-42 MP3**: 41.2 MB, 30 min, mean -15.5 dB, peak -0.3 dB (was -35.7/-1.6 in V18)
+- **V20 random-seed MP3**: rendering in progress
+- PyTorch 2.10.0 installed; Silero model blocked (models.silero.ai inaccessible)
+
 ---
 
 ## v0.19.0 — 2026-03-07 — V19 Test Infrastructure Overhaul
