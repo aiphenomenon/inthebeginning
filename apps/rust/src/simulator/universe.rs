@@ -514,6 +514,26 @@ impl Universe {
         // Final report
         on_epoch(&self.stats());
     }
+
+    /// Big Bounce: reset the universe for a new cycle.
+    ///
+    /// Clears all physical layers and resets tick to 0, enabling
+    /// perpetual simulation without memory leaks.
+    pub fn big_bounce(&mut self) {
+        self.tick = 0;
+        self.quantum_field = QuantumField::new(T_PLANCK);
+        self.atomic_system = AtomicSystem::new(T_PLANCK);
+        self.chemical_system = ChemicalSystem::new();
+        self.biological_system = BiologicalSystem::new();
+        self.environment = Environment::interstellar();
+        self.scale_factor = 1.0;
+        self.last_epoch_index = 0;
+        self.nucleosynthesis_done = false;
+        self.recombination_done = false;
+        self.earth_initialized = false;
+        self.stellar_seeded = false;
+        self.solar_seeded = false;
+    }
 }
 
 #[cfg(test)]
