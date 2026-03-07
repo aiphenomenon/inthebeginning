@@ -103,6 +103,9 @@ class Universe {
     var completed: Boolean = false
         private set
 
+    var cycle: Int = 0
+        private set
+
     private val recentEvents = mutableListOf<String>()
     private val rng = Random
 
@@ -565,6 +568,21 @@ class Universe {
         recentEvents.clear()
         recentEvents.add("Universe reset. Ready for the Big Bang.")
 
+        emitState()
+    }
+
+    /**
+     * Perform a Big Bounce: reset the universe and increment the cycle counter.
+     *
+     * Unlike [reset], which returns the simulation to its initial state,
+     * bigBounce tracks how many cosmic cycles have occurred, modelling a
+     * cyclic cosmology where the universe collapses and re-expands.
+     */
+    fun bigBounce() {
+        cycle++
+        reset()
+        recentEvents.clear()
+        recentEvents.add("Big Bounce! Cycle $cycle begins.")
         emitState()
     }
 

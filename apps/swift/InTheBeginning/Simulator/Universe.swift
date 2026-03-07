@@ -84,6 +84,7 @@ final class Universe {
     private(set) var state: SimulationState = .idle
     private(set) var snapshot: SimulationSnapshot = .empty
     private(set) var renderables: [RenderableEntity] = []
+    private(set) var cycle: Int = 0
 
     /// Ticks to advance per frame (speed control).
     var ticksPerFrame: Int = 1
@@ -142,6 +143,16 @@ final class Universe {
         snapshot = .empty
         eventLog.removeAll()
         log("Simulation reset")
+    }
+
+    /// Perform a Big Bounce: reset the universe and begin a new cycle.
+    ///
+    /// Unlike `reset()`, this preserves and increments the cycle counter,
+    /// modeling a cyclic cosmology where the universe collapses and re-expands.
+    func bigBounce() {
+        cycle += 1
+        reset()
+        log("Big Bounce: cycle \(cycle) begins")
     }
 
     // MARK: - Main Simulation Loop
