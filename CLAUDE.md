@@ -478,6 +478,19 @@ downloading or processing large collections:
 5. **Monitor memory**: Check `free -h` before starting memory-intensive operations.
    If available memory is below 4GB, defer or use a smaller buffer.
 
+### Domain Approval Protocol
+
+When downloading external assets, agents MUST ask the user for explicit approval
+before accessing any domain not on the default allow list (`github.com`,
+`raw.githubusercontent.com`, `objects.githubusercontent.com`, `pypi.org`,
+`files.pythonhosted.org`). This includes:
+- New package index URLs (e.g., `download.pytorch.org`)
+- Model hosting sites (e.g., `models.silero.ai`, `huggingface.co`)
+- Any other external domain
+
+Approved domains persist for the current session only. Document any newly approved
+domains in the session log. Do not assume prior approval carries across sessions.
+
 ### Code Quality Standards
 
 - Every module must have corresponding tests.

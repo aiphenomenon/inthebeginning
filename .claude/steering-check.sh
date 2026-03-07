@@ -242,6 +242,15 @@ echo "           Apple-only files (SwiftUI, Metal, AVFoundation) require macOS/X
 echo "           User prefers official Apple tools over Homebrew for macOS builds."
 echo "           If swift toolchain not available in sandbox, note in session log."
 
+# 23. Domain approval protocol
+echo "[FAIL-CUE] Domain approval protocol:"
+echo "           Before accessing any domain NOT on the default allow list"
+echo "           (github.com, raw.githubusercontent.com, objects.githubusercontent.com,"
+echo "           pypi.org, files.pythonhosted.org), agents MUST ask the user for"
+echo "           explicit approval. Approved domains persist for the current session"
+echo "           only. Document newly approved domains in the session log."
+echo "           Do not assume prior approval carries across sessions."
+
 # 22. Big Bounce perpetual simulation
 echo "[FAIL-CUE] Big Bounce: All 13 language implementations support bigBounce()."
 echo "           Verify perpetual simulation doesn't leak memory or fizzle to entropy."

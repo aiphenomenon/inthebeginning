@@ -782,6 +782,17 @@ domains, agents must:
   Monitor `free -h` before memory-intensive operations.
 - **Attribution**: Document all external assets in ATTRIBUTION.md files.
 
+### 3b. Domain Approval Protocol
+
+Before accessing any domain not on the default allow list (`github.com`,
+`raw.githubusercontent.com`, `objects.githubusercontent.com`, `pypi.org`,
+`files.pythonhosted.org`), agents MUST ask the user for explicit approval.
+This includes new package index URLs (e.g., `download.pytorch.org`), model
+hosting sites (e.g., `models.silero.ai`, `huggingface.co`), and any other
+external domain. Approved domains persist for the current session only.
+Document newly approved domains in the session log. Do not assume prior
+approval carries across sessions.
+
 ### 4. Test Everything
 - Every public function must have at least one test
 - Tests must be deterministic (use fixed random seeds)

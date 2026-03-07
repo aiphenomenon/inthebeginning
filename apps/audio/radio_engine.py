@@ -1508,13 +1508,22 @@ class MidiLibrary:
 # TTS ENGINE -- Text-to-speech for voice injection
 # ---------------------------------------------------------------------------
 class TTSEngine:
-    """Text-to-speech engine using Silero (preferred) or espeak-ng (fallback).
+    """Multi-engine text-to-speech: Silero (preferred), espeak-ng, flite,
+    festival, pico2wave.
 
     Generates spoken word segments from project source code phrases,
     with voice characteristics chosen based on simulation epoch.
 
+    All text is sanitized before passing to any TTS subprocess to prevent
+    shell injection attacks — even though subprocess is called with list
+    args (no shell=True), defense-in-depth sanitization strips control
+    characters and limits length.
+
     Silero TTS: Apache 2.0 license, multiple English voices.
-    espeak-ng: GPL, fallback when Silero unavailable.
+    espeak-ng: GPL, primary CLI fallback.
+    flite: BSD-like, Carnegie Mellon voices.
+    festival: custom license, Edinburgh voices.
+    pico2wave: Apache 2.0, SVOX voices.
     """
 
     # espeak-ng voice variants by epoch character
@@ -1523,13 +1532,36 @@ class TTSEngine:
         'en-gb-x-gbclan', 'en-gb-x-gbcwmd', 'en-029',
     ]
 
+    # flite voice variants
+    FLITE_VOICES = ['slt', 'rms', 'awb', 'kal', 'kal16']
+
     # Silero speaker IDs (v3_en model has ~100+ speakers)
     SILERO_SPEAKERS = [f'en_{i}' for i in range(118)]
+
+    # Maximum text length to prevent abuse
+    MAX_TTS_TEXT_LENGTH = 500
 
     def __init__(self):
         self._silero_model = None
         self._silero_available = False
+        self._available_engines = self._detect_engines()
         self._try_load_silero()
+
+    def _detect_engines(self):
+        """Detect which CLI TTS engines are available."""
+        engines = []
+        for cmd, test_args in [
+            ('espeak-ng', ['--version']),
+            ('flite', ['--version']),
+            ('festival', ['--version']),
+            ('pico2wave', ['--help']),
+        ]:
+            try:
+                subprocess.run([cmd] + test_args, capture_output=True, timeout=5)
+                engines.append(cmd)
+            except (FileNotFoundError, subprocess.TimeoutExpired):
+                pass
+        return engines if engines else ['espeak-ng']
 
     def _try_load_silero(self):
         """Attempt to load Silero TTS model."""
@@ -1555,15 +1587,71 @@ class TTSEngine:
             except Exception:
                 pass
 
-    def generate_speech(self, text, voice_seed=0, epoch_idx=0):
+    @staticmethod
+    def _sanitize_text(text):
+        """Sanitize text for TTS to prevent shell injection.
+
+        Defense-in-depth: even though subprocess is called with list args
+        (no shell=True), we strip dangerous characters and limit length.
+        This protects against:
+        - Shell metacharacters (;|&`$(){}\\)
+        - Control characters and null bytes
+        - Excessively long inputs
+        - Non-printable characters
+        """
+        import re
+        if not isinstance(text, str):
+            text = str(text)
+        # Strip null bytes and control characters (keep newlines/spaces)
+        text = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', text)
+        # Remove shell metacharacters as defense-in-depth
+        text = re.sub(r'[;|&`$\\{}]', ' ', text)
+        # Collapse whitespace
+        text = ' '.join(text.split())
+        # Truncate to max length
+        if len(text) > TTSEngine.MAX_TTS_TEXT_LENGTH:
+            text = text[:TTSEngine.MAX_TTS_TEXT_LENGTH]
+        return text
+
+    def generate_speech(self, text, voice_seed=0, epoch_idx=0, engine=None):
         """Generate speech audio from text.
 
         Returns (samples_list, sample_rate) or (None, None) on failure.
         Voice selection is influenced by epoch_idx for simulation coherence.
+
+        Args:
+            text: Text to speak (will be sanitized).
+            voice_seed: Seed for voice selection.
+            epoch_idx: Simulation epoch index (affects voice character).
+            engine: Specific engine to use, or None for auto-select.
         """
-        if self._silero_available:
+        text = self._sanitize_text(text)
+        if not text:
+            return None, None
+
+        if engine == 'silero' and self._silero_available:
             return self._generate_silero(text, voice_seed, epoch_idx)
-        return self._generate_espeak(text, voice_seed, epoch_idx)
+        if self._silero_available and engine is None:
+            return self._generate_silero(text, voice_seed, epoch_idx)
+
+        # Select CLI engine based on seed or explicit request
+        if engine and engine in self._available_engines:
+            chosen = engine
+        elif len(self._available_engines) > 1:
+            chosen = self._available_engines[
+                (voice_seed + epoch_idx) % len(self._available_engines)
+            ]
+        else:
+            chosen = 'espeak-ng'
+
+        if chosen == 'flite':
+            return self._generate_flite(text, voice_seed, epoch_idx)
+        elif chosen == 'festival':
+            return self._generate_festival(text, voice_seed, epoch_idx)
+        elif chosen == 'pico2wave':
+            return self._generate_pico2wave(text, voice_seed, epoch_idx)
+        else:
+            return self._generate_espeak(text, voice_seed, epoch_idx)
 
     def _generate_silero(self, text, voice_seed, epoch_idx):
         """Generate speech using Silero TTS."""
@@ -1580,13 +1668,28 @@ class TTSEngine:
         except Exception:
             return self._generate_espeak(text, voice_seed, epoch_idx)
 
+    def _read_wav_samples(self, wav_path):
+        """Read WAV file and return (samples_list, sample_rate)."""
+        try:
+            with wave.open(wav_path, 'rb') as wf:
+                sr = wf.getframerate()
+                n_channels = wf.getnchannels()
+                frames = wf.readframes(wf.getnframes())
+                samples = []
+                step = 2 * n_channels  # 16-bit per channel
+                for i in range(0, len(frames) - 1, step):
+                    val = struct.unpack('<h', frames[i:i+2])[0]
+                    samples.append(val / 32768.0)
+            return samples, sr
+        except Exception:
+            return None, None
+
     def _generate_espeak(self, text, voice_seed, epoch_idx):
-        """Generate speech using espeak-ng (fallback)."""
+        """Generate speech using espeak-ng."""
         import tempfile
         voice_idx = (voice_seed + epoch_idx * 3) % len(self.ESPEAK_VOICES)
         voice = self.ESPEAK_VOICES[voice_idx]
 
-        # Vary speech parameters based on epoch
         speed = clamp(130 + epoch_idx * 5, 100, 200)
         pitch = clamp(40 + epoch_idx * 3, 20, 80)
 
@@ -1600,15 +1703,83 @@ class TTSEngine:
                 capture_output=True, timeout=30
             )
             if os.path.exists(tmp_path):
-                with wave.open(tmp_path, 'rb') as wf:
-                    sr = wf.getframerate()
-                    frames = wf.readframes(wf.getnframes())
-                    samples = []
-                    for i in range(0, len(frames), 2):
-                        if i + 1 < len(frames):
-                            val = struct.unpack('<h', frames[i:i+2])[0]
-                            samples.append(val / 32768.0)
-                return samples, sr
+                return self._read_wav_samples(tmp_path)
+        except Exception:
+            pass
+        finally:
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
+        return None, None
+
+    def _generate_flite(self, text, voice_seed, epoch_idx):
+        """Generate speech using flite (CMU)."""
+        import tempfile
+        voice_idx = (voice_seed + epoch_idx * 2) % len(self.FLITE_VOICES)
+        voice = self.FLITE_VOICES[voice_idx]
+
+        with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
+            tmp_path = tmp.name
+
+        try:
+            subprocess.run(
+                ['flite', '-voice', voice, '-t', text, '-o', tmp_path],
+                capture_output=True, timeout=30
+            )
+            if os.path.exists(tmp_path):
+                return self._read_wav_samples(tmp_path)
+        except Exception:
+            pass
+        finally:
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
+        return None, None
+
+    def _generate_festival(self, text, voice_seed, epoch_idx):
+        """Generate speech using festival (Edinburgh)."""
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
+            tmp_path = tmp.name
+
+        try:
+            # Festival reads text from stdin via --tts, output via SayText
+            # Use text2wave for file output (safer than piping)
+            proc = subprocess.run(
+                ['text2wave', '-o', tmp_path],
+                input=text.encode('utf-8'),
+                capture_output=True, timeout=30
+            )
+            if proc.returncode == 0 and os.path.exists(tmp_path):
+                return self._read_wav_samples(tmp_path)
+        except Exception:
+            pass
+        finally:
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
+        return None, None
+
+    def _generate_pico2wave(self, text, voice_seed, epoch_idx):
+        """Generate speech using pico2wave (SVOX)."""
+        import tempfile
+        languages = ['en-US', 'en-GB']
+        lang = languages[(voice_seed + epoch_idx) % len(languages)]
+
+        with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
+            tmp_path = tmp.name
+
+        try:
+            subprocess.run(
+                ['pico2wave', '-l', lang, '-w', tmp_path, text],
+                capture_output=True, timeout=30
+            )
+            if os.path.exists(tmp_path):
+                return self._read_wav_samples(tmp_path)
         except Exception:
             pass
         finally:
@@ -8012,20 +8183,8 @@ class RadioEngineV20(RadioEngineV18Orchestra):
 
     def __init__(self, seed=42, total_duration=1800.0):
         super().__init__(seed=seed, total_duration=total_duration)
-        # Initialize multi-TTS
-        self._tts_engines = self._detect_tts_engines()
-
-    def _detect_tts_engines(self):
-        """Detect available TTS engines beyond espeak-ng."""
-        engines = ['espeak-ng']  # always present per steering
-        for cmd in ['flite', 'festival', 'pico2wave']:
-            try:
-                subprocess.run([cmd if cmd != 'festival' else 'festival', '--version'],
-                               capture_output=True, timeout=5)
-                engines.append(cmd)
-            except (FileNotFoundError, subprocess.TimeoutExpired):
-                pass
-        return engines
+        # TTSEngine now handles multi-engine detection internally
+        self._tts_engines = self.tts._available_engines
 
     def _render_segment(self, mood, kits, n_samples, sim_state):
         """V20 render: V18 synthesis + fixed gain + solo mood support."""
