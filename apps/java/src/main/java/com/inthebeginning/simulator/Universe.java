@@ -27,12 +27,15 @@ public class Universe {
     /** Total energy. */
     private double totalEnergy = 0.0;
 
+    /** Big Bounce cycle counter (0 = first run). */
+    private int cycle = 0;
+
     /** Sub-systems. */
-    private final QuantumField quantumField;
-    private final AtomicSystem atomicSystem;
-    private final ChemicalSystem chemicalSystem;
-    private final Environment environment;
-    private final BiologicalSystem biologicalSystem;
+    private QuantumField quantumField;
+    private AtomicSystem atomicSystem;
+    private ChemicalSystem chemicalSystem;
+    private Environment environment;
+    private BiologicalSystem biologicalSystem;
 
     /** Random number generator (seeded for reproducibility). */
     private final Random rng;
@@ -57,6 +60,7 @@ public class Universe {
     public double getTemperature()              { return temperature; }
     public double getScaleFactor()              { return scaleFactor; }
     public double getTotalEnergy()              { return totalEnergy; }
+    public int getCycle()                       { return cycle; }
     public QuantumField getQuantumField()       { return quantumField; }
     public AtomicSystem getAtomicSystem()       { return atomicSystem; }
     public ChemicalSystem getChemicalSystem()   { return chemicalSystem; }
@@ -143,6 +147,50 @@ public class Universe {
     @FunctionalInterface
     public interface EpochCallback {
         void onEpochEnter(int epochIndex, EpochInfo epoch, Universe universe);
+    }
+
+    // --- Big Bounce ---
+
+    /**
+     * Reset the universe for a new cosmic cycle (Big Bounce).
+     * <p>
+     * Clears the tick counter, resets the epoch to Planck, restores the initial
+     * Planck temperature, reinitializes all subsystems (quantum field, atomic
+     * system, chemical system, environment, biosphere), clears internal epoch
+     * flags, and increments the cycle counter. The event log is cleared so that
+     * old events do not accumulate across cycles.
+     * <p>
+     * The random number generator is <b>not</b> reseeded, allowing each cycle
+     * to explore a different evolutionary trajectory. This method is safe to
+     * call indefinitely without leaking memory because every collection and
+     * subsystem is replaced or cleared.
+     */
+    public void bigBounce() {
+        cycle++;
+
+        // Reset simulation clock and epoch
+        tick = 0;
+        currentEpochIndex = 0;
+
+        // Reset cosmological state
+        temperature = T_PLANCK;
+        scaleFactor = 1e-30;
+        totalEnergy = 0.0;
+
+        // Reinitialize all subsystems (old instances become eligible for GC)
+        quantumField = new QuantumField(T_PLANCK, rng);
+        atomicSystem = new AtomicSystem(T_PLANCK, rng);
+        chemicalSystem = new ChemicalSystem(atomicSystem, rng);
+        environment = new Environment(rng);
+        biologicalSystem = new BiologicalSystem(rng);
+
+        // Reset internal epoch-progression flags
+        bbnDone = false;
+        solarSystemInitialized = false;
+        earthInitialized = false;
+
+        // Clear the event log for the new cycle
+        eventLog.clear();
     }
 
     // --- Epoch handlers ---

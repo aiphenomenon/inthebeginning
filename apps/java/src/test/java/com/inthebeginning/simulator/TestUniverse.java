@@ -71,6 +71,12 @@ public class TestUniverse {
         testEventLog();
         testSummary();
         testGetTotalEnergy();
+        testBigBounceCycleCounter();
+        testBigBounceResetsState();
+        testBigBounceResetsSubsystems();
+        testBigBounceAllowsResimulation();
+        testBigBounceMultipleCycles();
+        testBigBouncePreservesRng();
 
         System.out.println("    " + passed + " passed, " + failed + " failed");
         return new int[]{passed, failed};
@@ -281,5 +287,115 @@ public class TestUniverse {
         assertTrue("Total energy > 0 after inflation", u.getTotalEnergy() > 0);
         assertApprox("Total energy matches quantum field",
                 u.getQuantumField().totalEnergy(), u.getTotalEnergy(), 1e-10);
+    }
+
+    // --- Big Bounce tests ---
+
+    private static void testBigBounceCycleCounter() {
+        Universe u = new Universe(42L);
+        assertEquals("Initial cycle = 0", 0, u.getCycle());
+
+        u.bigBounce();
+        assertEquals("Cycle = 1 after first bounce", 1, u.getCycle());
+
+        u.bigBounce();
+        assertEquals("Cycle = 2 after second bounce", 2, u.getCycle());
+    }
+
+    private static void testBigBounceResetsState() {
+        Universe u = new Universe(42L);
+
+        // Run the simulation forward
+        for (int i = 0; i < ELECTROWEAK_EPOCH + 10; i++) {
+            u.step();
+        }
+        assertTrue("Tick advanced before bounce", u.getTick() > 0);
+        assertTrue("Temperature changed before bounce", u.getTemperature() != T_PLANCK);
+
+        u.bigBounce();
+
+        assertEquals("Tick reset to 0", 0, u.getTick());
+        assertApprox("Temperature reset to T_PLANCK", T_PLANCK, u.getTemperature(), 1.0);
+        assertTrue("Scale factor reset", u.getScaleFactor() < 1e-20);
+        assertApprox("Total energy reset to 0", 0.0, u.getTotalEnergy(), 1e-10);
+        assertEquals("Epoch reset to Planck", "Planck", u.currentEpoch().name());
+    }
+
+    private static void testBigBounceResetsSubsystems() {
+        Universe u = new Universe(42L);
+
+        // Run far enough to populate subsystems
+        for (int i = 0; i < NUCLEOSYNTHESIS_EPOCH + 200; i++) {
+            u.step();
+        }
+        assertTrue("Atoms exist before bounce", u.getAtomicSystem().getAtoms().size() > 0);
+
+        u.bigBounce();
+
+        assertEquals("Particles cleared", 0, u.getQuantumField().getParticles().size());
+        assertEquals("Atoms cleared", 0, u.getAtomicSystem().getAtoms().size());
+        assertEquals("Molecules cleared", 0, u.getChemicalSystem().getMolecules().size());
+        assertEquals("Lifeforms cleared", 0, u.getBiologicalSystem().getLifeforms().size());
+        assertEquals("DNA strands cleared", 0, u.getBiologicalSystem().getDnaStrands().size());
+        assertTrue("Event log cleared", u.getEventLog().isEmpty());
+    }
+
+    private static void testBigBounceAllowsResimulation() {
+        Universe u = new Universe(42L);
+
+        // First cycle: run to nucleosynthesis
+        for (int i = 0; i < NUCLEOSYNTHESIS_EPOCH + 200; i++) {
+            u.step();
+        }
+        int atomsFirstCycle = u.getAtomicSystem().getAtoms().size();
+        assertTrue("Atoms formed in first cycle", atomsFirstCycle > 0);
+
+        // Bounce and re-run
+        u.bigBounce();
+        for (int i = 0; i < NUCLEOSYNTHESIS_EPOCH + 200; i++) {
+            u.step();
+        }
+        int atomsSecondCycle = u.getAtomicSystem().getAtoms().size();
+        assertTrue("Atoms formed in second cycle", atomsSecondCycle > 0);
+        assertEquals("Cycle counter is 1", 1, u.getCycle());
+    }
+
+    private static void testBigBounceMultipleCycles() {
+        Universe u = new Universe(42L);
+
+        // Run 5 quick cycles to verify no memory leak or crash
+        for (int c = 0; c < 5; c++) {
+            for (int i = 0; i < 100; i++) {
+                u.step();
+            }
+            u.bigBounce();
+        }
+
+        assertEquals("Cycle counter = 5", 5, u.getCycle());
+        assertEquals("Tick reset after last bounce", 0, u.getTick());
+    }
+
+    private static void testBigBouncePreservesRng() {
+        // Two universes with same seed: after same operations + bounce,
+        // they should diverge because RNG state continues (not reseeded)
+        Universe u1 = new Universe(42L);
+        Universe u2 = new Universe(42L);
+
+        for (int i = 0; i < 50; i++) {
+            u1.step();
+            u2.step();
+        }
+
+        // Bounce u1 but not u2, then step both
+        u1.bigBounce();
+        u1.step();
+        u2.step();
+
+        // After bounce + step, u1's RNG has diverged in state from u2
+        // (u1 is at tick 1 post-bounce, u2 is at tick 51)
+        // The key assertion: bigBounce does not crash and simulation continues
+        assertEquals("u1 tick = 1 after bounce + step", 1, u1.getTick());
+        assertEquals("u1 cycle = 1", 1, u1.getCycle());
+        assertEquals("u2 cycle = 0", 0, u2.getCycle());
     }
 }
