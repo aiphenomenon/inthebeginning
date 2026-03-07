@@ -1,0 +1,125 @@
+{
+  "captures": [
+    {
+      "file": "c_terminal.html",
+      "size_bytes": 1883,
+      "type": "html"
+    },
+    {
+      "file": "c_terminal.txt",
+      "size_bytes": 1387,
+      "type": "txt"
+    },
+    {
+      "file": "capture_summary.json",
+      "size_bytes": 1980,
+      "type": "json"
+    },
+    {
+      "file": "cpp_terminal.html",
+      "size_bytes": 2713,
+      "type": "html"
+    },
+    {
+      "file": "cpp_terminal.txt",
+      "size_bytes": 1985,
+      "type": "txt"
+    },
+    {
+      "file": "go_sse_api.json",
+      "size_bytes": 21163,
+      "type": "json"
+    },
+    {
+      "file": "go_sse_server.html",
+      "size_bytes": 2667,
+      "type": "html"
+    },
+    {
+      "file": "go_terminal.html",
+      "size_bytes": 491,
+      "type": "html"
+    },
+    {
+      "file": "go_terminal.txt",
+      "size_bytes": 0,
+      "type": "txt"
+    },
+    {
+      "file": "java_terminal.html",
+      "size_bytes": 3532,
+      "type": "html"
+    },
+    {
+      "file": "java_terminal.txt",
+      "size_bytes": 1824,
+      "type": "txt"
+    },
+    {
+      "file": "nodejs_terminal.html",
+      "size_bytes": 4129,
+      "type": "html"
+    },
+    {
+      "file": "nodejs_terminal.txt",
+      "size_bytes": 2667,
+      "type": "txt"
+    },
+    {
+      "file": "perl_terminal.html",
+      "size_bytes": 2469,
+      "type": "html"
+    },
+    {
+      "file": "perl_terminal.txt",
+      "size_bytes": 1976,
+      "type": "txt"
+    },
+    {
+      "file": "php_snapshot_api.json",
+      "size_bytes": 3867,
+      "type": "json"
+    },
+    {
+      "file": "php_snapshot_server.html",
+      "size_bytes": 5419,
+      "type": "html"
+    },
+    {
+      "file": "php_terminal.html",
+      "size_bytes": 2466,
+      "type": "html"
+    },
+    {
+      "file": "php_terminal.txt",
+      "size_bytes": 1974,
+      "type": "txt"
+    },
+    {
+      "file": "python_terminal_ui.html",
+      "size_bytes": 9480,
+      "type": "html"
+    },
+    {
+      "file": "python_terminal_ui.txt",
+      "size_bytes": 6277,
+      "type": "txt"
+    },
+    {
+      "file": "rust_terminal.html",
+      "size_bytes": 2785,
+      "type": "html"
+    },
+    {
+      "file": "rust_terminal.txt",
+      "size_bytes": 2292,
+      "type": "txt"
+    },
+    {
+      "file": "ubuntu_screensaver_screenshot.png",
+      "size_bytes": 1040,
+      "type": "png"
+    }
+  ],
+  "timestamp": "2026-03-07 22:02 CT"
+}

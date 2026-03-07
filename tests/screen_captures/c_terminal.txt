@@ -1,0 +1,40 @@
+
+  ============================================================
+  |                                                          |
+  |        IN THE BEGINNING: Cosmic Evolution Simulator      |
+  |        From the Big Bang to Life                         |
+  |                                                          |
+  |        C Implementation                                  |
+  |                                                          |
+  ============================================================
+
+  Initializing simulation...
+  Total simulation span: 300000 ticks (Planck era -> Present)
+  Epochs: 13
+
+
+  ------------------------------------------------------------
+  *                        .                               
+             .         *         .      *                  
+       .            SINGULARITY            .              
+
+  EPOCH 1/13: Planck
+  Ticks: 0 -> 1
+  ------------------------------------------------------------
+  Events:
+    [tick      0] The universe begins: a singularity of infinite density
+
+  Quantum Field:
+    Temperature:     1.00e+10 K
+    Particles:       2
+    Total energy:    10184591.00 SU
+    Protons:         0
+    Neutrons:        0
+    Electrons:       1
+    Photons:         0
+    Created total:   2
+    Annihilated:     0
+  Environment:
+    Temperature:     1.00e+10 K
+    Radiation:       1.00e+10
+    UV intensity:    0.00

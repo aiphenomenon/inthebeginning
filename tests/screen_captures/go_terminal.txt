@@ -1,0 +1,40 @@
+
+  ========================================================================
+                              IN THE BEGINNING
+                        A Cosmic Evolution Simulator
+  ------------------------------------------------------------------------
+               From the Planck epoch to the emergence of life
+                 13.8 billion years in the blink of an eye
+  ========================================================================
+
+  Seed: 1772920982839113713
+
+  [ 1/13] Planck             [***                                     ]   8%
+         Quantum gravity dominates; spacetime foam
+         T=9.56e+09 K | particles: 42
+
+  [ 2/13] Inflation          [~~~~~~                                  ]  15%
+         Exponential expansion of spacetime
+         T=6.10e+09 K | particles: 488
+
+  [ 3/13] Electroweak        [!!!!!!!!!                               ]  23%
+         Electroweak symmetry breaking; W/Z bosons acquire mass
+         T=6.87e+07 K | particles: 1112
+
+  [ 4/13] QuarkGluon         [############                            ]  31%
+         Quark-gluon plasma; free quarks and gluons
+         T=2.73e+00 K | particles: 1112
+
+  [ 5/13] Hadron             [@@@@@@@@@@@@@@@                         ]  38%
+         Quarks confine into protons and neutrons
+         T=2.73e+00 K | particles: 1070
+           >> Quark confinement: 21 hadrons formed
+
+  [ 6/13] Nucleosynthesis    [%%%%%%%%%%%%%%%%%%                      ]  46%
+         Light nuclei form: H, He, Li
+         T=2.73e+00 K | particles: 1070
+
+  [ 7/13] Recombination      [&&&&&&&&&&&&&&&&&&&&&&                  ]  54%
+         Electrons captured by nuclei; atoms form
+         T=3.28e+00 K | particles: 1030 | atoms: 20
+           >> Recombination: 20 atoms formed

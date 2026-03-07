@@ -1,0 +1,40 @@
+
+[1m[36m  ╔══════════════════════════════════════════════════════════╗[0m
+[1m[36m  ║                                                          ║[0m
+[1m[36m  ║          [37mI N   T H E   B E G I N N I N G[36m                ║[0m
+[1m[36m  ║          [2mCosmic Evolution Simulator[0m[1m[36m                   ║[0m
+[1m[36m  ║          [2mNode.js Edition[0m[1m[36m                              ║[0m
+[1m[36m  ║                                                          ║[0m
+[1m[36m  ╚══════════════════════════════════════════════════════════╝[0m
+
+[2m  Step size: 100 | Max ticks: 300.0k | Report interval: 5.0k[0m
+
+
+[1m[35m  ── ELECTROWEAK EPOCH ─────────────────────────────────────────[0m
+[2m     Electromagnetic and weak forces separate[0m
+
+
+[1m[35m  ── QUARK EPOCH ─────────────────────────────────────────[0m
+[2m     Quark-gluon plasma, free quarks[0m
+
+
+[1m[33m  ── HADRON EPOCH ─────────────────────────────────────────[0m
+[2m     Quarks confined into protons and neutrons[0m
+
+  [2mt=  5000[0m [33m[█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░][0m [2m1.7%[0m
+[2m           Temp: [0m2.7 K
+[2m      Particles: [0m77 [2m(electron:46 proton:15 positron:6 down:5 photon:5)[0m
+
+
+[1m[33m  ── NUCLEOSYNTHESIS EPOCH ─────────────────────────────────────────[0m
+[2m     Light nuclei form: H, He, Li[0m
+
+  [2mt= 10000[0m [33m[█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░][0m [2m3.3%[0m
+[2m           Temp: [0m2.7 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
+[2m          Atoms: [0m15 [2m(H:15)[0m
+
+  [2mt= 15000[0m [33m[██░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░][0m [2m5.0%[0m
+[2m           Temp: [0m2.7 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
+[2m          Atoms: [0m15 [2m(H:15)[0m

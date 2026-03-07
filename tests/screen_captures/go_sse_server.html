@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>In The Beginning - Cosmic Simulator</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Background stars (drawn by JS) -->
+<canvas class="stars" id="starsCanvas"></canvas>
+
+<div class="container">
+  <header>
+    <h1>IN THE BEGINNING</h1>
+    <p>A Cosmic Evolution Simulator</p>
+  </header>
+
+  <!-- Connection status -->
+  <div class="status-bar">
+    <div class="status-dot" id="statusDot"></div>
+    <div class="status-text" id="statusText">Connecting...</div>
+  </div>
+
+  <!-- Epoch name, description, and progress -->
+  <div class="epoch-section">
+    <div class="epoch-name" id="epochName">Waiting for simulation...</div>
+    <div class="epoch-desc" id="epochDesc"></div>
+    <div class="progress-outer">
+      <div class="progress-inner" id="progressBar" style="width: 0%">
+        <span class="progress-label" id="progressLabel">0%</span>
+      </div>
+    </div>
+    <div class="temp-display">Temperature: <span id="tempValue">--</span></div>
+  </div>
+
+  <!-- Population counters -->
+  <div class="counters">
+    <div class="counter-card particles">
+      <div class="label">Particles</div>
+      <div class="value" id="countParticles">0</div>
+    </div>
+    <div class="counter-card atoms">
+      <div class="label">Atoms</div>
+      <div class="value" id="countAtoms">0</div>
+    </div>
+    <div class="counter-card molecules">
+      <div class="label">Molecules</div>
+      <div class="value" id="countMolecules">0</div>
+    </div>
+    <div class="counter-card cells">
+      <div class="label">Cells</div>
+      <div class="value" id="countCells">0</div>
+    </div>
+  </div>
+
+  <!-- Particle count sparkline -->
+  <div class="canvas-section">
+    <h2>Particle Count History</h2>
+    <div class="canvas-wrap sparkline-wrap">
+      <canvas id="sparkCanvas"></canvas>
+    </div>
+  </div>
+
+  <!-- Quantum field visualization -->
+  <div class="canvas-section">
+    <h2>Quantum Field Visualization</h2>
+    <div class="canvas-wrap field-wrap">
+      <canvas id="fieldCanvas"></canvas>
+    </div>
+  </div>
+
+  <!-- Simulation complete banner -->
+  <div class="complete-banner" id="completeBanner">
+    <h2>Simulation Complete</h2>
+    <p id="completeText">The universe has evolved.</p>
+  </div>
+
+  <!-- Scrolling event log -->
+  <div class="log-section">
+    <h2>Event Log</h2>
+    <div class="log-entries" id="logEntries"></div>
+  </div>
+
+  <footer>
+    From quantum foam to living cells &mdash; 13.8 billion years in the blink of an eye.
+  </footer>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

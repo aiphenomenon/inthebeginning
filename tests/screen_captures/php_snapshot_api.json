@@ -1,0 +1,159 @@
+{
+  "seed": 709547,
+  "elapsed_seconds": 0.028,
+  "current_epoch": "Present Day",
+  "epoch_index": 12,
+  "temperature": 295.0000001096576,
+  "scale_factor": 1.3298107870290304e+169,
+  "stats": {
+    "particles_created": 500,
+    "atoms_formed": 0,
+    "molecules_formed": 0,
+    "lifeforms_created": 20
+  },
+  "epochs": [
+    {
+      "epoch": "Planck",
+      "temperature": 10000000000,
+      "scale": 6.376215002140497e-27,
+      "stats": {
+        "particles_created": 100,
+        "atoms_formed": 0,
+        "molecules_formed": 0,
+        "lifeforms_created": 0
+      }
+    },
+    {
+      "epoch": "Inflation",
+      "temperature": 9.734449313986273e+26,
+      "scale": 6.376215002140499e+123,
+      "stats": {
+        "particles_created": 200,
+        "atoms_formed": 0,
+        "molecules_formed": 0,
+        "lifeforms_created": 0
+      }
+    },
+    {
+      "epoch": "Electroweak",
+      "temperature": 8.71728016868007e+24,
+      "scale": 4.065611775352154e+132,
+      "stats": {
+        "particles_created": 300,
+        "atoms_formed": 0,
+        "molecules_formed": 0,
+        "lifeforms_created": 0
+      }
+    },
+    {
+      "epoch": "Quark-Gluon Plasma",
+      "temperature": 2.5696935619351137e+22,
+      "scale": 2.5923214794879465e+141,
+      "stats": {
+        "particles_created": 400,
+        "atoms_formed": 0,
+        "molecules_formed": 0,
+        "lifeforms_created": 0
+      }
+    },
+    {
+      "epoch": "Hadron",
+      "temperature": 2.4313303286838297e+19,
+      "scale": 1.6529199107882108e+150,
+      "stats": {
+        "particles_created": 500,
+        "atoms_formed": 0,
+        "molecules_formed": 0,
+        "lifeforms_created": 0
+      }
+    },
+    {
+      "epoch": "Nucleosynthesis",
+      "temperature": 7191015970386584,
+      "scale": 1.0539372732504513e+159,
+      "stats": {
+        "particles_created": 500,
+        "atoms_formed": 0,
+        "molecules_formed": 0,
+        "lifeforms_created": 0
+      }
+    },
+    {
+      "epoch": "Recombination",
+      "temperature": 646688107024.037,
+      "scale": 6.72013065301457e+167,
+      "stats": {
+        "particles_created": 500,
+        "atoms_formed": 0,
+        "molecules_formed": 0,
+        "lifeforms_created": 0
+      }
+    },
+    {
+      "epoch": "Star Formation",
+      "temperature": 18176914.20512543,
+      "scale": 1.1052140718896275e+168,
+      "stats": {
+        "particles_created": 500,
+        "atoms_formed": 0,
+        "molecules_formed": 0,
+        "lifeforms_created": 0
+      }
+    },
+    {
+      "epoch": "Solar System",
+      "temperature": 5916.272765274302,
+      "scale": 1.8176702325793338e+168,
+      "stats": {
+        "particles_created": 500,
+        "atoms_formed": 0,
+        "molecules_formed": 0,
+        "lifeforms_created": 0
+      }
+    },
+    {
+      "epoch": "Earth Formation",
+      "temperature": 288.0118825977408,
+      "scale": 2.9893983061183437e+168,
+      "stats": {
+        "particles_created": 500,
+        "atoms_formed": 0,
+        "molecules_formed": 0,
+        "lifeforms_created": 0
+      }
+    },
+    {
+      "epoch": "Life Emergence",
+      "temperature": 299.9999932108695,
+      "scale": 4.916459582408429e+168,
+      "stats": {
+        "particles_created": 500,
+        "atoms_formed": 0,
+        "molecules_formed": 0,
+        "lifeforms_created": 20
+      }
+    },
+    {
+      "epoch": "DNA Evolution",
+      "temperature": 298.0000002932051,
+      "scale": 8.085765880038186e+168,
+      "stats": {
+        "particles_created": 500,
+        "atoms_formed": 0,
+        "molecules_formed": 0,
+        "lifeforms_created": 20
+      }
+    },
+    {
+      "epoch": "Present Day",
+      "temperature": 295.0000001096576,
+      "scale": 1.3298107870290304e+169,
+      "stats": {
+        "particles_created": 500,
+        "atoms_formed": 0,
+        "molecules_formed": 0,
+        "lifeforms_created": 20
+      }
+    }
+  ]
+}

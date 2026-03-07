@@ -1,0 +1,40 @@
+
+[1m==============================================================================[0m
+[1m[36m                    IN THE BEGINNING[0m
+[2m           A Cosmic Evolution Simulator (C++20)[0m
+[2m        From the Big Bang to the Emergence of Life[0m
+[1m==============================================================================[0m
+
+
+[2m------------------------------------------------------------------------------[0m
+[1m[37m  EPOCH 1/13: Planck[0m
+[2m  All forces unified, T~10^32K[0m
+[2m------------------------------------------------------------------------------[0m
+  [2mTick:        [0m1
+  [2mTemperature: [0m1.000e+10 K
+  [2mScale:       [0m1.000e+00
+  [2mEnergy:      [0m9.727e+07
+  [2mParticles:   [0m18
+  [32mAll four forces unified. Vacuum fluctuations create 18 virtual particles. Vacuum energy = 0.00e+00[0m
+
+[2m------------------------------------------------------------------------------[0m
+[1m[33m  EPOCH 2/13: Inflation[0m
+[2m  Exponential expansion, quantum fluctuations seed structure[0m
+[2m------------------------------------------------------------------------------[0m
+  [2mTick:        [0m10
+  [2mTemperature: [0m3.059e+03 K
+  [2mScale:       [0m1.142e+26
+  [2mEnergy:      [0m9.727e+07
+  [2mParticles:   [0m118
+  [32mExponential expansion by factor ~e^60. Quantum fluctuations seed large-scale structure. 118 particles created, 118 surviving.[0m
+
+[2m------------------------------------------------------------------------------[0m
+[1m[35m  EPOCH 3/13: Electroweak[0m
+[2m  Electromagnetic and weak forces separate[0m
+[2m------------------------------------------------------------------------------[0m
+  [2mTick:        [0m100
+  [2mTemperature: [0m3.000e+03 K
+  [2mScale:       [0m3.198e+26
+  [2mEnergy:      [0m9.798e+07
+  [2mParticles:   [0m178
+  [32mHiggs field activates, W/Z bosons gain mass. EM and weak forces separate. 10 matter-antimatter annihilations. 178 particles remain.[0m

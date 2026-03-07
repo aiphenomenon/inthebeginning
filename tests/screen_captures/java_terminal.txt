@@ -1,0 +1,40 @@
+
+[1m[36m  ============================================================[0m
+[1m[36m  |                                                          |[0m
+[1m[36m  |        IN THE BEGINNING -- Cosmic Evolution Simulator    |[0m
+[1m[36m  |                                                          |[0m
+[1m[36m  |    From the Big Bang to Life: A Physics Simulation       |[0m
+[1m[36m  |                                                          |[0m
+[1m[36m  ============================================================[0m
+[1m
+Beginning cosmic simulation with seed: 42[0m
+Total epochs: 13
+Total ticks: 300000
+
+
+[31m[1m  ----------------------------------------------------------------[0m
+[31m[1m  EPOCH 1/13: PLANCK  (tick 1)
+[0m[31m  All forces unified, T~10^32K[0m
+[31m[1m  ----------------------------------------------------------------[0m
+
+[31m  --- State at end of Planck epoch ---[0m
+    Temperature:       8.0000e+09 K
+    Scale factor:      1.0240e-27
+    Total energy:      3.4032e+07
+    Particles:                  8  (created: 8  annihilated: 0)
+      Breakdown:     electron=4 positron=4 
+
+[31m[1m  ----------------------------------------------------------------[0m
+[31m[1m  EPOCH 2/13: INFLATION  (tick 10)
+[0m[31m  Exponential expansion, quantum fluctuations seed structure[0m
+[31m[1m  ----------------------------------------------------------------[0m
+
+[31m  --- State at end of Inflation epoch ---[0m
+    Temperature:       1.0000e+08 K
+    Scale factor:      5.4454e-24
+    Total energy:      1.0944e+10
+    Particles:              3,608  (created: 3,608  annihilated: 0)
+      Breakdown:     electron=1640 positron=1640 up=164 down=164 
+
+[33m[1m  ----------------------------------------------------------------[0m
+[33m[1m  EPOCH 3/13: ELECTROWEAK  (tick 100)
