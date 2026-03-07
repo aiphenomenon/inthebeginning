@@ -940,9 +940,12 @@ apps/screensaver-ubuntu/
 
 **Description:** A Python-based audio composition engine that sonifies the cosmic
 simulation into structured, multi-track music. Features a bar-oriented architecture
-with real time signatures, 500+ instrument samples, MIDI library sampling from
-classical composers (Bach, Beethoven, Chopin, Mozart), and world musical scales
-spanning Western classical, Asian, Middle Eastern, Indian, and African traditions.
+with real time signatures, 537+ synthesized instruments, MIDI library sampling from
+1,771 public domain classical works by 120+ composers, FluidSynth integration with
+128 General MIDI instruments, and world musical scales spanning Western classical,
+Asian, Middle Eastern, Indian, and African traditions. V20 engine adds volume
+normalization to -1dB peak, lookahead limiter for spike prevention, and 10-20%
+solo instrument moods for variety.
 
 **Build command:**
 ```
@@ -956,13 +959,16 @@ cd apps/audio && python generate.py
 
 **Key features:**
 - Bar-based multi-track music with real time signatures (4/4, 3/4, 6/8, 7/8, 5/4)
-- 500+ instrument samples (strings, winds, bells, percussion, pads, world instruments)
-- MIDI library sampling from public domain classical works (pre-1929)
+- 537+ synthesized instruments (strings, winds, bells, percussion, pads, world instruments)
+- 1,771 public domain MIDI files from 120+ classical composers (pre-1900)
+- FluidSynth integration with FluidR3_GM.sf2 (128 General MIDI instruments)
+- Multi-TTS voice injection: espeak-ng, flite, festival, pico2wave
+- V20 engine: master normalization (-1dB peak), lookahead limiter, solo moods
 - World musical scales (30+ scales from 6 traditions)
 - Additive synthesis timbres with FFT-guided waveform shaping
 - Polyrhythmic patterns (3:2, 4:3, 5:4, West African, gamelan)
 - No external dependencies -- pure Python stdlib (math, random, struct)
-- Optional FluidSynth for MIDI rendering, mido for MIDI parsing, ffmpeg for MP3 output
+- Optional: FluidSynth, mido (MIDI parsing), numpy, ffmpeg (MP3 output)
 
 **File structure:**
 ```
@@ -975,7 +981,7 @@ apps/audio/
   test_composer.py       # Composer tests
   test_music_engine.py   # Music engine tests
   samples/               # 45+ instrument samples (MP3)
-  midi_library/          # Classical MIDI files (Bach, Beethoven, Chopin, Mozart)
+  midi_library/          # 1,771 classical MIDI files from 120+ composers
 ```
 
 ---
