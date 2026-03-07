@@ -59,6 +59,19 @@ test evidence across all simulator languages.
 | `session_logs/v0.6.0-session.md` | Extracted from archive |
 | `future_memories/v17-comparison-plan.md` | Modified — Turn 4 plan |
 | `RELEASE_HISTORY.md` | Modified — this entry |
+| `apps/audio/cosmic_radio_v18_v8-42.mp3` | Created — V8-style seed=42 (30 min, 43MB) |
+| `apps/audio/cosmic_radio_v18_v8-random.mp3` | Created — V8-style random seed (30 min, 43MB) |
+| `apps/audio/cosmic_radio_v18_v18-42.mp3` | Created — V18 clean mixing seed=42 (30 min, 43MB) |
+| `apps/audio/cosmic_radio_v18_v18-random.mp3` | Created — V18 clean mixing random (30 min, 43MB) |
+| `apps/audio/cosmic_radio_v18_v18o.mp3` | Created — V18 Orchestra expanded palette (30 min, 43MB) |
+
+### Turn 4 Continued: MP3 Renders Complete — 11:12 CT (17:12 UTC)
+
+All 5 MP3 comparison renders complete and pushed to GitHub:
+- 16/16 V18 unit tests pass
+- 407/407 Python reference tests pass
+- Swift toolchain: blocked (`download.swift.org` 403 despite `*.swift.org` allowlist)
+- Docker daemon unavailable for alternative Swift install
 
 ---
 
