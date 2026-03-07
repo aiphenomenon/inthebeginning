@@ -287,6 +287,32 @@ export class Universe {
             cosmicRayFlux: this.environment.cosmicRayFlux,
         };
     }
+
+    /**
+     * Big Bounce: Reset the universe for a new cycle.
+     * Derives a new seed-like state from tick count, clears all accumulators.
+     * Enables perpetual simulation without memory leaks.
+     */
+    bigBounce() {
+        this._cycle = (this._cycle || 0) + 1;
+        this.tick = 0;
+        this.currentEpochName = "Void";
+        this.quantumField = new QuantumField(T_PLANCK);
+        this.atomicSystem = new AtomicSystem();
+        this.chemicalSystem = null;
+        this.biosphere = null;
+        this.environment = new Environment(T_PLANCK);
+        this.particlesCreated = 0;
+        this.atomsFormed = 0;
+        this.moleculesFormed = 0;
+        this.cellsBorn = 0;
+        this.mutationCount = 0;
+    }
+
+    /** Current Big Bounce cycle number (0 = first run). */
+    get cycle() {
+        return this._cycle || 0;
+    }
 }
 
 export { EPOCHS };
