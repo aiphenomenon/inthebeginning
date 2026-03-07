@@ -433,3 +433,12 @@ void universe_run(Universe *u)
         (void)before;
     }
 }
+
+void universe_big_bounce(Universe *u)
+{
+    /* Free current state */
+    bool was_verbose = u->verbose;
+    universe_free(u);
+    /* Re-initialize for a fresh cycle */
+    universe_init(u, was_verbose);
+}

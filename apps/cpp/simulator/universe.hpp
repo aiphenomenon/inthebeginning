@@ -85,6 +85,16 @@ private:
 
     /// Build an EpochState snapshot from current state.
     EpochState snapshot(const std::string& name, const std::string& details) const;
+
+public:
+    /// Big Bounce: reset the universe for a new cycle.
+    /// Reconstructs the universe in-place for a fresh start.
+    void bigBounce() {
+        biosphere.reset();
+        // Reconstruct in-place to handle non-movable members
+        this->~Universe();
+        new (this) Universe();
+    }
 };
 
 } // namespace sim

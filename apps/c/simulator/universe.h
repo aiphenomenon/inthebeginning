@@ -74,6 +74,8 @@ EpochId     universe_epoch_at_tick(int tick);
 const char *universe_epoch_name(EpochId id);
 void        universe_log_event(Universe *u, const char *msg);
 
+void        universe_big_bounce(Universe *u);
+
 /* Epoch table accessor */
 const EpochDescriptor *universe_epoch_table(void);
 
