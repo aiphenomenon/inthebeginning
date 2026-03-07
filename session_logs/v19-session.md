@@ -128,8 +128,128 @@ User requested comprehensive audio engine improvements:
 - No FluidSynth or SoundFont (.sf2) files present
 - Volume: voice_gain = 0.25/n_voices with soft-knee limiting at 0.75
 
+### Actions Completed — 14:34 CT (20:34 UTC)
+
+#### 1. TTS Engines Installed
+- espeak-ng (already present)
+- flite 2.2 (via apt)
+- festival 2.5.0 (via apt)
+- pico2wave (via apt)
+
+#### 2. FluidSynth + SoundFonts Installed
+- FluidSynth 2.3.4 (via apt)
+- FluidR3_GM.sf2 (128 GM instruments, via apt)
+- FluidR3_GS.sf2 (GS extended, via apt)
+
+#### 3. V20 Engine Built — Volume Fix + Solo Moods
+Root cause of volume issues identified via ffmpeg volumedetect:
+
+| MP3 | Mean dB | Peak dB | Dynamic Range |
+|-----|---------|---------|---------------|
+| v18-42 | -35.7 | -1.6 | 34.1 dB |
+| v18-random | -34.5 | -2.9 | 31.6 dB |
+| v18-orchestra | -35.9 | -7.0 | 28.9 dB |
+| v8-42 (old) | -19.8 | 0.0 | 19.8 dB (clips!) |
+
+**Root cause**: Double 0.25 gain attenuation: `voice_gain = 0.25/n_voices` then
+`_mix_mono_clean(..., v_gain * 0.25)` → effective gain 0.016-0.031 per voice (-30 to -36 dB)
+
+**V20 fixes applied**:
+- Removed double 0.25 attenuation (gain now 0.35/n_voices, mix at 1.0)
+- Master normalization to -1dB peak after all rendering
+- Lookahead limiter (5ms attack, 50ms release) prevents transient spikes
+- Per-segment soft-knee raised to 0.85 (was 0.75)
+
+**V20 test render results (60s, seed=42)**:
+```
+Peak: 0.8913 (-1.0 dB)    ← exactly on target
+RMS:  0.1325 (-17.6 dB)   ← good listening level
+Dynamic range: 16.6 dB     ← healthy (was 34 dB!)
+Samples > 0.95: 0          ← zero spikes!
+```
+
+#### 4. Solo Instrument Mood Feature
+- 15% chance per segment triggers "solo mood"
+- Single instrument plays sampled MIDI arrangement directly
+- No chord building, no arpeggios, no embellishments
+- Gentle reverb, centered pan, moderate coloring
+- Gives listener's brain a reset moment
+
+#### 5. Golden Test Evidence
+
+**Golden Output Tests: 23/23 PASSED**
+```
+tests/test_golden_outputs.py: 23 passed in 94.39s
+```
+
+**Cross-Language Parity: 10/10 PASSED**
+```
+tests/test_cross_language_parity.py: 10 passed in 16.71s
+```
+
+**Audio Golden Tests: 12/13 PASSED, 1 SKIPPED**
+```
+tests/test_audio_golden.py: 12 passed, 1 skipped in 18.06s
+```
+
+**Golden Output Snippets (first 4 lines of each language)**:
+
+Python:
+```
+  ╔══════════════════════════════════════════╗
+  ║       IN THE BEGINNING                   ║
+  ║  AST-Driven Reality Simulator             ║
+  ╚══════════════════════════════════════════╝
+```
+
+Node.js:
+```
+  ╔══════════════════════════════════════════════════════════╗
+  ║          I N   T H E   B E G I N N I N G                ║
+  ║          Cosmic Evolution Simulator                      ║
+  ╚══════════════════════════════════════════════════════════╝
+```
+
+Go:
+```
+  ========================================================================
+                              IN THE BEGINNING
+                        A Cosmic Evolution Simulator
+  ========================================================================
+```
+
+Rust:
+```
+  ╔═══════════════════════════════════════════════════════════╗
+  ║       IN THE BEGINNING -- Cosmic Simulation v0.1         ║
+  ║       From the Big Bang through the emergence of life    ║
+  ╚═══════════════════════════════════════════════════════════╝
+```
+
+C:
+```
+  |        IN THE BEGINNING: Cosmic Evolution Simulator      |
+  |        From the Big Bang to Life                         |
+```
+
+C++:
+```
+                    IN THE BEGINNING
+           A Cosmic Evolution Simulator (C++20)
+```
+
+Perl:
+```
+  IN THE BEGINNING — Cosmic Simulation (Perl)
+  From the Big Bang to the emergence of life
+```
+
+PHP:
+```
+  IN THE BEGINNING — Cosmic Simulation (PHP)
+  From the Big Bang to the emergence of life
+```
+
 ### Actions In Progress
-- Installing TTS engines, torch, fluidsynth
-- Researching GitHub repos for openly licensed instruments and MIDI files
-- Fixing volume normalization pipeline
-- Adding solo instrument mood feature
+- Downloading ~1000 additional public domain MIDI files from GitHub
+- Preparing full 30-minute V20 MP3 renders (seed=42 and random)

@@ -4,5 +4,11 @@
   "args": ["-m", "apps.audio.radio_engine", "--version", "v20", "--duration", "10", "--seed", "42", "-o", "/dev/null"],
   "exit_code": 0,
   "captured_at": "2026-03-07T20:32:00Z",
+  "sample_rate": 44100,
+  "duration": 10,
+  "seed": 42,
+  "engine_version": "v20",
+  "peak_db": -1.0,
+  "rms_db": -17.6,
   "note": "Audio engine test — verifies V20 initializes and renders without error"
 }
