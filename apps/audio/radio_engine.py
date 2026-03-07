@@ -6408,9 +6408,8 @@ class RadioEngineV15(RadioEngineV8):
                 right[pos + i] += loop_right[i] * fade
             pos += loop_samples - xfade
 
-        # v8 master: anti-hiss + subsonic
-        left, right = self.anti_hiss.apply_stereo(left, right)
-        left, right = self.subsonic_filter.apply_stereo(left, right)
+        # NOTE: anti-hiss + subsonic applied at master level in V8's render()
+        # (inherited). Do NOT apply here — that would double-filter the signal.
 
         return left, right
 

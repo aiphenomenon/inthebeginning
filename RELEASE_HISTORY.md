@@ -4,6 +4,53 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.17.0 — 2026-03-07 — V8 vs V15 Bit-Identity Investigation + Double-Filter Bug Fix
+
+### Summary
+
+Empirical investigation of whether a tempo-matched V15 variant produces bit-identical
+audio to the original V8 seed-42. Discovered and fixed a **double-filter bug** in V15
+and V16 where `anti_hiss` and `subsonic_filter` were applied both per-segment (inside
+`_render_segment`) and at master level (inherited from V8's `render()`).
+
+### Key Findings
+
+1. **V8 pure Python vs V15+V8tempo+V8render: BIT-IDENTICAL** (zero sample difference)
+   — confirming the claim holds when all code paths are matched
+2. **numpy vs pure Python synthesis: DIFFERENT** (max diff 0.35, 99.6% of PCM16 differ)
+   — floating-point operation ordering causes material numerical divergence
+3. **Double-filter bug**: V15's `_render_segment` applied anti-hiss + subsonic per-segment,
+   then V8's inherited `render()` applied them again at master level
+4. **numpy availability during original V8 render: UNKNOWN** — session log was
+   reconstructed after iOS app crash; v0.6.0 logs confirm numpy was in use earlier
+
+### Changes
+
+- **Bug fix** (`apps/audio/radio_engine.py`):
+  - Removed per-segment `anti_hiss.apply_stereo` and `subsonic_filter.apply_stereo` from
+    `RadioEngineV15._render_segment` (also affects V16 via inheritance)
+  - Master-level filtering in V8's `render()` is sufficient
+- **Comparison script** (`apps/audio/compare_v8_v15.py`):
+  - Renders six variants: V8±numpy, V15 own/V8-tempo/V8-full/numpy
+  - Compares PCM16 audio sample-by-sample (ignoring MP3 metadata)
+  - Supports `--compare-mp3` to decode and compare existing repo MP3s
+- **Evaluation document** (`docs/v8_v15_comparison.md`):
+  - Full investigation: git archaeology, AST analysis, structural diff, empirical results
+  - numpy availability timeline across all versions
+  - Render path analysis (render vs render_streaming filter behavior)
+- **Results file** (`docs/v8_v15_results.md`): Machine-generated comparison tables
+- **Tests**: 6 new regression tests for the double-filter fix
+
+### Agent Activity
+
+- Git archaeology across commits 348bf29 → 45791bd → 88a543d
+- AST analysis via Python `ast` module (class structure, method overrides)
+- Structural diff: V8 vs V15 `_render_segment` after removing dead numpy branch
+- Empirical rendering: 6 variants × 30s = ~10 minutes of render time
+- Session log archive search for numpy breadcrumbs
+
+---
+
 ## v0.16.0 — 2026-03-06 — Radio Engine v16: True Original V8 Synthesis + Expanded Palette
 
 ### Summary

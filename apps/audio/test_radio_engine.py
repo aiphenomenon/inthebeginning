@@ -2087,6 +2087,55 @@ class TestRadioEngineV16(unittest.TestCase):
         self.assertGreater(len(left), 0)
 
 
+class TestV15NoDoubleFilter(unittest.TestCase):
+    """V17 regression test: V15 should not double-apply anti-hiss/subsonic.
+
+    V15's _render_segment must NOT apply anti_hiss + subsonic_filter because
+    V8's render() (which V15 inherits) already applies them at the master level.
+    Double-applying would over-filter the signal.
+    """
+
+    def test_v15_render_segment_no_anti_hiss(self):
+        """V15._render_segment should not contain anti_hiss.apply_stereo."""
+        import inspect
+        src = inspect.getsource(RadioEngineV15._render_segment)
+        self.assertNotIn('self.anti_hiss.apply_stereo', src,
+                         "V15._render_segment should not apply anti_hiss "
+                         "(it's already applied in V8's render())")
+
+    def test_v15_render_segment_no_subsonic(self):
+        """V15._render_segment should not contain subsonic_filter.apply_stereo."""
+        import inspect
+        src = inspect.getsource(RadioEngineV15._render_segment)
+        self.assertNotIn('self.subsonic_filter.apply_stereo', src,
+                         "V15._render_segment should not apply subsonic_filter "
+                         "(it's already applied in V8's render())")
+
+    def test_v8_render_has_master_filters(self):
+        """V8.render() should apply anti_hiss and subsonic at master level."""
+        import inspect
+        src = inspect.getsource(RadioEngineV8.render)
+        self.assertIn('anti_hiss', src)
+        self.assertIn('subsonic_filter', src)
+
+    def test_v15_inherits_v8_render(self):
+        """V15 should inherit V8's render() (no override)."""
+        # V15 should NOT define its own render() method
+        self.assertNotIn('render', RadioEngineV15.__dict__,
+                         "V15 should inherit render() from V8, not override it")
+
+    def test_v8_render_segment_no_anti_hiss(self):
+        """V8._render_segment should not apply anti_hiss (it's in render())."""
+        import inspect
+        src = inspect.getsource(RadioEngineV8._render_segment)
+        self.assertNotIn('self.anti_hiss.apply_stereo', src)
+
+    def test_compare_script_exists(self):
+        """The V17 comparison script should exist."""
+        script = os.path.join(os.path.dirname(__file__), 'compare_v8_v15.py')
+        self.assertTrue(os.path.exists(script))
+
+
 class TestV15V16CLIArguments(unittest.TestCase):
     """Tests for v15/v16 CLI argument support."""
 
