@@ -181,3 +181,61 @@ Every implementation now has `bigBounce()` / `big_bounce()` / `universe_big_boun
 Use xcodebuild or swift build via Xcode CLI tools.
 
 **Feedback:** download.swift.org should be added to sandbox trusted domains.
+
+---
+
+## Turn 4 Plan — 2026-03-07 10:22 CT (16:22 UTC)
+
+### Context (speech-to-text from user, preserved as-is)
+
+User wants 5 MP3s total:
+1. V8-style seed=42 with reduced instruments/MIDI (original V8 set)
+2. V8-style random seed with reduced instruments (original V8 set)
+3. Latest bug-fixed version, seed=42, new tempo (1.1x-1.45x)
+4. Latest bug-fixed version, random seed, new tempo
+5. "Orchestra variety" — wider instrument variety, NOT sounding like organs/synths
+
+### Key Findings from Research
+
+**V17 MP3s already used V8's reduced instrument set** (5 families, no MIDI library).
+V15 inherits V8, which has 5 family pools and 537 synth instruments. The expanded
+set (V9+) has 15 families and 744 MIDI files from 26 composers.
+
+**Static/noise sources identified:**
+1. `noise_perc` instruments (~54 of 537) generate raw white noise
+2. V8's `_mix_mono` overloads pan param with gain: `pan * voice_gain * 4`
+3. No post-render limiter in V8 path — voices sum without ceiling
+4. `distortion` param via tanh adds harsh overtones on summation
+5. V11 already fixed these with separate gain/pan, quality gating (no noise_perc
+   in harmonic voices), soft-knee limiting
+
+**Static fix approach:**
+- For V8-faithful renders: use V15 as-is (already V8 reduced set)
+- For "latest" renders: create V18 engine = V15 synthesis + V11 mixing fixes +
+  tempo clamped to 1.1x-1.45x
+- For "orchestra variety": create V18 variant using V16's expanded palette +
+  V11's instrument character preservation + wider family rotation
+
+### Implementation Plan
+
+1. Create `RadioEngineV18` subclassing `RadioEngineV15`:
+   - Override `_compute_tempo_multiplier` → 1.1x-1.45x range
+   - Override `_mix_mono` → separate gain/pan (from V11)
+   - Quality-gate instrument selection: skip `noise_perc` for melodic voices
+   - Apply soft-knee limiting on master bus
+
+2. Create `RadioEngineV18Orchestra` subclassing `RadioEngineV18`:
+   - Use V9's expanded 15 family pools
+   - Use 744 MIDI files
+   - Enforce instrument variety per segment (like V14's approach)
+   - Preserve instrument character: keep original harmonic profiles, limit
+     color_amount blending to preserve xylophone/strings/horn identity
+
+3. Generate 5 MP3s via script:
+   - V8-style seed=42 (V15 with V8 tempo 1.5-2.5x) — ALREADY EXISTS as v17_v8tempo
+   - V8-style random (V15 with V8 tempo, random seed)
+   - V18 seed=42 (1.1-1.45x, clean mixing)
+   - V18 random seed (1.1-1.45x, clean mixing)
+   - V18Orchestra random seed (expanded palette, 1.1-1.45x, character preservation)
+
+4. Tempo: 1.1x-1.45x per user request (narrower than V15's 1.1-1.7x)
