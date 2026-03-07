@@ -205,17 +205,81 @@ func runSimulation(seed int64, b *broker, latest *latestStore) {
 			result.MoleculeCount, result.CellCount)
 	}
 
-	universe.Run()
+	// Run in perpetual Big Bounce mode: when the universe completes,
+	// derive a new seed and restart. This keeps the SSE stream alive
+	// indefinitely with varying content.
+	cycle := 0
+	currentSeed := seed
+	for {
+		universe.Run()
+		cycle++
 
-	elapsed := time.Since(startTime)
-	log.Printf("Simulation complete in %v", elapsed)
+		elapsed := time.Since(startTime)
+		log.Printf("Cycle %d complete (seed=%d) in %v — Big Bounce!", cycle, currentSeed, elapsed)
 
-	ev := snapshot{
-		Type:      "complete",
-		ElapsedMs: elapsed.Milliseconds(),
+		// Broadcast bounce event (not "complete" — we're continuing)
+		ev := snapshot{
+			Type:      "bounce",
+			ElapsedMs: elapsed.Milliseconds(),
+		}
+		b.broadcast(ev)
+
+		// Derive new seed from current state
+		currentSeed = currentSeed*6364136223846793005 + 1442695040888963407 // LCG
+		log.Printf("New universe seed: %d", currentSeed)
+
+		// Reset for next cycle
+		universe = simulator.NewUniverse(currentSeed)
+		lastEpochIndex = -1
+
+		// Re-attach callbacks
+		universe.OnTick = func(epochName string, epochIndex int, tick int) {
+			if epochIndex != lastEpochIndex {
+				lastEpochIndex = epochIndex
+				ev := snapshot{
+					Type:       "epoch_start",
+					Epoch:      epochName,
+					EpochIndex: epochIndex,
+				}
+				b.broadcast(ev)
+			}
+
+			now := time.Now()
+			if now.Sub(lastSend) < minInterval {
+				return
+			}
+			lastSend = now
+
+			snap := universe.TakeSnapshot(epochName, epochIndex, true)
+			ev := snapshot{
+				Type:          "tick",
+				Epoch:         snap.Epoch,
+				EpochIndex:    snap.EpochIndex,
+				Tick:          snap.Tick,
+				Temperature:   snap.Temperature,
+				Particles:     snap.Particles,
+				Atoms:         snap.Atoms,
+				Molecules:     snap.Molecules,
+				Cells:         snap.Cells,
+				TotalEpochs:   snap.TotalEpochs,
+				ParticlePos:   snap.ParticlePos,
+				ParticleTypes: snap.ParticleTypes,
+			}
+			b.broadcast(ev)
+			latest.set(ev)
+
+			time.Sleep(minInterval)
+		}
+
+		universe.OnEpochComplete = func(result simulator.EpochResult) {
+			log.Printf("Epoch complete: %s (particles=%d atoms=%d molecules=%d cells=%d)",
+				result.EpochName, result.ParticleCount, result.AtomCount,
+				result.MoleculeCount, result.CellCount)
+		}
+
+		// Brief pause between cycles for visual breathing room
+		time.Sleep(2 * time.Second)
 	}
-	b.broadcast(ev)
-	latest.set(ev)
 }
 
 // handleSSE handles an individual SSE connection: subscribes to the broker,

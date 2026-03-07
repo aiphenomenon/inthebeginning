@@ -1257,14 +1257,24 @@ def run_radio(renderer, port=8000, host='0.0.0.0', bitrate='128k'):
             epoch = renderer.universe.current_epoch_name
             tick = renderer.universe.tick
 
-            # Loop simulation when reaching Present
+            # Big Bounce: when universe reaches Present, derive new seed
+            # and restart with a fresh universe. Each cycle is unique.
             if epoch == "Present" and tick > 300000:
-                new_seed = renderer.seed + tick
-                sys.stderr.write(f"\n  Universe complete. Restarting with seed {new_seed}...\n")
+                import hashlib
+                state_hash = hashlib.sha256(
+                    f"{renderer.seed}:{tick}:{epoch}".encode()
+                ).hexdigest()[:8]
+                new_seed = int(state_hash, 16)
+                cycle = getattr(renderer, '_bounce_cycle', 0) + 1
+                sys.stderr.write(
+                    f"\n  Big Bounce #{cycle}! "
+                    f"New seed: {new_seed} (derived from {renderer.seed})\n"
+                )
                 renderer.universe = Universe(seed=new_seed, max_ticks=999999999)
                 renderer.seed = new_seed
                 renderer._last_epoch = ""
                 renderer._last_particle_count = 0
+                renderer._bounce_cycle = cycle
 
             # Status update
             with clients_lock:
