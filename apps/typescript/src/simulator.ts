@@ -1470,6 +1470,7 @@ export class Universe {
     mutationCount: number;
 
     private seed: number;
+    private _cycle: number = 0;
 
     constructor(seed: number = 42, maxTicks: number = PRESENT_EPOCH, stepSize: number = 1) {
         this.seed = seed;
@@ -1699,6 +1700,49 @@ export class Universe {
             uvIntensity: this.environment.uvIntensity,
             cosmicRayFlux: this.environment.cosmicRayFlux,
         };
+    }
+
+    /** Current cycle number (0 = first run, incremented by bigBounce). */
+    get cycle(): number {
+        return this._cycle;
+    }
+
+    /**
+     * Trigger a Big Bounce: collapse the current universe and restart from
+     * tick 0 with a fresh state, reusing the same seed. The cycle counter is
+     * incremented so callers can track how many bounces have occurred.
+     *
+     * All subsystems are cleared and ID counters are reset, preventing memory
+     * leaks from accumulated particles, atoms, molecules, and cells across
+     * perpetual simulation runs.
+     */
+    bigBounce(): void {
+        this._cycle++;
+
+        // Reset global ID counters
+        rng = new RNG(this.seed);
+        particleIdCounter = 0;
+        atomIdCounter = 0;
+        moleculeIdCounter = 0;
+        cellIdCounter = 0;
+
+        // Reset simulation clock and epoch
+        this.tick = 0;
+        this.currentEpochName = "Void";
+
+        // Clear and recreate all subsystems
+        this.quantumField = new QuantumField(T_PLANCK);
+        this.atomicSystem = new AtomicSystem();
+        this.chemicalSystem = null;
+        this.biosphere = null;
+        this.environment = new Environment(T_PLANCK);
+
+        // Reset counters
+        this.particlesCreated = 0;
+        this.atomsFormed = 0;
+        this.moleculesFormed = 0;
+        this.cellsBorn = 0;
+        this.mutationCount = 0;
     }
 
     /** Reset and restart with a new seed. */
