@@ -104,3 +104,32 @@ port flag, Ubuntu screensaver "0 FAILED" false positive, audio Composer API.
 - `CLAUDE.md` — added golden test execution commands
 - `README.md` — added integration test section
 - `RELEASE_HISTORY.md` — added v0.19.0 entry
+
+---
+
+## Turn 3 — 2026-03-07 14:21 CT (20:21 UTC) — V20 Audio Engine Overhaul
+
+### Requested
+User requested comprehensive audio engine improvements:
+1. Fix volume issues: low overall volume + high-volume spikes in MP3 generation
+2. Install additional TTS engines via apt (flite, festival, pico2wave)
+3. Download ~100 openly licensed SoundFont instruments from GitHub
+4. Download ~1000 openly licensed MIDI files for sampling from GitHub
+5. Add 10-20% "solo instrument" mood (sampled arrangement, single instrument, no embellishments)
+6. Generate seed-42 and random-seed MP3s with all improvements
+7. Golden test thumbnails/snippets with evidence in session log
+8. Full post-execution verification with triple-check architecture
+
+### Current State (Pre-Work)
+- 744 MIDI files across 27 composers in midi_library/
+- 537 synth instruments (pure Python synthesis, no SoundFonts downloaded)
+- TTS: espeak-ng only (Silero/PyTorch not installed)
+- mido + numpy installed; torch/torchaudio NOT installed
+- No FluidSynth or SoundFont (.sf2) files present
+- Volume: voice_gain = 0.25/n_voices with soft-knee limiting at 0.75
+
+### Actions In Progress
+- Installing TTS engines, torch, fluidsynth
+- Researching GitHub repos for openly licensed instruments and MIDI files
+- Fixing volume normalization pipeline
+- Adding solo instrument mood feature

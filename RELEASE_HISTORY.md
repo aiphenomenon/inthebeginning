@@ -4,6 +4,26 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.20.0 — 2026-03-07 — V20 Audio Engine: Volume Fix + Expanded Palette
+
+### Summary
+
+Major audio engine overhaul: fixed volume normalization (low volume + spike
+artifacts), expanded instrument palette with openly licensed SoundFonts,
+expanded MIDI sampling library to ~1750+ files, added solo instrument mood
+(10-20% of moods), additional TTS engines, and Silero TTS integration.
+
+### Turn 3: Audio Overhaul — 14:21 CT (20:21 UTC)
+
+- Volume fix: master normalization to -1dB peak + lookahead limiter
+- Solo instrument mood: 10-20% of moods play single-instrument arrangement
+- TTS expansion: flite, festival, pico2wave via apt; Silero via PyTorch
+- SoundFont instruments: ~100 additional openly licensed instruments
+- MIDI library: ~1000 additional public domain classical files
+- Two MP3 renders: seed=42 and random seed
+
+---
+
 ## v0.19.0 — 2026-03-07 — V19 Test Infrastructure Overhaul
 
 ### Summary
