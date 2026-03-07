@@ -387,6 +387,84 @@ class Universe:
         parts.append(self.environment.to_compact())
         return " | ".join(parts)
 
+    def big_bounce(self, new_seed: int = None):
+        """Reset the universe for a new cycle (Big Bounce cosmology).
+
+        Preserves the cycle count and derives a new seed from the current
+        state if none is provided. Resets all physical layers to initial
+        conditions while keeping metrics cumulative.
+
+        This enables perpetual simulation without memory leaks — all
+        lists and accumulators are reset to bounded initial state.
+        """
+        import random as _random
+        import hashlib
+
+        # Derive new seed from current state if not provided
+        if new_seed is None:
+            state_hash = hashlib.sha256(
+                f"{self.tick}:{self.current_epoch_name}:{self.metrics.ticks_completed}".encode()
+            ).hexdigest()[:8]
+            new_seed = int(state_hash, 16)
+
+        _random.seed(new_seed)
+
+        # Increment cycle counter
+        self._cycle = getattr(self, '_cycle', 0) + 1
+
+        # Reset tick to 0 but keep max_ticks
+        self.tick = 0
+        self.current_epoch_name = "Void"
+
+        # Reset physical layers (fresh allocations, old ones get GC'd)
+        self.quantum_field = QuantumField(temperature=T_PLANCK)
+        self.atomic_system = AtomicSystem()
+        self.chemical_system = None
+        self.biosphere = None
+        self.environment = Environment(initial_temperature=T_PLANCK)
+
+        # Reset history to prevent memory growth
+        self.history.clear()
+        self.epoch_transitions.clear()
+
+    def run_perpetual(self, on_bounce=None, max_cycles: int = 0,
+                      progress_interval: int = 0):
+        """Run the simulation in perpetual Big Bounce mode.
+
+        After each cycle completes (reaching Present epoch), the universe
+        resets with a derived seed and starts a new cycle. This runs
+        indefinitely unless max_cycles is set.
+
+        Args:
+            on_bounce: Callback(cycle_number, seed) called at each bounce.
+            max_cycles: Stop after N cycles (0 = infinite).
+            progress_interval: Print progress every N ticks (0 = silent).
+
+        Returns:
+            SimulationMetrics for the final cycle.
+        """
+        cycle = 0
+        while max_cycles == 0 or cycle < max_cycles:
+            # Run one full simulation cycle
+            self.run(progress_interval=progress_interval)
+            cycle += 1
+
+            if on_bounce:
+                on_bounce(cycle, self.tick)
+
+            if max_cycles > 0 and cycle >= max_cycles:
+                break
+
+            # Big Bounce — reset for next cycle
+            self.big_bounce()
+
+        return self.metrics
+
+    @property
+    def cycle(self) -> int:
+        """Current Big Bounce cycle number (0 = first run)."""
+        return getattr(self, '_cycle', 0)
+
     def summary(self) -> dict:
         """Full simulation summary."""
         return {
@@ -397,4 +475,5 @@ class Universe:
                 for t, f, to in self.epoch_transitions
             ],
             "history_snapshots": len(self.history),
+            "cycle": self.cycle,
         }

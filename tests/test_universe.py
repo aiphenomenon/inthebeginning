@@ -150,5 +150,63 @@ class TestUniverse(unittest.TestCase):
         self.assertGreater(len(u.chemical_system.molecules), 0)
 
 
+class TestBigBounce(unittest.TestCase):
+    """Tests for the Big Bounce perpetual simulation mode."""
+
+    def test_big_bounce_resets_state(self):
+        u = Universe(seed=42, max_ticks=10000, step_size=1000)
+        u.run()
+        self.assertGreater(u.tick, 0)
+        u.big_bounce()
+        self.assertEqual(u.tick, 0)
+        self.assertEqual(u.current_epoch_name, "Void")
+        self.assertEqual(u.cycle, 1)
+
+    def test_big_bounce_derives_seed(self):
+        u = Universe(seed=42, max_ticks=10000, step_size=1000)
+        u.run()
+        u.big_bounce()
+        # After bounce, should be able to run again
+        u.run()
+        self.assertGreater(u.tick, 0)
+
+    def test_big_bounce_explicit_seed(self):
+        u = Universe(seed=42, max_ticks=10000, step_size=1000)
+        u.run()
+        u.big_bounce(new_seed=99)
+        self.assertEqual(u.cycle, 1)
+        u.run()
+        self.assertGreater(u.tick, 0)
+
+    def test_run_perpetual_fixed_cycles(self):
+        bounces = []
+        u = Universe(seed=42, max_ticks=10000, step_size=1000)
+        u.run_perpetual(
+            on_bounce=lambda c, t: bounces.append(c),
+            max_cycles=3
+        )
+        self.assertEqual(len(bounces), 3)
+        self.assertEqual(u.cycle, 2)  # 2 bounces after 3 runs
+
+    def test_big_bounce_clears_history(self):
+        u = Universe(seed=42, max_ticks=10000, step_size=1000)
+        u.run()
+        self.assertGreater(len(u.history), 0)
+        u.big_bounce()
+        self.assertEqual(len(u.history), 0)
+        self.assertEqual(len(u.epoch_transitions), 0)
+
+    def test_cycle_property_initial(self):
+        u = Universe(seed=42)
+        self.assertEqual(u.cycle, 0)
+
+    def test_summary_includes_cycle(self):
+        u = Universe(seed=42, max_ticks=10000, step_size=1000)
+        u.run()
+        s = u.summary()
+        self.assertIn("cycle", s)
+        self.assertEqual(s["cycle"], 0)
+
+
 if __name__ == "__main__":
     unittest.main()
