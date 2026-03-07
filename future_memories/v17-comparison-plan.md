@@ -157,8 +157,27 @@ Every implementation now has `bigBounce()` / `big_bounce()` / `universe_big_boun
 - MP3 #1 (V8 tempo): Done, 42MB
 - MP3 #2 (V15 tempo): Rendering, ~58% at 09:30 CT
 
-### Remaining Work
-- Wait for MP3 #2 to complete
-- Commit and push both MP3s to GitHub
-- Provide plain clickable raw GitHub URLs (no markdown formatting)
-- Update RELEASE_HISTORY.md with final Big Bounce summary
+### MP3 Renders: COMPLETE
+- MP3 #1 (V8 tempo): 42MB, pushed to GitHub
+- MP3 #2 (V15 tempo): 42MB, pushed to GitHub
+- Raw URLs provided to user (no markdown formatting)
+
+### Swift on Linux Investigation — 2026-03-07 09:45 CT (15:45 UTC)
+
+**Cannot install Swift in this sandbox:**
+- download.swift.org is blocked (403 host_not_allowed)
+- GitHub releases for swiftlang/swift have zero downloadable assets
+- swiftlang/swiftly installer also has no GitHub release assets
+- clang 18.1.3 is available but cannot compile Swift (separate frontend needed)
+- No apt packages for Apple Swift exist
+
+**Architecture analysis:**
+- 7 simulator files use only Foundation + Observation (Linux-compatible with Swift 5.9+)
+- 6 UI files require SwiftUI/MetalKit/AVFoundation (Apple-only)
+- Tests use XCTest (Linux-compatible)
+- Package.swift already separates simulator into its own target
+
+**User preference:** Official Apple tools over Homebrew for macOS builds.
+Use xcodebuild or swift build via Xcode CLI tools.
+
+**Feedback:** download.swift.org should be added to sandbox trusted domains.
