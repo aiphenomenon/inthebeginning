@@ -239,3 +239,31 @@ set (V9+) has 15 families and 744 MIDI files from 26 composers.
    - V18Orchestra random seed (expanded palette, 1.1-1.45x, character preservation)
 
 4. Tempo: 1.1x-1.45x per user request (narrower than V15's 1.1-1.7x)
+
+## Turn 4 Continued — 2026-03-07 10:56 CT (16:56 UTC)
+
+### Session Resumed After Context Compaction
+
+**V18 implementation COMPLETE** (committed as `13b5b1c`):
+- `RadioEngineV18`: clean mixing, 1.1x-1.45x tempo, noise gating, soft-knee limiting
+- `RadioEngineV18Orchestra`: expanded 15-family palette, character preservation
+- 21 new tests (14 V18 + 7 V18Orchestra)
+- `generate_v18_mp3s.py`: 5-variant generation script with CLI targeting
+
+**MP3 renders in progress** (background, ~30 min each):
+- V8-42: started this turn
+- V8-random: DONE (43MB)
+- V18-42: encoding to MP3
+- V18-random: WAV rendering
+- V18-orchestra: WAV rendering
+
+**Swift toolchain**: BLOCKED — `download.swift.org` returns 403 despite user's
+wildcard allowlist update. Proxy does not honor `*.swift.org` — only `www.swift.org`
+is in the JWT. User needs to add `download.swift.org` explicitly.
+
+### Next Steps
+1. Wait for all 5 MP3 renders to complete
+2. Commit and push MP3s to GitHub
+3. Provide raw download URLs to user
+4. Resume Swift investigation if domain becomes available
+5. Update version, session log, release history
