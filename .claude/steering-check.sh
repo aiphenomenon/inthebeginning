@@ -30,6 +30,8 @@ if [ "$PHASE" = "post-tool" ]; then
     echo "  2. Update future_memories/ plan file (if work is in progress)"
     echo "  3. Update RELEASE_HISTORY.md (append turn summary)"
     echo "  4. Include [YYYY-MM-DD HH:MM CT] timestamps in responses"
+    echo "  5. Provide user updates every ~2 minutes during long operations"
+    echo "  6. Use CT + UTC dual timestamps in session logs: [YYYY-MM-DD HH:MM CT (HH:MM UTC)]"
     echo "  Do these BEFORE diving into the main task. Skip only if already done this turn."
     exit 0
 fi
@@ -163,6 +165,38 @@ echo "           The gVisor machinery + agent cooperate via this protocol:"
 echo "             - gVisor hooks remind the agent of the protocol"
 echo "             - Agent writes plan -> commits -> pushes -> codes"
 echo "             - If session interrupted, next agent reads committed plan"
+
+# 16. Gold standard test evidence at version cuts
+echo "[FAIL-CUE] Gold standard evidence:"
+echo "           At each version cut, capture and include in session log:"
+echo "           - Test result snippets (pass/fail counts per language)"
+echo "           - Small screenshots or ASCII captures of visual outputs"
+echo "           - Executable smoke test results (exit codes, output headers)"
+echo "           This evidence is part of the version cut journal."
+
+# 17. Frequent commits (multiple small commits per turn)
+echo "[FAIL-CUE] Frequent commits:"
+echo "           Commit at every significant milestone (not just end of turn)."
+echo "           Aim for multiple small, descriptive commits rather than one"
+echo "           monolithic commit. This reduces risk of lost work."
+
+# 18. User update cadence (~2 minutes)
+echo "[FAIL-CUE] User update cadence:"
+echo "           Provide a Central Time-stamped status update in the chat dialog"
+echo "           approximately every 2 minutes during long-running operations."
+echo "           Include: what completed, what's in progress, what's next."
+
+# 19. UTC timestamps in journaling
+echo "[FAIL-CUE] UTC timestamps in journaling:"
+echo "           All session logs and transcript entries must include BOTH CT and UTC:"
+echo "           Format: [YYYY-MM-DD HH:MM CT (HH:MM UTC)]"
+echo "           This ensures international readability of session records."
+
+# 20. Future memories generation (mandatory at start of every turn)
+echo "[FAIL-CUE] Future memories generation:"
+echo "           Ensure future_memories/ plan file is created or updated at the"
+echo "           START of every conversation turn (not just when starting new work)."
+echo "           The plan file is the primary session restoration artifact."
 
 # 15. Audio engine quality gate (v12 is current)
 echo "[FAIL-CUE] Audio quality: When modifying radio_engine.py, verify:"

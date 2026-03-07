@@ -69,3 +69,20 @@ V15 pre-fix: applied per-segment in _render_segment (streaming) or double in ren
 4. **Bug fix**: V15 double-filter removal
 5. **Tests**: 6 new regression tests
 6. **Version bump**: v0.17.0
+
+## Milestone: Turn 3 — 2026-03-07 08:32 CT (14:32 UTC)
+
+### Gold Standard Tests + MP3 Generation + Steering Enshrinement
+
+User wants a comprehensive "gold standard" test run with visual evidence (screenshots,
+snippets) composited into the version cut journal. Also wants two 30-minute MP3
+renders — one with original V8 tempo clamping (1.5x-2.5x) and one with new V15
+tempo clamping (1.1x-1.7x) — pushed to GitHub with clickable raw file URLs.
+
+New steering rules to enshrine in triple-check:
+- UTC datetime stamps in all session + transcript journaling
+- Gold standard test screenshots/snippets as part of version cut journaling
+- Central Time datetime stamps in chat dialog progress
+- Future memories generation enshrined in triple-check
+- More frequent commits (every significant milestone)
+- ~2-minute user update cadence in chat dialog

@@ -555,6 +555,13 @@ following items:
    made this turn, agent activity, and files created/modified?
 8. **Markdown consistency**: Did I review all markdown files for accuracy with
    the current codebase?
+9. **Gold standard evidence**: At version cuts, did I capture test result snippets
+   and small screenshots/ASCII captures of visual outputs?
+10. **Frequent commits**: Did I commit at significant milestones (not just end of turn)?
+11. **User updates**: During long operations, did I provide CT-stamped status updates
+    approximately every 2 minutes?
+12. **UTC timestamps**: Do my session log entries include both CT and UTC timestamps?
+13. **Future memories**: Did I update the plan file at the start of this turn?
 
 ### Reflection Principle (Triple Cross-Check)
 
@@ -582,6 +589,11 @@ propagated to the other two. Specific items that must appear in all three:
 - CI flake detection and repair
 - AMD64 build verification (best-effort)
 - Executable behavior testing (build, invoke, verify exit codes and output)
+- Gold standard test evidence (screenshots/snippets at version cuts)
+- Frequent commits (multiple small commits per turn, not monolithic)
+- User update cadence (~2 minutes during long operations, CT-stamped)
+- UTC timestamps in session/transcript journaling (CT + UTC dual format)
+- Future memories: generation/update at start of every turn (mandatory)
 - Audio engine quality gate (when modifying radio_engine.py)
 - Audio engine v12 is the current version: v8 synthesis (_synth_colored_note_np)
   + v9 expanded instruments (15 families) + v10 MIDI library + v11 gain staging

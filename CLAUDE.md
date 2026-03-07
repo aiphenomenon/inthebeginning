@@ -578,6 +578,12 @@ Each session log must include:
 - **AST passing stats**: Number of AST queries, total tokens used, compression ratios
 - **Test results**: Full pass/fail summary for all test suites run during the turn
 - **File changes**: List of files created, modified, or deleted
+- **UTC timestamps**: Every session log entry must include both CT and UTC timestamps
+  in the format `YYYY-MM-DD HH:MM CT (HH:MM UTC)` for international readability
+- **Gold standard test evidence**: At each version cut, include:
+  - Test result snippets (pass/fail counts per language)
+  - Small screenshots or ASCII captures of visual outputs (simulators, audio waveforms)
+  - Executable smoke test results (exit codes, first lines of output)
 
 ### Transcript Detail
 
@@ -829,6 +835,25 @@ At every conversation turn, complete the following checklist:
    entry points, test localhost servers, verify exit codes and output. Document results
    in the session log. (See [Executable Behavior Testing](#executable-behavior-testing))
 
+10. **Gold standard test evidence** -- at each version cut, capture small screenshots
+    or ASCII snippets of test results and visual outputs (simulator banners, audio
+    waveforms). Include these in the session log for the version cut journal.
+
+11. **Frequent commits** -- commit at every significant milestone (not just end of
+    turn). Aim for multiple small, descriptive commits per turn rather than one
+    monolithic commit. This reduces risk of lost work and improves git history.
+
+12. **User update cadence (~2 minutes)** -- provide a Central Time-stamped status
+    update in the chat dialog approximately every 2 minutes during long-running
+    operations. Include what completed, what's in progress, and what's next.
+
+13. **UTC timestamps in journaling** -- all session logs and transcript entries must
+    include both CT and UTC timestamps: `[YYYY-MM-DD HH:MM CT (HH:MM UTC)]`
+
+14. **Future memories generation** -- ensure future memories plan files are created
+    or updated at the start of every turn (not just when starting new work). The plan
+    file is the primary session restoration artifact.
+
 ### Reflection Principle (Triple Cross-Check)
 
 When new steering information is added anywhere in the repository, ensure it is
@@ -856,6 +881,11 @@ items that must appear in all three:
 - CI flake detection and repair
 - AMD64 build verification (best-effort)
 - Executable behavior testing (build, invoke, verify exit codes and output)
+- Gold standard test evidence (screenshots/snippets at version cuts)
+- Frequent commits (multiple small commits per turn, not monolithic)
+- User update cadence (~2 minutes during long operations, CT-stamped)
+- UTC timestamps in session/transcript journaling (CT + UTC dual format)
+- Future memories: generation/update at start of every turn (mandatory)
 
 ---
 
