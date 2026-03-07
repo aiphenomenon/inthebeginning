@@ -526,6 +526,28 @@ cd apps/swift && swift test
 
 # Audio composition engine
 python -m pytest apps/audio/ -v
+
+# Golden output tests (build + run all CLI apps, compare to snapshots)
+python -m pytest tests/test_golden_outputs.py -v
+
+# Cross-language parity (verify epoch transitions match across languages)
+python -m pytest tests/test_cross_language_parity.py -v
+
+# Server smoke tests (Go SSE + PHP snapshot servers)
+python -m pytest tests/test_server_smoke.py -v
+
+# Visualizer golden tests (Ubuntu screensaver, WASM, Java GUI, macOS screensaver)
+python -m pytest tests/test_visualizer_golden.py -v
+
+# Audio golden tests (composer, WAV generation, spectral)
+python -m pytest tests/test_audio_golden.py -v
+
+# All new integration tests at once
+python -m pytest tests/test_golden_outputs.py tests/test_cross_language_parity.py \
+  tests/test_server_smoke.py tests/test_visualizer_golden.py tests/test_audio_golden.py -v
+
+# Regenerate golden snapshots (after changing simulator output)
+python tools/capture_golden.py
 ```
 
 ---

@@ -118,6 +118,16 @@ cd apps/typescript && npm test
 
 # Audio composition engine
 python -m pytest apps/audio/ -v
+
+# Integration tests: golden outputs, cross-language parity, servers, visualizers
+python -m pytest tests/test_golden_outputs.py -v          # Build & run all CLI apps
+python -m pytest tests/test_cross_language_parity.py -v   # Epoch parity across languages
+python -m pytest tests/test_server_smoke.py -v            # Go SSE + PHP server smoke
+python -m pytest tests/test_visualizer_golden.py -v       # Ubuntu screensaver, WASM, Java GUI
+python -m pytest tests/test_audio_golden.py -v            # Audio pipeline verification
+
+# Regenerate golden snapshots (after changing simulator output)
+python tools/capture_golden.py
 ```
 
 ## AST-Passing Workflow

@@ -23,7 +23,11 @@ golden output tests.
 - Audio golden tests (tests/test_audio_golden.py)
 - CI workflow (.github/workflows/golden.yml)
 
-[In progress — updating as work completes]
+- Visualizer golden tests (tests/test_visualizer_golden.py)
+- Golden snapshots captured for 9 languages (all exit code 0)
+- **66 new integration tests, 0 failures, 4 skipped (no Swift toolchain)**
+- Updated CLAUDE.md and README.md with test execution commands
+- 258 existing reference tests still passing
 
 ---
 
