@@ -4,6 +4,29 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.19.0 — 2026-03-07 — V19 Test Infrastructure Overhaul
+
+### Summary
+
+Comprehensive test infrastructure expansion: golden output snapshot tests,
+cross-language parity validation, server smoke tests, audio golden tests, and
+CI integration. Fills the gap between 4,500+ unit tests and zero integration/
+golden output tests.
+
+### Turn 1: Implementation — 13:25 CT (19:25 UTC)
+
+- Surveyed all 16 app test suites (4,500+ tests, zero golden output tests)
+- Created golden output test framework (tests/test_golden_outputs.py)
+- Created golden snapshot capture tool (tools/capture_golden.py)
+- Cross-language parity tests (tests/test_cross_language_parity.py)
+- Server smoke tests (tests/test_server_smoke.py)
+- Audio golden tests (tests/test_audio_golden.py)
+- CI workflow (.github/workflows/golden.yml)
+
+[In progress — updating as work completes]
+
+---
+
 ## v0.18.0 — 2026-03-07 — V18 Audio Engine: Clean Mixing + Orchestra Variety
 
 ### Summary
