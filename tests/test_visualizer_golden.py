@@ -89,7 +89,13 @@ class TestUbuntuScreensaver(unittest.TestCase):
         )
         # Check output for pass indicators
         if result.returncode == 0:
-            self.assertNotIn("FAIL", result.stdout.upper().split("PASS")[-1] if "PASS" in result.stdout.upper() else "")
+            # "0 FAILED" is OK — only actual failures are bad
+            output = result.stdout
+            if "FAILED" in output.upper():
+                import re
+                fail_counts = re.findall(r'(\d+)\s+FAILED', output, re.IGNORECASE)
+                for count in fail_counts:
+                    self.assertEqual(count, "0", f"Tests had failures: {output[:300]}")
         else:
             # Make test might fail on missing X11 libs for the main binary
             # but the test runner itself should work

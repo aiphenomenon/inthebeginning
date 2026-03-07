@@ -31,29 +31,13 @@ SAMPLE_RATE = 44100
 
 
 def generate_short_wav(duration=TEST_DURATION, seed=42):
-    """Generate a short WAV buffer using the composer directly."""
-    try:
-        from apps.audio.composer import Composer, AdditiveSynth
-        from simulator.universe import Universe
-    except ImportError:
-        return None
-
-    universe = Universe(seed=seed, max_ticks=1000, step_size=100)
-    composer = Composer(sample_rate=SAMPLE_RATE, bpm=120)
-
-    # Run a few ticks and render
-    universe.run()
-    state = universe.summary()
-
-    # Generate audio from the composer's render pipeline
+    """Generate a short WAV buffer using pure math (no composer dependency)."""
     samples = []
     num_samples = SAMPLE_RATE * duration
 
-    # Use the composer to generate tones based on simulation state
-    synth = AdditiveSynth(sample_rate=SAMPLE_RATE)
+    # Generate a test tone (440Hz sine wave) — deterministic, no external deps
     for i in range(num_samples):
         t = i / SAMPLE_RATE
-        # Simple test: generate a 440Hz sine wave modulated by epoch
         sample = math.sin(2 * math.pi * 440 * t) * 0.3
         samples.append(sample)
 
@@ -92,7 +76,7 @@ class TestAudioComposerUnit(unittest.TestCase):
     def test_additive_synth_creates(self):
         """AdditiveSynth can be instantiated."""
         from apps.audio.composer import AdditiveSynth
-        synth = AdditiveSynth(sample_rate=44100)
+        synth = AdditiveSynth()
         self.assertIsNotNone(synth)
 
     def test_music_engine_imports(self):
@@ -102,8 +86,8 @@ class TestAudioComposerUnit(unittest.TestCase):
 
     def test_radio_engine_imports(self):
         """Radio engine module imports successfully."""
-        from apps.audio.radio_engine import RadioBroadcast
-        self.assertIsNotNone(RadioBroadcast)
+        import apps.audio.radio_engine as re_mod
+        self.assertTrue(hasattr(re_mod, 'EPOCH_MUSIC') or hasattr(re_mod, 'EPOCH_ORDER'))
 
 
 class TestAudioGeneration(unittest.TestCase):
@@ -205,7 +189,7 @@ class TestAudioCLI(unittest.TestCase):
         except ImportError:
             self.skipTest("Composer not available")
 
-        composer = Composer(sample_rate=22050, bpm=120)
+        composer = Composer(seed=42)
         # Just verify it can be instantiated and has epoch knowledge
         self.assertIsNotNone(EPOCH_SCALE_FAMILIES)
         self.assertGreater(len(EPOCH_SCALE_FAMILIES), 0)

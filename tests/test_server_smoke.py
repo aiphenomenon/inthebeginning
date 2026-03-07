@@ -88,12 +88,10 @@ class TestGoSSEServer(unittest.TestCase):
 
     def _start_server(self, port):
         """Start the SSE server on given port. Returns process."""
-        env = os.environ.copy()
-        env["PORT"] = str(port)
         proc = subprocess.Popen(
-            [self.binary_path],
+            [self.binary_path, "-port", str(port)],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            cwd=self.server_dir, env=env,
+            cwd=self.server_dir,
         )
         return proc
 

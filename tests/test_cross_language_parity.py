@@ -39,12 +39,23 @@ u.run()
 s = u.summary()
 # Extract key fields for parity comparison
 result = {{
-    "epochs": [e.get("name", e.get("epoch", "")) for e in s.get("epoch_transitions", s.get("epochs", []))],
-    "final_tick": s.get("tick", s.get("current_tick", 0)),
-    "particles": s.get("particles", s.get("particle_count", 0)),
-    "atoms": s.get("atoms", s.get("atom_count", 0)),
-    "molecules": s.get("molecules", s.get("molecule_count", 0)),
-    "cells": s.get("cells", s.get("cell_count", 0)),
+    "epochs": list(set(
+        e.get("to", e.get("name", e.get("epoch", "")))
+        for e in s.get("epoch_transitions", s.get("epochs", []))
+    ) | set(
+        e.get("from", "")
+        for e in s.get("epoch_transitions", [])
+    ) - {{""}}),
+    "final_tick": s.get("tick", s.get("current_tick",
+                   s.get("metrics", {{}}).get("total_ticks", 0))),
+    "particles": s.get("particles", s.get("particle_count",
+                   s.get("final_state", {{}}).get("particles", 0))),
+    "atoms": s.get("atoms", s.get("atom_count",
+              s.get("final_state", {{}}).get("atoms", 0))),
+    "molecules": s.get("molecules", s.get("molecule_count",
+                  s.get("final_state", {{}}).get("molecules", 0))),
+    "cells": s.get("cells", s.get("cell_count",
+              s.get("final_state", {{}}).get("cells", 0))),
 }}
 print(json.dumps(result))
 """
@@ -217,7 +228,7 @@ class TestCrossLanguageParity(unittest.TestCase):
         """C produces matching epoch transitions."""
         cwd = os.path.join(PROJECT_ROOT, "apps", "c")
         result = run_app(
-            ["./build/inthebeginning"], cwd=cwd,
+            ["./build/simulator"], cwd=cwd,
             build_cmds=["make"],
         )
         if result.returncode != 0:
