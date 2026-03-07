@@ -55,14 +55,18 @@ User listened to the latest V18 Orchestra MP3 and liked it overall but identifie
 
 ## Milestones
 
-- [ ] Housekeeping complete (session log, future memories, release history)
-- [ ] TTS engines installed (flite, festival, pico2wave)
-- [ ] PyTorch + Silero downloaded and configured
-- [ ] SoundFonts downloaded (~100 instruments)
-- [ ] MIDI files downloaded (~1000 files)
-- [ ] Volume normalization fixed
-- [ ] Solo instrument mood added
-- [ ] Seed-42 MP3 generated
-- [ ] Random-seed MP3 generated
-- [ ] Golden test evidence captured
+- [x] Housekeeping complete (session log, future memories, release history) — 14:25 CT
+- [x] TTS engines installed (flite, festival, pico2wave) — 14:26 CT
+- [x] FluidSynth + FluidR3_GM/GS SoundFonts installed (128 GM instruments) — 14:26 CT
+- [ ] PyTorch + Silero — skipped (not available via apt in sandbox)
+- [x] MIDI files downloaded (947 ADL + 80 Nottingham = 1,027 new) — 14:44 CT
+- [x] Total MIDI library: 1,771 files from 121 directories
+- [x] Volume normalization fixed (V20 engine) — 14:30 CT
+- [x] Solo instrument mood added (15% chance) — 14:30 CT
+- [x] Golden test evidence captured in session log — 14:40 CT
+- [x] Reference tests: 295 passed — 14:58 CT
+- [x] Golden output tests: 23 passed — 14:39 CT
+- [x] Cross-language parity: 10 passed — 14:39 CT
+- [ ] Seed-42 MP3 render — started 14:49 CT, ETA ~15:29 CT
+- [ ] Random-seed MP3 render — started 14:50 CT, ETA ~15:30 CT
 - [ ] Post-execution verification complete
