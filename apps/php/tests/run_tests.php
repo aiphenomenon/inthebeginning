@@ -1500,6 +1500,69 @@ function testUniverse(): void
 }
 
 // =========================================================================
+//  Test: Big Bounce (perpetual simulation)
+// =========================================================================
+
+function testBigBounce(): void
+{
+    startSuite('Big Bounce');
+
+    // getCycle starts at 0
+    $u = new Universe(ticksPerEpoch: 5);
+    assertEqual('Initial cycle = 0', 0, $u->getCycle());
+
+    // Run a full simulation, then bounce
+    $u->run();
+    assertTrue('Post-run temperature changed', $u->temperature !== T_PLANCK);
+    assertTrue('Post-run scale factor grew', $u->scaleFactor > 1e-35);
+    assertTrue('Post-run epoch advanced', $u->currentEpoch === 12);
+    assertTrue('Post-run tick > 0', $u->currentTick > 0);
+
+    $u->bigBounce();
+
+    // State fully reset
+    assertEqual('Post-bounce tick = 0', 0, $u->currentTick);
+    assertEqual('Post-bounce epoch = 0', 0, $u->currentEpoch);
+    assertApprox('Post-bounce temp = T_PLANCK', T_PLANCK, $u->temperature, 1.0);
+    assertTrue('Post-bounce scale factor reset', $u->scaleFactor < 1e-20);
+    assertEqual('Post-bounce population = 0', 0, $u->populationCount);
+    assertEqual('Post-bounce particles_created = 0', 0, $u->stats['particles_created']);
+    assertEqual('Post-bounce atoms_formed = 0', 0, $u->stats['atoms_formed']);
+    assertEqual('Post-bounce molecules_formed = 0', 0, $u->stats['molecules_formed']);
+    assertEqual('Post-bounce lifeforms_created = 0', 0, $u->stats['lifeforms_created']);
+
+    // Cycle incremented
+    assertEqual('Cycle after first bounce = 1', 1, $u->getCycle());
+
+    // Epoch name resets to Planck
+    assertEqual('Post-bounce epoch name', 'Planck', $u->epochName());
+
+    // Can run simulation again after bounce
+    $results2 = $u->run();
+    assertEqual('Second run produces 13 epochs', 13, count($results2));
+    assertEqual('Second run epoch 0 = Planck', 'Planck', $results2[0]['epoch']);
+    assertEqual('Second run epoch 12 = Present Day', 'Present Day', $results2[12]['epoch']);
+    assertTrue('Second run scale grew', $results2[12]['scale'] > $results2[0]['scale']);
+
+    // Multiple bounces increment cycle
+    $u->bigBounce();
+    assertEqual('Cycle after second bounce = 2', 2, $u->getCycle());
+
+    $u->bigBounce();
+    assertEqual('Cycle after third bounce = 3', 3, $u->getCycle());
+
+    // Bounce without running (edge case) still resets and increments
+    $u2 = new Universe(ticksPerEpoch: 3);
+    assertEqual('Fresh universe cycle = 0', 0, $u2->getCycle());
+    $u2->bigBounce();
+    assertEqual('Bounce without run: cycle = 1', 1, $u2->getCycle());
+    assertEqual('Bounce without run: tick = 0', 0, $u2->currentTick);
+    assertApprox('Bounce without run: temp = T_PLANCK', T_PLANCK, $u2->temperature, 1.0);
+
+    endSuite();
+}
+
+// =========================================================================
 //  Main
 // =========================================================================
 
@@ -1517,6 +1580,7 @@ testChemistry();
 testBiology();
 testEnvironment();
 testUniverse();
+testBigBounce();
 
 $elapsed = round((microtime(true) - $startTime) * 1000);
 
@@ -1524,7 +1588,7 @@ echo "\n";
 echo "========================================\n";
 echo "  RESULTS\n";
 echo "========================================\n";
-echo "  Test suites: 7\n";
+echo "  Test suites: 8\n";
 echo "  Tests passed: {$totalPassed}\n";
 echo "  Tests failed: {$totalFailed}\n";
 $total = $totalPassed + $totalFailed;

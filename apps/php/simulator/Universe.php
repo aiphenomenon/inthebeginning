@@ -52,6 +52,7 @@ class Universe
     public int $populationCount = 0;
 
     private int $ticksPerEpoch;
+    private int $cycle = 0;
     private ?QuantumField $quantumField = null;
     private ?AtomicSystem $atomicSystem = null;
     private ?ChemicalSystem $chemicalSystem = null;
@@ -215,5 +216,51 @@ class Universe
         }
 
         return $results;
+    }
+
+    /**
+     * Reset the universe for a new cycle (Big Bounce).
+     *
+     * Resets all simulation state -- tick, epoch, temperature, scale factor,
+     * population, stats, and subsystems -- back to initial conditions and
+     * increments the cycle counter. This allows the simulation to be re-run
+     * without constructing a new Universe instance and without memory leaks
+     * from accumulated subsystem objects.
+     */
+    public function bigBounce(): void
+    {
+        $this->cycle++;
+        $this->currentTick = 0;
+        $this->currentEpoch = 0;
+        $this->temperature = T_PLANCK;
+        $this->scaleFactor = 1e-35;
+        $this->populationCount = 0;
+
+        // Release subsystem references to free memory
+        $this->quantumField = null;
+        $this->atomicSystem = null;
+        $this->chemicalSystem = null;
+        $this->biosphere = null;
+        $this->environment = null;
+
+        $this->stats = [
+            'particles_created' => 0,
+            'atoms_formed' => 0,
+            'molecules_formed' => 0,
+            'lifeforms_created' => 0,
+        ];
+    }
+
+    /**
+     * Get the current cycle number.
+     *
+     * The cycle starts at 0 for the first run. Each call to bigBounce()
+     * increments the cycle counter by one.
+     *
+     * @return int Current cycle number (0 = first run).
+     */
+    public function getCycle(): int
+    {
+        return $this->cycle;
     }
 }
