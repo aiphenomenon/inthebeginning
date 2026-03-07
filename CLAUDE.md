@@ -514,8 +514,15 @@ cd apps/typescript && npm test
 # Kotlin (unit tests, no Android device required)
 cd apps/kotlin && ./gradlew test
 
-# Swift (unit tests)
+# Swift (unit tests — requires Swift 5.9+ toolchain)
 cd apps/swift && swift test
+
+# Swift on Linux (simulator library only — no SwiftUI/Metal/AVFoundation)
+# The simulator library (Simulator/*.swift) uses only Foundation + Observation,
+# which are available on Linux via swift-corelibs. Tests use XCTest (also Linux-ok).
+# Apple-only files (SwiftUI views, MetalRenderer, AudioEngine) are excluded.
+# If swift toolchain is not available, skip and note in session log.
+# On macOS: use xcodebuild or swift build via Xcode CLI tools (no Homebrew).
 
 # Audio composition engine
 python -m pytest apps/audio/ -v
@@ -907,6 +914,26 @@ workflow cross-compiles binaries across:
 - **Rust**: `cargo build --release --target <target-triple>`
 - **C/C++**: Platform-specific Makefiles / CMake with appropriate toolchain files
 
+### Swift on Linux
+
+The Swift simulator library (`apps/swift/InTheBeginning/Simulator/*.swift`) uses only
+`Foundation` and `Observation` — both available on Linux via swift-corelibs with Swift
+5.9+. Tests use `XCTest`, also Linux-compatible.
+
+**Linux-compatible** (7 files): `Constants.swift`, `QuantumField.swift`,
+`AtomicSystem.swift`, `ChemicalSystem.swift`, `Biosphere.swift`, `Environment.swift`,
+`Universe.swift`
+
+**Apple-only** (6 files): `App.swift`, `SimulationView.swift`,
+`EpochTimelineView.swift`, `SettingsView.swift`, `MetalRenderer.swift`,
+`AudioEngine.swift` — these require SwiftUI, MetalKit, or AVFoundation.
+
+**Testing strategy**:
+- If `swift` toolchain is available: `cd apps/swift && swift test`
+- If not available (e.g., sandbox restrictions): note in session log, defer to user
+- On macOS: use `xcodebuild` or `swift build` via Xcode CLI tools (**no Homebrew**)
+- The user explicitly prefers official Apple tools over Homebrew for macOS builds
+
 ### Verification
 
 At each conversation turn, verify that compilable programs build successfully for
@@ -924,6 +951,9 @@ cd apps/c && make
 
 # C++
 cd apps/cpp && mkdir -p build && cd build && cmake .. && make
+
+# Swift (if toolchain available on Linux)
+which swift && cd apps/swift && swift build || echo "Swift toolchain not available"
 ```
 
 ---

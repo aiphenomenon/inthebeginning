@@ -598,6 +598,11 @@ propagated to the other two. Specific items that must appear in all three:
 - Audio engine v12 is the current version: v8 synthesis (_synth_colored_note_np)
   + v9 expanded instruments (15 families) + v10 MIDI library + v11 gain staging
   + multiprocessing parallel render + tempo clamped 1.1x-1.7x
+- Swift on Linux: simulator library (Foundation + Observation) is Linux-compatible;
+  test with `swift test` if toolchain available; Apple-only files (SwiftUI, Metal,
+  AVFoundation) require macOS/Xcode; user prefers official Apple tools over Homebrew
+- Big Bounce perpetual simulation: all 13 language implementations support
+  `bigBounce()` / `big_bounce()` / `universe_big_bounce()` for indefinite cycling
 
 This triple cross-check principle prevents drift between human-readable
 documentation and machine-enforced hooks.

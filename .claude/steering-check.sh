@@ -215,6 +215,18 @@ echo "           - Mood durations are multiples of 42s"
 echo "           - Good fades between moods (8s morph transitions)"
 echo "           Run: python -m pytest apps/audio/ -v"
 
+# 21. Swift on Linux testing
+echo "[FAIL-CUE] Swift on Linux: Simulator library (Foundation + Observation) is"
+echo "           Linux-compatible with Swift 5.9+. Test: cd apps/swift && swift test"
+echo "           Apple-only files (SwiftUI, Metal, AVFoundation) require macOS/Xcode."
+echo "           User prefers official Apple tools over Homebrew for macOS builds."
+echo "           If swift toolchain not available in sandbox, note in session log."
+
+# 22. Big Bounce perpetual simulation
+echo "[FAIL-CUE] Big Bounce: All 13 language implementations support bigBounce()."
+echo "           Verify perpetual simulation doesn't leak memory or fizzle to entropy."
+echo "           Each bounce resets state and derives a new seed for distinct cycles."
+
 echo ""
 echo "=================================================================="
 echo " These FAIL-CUE markers are INTENTIONAL self-cueing signals."
