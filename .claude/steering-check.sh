@@ -125,6 +125,7 @@ echo "             - Future memories: iterative plan commits before code mutatio
 echo "             - CI flake detection and repair"
 echo "             - AMD64 build verification (best-effort)"
 echo "             - Executable behavior testing (build, invoke, verify exit codes)"
+echo "             - Screen capture testing (visual evidence, machine vision review)"
 
 # 11. Future memories — iterative plan commits before code mutation
 if [ -d "$PROJECT_ROOT/future_memories" ]; then
@@ -250,6 +251,17 @@ echo "           pypi.org, files.pythonhosted.org), agents MUST ask the user for
 echo "           explicit approval. Approved domains persist for the current session"
 echo "           only. Document newly approved domains in the session log."
 echo "           Do not assume prior approval carries across sessions."
+
+# 24. Screen capture testing
+echo "[FAIL-CUE] Screen capture testing:"
+echo "           At version cuts or significant milestones, capture visual evidence:"
+echo "           - Terminal CLI: run simulators, capture ANSI output, convert via aha"
+echo "           - Web servers: capture Go SSE + PHP server responses (HTML + API JSON)"
+echo "           - GUI/OpenGL: attempt Xvfb screenshots (document software-mode limits)"
+echo "           - Machine vision: use agent multimodal capability to inspect captures"
+echo "             and verify sensible output (not blank, broken, or stuck)"
+echo "           - Session log evidence: include ~20-30 line ASCII snippets or file refs"
+echo "           Run: python -m pytest tests/test_screen_capture.py -v"
 
 # 22. Big Bounce perpetual simulation
 echo "[FAIL-CUE] Big Bounce: All 13 language implementations support bigBounce()."

@@ -603,6 +603,9 @@ propagated to the other two. Specific items that must appear in all three:
   AVFoundation) require macOS/Xcode; user prefers official Apple tools over Homebrew
 - Big Bounce perpetual simulation: all 13 language implementations support
   `bigBounce()` / `big_bounce()` / `universe_big_bounce()` for indefinite cycling
+- Screen capture testing: visual evidence at version cuts (terminal ANSI, web server
+  responses, Xvfb screenshots), machine vision review of captures, ASCII snippets
+  in session logs
 
 This triple cross-check principle prevents drift between human-readable
 documentation and machine-enforced hooks.
@@ -798,6 +801,22 @@ approval carries across sessions.
 - Tests must be deterministic (use fixed random seeds)
 - Tests must be fast (< 5s per test suite per language)
 - Run tests across the entire solution at each commit
+
+### 4a. Screen Capture Testing
+
+At version cuts or significant milestones, capture visual evidence from simulators:
+
+1. **Terminal CLI**: Run simulators, capture ANSI output, convert to HTML via `aha`.
+   Verify epoch progression, Unicode box-drawing, progress bars, and particle counts.
+2. **Web servers**: Capture Go SSE and PHP server responses (HTML + API JSON).
+3. **GUI/OpenGL**: Attempt Xvfb-based screenshots for Ubuntu screensaver (document
+   OpenGL software-mode limitations).
+4. **Machine vision review**: Use the agent's multimodal vision capability to inspect
+   captures and verify sensible simulation output. Flag blank, broken, or stuck output.
+5. **Evidence in session logs**: Include ~20-30 line ASCII snippets or file references
+   in the version cut journal.
+
+Run: `python -m pytest tests/test_screen_capture.py -v`
 
 ### 5. Document Everything
 - All public APIs must have language-appropriate doc comments

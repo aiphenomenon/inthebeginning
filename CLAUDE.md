@@ -822,6 +822,31 @@ Beyond unit tests, verify that built artifacts produce correct runtime behavior:
 Document results in the session log with exit codes, output snippets, and any
 failures encountered.
 
+### Screen Capture Testing
+
+At each version cut or significant milestone, capture visual evidence from simulator
+implementations:
+
+1. **Terminal CLI simulators**: Run each simulator, capture ANSI terminal output,
+   convert to HTML via `aha`. Verify output shows correct epoch progression, Unicode
+   box-drawing, progress bars, and particle counts.
+
+2. **Web servers**: Start Go SSE and PHP servers, capture HTML responses and API
+   JSON. Verify HTML contains simulation data and API returns epoch/tick info.
+
+3. **GUI/OpenGL**: Attempt Xvfb-based screenshots for the Ubuntu screensaver.
+   Note: OpenGL may not render in software mode — document limitations.
+
+4. **Machine vision review**: After capturing screenshots/terminal output, use the
+   agent's own multimodal vision capability to inspect captures and verify they show
+   sensible simulation output (not blank, broken, or stuck). Flag anomalies.
+
+5. **Evidence in session logs**: Include representative ASCII snippets or file
+   references in the session log for the version cut journal. Keep snippets to
+   ~20-30 lines for readability.
+
+Run: `python -m pytest tests/test_screen_capture.py -v`
+
 ---
 
 ## Markdown Consistency Check
@@ -954,6 +979,11 @@ At every conversation turn, complete the following checklist:
     or updated at the start of every turn (not just when starting new work). The plan
     file is the primary session restoration artifact.
 
+15. **Screen capture testing** -- at version cuts or milestones, capture visual evidence
+    from simulators (terminal ANSI output, web server responses, Xvfb screenshots).
+    Use machine vision to review captures for anomalies. Include ~20-30 line ASCII
+    snippets in session logs. Run `python -m pytest tests/test_screen_capture.py -v`.
+
 ### Reflection Principle (Triple Cross-Check)
 
 When new steering information is added anywhere in the repository, ensure it is
@@ -986,6 +1016,9 @@ items that must appear in all three:
 - User update cadence (~2 minutes during long operations, CT-stamped)
 - UTC timestamps in session/transcript journaling (CT + UTC dual format)
 - Future memories: generation/update at start of every turn (mandatory)
+- Screen capture testing: visual evidence at version cuts (terminal ANSI, web server
+  responses, Xvfb screenshots), machine vision review of captures, ASCII snippets
+  in session logs
 
 ---
 
