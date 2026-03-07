@@ -1,9 +1,10 @@
 # Classical MIDI Library - Attribution
 
-This directory contains 744 MIDI files of public domain classical compositions from
-composers who died before 1925. The underlying musical compositions are in the public
-domain worldwide. The MIDI performances/sequences are provided under the licenses
-described below for each source.
+This directory contains 1,771 MIDI files of public domain classical compositions and
+traditional folk music. All underlying musical compositions are in the public domain
+worldwide (composers died before 1925, or traditional folk tunes of unknown ancient
+origin). The MIDI performances/sequences are provided under the licenses described
+below for each source.
 
 ## Summary
 
@@ -35,9 +36,11 @@ described below for each source.
 | R. Schumann | 1810-1856 | 48 | ASAP, MAESTRO |
 | P.I. Tchaikovsky | 1840-1893 | 15 | MAESTRO, synthetic |
 | A. Vivaldi | 1678-1741 | 3 | thewildwestmidis |
+| Traditional Folk | pre-1900 | 80 | Nottingham Music Database |
 | **Subtotal (original)** | | **744** | narcisse-dev, MusicNet, MAESTRO, ASAP |
 | **ADL Piano MIDI** (see below) | | **947** | lucasnfe/adl-piano-midi |
-| **Total** | | **1,691** | |
+| **Nottingham Folk** (see below) | | **80** | jukedeck/nottingham-dataset |
+| **Total** | | **1,771** | |
 
 ## Sources
 
@@ -110,10 +113,25 @@ described below for each source.
   Wagenseil, Wagner, W.F. Bach, Wanhal, Weber
 - **Note**: Files prefixed with `adl_` to distinguish from existing library entries.
 
+### 8. Nottingham Music Database (jukedeck/nottingham-dataset)
+
+- **Repository**: https://github.com/jukedeck/nottingham-dataset
+- **License**: Public domain (traditional folk tunes of unknown ancient origin)
+- **Downloaded**: 2026-03-07
+- **Description**: Over 1,000 traditional English and Celtic folk tunes converted to
+  MIDI from the Nottingham Music Database (ABC notation). Includes jigs, reels,
+  waltzes, morris dances, Playford tunes, and seasonal melodies.
+- **Files downloaded**: 80 MIDI files (curated selection across categories)
+- **Categories included**: Jigs, reels, waltzes, morris dances, Playford collection,
+  Christmas/seasonal tunes, slip jigs
+- **Note**: Files prefixed with `nottingham_` and stored in `TraditionalFolk/`.
+
 ## Public Domain Status
 
-All compositions are in the public domain. Every composer represented died more than
-100 years ago (the most recent being Claude Debussy, died 1918 — 108 years ago).
+All compositions are in the public domain. Every named composer represented died more
+than 100 years ago (the most recent being Claude Debussy, died 1918 -- 108 years ago).
+Traditional folk tunes in the Nottingham collection are of unknown ancient origin and
+have been in the public domain for centuries.
 
 ## Historical Range
 
@@ -127,8 +145,11 @@ The library spans approximately 500 years of Western music:
   Mussorgsky, Rachmaninoff, Scriabin, Elgar, Mahler, Ravel, Debussy
 - **Late Romantic/Early Modern** (1890-1920): Holst, Grainger, Sousa, Confrey
 - **Ragtime/Late Romantic** (1890-1920): Joplin, Debussy
+- **Traditional Folk** (pre-1900): English and Celtic folk tunes (jigs, reels, waltzes,
+  morris dances)
 
 ## Date Retrieved
 
 Original files downloaded 2026-03-01 / 2026-03-02.
 Expanded with narcisse-dev collection on 2026-03-06.
+Expanded with ADL Piano MIDI and Nottingham Folk collections on 2026-03-07.

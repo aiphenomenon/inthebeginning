@@ -8388,7 +8388,7 @@ def generate_radio_v20_mp3(output_path, duration=1800.0, seed=42):
     print(f"[{ct_now}] [RadioEngineV20] Solo moods: 15% chance per segment")
 
     n_segments = len(engine.segments)
-    avg_dur = sum(s[1] for s in engine.segments) / max(n_segments, 1)
+    avg_dur = sum(s['duration'] for s in engine.segments) / max(n_segments, 1)
     print(f"[{ct_now}] [RadioEngineV20] {n_segments} mood segments (avg {avg_dur:.0f}s)")
 
     ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
