@@ -122,6 +122,7 @@ echo "             - Commit format rules"
 echo "             - Future memories: iterative plan commits before code mutation"
 echo "             - CI flake detection and repair"
 echo "             - AMD64 build verification (best-effort)"
+echo "             - Executable behavior testing (build, invoke, verify exit codes)"
 
 # 11. Future memories — iterative plan commits before code mutation
 if [ -d "$PROJECT_ROOT/future_memories" ]; then
@@ -143,6 +144,12 @@ echo "           Fix if possible, add TODOs if not, notify user of broken builds
 # 13. AMD64 build verification (best-effort)
 echo "[FAIL-CUE] AMD64 builds: Attempt to verify AMD64 builds (Go, Rust, C, C++)"
 echo "           Best-effort -- add TODOs for broken builds, do not block session"
+
+# 13b. Executable behavior testing
+echo "[FAIL-CUE] Executable behavior testing:"
+echo "           Build and invoke compiled programs, run scripted entry points"
+echo "           Test localhost servers, verify exit codes and output"
+echo "           Document results in session log"
 
 # 14. Future memories — EARLY STAGE ORCHESTRATION
 echo "[FAIL-CUE] Future memories — early stage orchestration:"

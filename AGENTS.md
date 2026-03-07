@@ -581,6 +581,7 @@ propagated to the other two. Specific items that must appear in all three:
 - Future memories: early-stage orchestration (plan committed BEFORE code changes)
 - CI flake detection and repair
 - AMD64 build verification (best-effort)
+- Executable behavior testing (build, invoke, verify exit codes and output)
 - Audio engine quality gate (when modifying radio_engine.py)
 - Audio engine v12 is the current version: v8 synthesis (_synth_colored_note_np)
   + v9 expanded instruments (15 families) + v10 MIDI library + v11 gain staging

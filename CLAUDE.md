@@ -690,6 +690,32 @@ When feasible, attempt to run or verify AMD64 builds produced by GitHub CI:
 3. If builds are broken, add TODOs and notify the user.
 4. This is best-effort -- do not block the session on build verification.
 
+### Executable Behavior Testing
+
+Beyond unit tests, verify that built artifacts produce correct runtime behavior:
+
+1. **Compiled programs** (Go, Rust, C, C++): Build locally, invoke the binary, verify
+   exit code 0 and expected stdout output (e.g., simulation state JSON, epoch names).
+
+2. **Scripted programs** (Python, Node.js, Perl, PHP, Java): Invoke the entry point
+   with `--help` or a short simulation, verify exit code 0 and expected output.
+
+3. **Localhost servers** (Go SSE server, PHP snapshot server): Start the server, make
+   an HTTP request to localhost, capture the response, verify status 200 and expected
+   content. Kill the server after testing.
+
+4. **Audio MP3 generation**: For audio engine changes, verify that
+   `apps/audio/radio_engine.py` can produce a short (30s) render without errors.
+   For tonal fidelity verification, compare against the reference V8 MP3 using
+   `apps/audio/compare_v8_v15.py` or `apps/audio/compare_v8_v15_full.py`.
+
+5. **Cross-language parity**: When a physics engine change is made, verify that at
+   least one other language implementation produces equivalent simulation output
+   (same epoch progression, same particle counts at key steps).
+
+Document results in the session log with exit codes, output snippets, and any
+failures encountered.
+
 ---
 
 ## Markdown Consistency Check
@@ -799,6 +825,10 @@ At every conversation turn, complete the following checklist:
    `dependencies` queries; after editing, run `parse` and `coverage_map` queries
    (see [AST-Guided Code Generation](#ast-guided-code-generation-bug-prevention))
 
+9. **Executable behavior testing** -- build and invoke compiled programs, run scripted
+   entry points, test localhost servers, verify exit codes and output. Document results
+   in the session log. (See [Executable Behavior Testing](#executable-behavior-testing))
+
 ### Reflection Principle (Triple Cross-Check)
 
 When new steering information is added anywhere in the repository, ensure it is
@@ -825,6 +855,7 @@ items that must appear in all three:
 - Future memories: iterative plan commits before code mutation
 - CI flake detection and repair
 - AMD64 build verification (best-effort)
+- Executable behavior testing (build, invoke, verify exit codes and output)
 
 ---
 

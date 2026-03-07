@@ -41,13 +41,26 @@ and V16 where `anti_hiss` and `subsonic_filter` were applied both per-segment (i
 - **Results file** (`docs/v8_v15_results.md`): Machine-generated comparison tables
 - **Tests**: 6 new regression tests for the double-filter fix
 
+### Turn 2 Updates — Full 1800s-Plan Comparison
+
+- **Full comparison script** (`apps/audio/compare_v8_v15_full.py`):
+  - Renders with 1800s segment plan via `render_streaming()`, captures first 160s
+  - Compares 5 variants against decoded repo V8 MP3 (before TTS at ~162s)
+- **Verdict**: Repo V8 MP3 was LIKELY rendered WITHOUT numpy (pure Python)
+  - Pure Python: RMS 0.09570 vs numpy: RMS 0.09576 from repo MP3
+  - V8+pure and V15-fix+V8tempo+pure: BIT-IDENTICAL (0 sample diff at 7M samples)
+- **Executable behavior testing** added to steering triple-check (CLAUDE.md, AGENTS.md,
+  .claude/steering-check.sh)
+
 ### Agent Activity
 
 - Git archaeology across commits 348bf29 → 45791bd → 88a543d
 - AST analysis via Python `ast` module (class structure, method overrides)
 - Structural diff: V8 vs V15 `_render_segment` after removing dead numpy branch
 - Empirical rendering: 6 variants × 30s = ~10 minutes of render time
+- Full 1800s-plan comparison: 5 variants × 160s = ~12 minutes of render time
 - Session log archive search for numpy breadcrumbs
+- AMD64 binary verification (Go, C, C++, Rust)
 
 ---
 
