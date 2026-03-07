@@ -86,3 +86,57 @@ New steering rules to enshrine in triple-check:
 - Future memories generation enshrined in triple-check
 - More frequent commits (every significant milestone)
 - ~2-minute user update cadence in chat dialog
+
+## Milestone: Infinity Radio Stream Design — 2026-03-07 08:48 CT (14:48 UTC)
+
+### User Requests (speech-to-text, preserved as-is)
+
+1. "How will the infinity radio stream work when we get beyond 30 minutes?"
+   - Shuffle ordering of spacetime events (higher-dimensional reality concept)
+   - Modify seed for each 30-min segment so it's random after first
+   - Keep TTS interspersed within any 10-min range
+   - CLI parameter for seed selection
+   - Ensure variety after initial deterministic segment
+
+2. Non-audio simulations should also run indefinitely:
+   - No memory leaks
+   - No fizzling out to blank screen / static / heat death
+   - Must remain "healthy and vibrant"
+   - Some transform to prevent entropy death
+
+### Research Findings: Current State
+
+**Audio (infinity radio)**:
+- `generate.py --radio --duration 0` already runs forever via HTTP
+- Uses `seed + tick` for new universe when completing
+- But this is a full restart, not continuous unfold
+- `render_streaming()` handles any duration with rolling buffer
+- CLI params `--seed` and `--duration` exist
+
+**Non-audio simulations**:
+- All simulators have a fixed tick count (~300,000)
+- None currently loop or restart
+- Go SSE server streams state but doesn't loop
+
+### Proposed Architecture: Infinite Radio v18
+
+1. **Multi-epoch seed cycling**: After each 30-min "era", derive next seed from
+   `hash(prev_seed, final_state_summary)` — deterministic but unpredictable
+2. **Epoch shuffling**: In eras beyond the first, shuffle the ordering of cosmic
+   epochs (user's "higher dimensionality" concept) — e.g., start from nucleosynthesis
+   or even reverse some progressions
+3. **TTS windows**: Rolling 10-min window for TTS announcements, independent of
+   total duration
+4. **CLI**: `--infinite` flag + `--initial-seed` parameter
+5. **Memory**: Rolling buffer already ensures O(1) memory for audio
+
+### Proposed Architecture: Perpetual Non-Audio Simulations
+
+1. **Cycle detection**: When simulation reaches "Present" epoch, trigger renewal
+2. **Renewal options**:
+   a. Re-seed with derived seed, restart from Planck epoch
+   b. "Heat death -> Big Bounce" — simulate contraction and restart
+   c. "Multiverse fork" — branch into parallel universe with different constants
+3. **Anti-entropy guard**: Detect low-activity state (all counts stable for N ticks)
+   and inject a "cosmic event" (supernova, gamma-ray burst, new particle)
+4. **Memory safety**: Reset accumulators periodically, cap list sizes
