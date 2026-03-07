@@ -4,6 +4,64 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.18.0 — 2026-03-07 — V18 Audio Engine: Clean Mixing + Orchestra Variety
+
+### Summary
+
+New V18 audio engine addressing "radio static" artifacts and adding orchestral
+instrument variety with character preservation. Deep verification of gold standard
+test evidence across all simulator languages.
+
+### Turn 4: Gold Standard Deep Verification — 10:12 CT (16:12 UTC)
+
+- Cross-language epoch parity confirmed: Python/Go/C/C++ all produce matching
+  epoch transitions (Planck→Inflation→Electroweak at ticks 1/10/100)
+- Full simulation run-through captured with final states (particles, atoms, cells)
+- 2131+ tests across 8 testable languages, 0 failures
+- No PDFs or image files exist in repo (steering references are aspirational)
+
+### Turn 4: V18 Engine — 10:28 CT (16:28 UTC)
+
+**RadioEngineV18** fixes V15's static/noise issues:
+- Separate gain/pan in `_mix_mono_clean()` (V11 fix — no gain-overloaded pan param)
+- Quality-gated instruments: `noise_perc` excluded from melodic voices
+- Soft-knee limiting on loop buffer prevents clipping
+- 5ms anti-click fades (up from V15's 2ms)
+- Tempo clamped to 1.1x-1.45x (user preference, narrower than 1.1-1.7x)
+
+**RadioEngineV18Orchestra** adds orchestral variety:
+- 15 instrument family pools (vs V18's 5) with variety enforcement
+- 744 MIDI files from 26 composers
+- Higher `color_amount` (0.35-0.55) preserves instrument character
+  (xylophone stays xylophone, strings stay strings, horns stay horns)
+
+### Changes
+
+- `apps/audio/radio_engine.py`: Added `RadioEngineV18`, `RadioEngineV18Orchestra`,
+  `generate_radio_v18_mp3()`, `generate_radio_v18_orchestra_mp3()`, CLI v18/v18o
+- `apps/audio/test_radio_engine.py`: 22 new tests for V18/V18Orchestra
+- `apps/audio/generate_v18_mp3s.py`: Script to generate 5 comparison MP3s
+- `session_logs/v0.17.0-session.md`: Turn 4 deep verification evidence added
+- `session_logs/v0.2.0-v0.6.0-session.md`: Extracted from archive (uncompressed)
+- `future_memories/v17-comparison-plan.md`: Turn 4 plan appended
+
+### Files Created/Modified
+
+| File | Action |
+|------|--------|
+| `apps/audio/radio_engine.py` | Modified — added V18 engines |
+| `apps/audio/test_radio_engine.py` | Modified — added V18 tests |
+| `apps/audio/generate_v18_mp3s.py` | Created — MP3 generation script |
+| `session_logs/v0.17.0-session.md` | Modified — Turn 4 evidence |
+| `session_logs/v0.2.0-session.md` | Extracted from archive |
+| `session_logs/v0.3.0-session.md` | Extracted from archive |
+| `session_logs/v0.4.0-session.md` | Extracted from archive |
+| `session_logs/v0.6.0-session.md` | Extracted from archive |
+| `future_memories/v17-comparison-plan.md` | Modified — Turn 4 plan |
+| `RELEASE_HISTORY.md` | Modified — this entry |
+
+---
+
 ## v0.17.0 — 2026-03-07 — V8 vs V15 Bit-Identity Investigation + Double-Filter Bug Fix
 
 ### Summary
