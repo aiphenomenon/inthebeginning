@@ -1,0 +1,488 @@
+
+  ============================================================
+  |                                                          |
+  |        IN THE BEGINNING: Cosmic Evolution Simulator      |
+  |        From the Big Bang to Life                         |
+  |                                                          |
+  |        C Implementation                                  |
+  |                                                          |
+  ============================================================
+
+  Initializing simulation...
+  Total simulation span: 300000 ticks (Planck era -> Present)
+  Epochs: 13
+
+
+  ------------------------------------------------------------
+  *                        .                               
+             .         *         .      *                  
+       .            SINGULARITY            .              
+
+  EPOCH 1/13: Planck
+  Ticks: 0 -> 1
+  ------------------------------------------------------------
+  Events:
+    [tick      0] The universe begins: a singularity of infinite density
+
+  Quantum Field:
+    Temperature:     1.00e+10 K
+    Particles:       0
+    Total energy:    0.00 SU
+    Protons:         0
+    Neutrons:        0
+    Electrons:       0
+    Photons:         0
+    Created total:   0
+    Annihilated:     0
+  Environment:
+    Temperature:     1.00e+10 K
+    Radiation:       1.00e+10
+    UV intensity:    0.00
+    Cosmic rays:     0.00
+    Energy avail:    0.00
+    Atmosphere:      H2:0% He:0% N2:0% O2:0% CO2:0.0% CH4:0.0%
+
+  [..................................................] 0%
+
+
+  ------------------------------------------------------------
+      .  *  .  *  .  *  .  *  .  *  .  *  .  *  .       
+   *  .  *  . EXPONENTIAL EXPANSION  .  *  .  *  .  *    
+      .  *  .  *  .  *  .  *  .  *  .  *  .  *  .       
+
+  EPOCH 2/13: Inflation
+  Ticks: 1 -> 10
+  ------------------------------------------------------------
+  Events:
+    [tick      2] Cosmic inflation: space expands exponentially
+
+  Quantum Field:
+    Temperature:     1.00e+10 K
+    Particles:       44
+    Total energy:    1014461056.00 SU
+    Protons:         0
+    Neutrons:        0
+    Electrons:       20
+    Photons:         0
+    Created total:   44
+    Annihilated:     0
+  Environment:
+    Temperature:     5.00e+09 K
+    Radiation:       1.00e+09
+    UV intensity:    0.00
+    Cosmic rays:     0.00
+    Energy avail:    0.00
+    Atmosphere:      H2:0% He:0% N2:0% O2:0% CO2:0.0% CH4:0.0%
+
+  [..................................................] 0%
+
+
+  ------------------------------------------------------------
+     ~~/\/\/\/\/\/\/\/\/\/\/\/\/\/~~                   
+     ~~  SYMMETRY BREAKING  ~~                           
+     ~~/\/\/\/\/\/\/\/\/\/\/\/\/\/~~                   
+
+  EPOCH 3/13: Electroweak
+  Ticks: 10 -> 100
+  ------------------------------------------------------------
+  Events:
+    [tick     10] Electroweak symmetry breaking: W/Z bosons acquire mass
+
+  Quantum Field:
+    Temperature:     1.00e+08 K
+    Particles:       54
+    Total energy:    1041228544.00 SU
+    Protons:         0
+    Neutrons:        0
+    Electrons:       23
+    Photons:         0
+    Created total:   54
+    Annihilated:     0
+  Environment:
+    Temperature:     1.00e+08 K
+    Radiation:       1.00e+08
+    UV intensity:    0.00
+    Cosmic rays:     0.10
+    Energy avail:    0.00
+    Atmosphere:      H2:0% He:0% N2:0% O2:0% CO2:0.0% CH4:0.0%
+
+  [..................................................] 0%
+
+
+  ------------------------------------------------------------
+     q q q g g q q q g g q q q g g q q q                
+     g QUARK-GLUON PLASMA g                              
+     q q q g g q q q g g q q q g g q q q                
+
+  EPOCH 4/13: Quark
+  Ticks: 100 -> 1000
+  ------------------------------------------------------------
+  Events:
+    [tick    100] Quark epoch: quark-gluon plasma fills the universe
+
+  Quantum Field:
+    Temperature:     1.00e+07 K
+    Particles:       116
+    Total energy:    1041534720.00 SU
+    Protons:         0
+    Neutrons:        0
+    Electrons:       51
+    Photons:         0
+    Created total:   116
+    Annihilated:     0
+  Environment:
+    Temperature:     1.00e+07 K
+    Radiation:       1.00e+07
+    UV intensity:    0.00
+    Cosmic rays:     0.50
+    Energy avail:    0.00
+    Atmosphere:      H2:0% He:0% N2:0% O2:0% CO2:0.0% CH4:0.0%
+
+  [..................................................] 0%
+
+
+  ------------------------------------------------------------
+     (uud) (udd) (uud) (udd) (uud) (udd)               
+       p     n     p     n     p     n                   
+     QUARKS CONFINE INTO HADRONS                         
+
+  EPOCH 5/13: Hadron
+  Ticks: 1000 -> 5000
+  ------------------------------------------------------------
+  Events:
+    [tick   1000] Hadron epoch: quarks confine into protons and neutrons
+    [tick   1000] Quark confinement formed 4 hadrons
+
+  Quantum Field:
+    Temperature:     1.00e+06 K
+    Particles:       108
+    Total energy:    1032824704.00 SU
+    Protons:         3
+    Neutrons:        1
+    Electrons:       51
+    Photons:         0
+    Created total:   116
+    Annihilated:     0
+  Environment:
+    Temperature:     1.00e+06 K
+    Radiation:       1.00e+06
+    UV intensity:    0.00
+    Cosmic rays:     1.00
+    Energy avail:    0.00
+    Atmosphere:      H2:0% He:0% N2:0% O2:0% CO2:0.0% CH4:0.0%
+
+  [..................................................] 0%
+
+
+  ------------------------------------------------------------
+     H  H  He  H  H  He  H  H  He  H  H                
+       PRIMORDIAL NUCLEOSYNTHESIS                        
+     H  He  H  H  He  H  H  He  H  H  He               
+
+  EPOCH 6/13: Nucleosynthesis
+  Ticks: 5000 -> 10000
+  ------------------------------------------------------------
+  Events:
+    [tick   5000] Big Bang nucleosynthesis: hydrogen and helium form
+    [tick   5000] Nucleosynthesis created 3 light nuclei (H, He)
+
+  Atomic System:
+    Total atoms:     3
+    Hydrogen (H):    3
+  Environment:
+    Temperature:     1.00e+04 K
+    Radiation:       1.00e+04
+    UV intensity:    0.00
+    Cosmic rays:     2.00
+    Energy avail:    0.00
+    Atmosphere:      H2:75% He:25% N2:0% O2:0% CO2:0.0% CH4:0.0%
+
+  [..................................................] 1%
+
+
+  ------------------------------------------------------------
+     e- + p+ -> H    e- + p+ -> H    e- + p+ -> H       
+         THE UNIVERSE BECOMES TRANSPARENT                
+     ~~~~~~~~~ COSMIC MICROWAVE BACKGROUND ~~~~~~~~~     
+
+  EPOCH 7/13: Recombination
+  Ticks: 10000 -> 50000
+  ------------------------------------------------------------
+  Events:
+    [tick  10000] Recombination: electrons bind to nuclei, universe becomes transparent
+    [tick  10000] Recombination captured 3 atoms from plasma
+
+  Atomic System:
+    Total atoms:     6
+    Hydrogen (H):    6
+  Environment:
+    Temperature:     3.00e+03 K
+    Radiation:       1.00e+02
+    UV intensity:    0.00
+    Cosmic rays:     3.00
+    Energy avail:    0.00
+    Atmosphere:      H2:75% He:25% N2:0% O2:0% CO2:0.0% CH4:0.0%
+
+  [#.................................................] 3%
+
+
+  ------------------------------------------------------------
+         *           *           *           *           
+        /|\         /|\         /|\         /|\       
+       * | *  FIRST STARS IGNITE  * | *                  
+
+  EPOCH 8/13: Star Formation
+  Ticks: 50000 -> 100000
+  ------------------------------------------------------------
+  Events:
+    [tick  50000] First stars ignite: stellar nucleosynthesis begins
+
+  Atomic System:
+    Total atoms:     6
+    Hydrogen (H):    6
+  Environment:
+    Temperature:     1.00e+02 K
+    Radiation:       5.00e+01
+    UV intensity:    1.00
+    Cosmic rays:     5.00
+    Energy avail:    0.00
+    Atmosphere:      H2:70% He:28% N2:0% O2:0% CO2:0.0% CH4:0.0%
+
+  [########..........................................] 16%
+
+
+  ------------------------------------------------------------
+                    .  *  .                              
+              .  * . Sun  . *  .                         
+         o  .  o  .  @  .  o  .  O                      
+           SOLAR SYSTEM FORMS                            
+
+  EPOCH 9/13: Solar System
+  Ticks: 100000 -> 200000
+  ------------------------------------------------------------
+  Events:
+    [tick 100000] Solar system forms from collapsing molecular cloud
+
+  Atomic System:
+    Total atoms:     6
+    Hydrogen (H):    6
+  Environment:
+    Temperature:     5.00e+02 K
+    Radiation:       2.00e+01
+    UV intensity:    5.00
+    Cosmic rays:     3.00
+    Energy avail:    0.00
+    Atmosphere:      H2:60% He:20% N2:5% O2:0% CO2:10.0% CH4:0.0%
+
+  [################..................................] 33%
+
+
+  ------------------------------------------------------------
+              ,~~~~,                                     
+            ,~ Earth ~,                                  
+           ( volcanic! )                                 
+            `~,    ,~'                                   
+              `~~~~'                                     
+
+  EPOCH 10/13: Earth Formation
+  Ticks: 200000 -> 210000
+  ------------------------------------------------------------
+  Events:
+    [tick 200000] Earth forms: volcanic outgassing creates early atmosphere
+
+  Atomic System:
+    Total atoms:     6
+    Hydrogen (H):    6
+  Environment:
+    Temperature:     4.88e+02 K
+    Radiation:       1.00e+01
+    UV intensity:    8.00
+    Cosmic rays:     2.00
+    Energy avail:    5.00
+    Water coverage:  50%
+    Magnetic field:  YES
+    Atmosphere:      H2:5% He:1% N2:30% O2:0% CO2:50.0% CH4:3.0%
+
+  [#################################.................] 66%
+
+
+  ------------------------------------------------------------
+           ~~~ hydrothermal vents ~~~                    
+          {  } {  } {  } {  } {  }                      
+           FIRST PROTOCELLS EMERGE                       
+
+  EPOCH 11/13: Origin of Life
+  Ticks: 210000 -> 250000
+  ------------------------------------------------------------
+  Events:
+    [tick 210000] First protocells emerge in hydrothermal vents
+    [tick 210000] Biosphere seeded with 8 protocells
+
+  Atomic System:
+    Total atoms:     6
+    Hydrogen (H):    6
+  Biosphere:
+    Living cells:    12
+    Generation:      1
+    Total born:      12
+    Total died:      0
+    Avg fitness:     0.6385
+    Total mutations: 1
+  Environment:
+    Temperature:     3.18e+02 K
+    Radiation:       5.00e+00
+    UV intensity:    6.00
+    Cosmic rays:     1.50
+    Energy avail:    10.00
+    Water coverage:  70%
+    Magnetic field:  YES
+    Atmosphere:      H2:1% He:0% N2:60% O2:2% CO2:20.0% CH4:5.0%
+
+  [###################################...............] 70%
+
+
+  ------------------------------------------------------------
+          ...ATGCATGCATGCATGC...                         
+          ...TACGTACGTACGTACG...                         
+            DNA REPLICATION BEGINS                       
+
+  EPOCH 12/13: DNA & Genetics
+  Ticks: 250000 -> 280000
+  ------------------------------------------------------------
+  Events:
+    [tick 250000] DNA replication and genetic code established
+
+  Atomic System:
+    Total atoms:     6
+    Hydrogen (H):    6
+  Biosphere:
+    Living cells:    37
+    Generation:      21
+    Total born:      37
+    Total died:      0
+    Avg fitness:     0.5874
+    Total mutations: 24
+  Environment:
+    Temperature:     2.98e+02 K
+    Radiation:       3.00e+00
+    UV intensity:    4.00
+    Cosmic rays:     1.00
+    Energy avail:    15.00
+    Water coverage:  71%
+    Magnetic field:  YES
+    Ozone layer:     YES
+    Atmosphere:      H2:0% He:0% N2:70% O2:15% CO2:5.0% CH4:1.0%
+
+  [#########################################.........] 83%
+
+
+  ------------------------------------------------------------
+           ,--------,                                    
+          / COMPLEX  \                                  
+         |   LIFE     |                                  
+          \ THRIVES  /                                  
+           `--------'                                    
+
+  EPOCH 13/13: Present Day
+  Ticks: 280000 -> 300000
+  ------------------------------------------------------------
+  Events:
+    [tick 280000] Present day: complex life thrives on Earth
+
+  Atomic System:
+    Total atoms:     6
+    Hydrogen (H):    6
+  Biosphere:
+    Living cells:    128
+    Generation:      36
+    Total born:      168
+    Total died:      40
+    Avg fitness:     0.6050
+    Total mutations: 52
+  Environment:
+    Temperature:     2.88e+02 K
+    Radiation:       1.00e+00
+    UV intensity:    2.00
+    Cosmic rays:     0.50
+    Energy avail:    20.00
+    Water coverage:  71%
+    Magnetic field:  YES
+    Ozone layer:     YES
+    Atmosphere:      H2:0% He:0% N2:78% O2:21% CO2:0.0% CH4:0.0%
+
+  [##############################################....] 93%
+
+
+  ------------------------------------------------------------
+
+  ============================================================
+  |                  SIMULATION COMPLETE                      |
+  ============================================================
+
+  === FINAL STATE ===
+
+  Quantum Field:
+    Temperature:     1.00e+04 K
+    Particles:       102
+    Total energy:    931585152.00 SU
+    Protons:         0
+    Neutrons:        1
+    Electrons:       48
+    Photons:         0
+    Created total:   116
+    Annihilated:     0
+
+  Atomic System:
+    Total atoms:     6
+    Hydrogen (H):    6
+
+  Chemistry:
+    Molecules:       0
+    Water:           0
+    Amino acids:     0
+    Nucleotides:     0
+    Reactions:       0
+
+  Biosphere:
+    Living cells:    128
+    Generation:      45
+    Total born:      385
+    Total died:      257
+    Avg fitness:     0.7013
+    Total mutations: 23
+
+  Environment:
+    Temperature:     2.88e+02 K
+    Radiation:       1.00e+00
+    UV intensity:    2.00
+    Cosmic rays:     0.50
+    Energy avail:    20.00
+    Water coverage:  71%
+    Magnetic field:  YES
+    Ozone layer:     YES
+    Atmosphere:      H2:0% He:0% N2:78% O2:21% CO2:0.0% CH4:0.0%
+
+  === EVENT LOG ===
+
+    [tick      0 | Planck            ] The universe begins: a singularity of infinite density
+    [tick      2 | Inflation         ] Cosmic inflation: space expands exponentially
+    [tick     10 | Electroweak       ] Electroweak symmetry breaking: W/Z bosons acquire mass
+    [tick    100 | Quark             ] Quark epoch: quark-gluon plasma fills the universe
+    [tick   1000 | Hadron            ] Hadron epoch: quarks confine into protons and neutrons
+    [tick   1000 | Hadron            ] Quark confinement formed 4 hadrons
+    [tick   5000 | Nucleosynthesis   ] Big Bang nucleosynthesis: hydrogen and helium form
+    [tick   5000 | Nucleosynthesis   ] Nucleosynthesis created 3 light nuclei (H, He)
+    [tick  10000 | Recombination     ] Recombination: electrons bind to nuclei, universe becomes transparent
+    [tick  10000 | Recombination     ] Recombination captured 3 atoms from plasma
+    [tick  50000 | Star Formation    ] First stars ignite: stellar nucleosynthesis begins
+    [tick 100000 | Solar System      ] Solar system forms from collapsing molecular cloud
+    [tick 200000 | Earth Formation   ] Earth forms: volcanic outgassing creates early atmosphere
+    [tick 210000 | Origin of Life    ] First protocells emerge in hydrothermal vents
+    [tick 210000 | Origin of Life    ] Biosphere seeded with 8 protocells
+    [tick 250000 | DNA & Genetics    ] DNA replication and genetic code established
+    [tick 280000 | Present Day       ] Present day: complex life thrives on Earth
+
+  ------------------------------------------------------------
+  Simulation finished: 300000 ticks, 17 events logged.
+  ------------------------------------------------------------
+

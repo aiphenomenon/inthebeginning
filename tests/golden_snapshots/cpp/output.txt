@@ -1,0 +1,184 @@
+
+[1m==============================================================================[0m
+[1m[36m                    IN THE BEGINNING[0m
+[2m           A Cosmic Evolution Simulator (C++20)[0m
+[2m        From the Big Bang to the Emergence of Life[0m
+[1m==============================================================================[0m
+
+
+[2m------------------------------------------------------------------------------[0m
+[1m[37m  EPOCH 1/13: Planck[0m
+[2m  All forces unified, T~10^32K[0m
+[2m------------------------------------------------------------------------------[0m
+  [2mTick:        [0m1
+  [2mTemperature: [0m1.000e+10 K
+  [2mScale:       [0m1.000e+00
+  [2mEnergy:      [0m9.727e+07
+  [2mParticles:   [0m18
+  [32mAll four forces unified. Vacuum fluctuations create 18 virtual particles. Vacuum energy = 0.00e+00[0m
+
+[2m------------------------------------------------------------------------------[0m
+[1m[33m  EPOCH 2/13: Inflation[0m
+[2m  Exponential expansion, quantum fluctuations seed structure[0m
+[2m------------------------------------------------------------------------------[0m
+  [2mTick:        [0m10
+  [2mTemperature: [0m3.059e+03 K
+  [2mScale:       [0m1.142e+26
+  [2mEnergy:      [0m9.727e+07
+  [2mParticles:   [0m118
+  [32mExponential expansion by factor ~e^60. Quantum fluctuations seed large-scale structure. 118 particles created, 118 surviving.[0m
+
+[2m------------------------------------------------------------------------------[0m
+[1m[35m  EPOCH 3/13: Electroweak[0m
+[2m  Electromagnetic and weak forces separate[0m
+[2m------------------------------------------------------------------------------[0m
+  [2mTick:        [0m100
+  [2mTemperature: [0m3.000e+03 K
+  [2mScale:       [0m3.198e+26
+  [2mEnergy:      [0m9.798e+07
+  [2mParticles:   [0m178
+  [32mHiggs field activates, W/Z bosons gain mass. EM and weak forces separate. 10 matter-antimatter annihilations. 178 particles remain.[0m
+
+[2m------------------------------------------------------------------------------[0m
+[1m[31m  EPOCH 4/13: Quark[0m
+[2m  Quark-gluon plasma, free quarks[0m
+[2m------------------------------------------------------------------------------[0m
+  [2mTick:        [0m1000
+  [2mTemperature: [0m3.000e+03 K
+  [2mScale:       [0m2.376e+27
+  [2mEnergy:      [0m9.820e+07
+  [2mParticles:   [0m258
+  [32mQuark-gluon plasma: free quarks and gluons. 4 up quarks, 4 down quarks, 258 total particles.[0m
+
+[2m------------------------------------------------------------------------------[0m
+[1m[31m  EPOCH 5/13: Hadron[0m
+[2m  Quarks confined into protons and neutrons[0m
+[2m------------------------------------------------------------------------------[0m
+  [2mTick:        [0m5000
+  [2mTemperature: [0m3.000e+03 K
+  [2mScale:       [0m1.151e+28
+  [2mEnergy:      [0m9.761e+07
+  [2mParticles:   [0m254
+  [32mQuarks confined into hadrons. 2 new hadrons formed: 2 protons, 0 neutrons. 254 total particles.[0m
+
+[2m------------------------------------------------------------------------------[0m
+[1m[33m  EPOCH 6/13: Nucleosynthesis[0m
+[2m  Light nuclei form: H, He, Li[0m
+[2m------------------------------------------------------------------------------[0m
+  [2mTick:        [0m10000
+  [2mTemperature: [0m3.000e+03 K
+  [2mScale:       [0m2.294e+28
+  [2mEnergy:      [0m9.761e+07
+  [2mParticles:   [0m254
+  [2mAtoms:       [0m2
+  [32mPrimordial nucleosynthesis: 2 hydrogen, 0 helium nuclei. ~75% H, ~25% He by mass (cosmological ratio). 2 nuclei formed.[0m
+
+[2m------------------------------------------------------------------------------[0m
+[1m[36m  EPOCH 7/13: Recombination[0m
+[2m  Atoms form, universe becomes transparent[0m
+[2m------------------------------------------------------------------------------[0m
+  [2mTick:        [0m50000
+  [2mTemperature: [0m3.000e+03 K
+  [2mScale:       [0m1.143e+29
+  [2mEnergy:      [0m8.933e+07
+  [2mParticles:   [0m250
+  [2mAtoms:       [0m4
+  [32mElectrons captured by nuclei: universe becomes transparent. 2 new neutral atoms formed. 4 total atoms. Cosmic Microwave Background released (T=2.725K today).[0m
+
+[2m------------------------------------------------------------------------------[0m
+[1m[33m  EPOCH 8/13: Star Formation[0m
+[2m  First stars ignite, heavier elements forged[0m
+[2m------------------------------------------------------------------------------[0m
+  [2mTick:        [0m100000
+  [2mTemperature: [0m2.021e+01 K
+  [2mScale:       [0m2.286e+29
+  [2mEnergy:      [0m8.933e+07
+  [2mParticles:   [0m250
+  [2mAtoms:       [0m4
+  [32mFirst stars ignite from gravitational collapse. Stellar fusion forges heavy elements: 0 C, 0 N, 0 O atoms. 0 new heavy elements created. Supernovae distribute elements across space.[0m
+
+[2m------------------------------------------------------------------------------[0m
+[1m[34m  EPOCH 9/13: Solar System[0m
+[2m  Our solar system coalesces from stellar debris[0m
+[2m------------------------------------------------------------------------------[0m
+  [2mTick:        [0m200000
+  [2mTemperature: [0m2.725e+00 K
+  [2mScale:       [0m2.286e+29
+  [2mEnergy:      [0m8.933e+07
+  [2mParticles:   [0m250
+  [2mAtoms:       [0m54
+  [32mSolar nebula coalesces from stellar debris. Protoplanetary disk forms. 54 atoms in the system. Elements available for rocky planet formation.[0m
+
+[2m------------------------------------------------------------------------------[0m
+[1m[32m  EPOCH 10/13: Earth[0m
+[2m  Earth forms, oceans appear[0m
+[2m------------------------------------------------------------------------------[0m
+  [2mTick:        [0m210000
+  [2mTemperature: [0m3.500e+02 K
+  [2mScale:       [0m2.286e+29
+  [2mEnergy:      [0m8.933e+07
+  [2mParticles:   [0m250
+  [2mAtoms:       [0m54
+  [32mEarth accretes and differentiates. Oceans form: 0 water molecules. 0 CH4, 0 NH3. Total molecules: 0. T=3.500e+02K a=2.286e+29 rad=1.400e+00 O2=0.1% CO2=20.0% ocean(pH=7.0)[0m
+
+[2m------------------------------------------------------------------------------[0m
+[1m[32m  EPOCH 11/13: Life[0m
+[2m  First self-replicating molecules[0m
+[2m------------------------------------------------------------------------------[0m
+  [2mTick:        [0m250000
+  [2mTemperature: [0m3.500e+02 K
+  [2mScale:       [0m2.286e+29
+  [2mEnergy:      [0m8.933e+07
+  [2mParticles:   [0m250
+  [2mAtoms:       [0m54
+  [2mCells:       [0m3
+  [32mFirst self-replicating molecules appear! Amino acids: 0, Nucleotides: 0. 3 protocells formed. Avg fitness: 1.088. T=3.500e+02K a=2.286e+29 rad=1.400e+00 O2=0.1% CO2=20.0% ocean(pH=7.0)[0m
+
+[2m------------------------------------------------------------------------------[0m
+[1m[36m  EPOCH 12/13: DNA Era[0m
+[2m  DNA-based life, epigenetics emerge[0m
+[2m------------------------------------------------------------------------------[0m
+  [2mTick:        [0m280000
+  [2mTemperature: [0m2.986e+02 K
+  [2mScale:       [0m2.286e+29
+  [2mEnergy:      [0m8.933e+07
+  [2mParticles:   [0m250
+  [2mAtoms:       [0m54
+  [2mCells:       [0m6
+  [32mDNA-based life dominates. Epigenetics emerge. 6 cells, 10 generations. Avg fitness: 0.990, GC content: 0.517. Mutations: 0, Born: 6, Died: 0. T=2.986e+02K a=2.286e+29 rad=1.400e+00 O2=20.9% CO2=0.0% ocean(pH=8.0)[0m
+
+[2m------------------------------------------------------------------------------[0m
+[1m[37m  EPOCH 13/13: Present[0m
+[2m  Complex life, intelligence[0m
+[2m------------------------------------------------------------------------------[0m
+  [2mTick:        [0m300000
+  [2mTemperature: [0m2.986e+02 K
+  [2mScale:       [0m2.286e+29
+  [2mEnergy:      [0m8.933e+07
+  [2mParticles:   [0m250
+  [2mAtoms:       [0m54
+  [2mCells:       [0m6
+  [32mComplex life, intelligence, and consciousness emerge. 6 cells across 30 generations. Avg fitness: 0.724. 2 proteins, 18 genes active. Total mutations: 0, Born: 6, Died: 0. T=2.986e+02K a=2.286e+29 rad=1.400e+00 O2=20.9% CO2=0.0% ocean(pH=8.0)[0m
+
+[1m==============================================================================[0m
+[1m  SIMULATION COMPLETE[0m
+[1m==============================================================================[0m
+
+[1m  Epoch                   Tick      Temp (K)     Parts     Atoms      Mols     Cells[0m
+[2m------------------------------------------------------------------------------[0m
+[37m  Planck                     1      1.00e+10        18         0         0         0[0m
+[33m  Inflation                 10      3.06e+03       118         0         0         0[0m
+[35m  Electroweak              100      3.00e+03       178         0         0         0[0m
+[31m  Quark                   1000      3.00e+03       258         0         0         0[0m
+[31m  Hadron                  5000      3.00e+03       254         0         0         0[0m
+[33m  Nucleosynthesis        10000      3.00e+03       254         2         0         0[0m
+[36m  Recombination          50000      3.00e+03       250         4         0         0[0m
+[33m  Star Formation        100000      2.02e+01       250         4         0         0[0m
+[34m  Solar System          200000      2.73e+00       250        54         0         0[0m
+[32m  Earth                 210000      3.50e+02       250        54         0         0[0m
+[32m  Life                  250000      3.50e+02       250        54         0         3[0m
+[36m  DNA Era               280000      2.99e+02       250        54         0         6[0m
+[37m  Present               300000      2.99e+02       250        54         0         6[0m
+
+[2m  From a singularity to [0m[1m6[0m[2m living cells across 300000 simulation ticks.[0m
+

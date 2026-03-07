@@ -1,0 +1,450 @@
+
+  ╔══════════════════════════════════════════════════════════╗
+  ║                                                          ║
+  ║          I N   T H E   B E G I N N I N G                ║
+  ║          Cosmic Evolution Simulator                   ║
+  ║          TypeScript Edition                           ║
+  ║                                                          ║
+  ╚══════════════════════════════════════════════════════════╝
+
+  Seed: 42 | Step size: 100 | Max ticks: 300.0k | Report interval: 5.0k
+
+
+  ── ELECTROWEAK EPOCH ───────────────────────────────────────
+     Electromagnetic and weak forces separate
+
+
+  ── QUARK EPOCH ─────────────────────────────────────────────
+     Quark-gluon plasma, free quarks
+
+
+  ── HADRON EPOCH ────────────────────────────────────────────
+     Quarks confined into protons and neutrons
+
+  t=  5000 [█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 1.7%
+           Temp: 2.7 K
+      Particles: 81 (electron:48 proton:15 positron:8 down:5 photon:5)
+
+
+  ── NUCLEOSYNTHESIS EPOCH ───────────────────────────────────
+     Light nuclei form: H, He, Li
+
+  t= 10000 [█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 3.3%
+           Temp: 2.7 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t= 15000 [██░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 5.0%
+           Temp: 2.7 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t= 20000 [███░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 6.7%
+           Temp: 2.7 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t= 25000 [███░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 8.3%
+           Temp: 2.7 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t= 30000 [████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 10.0%
+           Temp: 2.7 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t= 35000 [█████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 11.7%
+           Temp: 2.7 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t= 40000 [█████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 13.3%
+           Temp: 2.7 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t= 45000 [██████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 15.0%
+           Temp: 2.7 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+
+  ── RECOMBINATION EPOCH ─────────────────────────────────────
+     Atoms form, universe becomes transparent
+
+  t= 50000 [███████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 16.7%
+           Temp: 2.8 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t= 55000 [███████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 18.3%
+           Temp: 2.4 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t= 60000 [████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 20.0%
+           Temp: 2.9 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t= 65000 [█████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 21.7%
+           Temp: 2.3 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t= 70000 [█████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 23.3%
+           Temp: 2.3 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t= 75000 [██████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 25.0%
+           Temp: 2.9 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t= 80000 [███████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 26.7%
+           Temp: 3.2 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t= 85000 [███████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 28.3%
+           Temp: 2.7 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t= 90000 [████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 30.0%
+           Temp: 2.8 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t= 95000 [█████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░] 31.7%
+           Temp: 2.6 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+
+  ── STAR FORMATION EPOCH ────────────────────────────────────
+     First stars ignite, heavier elements forged
+
+  t=100000 [█████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░] 33.3%
+           Temp: 2.5 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t=105000 [██████████████░░░░░░░░░░░░░░░░░░░░░░░░░░] 35.0%
+           Temp: 2.3 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t=110000 [███████████████░░░░░░░░░░░░░░░░░░░░░░░░░] 36.7%
+           Temp: 2.5 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t=115000 [███████████████░░░░░░░░░░░░░░░░░░░░░░░░░] 38.3%
+           Temp: 2.4 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t=120000 [████████████████░░░░░░░░░░░░░░░░░░░░░░░░] 40.0%
+           Temp: 3.4 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t=125000 [█████████████████░░░░░░░░░░░░░░░░░░░░░░░] 41.7%
+           Temp: 3.1 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t=130000 [█████████████████░░░░░░░░░░░░░░░░░░░░░░░] 43.3%
+           Temp: 1.4 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t=135000 [██████████████████░░░░░░░░░░░░░░░░░░░░░░] 45.0%
+           Temp: 3.2 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t=140000 [███████████████████░░░░░░░░░░░░░░░░░░░░░] 46.7%
+           Temp: 3.6 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t=145000 [███████████████████░░░░░░░░░░░░░░░░░░░░░] 48.3%
+           Temp: 2.9 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t=150000 [████████████████████░░░░░░░░░░░░░░░░░░░░] 50.0%
+           Temp: 3.5 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t=155000 [█████████████████████░░░░░░░░░░░░░░░░░░░] 51.7%
+           Temp: 2.4 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t=160000 [█████████████████████░░░░░░░░░░░░░░░░░░░] 53.3%
+           Temp: 2.9 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t=165000 [██████████████████████░░░░░░░░░░░░░░░░░░] 55.0%
+           Temp: 3.0 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t=170000 [███████████████████████░░░░░░░░░░░░░░░░░] 56.7%
+           Temp: 3.3 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t=175000 [███████████████████████░░░░░░░░░░░░░░░░░] 58.3%
+           Temp: 3.0 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t=180000 [████████████████████████░░░░░░░░░░░░░░░░] 60.0%
+           Temp: 2.6 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t=185000 [█████████████████████████░░░░░░░░░░░░░░░] 61.7%
+           Temp: 3.3 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t=190000 [█████████████████████████░░░░░░░░░░░░░░░] 63.3%
+           Temp: 2.4 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t=195000 [██████████████████████████░░░░░░░░░░░░░░] 65.0%
+           Temp: 2.9 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+
+  ── SOLAR SYSTEM EPOCH ──────────────────────────────────────
+     Our solar system coalesces from stellar debris
+
+  t=200000 [███████████████████████████░░░░░░░░░░░░░] 66.7%
+           Temp: 290.7 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+  t=205000 [███████████████████████████░░░░░░░░░░░░░] 68.3%
+           Temp: 288.1 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 15 (H:15)
+
+
+  ── EARTH EPOCH ─────────────────────────────────────────────
+     Earth forms, oceans appear
+
+  t=210000 [████████████████████████████░░░░░░░░░░░░] 70.0%
+           Temp: 282.2 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 108 (H:55 C:15 O:15 He:10 N:10 P:3)
+      Molecules: 21 (water:15 methane:6)
+
+  t=215000 [█████████████████████████████░░░░░░░░░░░] 71.7%
+           Temp: 294.9 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 201 (H:95 C:30 O:30 He:20 N:20 P:6)
+      Molecules: 39 (water:30 methane:8 ammonia:1)
+
+  t=220000 [█████████████████████████████░░░░░░░░░░░] 73.3%
+           Temp: 300.0 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 201 (H:95 C:30 O:30 He:20 N:20 P:6)
+      Molecules: 39 (water:30 methane:8 ammonia:1)
+
+  t=225000 [██████████████████████████████░░░░░░░░░░] 75.0%
+           Temp: 300.4 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 201 (H:95 C:30 O:30 He:20 N:20 P:6)
+      Molecules: 39 (water:30 methane:8 ammonia:1)
+     Habitable: YES UV=0.790 CR=0.163
+
+  t=230000 [███████████████████████████████░░░░░░░░░] 76.7%
+           Temp: 303.8 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 201 (H:95 C:30 O:30 He:20 N:20 P:6)
+      Molecules: 39 (water:30 methane:8 ammonia:1)
+     Habitable: YES UV=1.033 CR=0.604
+
+  t=235000 [███████████████████████████████░░░░░░░░░] 78.3%
+           Temp: 300.0 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 201 (H:95 C:30 O:30 He:20 N:20 P:6)
+      Molecules: 39 (water:30 methane:8 ammonia:1)
+     Habitable: YES UV=0.650 CR=0.176
+
+  t=240000 [████████████████████████████████░░░░░░░░] 80.0%
+           Temp: 296.0 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 201 (H:95 C:30 O:30 He:20 N:20 P:6)
+      Molecules: 39 (water:30 methane:8 ammonia:1)
+     Habitable: YES UV=0.000 CR=0.511
+
+  t=245000 [█████████████████████████████████░░░░░░░] 81.7%
+           Temp: 291.9 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 201 (H:95 C:30 O:30 He:20 N:20 P:6)
+      Molecules: 39 (water:30 methane:8 ammonia:1)
+     Habitable: YES UV=0.510 CR=0.093
+
+
+  ── LIFE EPOCH ──────────────────────────────────────────────
+     First self-replicating molecules
+
+  t=250000 [█████████████████████████████████░░░░░░░] 83.3%
+           Temp: 291.9 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 201 (H:95 C:30 O:30 He:20 N:20 P:6)
+      Molecules: 39 (water:30 methane:8 ammonia:1)
+          Cells: 4 gen=1 fit=0.685 mut=0
+     Habitable: YES UV=0.000 CR=0.089
+            DNA: AGAACACTACGTTGGGTTAAGTACAATCGG...
+
+  t=255000 [██████████████████████████████████░░░░░░] 85.0%
+           Temp: 282.8 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 201 (H:95 C:30 O:30 He:20 N:20 P:6)
+      Molecules: 39 (water:30 methane:8 ammonia:1)
+          Cells: 100 gen=51 fit=0.425 mut=0
+     Habitable: YES UV=0.685 CR=0.287
+            DNA: AGAACACTACGTTGGGTTAAGTACAATCGG...
+
+  t=260000 [███████████████████████████████████░░░░░] 86.7%
+           Temp: 279.1 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 201 (H:95 C:30 O:30 He:20 N:20 P:6)
+      Molecules: 39 (water:30 methane:8 ammonia:1)
+          Cells: 100 gen=101 fit=0.421 mut=0
+     Habitable: YES UV=0.000 CR=0.107
+            DNA: AGAACACTACGTTGGGTTAAGTACAATCGG...
+
+  t=265000 [███████████████████████████████████░░░░░] 88.3%
+           Temp: 280.3 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 201 (H:95 C:30 O:30 He:20 N:20 P:6)
+      Molecules: 39 (water:30 methane:8 ammonia:1)
+          Cells: 100 gen=151 fit=0.439 mut=0
+     Habitable: YES UV=0.300 CR=0.057
+            DNA: AGAACACTACGTTGGGTTAAGTACAATCGG...
+
+  t=270000 [████████████████████████████████████░░░░] 90.0%
+           Temp: 272.2 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 201 (H:95 C:30 O:30 He:20 N:20 P:6)
+      Molecules: 39 (water:30 methane:8 ammonia:1)
+          Cells: 100 gen=201 fit=0.432 mut=0
+     Habitable: YES UV=0.000 CR=0.059
+            DNA: AGAACACTACGTTGGGTTAAGTACAATCGG...
+
+  t=275000 [█████████████████████████████████████░░░] 91.7%
+           Temp: 276.3 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 201 (H:95 C:30 O:30 He:20 N:20 P:6)
+      Molecules: 39 (water:30 methane:8 ammonia:1)
+          Cells: 100 gen=251 fit=0.437 mut=0
+     Habitable: YES UV=0.300 CR=0.056
+            DNA: AGAACACTACGTTGGGTTAAGTACAATCGG...
+
+
+  ── DNA ERA EPOCH ───────────────────────────────────────────
+     DNA-based life, epigenetics emerge
+
+  t=280000 [█████████████████████████████████████░░░] 93.3%
+           Temp: 272.5 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 201 (H:95 C:30 O:30 He:20 N:20 P:6)
+      Molecules: 39 (water:30 methane:8 ammonia:1)
+          Cells: 100 gen=301 fit=0.416 mut=0
+     Habitable: YES UV=0.000 CR=0.128
+            DNA: AGAACACTACGTTGGGTTAAGTACAATCGG...
+
+  t=285000 [██████████████████████████████████████░░] 95.0%
+           Temp: 282.1 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 201 (H:95 C:30 O:30 He:20 N:20 P:6)
+      Molecules: 39 (water:30 methane:8 ammonia:1)
+          Cells: 100 gen=351 fit=0.439 mut=0
+     Habitable: YES UV=0.270 CR=0.086
+            DNA: AGAACACTACGTTGGGTTAAGTACAATCGG...
+
+  t=290000 [███████████████████████████████████████░] 96.7%
+           Temp: 250.2 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 201 (H:95 C:30 O:30 He:20 N:20 P:6)
+      Molecules: 39 (water:30 methane:8 ammonia:1)
+          Cells: 100 gen=401 fit=0.425 mut=0
+     Habitable: YES UV=0.000 CR=0.145
+            DNA: AGAACACTACGTTGGGTTAAGTACAATCGG...
+
+  t=295000 [███████████████████████████████████████░] 98.3%
+           Temp: 254.7 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 201 (H:95 C:30 O:30 He:20 N:20 P:6)
+      Molecules: 39 (water:30 methane:8 ammonia:1)
+          Cells: 100 gen=451 fit=0.443 mut=0
+     Habitable: YES UV=0.300 CR=0.059
+            DNA: AGAACACTACGTTGGGTTAAGTACAATCGG...
+
+
+  ── PRESENT EPOCH ───────────────────────────────────────────
+     Complex life, intelligence
+
+  t=300000 [████████████████████████████████████████] 100.0%
+           Temp: 263.2 K
+      Particles: 66 (electron:48 positron:8 down:5 photon:5)
+          Atoms: 201 (H:95 C:30 O:30 He:20 N:20 P:6)
+      Molecules: 39 (water:30 methane:8 ammonia:1)
+          Cells: 100 gen=501 fit=0.426 mut=0
+     Habitable: YES UV=0.548 CR=0.346
+            DNA: AGAACACTACGTTGGGTTAAGTACAATCGG...
+
+
+  ══════════════════════════════════════════════════════════
+   SIMULATION COMPLETE
+  ══════════════════════════════════════════════════════════
+
+   Runtime:          <TIME>
+   Total ticks:      300.0k
+   Final epoch:      Present
+   Temperature:      263.2 K
+
+   Cumulative Statistics:
+   Particles created: 126
+   Atoms formed:      201
+   Molecules formed:  39
+   Cells born:        4.9k
+   Mutations:         0
+
+   Final Element Counts:
+     H   ██████████████ 95
+     C   ████ 30
+     O   ████ 30
+     He  ███ 20
+     N   ███ 20
+     P   █ 6
+
+   Final Molecule Counts:
+     water           30
+     methane         8
+     ammonia         1
+
+   Biosphere:
+     Population:      100
+     Generations:     501
+     Avg fitness:     0.4262
+     Total mutations: 0
+     Sample DNA:      AGAACACTACGTTGGGTTAAGTACAATCGG...
+
+  From quantum foam to conscious observers -- the universe persists.
+

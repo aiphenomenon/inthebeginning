@@ -1,0 +1,126 @@
+
+  ========================================================================
+                              IN THE BEGINNING
+                        A Cosmic Evolution Simulator
+  ------------------------------------------------------------------------
+               From the Planck epoch to the emergence of life
+                 13.8 billion years in the blink of an eye
+  ========================================================================
+
+  Seed: 1772912041306860332
+
+  [ 1/13] Planck             [***                                     ]   8%
+         Quantum gravity dominates; spacetime foam
+         T=9.56e+09 K | particles: 46
+
+  [ 2/13] Inflation          [~~~~~~                                  ]  15%
+         Exponential expansion of spacetime
+         T=6.10e+09 K | particles: 532
+
+  [ 3/13] Electroweak        [!!!!!!!!!                               ]  23%
+         Electroweak symmetry breaking; W/Z bosons acquire mass
+         T=6.87e+07 K | particles: 1172
+
+  [ 4/13] QuarkGluon         [############                            ]  31%
+         Quark-gluon plasma; free quarks and gluons
+         T=2.73e+00 K | particles: 1172
+
+  [ 5/13] Hadron             [@@@@@@@@@@@@@@@                         ]  38%
+         Quarks confine into protons and neutrons
+         T=2.73e+00 K | particles: 1110
+           >> Quark confinement: 31 hadrons formed
+
+  [ 6/13] Nucleosynthesis    [%%%%%%%%%%%%%%%%%%                      ]  46%
+         Light nuclei form: H, He, Li
+         T=2.73e+00 K | particles: 1110
+
+  [ 7/13] Recombination      [&&&&&&&&&&&&&&&&&&&&&&                  ]  54%
+         Electrons captured by nuclei; atoms form
+         T=3.16e+00 K | particles: 1050 | atoms: 30
+           >> Recombination: 30 atoms formed
+
+  [ 8/13] StarFormation      [+++++++++++++++++++++++++               ]  62%
+         First stars ignite; heavy element forging
+         T=2.44e+00 K | particles: 1050 | atoms: 30
+
+  [ 9/13] SolarSystem        [OOOOOOOOOOOOOOOOOOOOOOOOOOOO            ]  69%
+         Protoplanetary disk collapses; planets form
+         T=2.97e+02 K | particles: 1050 | atoms: 80
+           >> Accretion disk: elements aggregating
+           >> Accretion disk: elements aggregating
+           >> Accretion disk: elements aggregating
+           >> Accretion disk: elements aggregating
+           >> Accretion disk: elements aggregating
+
+  [10/13] EarthFormation     [ooooooooooooooooooooooooooooooo         ]  77%
+         Rocky planet cools; oceans condense
+         T=2.94e+02 K | particles: 1050 | atoms: 122 | molecules: 26
+           >> Oceans forming: 13 water molecules
+           >> Oceans forming: 3 water molecules
+           >> Oceans forming: 3 water molecules
+
+  [11/13] LifeEmergence      [..................................      ]  85%
+         First protocells arise from prebiotic chemistry
+         T=2.93e+02 K | particles: 1050 | atoms: 482 | molecules: 26
+
+  [12/13] DNAEvolution       [=====================================   ]  92%
+         DNA replication, mutation, and natural selection
+         T=3.15e+02 K | particles: 1050 | atoms: 482 | molecules: 26 | cells: 100
+           >> LIFE EMERGES: first protocells self-assemble!
+
+  [13/13] Present            [^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^] 100%
+         Complex life; billions of years of evolution
+         T=3.15e+02 K | particles: 1050 | atoms: 482 | molecules: 26 | cells: 100
+
+  ------------------------------------------------------------------------
+
+                            SIMULATION COMPLETE
+  ------------------------------------------------------------------------
+
+  --- Final State of the Universe ---
+
+  Universe age:                  299900 ticks
+  Wall-clock time:               <TIME>
+
+  [Quantum Field]
+    Particles remaining:    1050
+    Total created:          1172
+    Total annihilated:      0
+    Total field energy:     4826081731.23 SU
+    Particle census:        electron=495, positron=525, neutron=1, down=29
+
+  [Atomic System]
+    Total atoms:            482
+    Bonds formed:           0
+    Element census:         Si=5, Fe=5, H=212, C=86, N=83, O=91
+
+  [Chemical System]
+    Total molecules:        26
+    Water molecules:        19
+    Amino acids:            0
+    Nucleotides:            0
+    Reactions occurred:      0
+
+  [Biosphere]
+    Living cells:           100
+    Total born:             2949
+    Total died:             2849
+    Generations:            200
+    Average fitness:        0.7299
+    Average GC content:     0.5000
+    Total mutations:        0
+
+  [Environment]
+    Temperature:            314.52 K
+    UV intensity:           0.0000
+    Cosmic ray flux:        0.0881
+    Atmospheric density:    1.0000
+    Water availability:     1.0000
+    Habitable:              Yes
+    Environmental events:   13
+
+  ========================================================================
+                 And so, from quantum foam to living cells,
+                 the universe wrote itself into existence.
+  ========================================================================
+

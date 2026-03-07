@@ -1,0 +1,9 @@
+{
+  "lang": "rust",
+  "seed": 42,
+  "ticks": 300000,
+  "returncode": 0,
+  "captured_at": "2026-03-07T19:34:22Z",
+  "stdout_lines": 243,
+  "stderr_lines": 0
+}

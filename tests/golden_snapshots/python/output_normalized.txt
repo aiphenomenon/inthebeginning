@@ -1,0 +1,144 @@
+
+
+  ╔══════════════════════════════════════════╗
+  ║       IN THE BEGINNING                   ║
+  ║  AST-Driven Reality Simulator             ║
+  ╚══════════════════════════════════════════╝
+
+
+=== AST DSL Reactive Agent Demo ===
+
+[Cue 1] Parsing simulator/quantum.py...
+  Nodes: 2245
+  Time: <TIME>
+  Memory: <MEM>
+
+[Cue 2] Finding symbols in quantum.py...
+  Found 30 symbols:
+    ClassDef             ParticleType                   line 22
+    ClassDef             Spin                           line 40
+    ClassDef             Color                          line 45
+    ClassDef             WaveFunction                   line 80
+    FunctionDef          probability                    line 87
+    FunctionDef          evolve                         line 91
+    FunctionDef          collapse                       line 97
+    FunctionDef          superpose                      line 104
+    FunctionDef          to_compact                     line 119
+    ClassDef             Particle                       line 124
+    ... and 20 more
+
+[Cue 3] Extracting dependencies...
+  Found 6 imports:
+    Import          math
+    Import          random
+    ImportFrom      dataclasses
+    ImportFrom      enum
+    ImportFrom      typing
+    ImportFrom      simulator.constants
+
+[Cue 4] Computing code metrics...
+  Total AST nodes:        2245
+  Functions:              23
+  Classes:                7
+  Imports:                6
+  Max depth:              13
+  Cyclomatic complexity:   23
+
+[Cue 5] Generating coverage map...
+  Testable functions: 23
+    probability               line   87 branches=0
+    evolve                    line   91 branches=1
+    collapse                  line   97 branches=0
+    superpose                 line  104 branches=0
+    to_compact                line  119 branches=0
+    __post_init__             line  137 branches=0
+    mass                      line  142 branches=0
+    charge                    line  146 branches=0
+    ... and 15 more
+
+[Cue 6] Synthesizing session state...
+  Session: demo-session
+  Turns: 6
+  Symbols found: 30
+  Dependencies found: 6
+  Total tokens: 62017
+
+  Session log saved to <ROOT>/ast_captures/session_log.json
+
+=== Reality Simulation: Big Bang to Life ===
+
+Running simulation...
+  [ 10.0%] tick=30000 epoch=Nucleosynthesis
+  [ 20.0%] tick=60000 epoch=Recombination
+  [ 30.0%] tick=90000 epoch=Recombination
+  [ 40.0%] tick=120000 epoch=Star Formation
+  [ 50.0%] tick=150000 epoch=Star Formation
+  [ 60.0%] tick=180000 epoch=Star Formation
+  [ 70.0%] tick=210000 epoch=Earth
+  [ 80.0%] tick=240000 epoch=Earth
+  [ 90.0%] tick=270000 epoch=Life
+  [100.0%] tick=300000 epoch=Present
+
+============================================================
+  SIMULATION COMPLETE - IN THE BEGINNING
+============================================================
+
+Performance:
+  Wall Time:     <TIME>
+  CPU User:      <TIME>
+  CPU System:    <TIME>
+  Peak Memory:   <MEM>
+  Ticks:         300000
+
+Creation:
+  Particles:     110
+  Atoms:         201
+  Molecules:     39
+  Cells Born:    498
+  Mutations:     0
+
+Final Biosphere:
+  Population:    100
+  Avg Fitness:   0.7245
+  Generations:   51
+  GC Content:    0.5111
+
+  Best Cell: Cell#449[gen=11 fit=1.00 E=26 prot=0 alive]
+  DNA: DNA[gen=11 mut=0 gc=0.51 CCTGTGTCCACCCCAGAATGTACGCAAAGT...(90)]{G:gene_0[TGTGTCC
+
+Epoch Transitions:
+  t=    1000 :             Void -> Quark
+  t=    5000 :            Quark -> Hadron
+  t=   10000 :           Hadron -> Nucleosynthesis
+  t=   50000 :  Nucleosynthesis -> Recombination
+  t=  100000 :    Recombination -> Star Formation
+  t=  200000 :   Star Formation -> Solar System
+  t=  210000 :     Solar System -> Earth
+  t=  250000 :            Earth -> Life
+  t=  280000 :             Life -> DNA Era
+  t=  300000 :          DNA Era -> Present
+
+Temperature History:
+  █                                                 
+Population History:
+                                            ▁▃▇█████
+
+============================================================
+
+Results saved to <ROOT>/ast_captures/simulation_results.json
+
+=== Post-Simulation AST Analysis ===
+
+  atomic.py            nodes= 2420 funcs= 31 classes= 3 complexity= 42
+  biology.py           nodes= 3135 funcs= 34 classes= 6 complexity= 53
+  chemistry.py         nodes= 2218 funcs= 17 classes= 3 complexity= 25
+  constants.py         nodes=  439 funcs=  0 classes= 0 complexity=  1
+  environment.py       nodes= 1163 funcs= 10 classes= 2 complexity= 20
+  quantum.py           nodes= 2245 funcs= 23 classes= 7 complexity= 23
+  terminal_ui.py       nodes= 2538 funcs= 13 classes= 0 complexity= 26
+  universe.py          nodes= 2629 funcs= 14 classes= 3 complexity= 44
+
+  TOTAL                nodes=16787 funcs=142 classes=24
+
+Done!
+

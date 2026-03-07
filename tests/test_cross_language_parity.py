@@ -217,7 +217,7 @@ class TestCrossLanguageParity(unittest.TestCase):
         """C produces matching epoch transitions."""
         cwd = os.path.join(PROJECT_ROOT, "apps", "c")
         result = run_app(
-            ["./build/simulator"], cwd=cwd,
+            ["./build/inthebeginning"], cwd=cwd,
             build_cmds=["make"],
         )
         if result.returncode != 0:
@@ -234,7 +234,7 @@ class TestCrossLanguageParity(unittest.TestCase):
         build_dir = os.path.join(cwd, "build")
         os.makedirs(build_dir, exist_ok=True)
         result = run_app(
-            ["./build/simulator"], cwd=cwd,
+            ["./build/inthebeginning"], cwd=cwd,
             build_cmds=["cd build && cmake .. && make"],
         )
         if result.returncode != 0:

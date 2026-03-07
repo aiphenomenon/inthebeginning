@@ -1,0 +1,9 @@
+{
+  "lang": "nodejs",
+  "seed": 42,
+  "ticks": 300000,
+  "returncode": 0,
+  "captured_at": "2026-03-07T19:33:58Z",
+  "stdout_lines": 451,
+  "stderr_lines": 0
+}
