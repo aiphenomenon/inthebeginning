@@ -188,6 +188,15 @@ final class AtomicSystem {
         self.temperature = temperature
     }
 
+    /// Reset the atomic system to initial conditions for a new cycle.
+    func reset(temperature: Double) {
+        self.temperature = temperature
+        atoms.removeAll()
+        freeElectrons.removeAll()
+        bondsFormed = 0
+        bondsBroken = 0
+    }
+
     // MARK: Recombination
 
     /// Capture free electrons into ions when T < T_recombination.

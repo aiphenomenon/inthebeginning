@@ -91,6 +91,15 @@ final class ChemicalSystem {
         self.atomic = atomicSystem
     }
 
+    /// Reset the chemical system to initial conditions for a new cycle.
+    func reset() {
+        molecules.removeAll()
+        reactionsOccurred = 0
+        waterCount = 0
+        aminoAcidCount = 0
+        nucleotideCount = 0
+    }
+
     // MARK: Water: 2H + O -> H2O
 
     func formWater() -> [Molecule] {

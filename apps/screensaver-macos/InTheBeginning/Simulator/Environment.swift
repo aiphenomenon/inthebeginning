@@ -89,6 +89,20 @@ final class Environment {
         self.cosmicRayFlux = radiation * 0.001
     }
 
+    /// Reset the environment to initial conditions for a new cycle.
+    func reset(temperature: Double) {
+        self.temperature = temperature
+        self.radiation = 1e8
+        self.pressure = 1e30
+        self.atmosphere = [:]
+        self.surfaceType = .plasma
+        self.waterPresent = false
+        self.magneticField = 0.0
+        self.uvFlux = 1e8 * 0.01
+        self.cosmicRayFlux = 1e8 * 0.001
+        self.age = 0
+    }
+
     // MARK: Step
 
     /// Advance the environment by one tick.

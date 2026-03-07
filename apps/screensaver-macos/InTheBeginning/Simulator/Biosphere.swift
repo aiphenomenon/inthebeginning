@@ -354,6 +354,14 @@ final class Biosphere {
         self.carryingCapacity = carryingCapacity
     }
 
+    /// Reset the biosphere to initial conditions for a new cycle.
+    func reset() {
+        cells.removeAll()
+        totalBorn = 0
+        totalDied = 0
+        generationMax = 0
+    }
+
     // MARK: Seeding
 
     /// Seed the biosphere with initial protocells.

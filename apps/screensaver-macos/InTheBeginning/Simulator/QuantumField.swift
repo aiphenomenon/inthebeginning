@@ -157,6 +157,16 @@ final class QuantumField {
         self.temperature = temperature
     }
 
+    /// Reset the quantum field to initial conditions for a new cycle.
+    func reset(temperature: Double) {
+        self.temperature = temperature
+        particles.removeAll()
+        entangledPairs.removeAll()
+        vacuumEnergy = 0.0
+        totalCreated = 0
+        totalAnnihilated = 0
+    }
+
     // MARK: Pair Production
 
     /// Create particle-antiparticle pair from vacuum energy.

@@ -49,6 +49,7 @@ final class Universe {
     // State
     var tick: Int = 0
     var seed: UInt64
+    private(set) var cycle: Int = 0
 
     /// Current epoch, derived from tick count.
     var currentEpoch: Epoch {
@@ -64,6 +65,30 @@ final class Universe {
         self.chemicalSystem = ChemicalSystem(atomicSystem: atomicSystem)
         self.environment = Environment(temperature: kTempPlanck)
         self.biosphere = Biosphere(carryingCapacity: kMaxRenderableCells)
+    }
+
+    // MARK: Big Bounce
+
+    /// Reset the universe for a new cycle, simulating a Big Bounce.
+    ///
+    /// Resets the tick counter to zero, re-initialises all subsystems to their
+    /// initial conditions, and increments the cycle counter. The RNG seed is
+    /// preserved so that each cycle produces a different but deterministic
+    /// evolution when the same initial seed is used.
+    func bigBounce() {
+        cycle += 1
+        tick = 0
+
+        // Re-seed RNG for the new cycle (derive from original seed + cycle)
+        let newSeed = seed &+ UInt64(cycle)
+        srand48(Int(newSeed & 0x7FFFFFFF))
+
+        // Reset all subsystems
+        quantumField.reset(temperature: kTempPlanck)
+        atomicSystem.reset(temperature: kTempRecombination)
+        chemicalSystem.reset()
+        environment.reset(temperature: kTempPlanck)
+        biosphere.reset()
     }
 
     // MARK: Step
