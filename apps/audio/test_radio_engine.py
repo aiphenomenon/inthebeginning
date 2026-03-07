@@ -36,6 +36,8 @@ from apps.audio.radio_engine import (
     RadioEngineV14,
     RadioEngineV15,
     RadioEngineV16,
+    RadioEngineV18,
+    RadioEngineV18Orchestra,
 )
 
 
@@ -2156,6 +2158,166 @@ class TestV15V16CLIArguments(unittest.TestCase):
                           choices=['v7', 'v8', 'v9', 'v10', 'v11', 'v12', 'v13', 'v14', 'v15', 'v16'])
         args = parser.parse_args(['--version', 'v16'])
         self.assertEqual(args.version, 'v16')
+
+
+class TestRadioEngineV18(unittest.TestCase):
+    """Tests for RadioEngineV18 -- Clean mixing + 1.1x-1.45x tempo."""
+
+    def test_v18_inherits_from_v15(self):
+        """V18 should inherit from RadioEngineV15."""
+        self.assertTrue(issubclass(RadioEngineV18, RadioEngineV15))
+
+    def test_v18_instantiation(self):
+        """V18 should instantiate without errors."""
+        engine = RadioEngineV18(seed=42, total_duration=10.0)
+        self.assertIsNotNone(engine)
+
+    def test_v18_tempo_range(self):
+        """V18 tempo should be in 1.1-1.45 range."""
+        engine = RadioEngineV18(seed=42, total_duration=10.0)
+        for particles in [0, 50, 100, 300, 600]:
+            sim_state = {'particles': particles, 'atoms': 0,
+                         'molecules': 0, 'cells': 0}
+            tempo = engine._compute_tempo_multiplier(sim_state)
+            self.assertGreaterEqual(tempo, 1.1,
+                                    f"Tempo {tempo} below 1.1 at particles={particles}")
+            self.assertLessEqual(tempo, 1.45,
+                                 f"Tempo {tempo} above 1.45 at particles={particles}")
+
+    def test_v18_default_tempo(self):
+        """V18 default tempo (no sim_state) should be ~1.28."""
+        engine = RadioEngineV18(seed=42, total_duration=10.0)
+        tempo = engine._compute_tempo_multiplier(None)
+        self.assertAlmostEqual(tempo, 1.28, places=2)
+
+    def test_v18_has_mix_mono_clean(self):
+        """V18 should have the clean mixing static method."""
+        self.assertTrue(hasattr(RadioEngineV18, '_mix_mono_clean'))
+        self.assertTrue(callable(RadioEngineV18._mix_mono_clean))
+
+    def test_v18_has_noise_detection(self):
+        """V18 should have noise instrument detection."""
+        self.assertTrue(hasattr(RadioEngineV18, '_is_noise_instrument'))
+
+    def test_v18_noise_detection_works(self):
+        """V18 should detect noise_perc instruments."""
+        noise_instr = {'harmonics': [('noise', 0.7)]}
+        normal_instr = {'harmonics': [(1, 1.0), (2, 0.5)]}
+        self.assertTrue(RadioEngineV18._is_noise_instrument(noise_instr))
+        self.assertFalse(RadioEngineV18._is_noise_instrument(normal_instr))
+
+    def test_v18_soft_knee_limit(self):
+        """V18 soft-knee limiter should clamp signal without hard clip."""
+        buf = [0.5, 0.8, 1.2, -1.5, 0.3]
+        RadioEngineV18._soft_knee_limit(buf, knee=0.75)
+        for s in buf:
+            self.assertLessEqual(abs(s), 1.0,
+                                 "Soft-knee limiter should keep signal <= 1.0")
+        # Values below knee should be unchanged
+        self.assertAlmostEqual(buf[0], 0.5, places=3)
+        self.assertAlmostEqual(buf[4], 0.3, places=3)
+
+    def test_v18_mix_mono_clean_separates_gain_pan(self):
+        """V18 _mix_mono_clean should not overload pan with gain."""
+        left = [0.0] * 100
+        right = [0.0] * 100
+        samples = [1.0] * 50
+        # Pan center (0.0), gain 0.5
+        RadioEngineV18._mix_mono_clean(left, right, samples, 0, 100, 0.0, 0.5)
+        # Both channels should receive roughly equal signal
+        l_sum = sum(abs(s) for s in left)
+        r_sum = sum(abs(s) for s in right)
+        self.assertGreater(l_sum, 0)
+        self.assertGreater(r_sum, 0)
+        # With center pan, L and R should be similar
+        self.assertAlmostEqual(l_sum, r_sum, delta=l_sum * 0.1)
+
+    def test_v18_uses_original_synthesis(self):
+        """V18 _render_segment should use factory.synthesize_colored_note."""
+        import inspect
+        src = inspect.getsource(RadioEngineV18._render_segment)
+        self.assertIn('factory.synthesize_colored_note', src)
+        self.assertNotIn('_synth_colored_note_np', src)
+
+    def test_v18_uses_clean_mix(self):
+        """V18 _render_segment should use _mix_mono_clean, not _mix_mono."""
+        import inspect
+        src = inspect.getsource(RadioEngineV18._render_segment)
+        self.assertIn('_mix_mono_clean', src)
+
+    def test_v18_has_soft_knee_in_render(self):
+        """V18 _render_segment should apply soft-knee limiting."""
+        import inspect
+        src = inspect.getsource(RadioEngineV18._render_segment)
+        self.assertIn('_soft_knee_limit', src)
+
+    def test_v18_short_render(self):
+        """V18 should render a short clip successfully."""
+        engine = RadioEngineV18(seed=42, total_duration=2.0)
+        left, right = engine.render()
+        self.assertIsInstance(left, list)
+        self.assertIsInstance(right, list)
+        self.assertGreater(len(left), 0)
+        self.assertEqual(len(left), len(right))
+
+
+class TestRadioEngineV18Orchestra(unittest.TestCase):
+    """Tests for RadioEngineV18Orchestra -- expanded palette with character."""
+
+    def test_v18o_inherits_from_v18(self):
+        """V18Orchestra should inherit from RadioEngineV18."""
+        self.assertTrue(issubclass(RadioEngineV18Orchestra, RadioEngineV18))
+
+    def test_v18o_instantiation(self):
+        """V18Orchestra should instantiate without errors."""
+        engine = RadioEngineV18Orchestra(seed=42, total_duration=10.0)
+        self.assertIsNotNone(engine)
+
+    def test_v18o_has_family_tracking(self):
+        """V18Orchestra should have family tracking."""
+        engine = RadioEngineV18Orchestra(seed=42, total_duration=10.0)
+        self.assertIsInstance(engine._used_family_groups, set)
+        self.assertIsInstance(engine._family_groups, dict)
+        self.assertEqual(len(engine._family_groups), 5)
+
+    def test_v18o_uses_expanded_instruments(self):
+        """V18Orchestra should use 15-family instrument selection."""
+        engine = RadioEngineV18Orchestra(seed=42, total_duration=10.0)
+        rng = random.Random(42)
+        voices = engine._choose_gm_instruments({}, 5, rng)
+        self.assertEqual(len(voices), 5)
+        families = {v['family'] for v in voices}
+        self.assertGreaterEqual(len(families), 3)
+
+    def test_v18o_higher_color_amount(self):
+        """V18Orchestra should use higher color_amount for character preservation."""
+        engine = RadioEngineV18Orchestra(seed=42, total_duration=10.0)
+        rng = random.Random(42)
+        voices = engine._choose_gm_instruments({}, 4, rng)
+        for v in voices:
+            self.assertGreaterEqual(v['color_amount'], 0.35,
+                                    "color_amount should be >= 0.35 for character")
+            self.assertLessEqual(v['color_amount'], 0.55)
+
+    def test_v18o_short_render(self):
+        """V18Orchestra should render a short clip successfully."""
+        engine = RadioEngineV18Orchestra(seed=42, total_duration=2.0)
+        left, right = engine.render()
+        self.assertIsInstance(left, list)
+        self.assertIsInstance(right, list)
+        self.assertGreater(len(left), 0)
+
+    def test_v18o_cli_choices(self):
+        """CLI should accept --version v18 and v18o."""
+        import argparse
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--version', '-V',
+                          choices=['v7', 'v8', 'v9', 'v10', 'v11', 'v12',
+                                   'v13', 'v14', 'v15', 'v16', 'v18', 'v18o'])
+        args = parser.parse_args(['--version', 'v18'])
+        self.assertEqual(args.version, 'v18')
+        args = parser.parse_args(['--version', 'v18o'])
+        self.assertEqual(args.version, 'v18o')
 
 
 if __name__ == '__main__':

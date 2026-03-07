@@ -7444,6 +7444,486 @@ def generate_radio_v8_mp3(output_path, duration=1800.0, seed=42):
 
 
 # ---------------------------------------------------------------------------
+# V18 RADIO ENGINE -- Clean mixing + tighter tempo (1.1x-1.45x)
+# ---------------------------------------------------------------------------
+#
+# V18 addresses the "radio static" artifacts reported in V15/V17 renders by
+# applying three fixes from V11 to V15's synthesis path:
+#   1. Separate gain/pan in _mix_mono (V11 fix — no more gain-overloaded pan)
+#   2. Quality-gated instrument selection (skip noise_perc for melodic voices)
+#   3. Soft-knee limiting on loop buffer to prevent clipping
+#   4. Longer anti-click fades (5ms vs 2ms)
+#   5. Tempo clamped to 1.1x-1.45x (user preference: narrower range)
+
+
+class RadioEngineV18(RadioEngineV15):
+    """In The Beginning Radio v18 -- V15 synthesis with clean mixing fixes.
+
+    Uses V15's original V8 synthesis (factory.synthesize_colored_note) with:
+    - Tempo clamped to 1.1x-1.45x (tighter than V15's 1.1x-1.7x)
+    - Separate gain and pan in mixing (from V11)
+    - Quality-gated instruments: noise_perc excluded from melodic voices
+    - Soft-knee limiting on loop buffer before crossfade fill
+    - 5ms anti-click fades (up from V15's 2ms)
+    - V8's 5 instrument families (strings, brass, woodwinds, keys, pitched_perc)
+    - 537 instruments, serial rendering
+    """
+
+    def _compute_tempo_multiplier(self, sim_state):
+        """Tempo clamped to 1.1x-1.45x (user preference for final version)."""
+        if not sim_state:
+            return 1.28  # neutral default (midpoint)
+        state_str = repr(sorted(sim_state.items()))
+        h = hashlib.sha256(state_str.encode()).hexdigest()[:8]
+        base = 1.1 + 0.35 * (int(h, 16) / 0xFFFFFFFF)  # 1.1-1.45 range
+        # Density-aware capping
+        particles = sim_state.get('particles', 0)
+        atoms = sim_state.get('atoms', 0)
+        molecules = sim_state.get('molecules', 0)
+        cells = sim_state.get('cells', 0)
+        density = particles + atoms * 2 + molecules * 3 + cells * 5
+        if density > 200:
+            base = min(base, 1.35)
+        if density > 500:
+            base = min(base, 1.25)
+        return base
+
+    @staticmethod
+    def _mix_mono_clean(left, right, samples, offset, total_samples, pan, gain):
+        """Mix mono samples with SEPARATED pan and gain (V11 fix).
+
+        Pan law: equal-power cosine/sine panning.
+        Pan is clamped to [-1, 1], gain is a separate scalar.
+        """
+        pan = max(-1.0, min(1.0, pan))
+        l_gain = math.cos((pan + 1) * math.pi / 4) * gain
+        r_gain = math.sin((pan + 1) * math.pi / 4) * gain
+        n = len(samples)
+        end = min(offset + n, total_samples)
+        start = max(offset, 0)
+        for i in range(start, end):
+            si = i - offset
+            if 0 <= si < n:
+                left[i] += samples[si] * l_gain
+                right[i] += samples[si] * r_gain
+
+    @staticmethod
+    def _is_noise_instrument(instr):
+        """Check if an instrument is noise_perc (static-prone)."""
+        harmonics = instr.get('harmonics', [])
+        if harmonics and isinstance(harmonics[0], (list, tuple)):
+            if isinstance(harmonics[0][0], str) and harmonics[0][0] == 'noise':
+                return True
+        return False
+
+    @staticmethod
+    def _soft_knee_limit(buf, knee=0.75):
+        """Soft-knee limiting: transparent below knee, tanh saturation above."""
+        for i in range(len(buf)):
+            x = buf[i]
+            ax = abs(x)
+            if ax > knee:
+                sign = 1.0 if x >= 0 else -1.0
+                excess = ax - knee
+                compressed = knee + (1.0 - knee) * math.tanh(excess / (1.0 - knee))
+                buf[i] = sign * compressed
+
+    def _render_segment(self, mood, kits, n_samples, sim_state):
+        """V18 render: V15 synthesis + clean mixing + static prevention."""
+        left = [0.0] * n_samples
+        right = [0.0] * n_samples
+
+        rng = mood.rng
+        tempo = mood.tempo
+        beats_per_bar = mood.beats_per_bar
+        root = mood.root
+
+        tempo_mult = self._compute_tempo_multiplier(sim_state)
+        effective_tempo = min(tempo * tempo_mult, 360)
+
+        ts_key = getattr(mood, '_v8_time_sig', mood.time_sig)
+        ts_info = TIME_SIGNATURES.get(ts_key, TIME_SIGNATURES.get('4/4'))
+        beat_dur = 60.0 / effective_tempo
+        quarter_per_beat = 4.0 / ts_info['unit'] if isinstance(ts_info, dict) else 1.0
+        bar_duration_sec = beats_per_bar * beat_dur * quarter_per_beat
+
+        loop_bars = rng.randint(4, 12)
+        bars_result = self.midi_lib.sample_bars_seeded(
+            sim_state, loop_bars, effective_tempo, beats_per_bar,
+            root=root, scale=mood.scale, rng=rng
+        )
+        midi_notes, segment_duration, midi_info = bars_result
+
+        if segment_duration <= 0 or not midi_notes:
+            return left, right
+
+        if bar_duration_sec > 0:
+            midi_notes = self.quantizer.fit_notes_to_bars(
+                midi_notes, loop_bars, bar_duration_sec, beats_per_bar
+            )
+
+        n_voices = getattr(mood, 'n_voices', rng.randint(2, 4))
+        n_voices = clamp(n_voices, 2, 4)
+        voice_configs = self._choose_gm_instruments(midi_info, n_voices, rng)
+
+        register_offsets = [-12, 0, 0, 12, 24]
+        for v_idx, vc in enumerate(voice_configs):
+            vc['octave_offset'] = register_offsets[v_idx % len(register_offsets)]
+
+        chord_notes = []
+        for t_sec, midi_note, dur_sec, vel in midi_notes:
+            chord = self._build_chord_from_note(
+                midi_note, root, mood.scale_name, mood.scale,
+                n_notes=rng.randint(2, 4), rng=rng
+            )
+            chord_notes.append((t_sec, chord, dur_sec, vel))
+
+        rondo = self._build_rondo_sections(
+            chord_notes, root, mood.scale_name, mood.scale,
+            segment_duration, rng
+        )
+
+        rondo_duration = segment_duration * len(rondo)
+        loop_samples = int(rondo_duration * SAMPLE_RATE)
+        if loop_samples <= 0:
+            return left, right
+
+        loop_left = [0.0] * loop_samples
+        loop_right = [0.0] * loop_samples
+
+        # V18: voice gain sized for clean headroom (no * 4 overload)
+        voice_gain = 0.25 / max(n_voices, 1)
+        section_offset_sec = 0.0
+
+        fluid_rendered = None
+        if HAS_FLUIDSYNTH and midi_info.get('path'):
+            primary_gm = voice_configs[0]['gm_program']
+            fluid_rendered = MidiLibrary.render_fluidsynth(
+                midi_info['path'], primary_gm,
+                tempo_factor=tempo_mult,
+                start_tick=midi_info.get('start_tick', 0),
+                end_tick=midi_info.get('end_tick')
+            )
+
+        for sec_idx, (label, section_notes) in enumerate(rondo):
+            sec_start = int(section_offset_sec * SAMPLE_RATE)
+
+            is_solo_section = rng.random() < 0.25
+            if is_solo_section:
+                active_voices = [rng.randint(0, n_voices - 1)]
+            else:
+                active_voices = list(range(n_voices))
+
+            # V18: quality-gate instruments — skip noise_perc for melodic voices
+            voice_instruments = []
+            for _ in voice_configs:
+                candidate = rng.choice(self.instruments)
+                # Retry up to 5 times to avoid noise_perc instruments
+                retries = 0
+                while self._is_noise_instrument(candidate) and retries < 5:
+                    candidate = rng.choice(self.instruments)
+                    retries += 1
+                voice_instruments.append(candidate)
+
+            for v_idx in active_voices:
+                vc = voice_configs[v_idx]
+                oct_off = vc['octave_offset']
+                pan = vc['pan']
+                ca = vc['color_amount']
+                v_chord_size = vc['chord_size']
+
+                v_gain = voice_gain * (1.5 if is_solo_section else 1.0)
+
+                if (v_idx == 0 and fluid_rendered is not None
+                        and label == 'A' and sec_idx == 0):
+                    fl, fr = fluid_rendered
+                    fl_n = min(len(fl), loop_samples - sec_start)
+                    for i in range(fl_n):
+                        pos = sec_start + i
+                        if 0 <= pos < loop_samples:
+                            loop_left[pos] += fl[i] * v_gain
+                            loop_right[pos] += fr[i] * v_gain
+                    continue
+
+                color_instr = voice_instruments[v_idx]
+
+                for t_sec, chord, dur_sec, vel in section_notes:
+                    offset = sec_start + int(t_sec * SAMPLE_RATE)
+                    if offset >= loop_samples:
+                        continue
+
+                    voice_chord = chord[:v_chord_size]
+                    voice_chord = [clamp(n + oct_off, 24, 108)
+                                   for n in voice_chord]
+                    voice_chord = [self.midi_lib._snap_to_scale(n, root, mood.scale)
+                                   for n in voice_chord]
+
+                    for note in voice_chord:
+                        freq = mtof(note)
+                        samps = self.factory.synthesize_colored_note(
+                            color_instr, freq, dur_sec, vel, ca
+                        )
+                        # V18: 5ms anti-click fades (up from 2ms)
+                        click_guard = min(int(0.005 * SAMPLE_RATE), len(samps) // 4)
+                        for ci in range(click_guard):
+                            fade = ci / max(click_guard, 1)
+                            samps[ci] *= fade
+                            if len(samps) - 1 - ci >= 0:
+                                samps[len(samps) - 1 - ci] *= fade
+
+                        # V18: clean mix with separated gain/pan
+                        self._mix_mono_clean(loop_left, loop_right, samps,
+                                             offset, loop_samples, pan, v_gain * 0.25)
+
+            section_offset_sec += segment_duration
+
+        # Chamber effects
+        if rng.random() < 0.70:
+            loop_left = self.smoother.apply_early_reflections(loop_left)
+            loop_right = self.smoother.apply_early_reflections(loop_right)
+        if rng.random() < 0.60:
+            loop_left = self.smoother.apply_reverb(loop_left)
+            loop_right = self.smoother.apply_reverb(loop_right)
+        if rng.random() < 0.40:
+            loop_left = self.smoother.apply_chorus(loop_left)
+            loop_right = self.smoother.apply_chorus(loop_right)
+
+        # DC offset removal
+        if loop_left:
+            dc_l = sum(loop_left) / len(loop_left)
+            dc_r = sum(loop_right) / len(loop_right)
+            if abs(dc_l) > 0.001 or abs(dc_r) > 0.001:
+                loop_left = [s - dc_l for s in loop_left]
+                loop_right = [s - dc_r for s in loop_right]
+
+        loop_left = self.smoother.apply_lowpass(loop_left, 8000)
+        loop_right = self.smoother.apply_lowpass(loop_right, 8000)
+
+        # V18: soft-knee limiting on loop buffer to prevent clipping
+        self._soft_knee_limit(loop_left, knee=0.75)
+        self._soft_knee_limit(loop_right, knee=0.75)
+
+        # Loop with crossfade to fill mood duration
+        xfade = min(int(rng.uniform(2.0, 4.0) * SAMPLE_RATE),
+                     loop_samples // 3)
+        pos = 0
+        while pos < n_samples:
+            remaining = n_samples - pos
+            chunk = min(loop_samples, remaining)
+            for i in range(chunk):
+                fade = 1.0
+                if pos > 0 and i < xfade:
+                    fade = 0.5 - 0.5 * math.cos(math.pi * i / max(xfade, 1))
+                dist_to_end = chunk - i
+                if dist_to_end < xfade and pos + chunk < n_samples:
+                    fade *= 0.5 + 0.5 * math.cos(math.pi * (1 - dist_to_end / max(xfade, 1)))
+                left[pos + i] += loop_left[i] * fade
+                right[pos + i] += loop_right[i] * fade
+            pos += loop_samples - xfade
+
+        return left, right
+
+
+class RadioEngineV18Orchestra(RadioEngineV18):
+    """V18 Orchestra -- expanded 15-family palette with character preservation.
+
+    Uses V18's clean mixing and 1.1x-1.45x tempo, with V12's expanded instrument
+    families (15 pools, 744 MIDI files). Enforces family variety across the render
+    and preserves original instrument character (xylophone sounds like xylophone,
+    strings sound like strings, horns sound like horns).
+
+    Key differences from V18 base:
+    - 15 instrument family pools (vs V18's 5)
+    - 744 MIDI files from 26 composers
+    - Family variety enforcement: tracks used families, biases toward under-used
+    - Higher color_amount for character preservation (instruments retain identity)
+    """
+
+    MORPH_DURATION = 8.0
+    FADE_IN_DURATION = 6.0
+    FADE_OUT_DURATION = 10.0
+
+    def __init__(self, seed=42, total_duration=1800.0):
+        super().__init__(seed=seed, total_duration=total_duration)
+        self._used_family_groups = set()
+        self._family_groups = {
+            'symphonic': {'strings', 'brass', 'woodwinds', 'sax', 'choir',
+                          'symphonic'},
+            'keys_perc': {'keys', 'pitched_perc', 'mallets', 'organ_accordion'},
+            'world_ethnic': {'world', 'ethnic_perc', 'guitar_plucked'},
+            'electronic': {'synth_pad', 'bass', 'sfx'},
+            'classical': {'keys', 'pitched_perc', 'mallets'},
+        }
+        self._segment_count = 0
+
+    def _choose_gm_instruments(self, midi_info, n_voices, rng):
+        """Choose instruments from all 15 family pools with variety enforcement.
+
+        Past halfway through the render, biases selection toward under-represented
+        family groups so the output covers the full orchestral palette.
+        """
+        families = list(V9_FAMILY_POOLS.keys())
+        rng.shuffle(families)
+
+        voices = []
+        used_families = set()
+
+        programs = midi_info.get('programs', set())
+        offsets_pool = [-12, 0, 0, 12, 24]
+        pans_pool = [-0.6, -0.2, 0.2, 0.6]
+
+        self._segment_count += 1
+        past_halfway = self._segment_count > len(self.segments) // 2
+
+        # Gather under-represented families
+        underrepresented = []
+        if past_halfway:
+            for group_name, group_families in self._family_groups.items():
+                if group_name not in self._used_family_groups:
+                    underrepresented.extend(
+                        f for f in group_families if f in V9_FAMILY_POOLS)
+
+        for v in range(n_voices):
+            if underrepresented and rng.random() < 0.6:
+                family = rng.choice(underrepresented)
+            else:
+                available = [f for f in families if f not in used_families]
+                if not available:
+                    available = families
+                family = rng.choice(available)
+            used_families.add(family)
+
+            for group_name, group_families in self._family_groups.items():
+                if family in group_families:
+                    self._used_family_groups.add(group_name)
+
+            pool = V9_FAMILY_POOLS[family]
+            gm = rng.choice(pool)
+
+            oct_offset = offsets_pool[v % len(offsets_pool)]
+            pan = pans_pool[v % len(pans_pool)]
+            chord_size = rng.randint(2, 4)
+            # V18 Orchestra: higher color_amount (0.35-0.55) to preserve
+            # instrument character — xylophone stays xylophone, not generic synth
+            color_amount = rng.uniform(0.35, 0.55)
+
+            voices.append({
+                'gm_program': gm,
+                'family': family,
+                'octave_offset': oct_offset,
+                'pan': pan,
+                'chord_size': chord_size,
+                'color_amount': color_amount,
+            })
+
+        return voices
+
+
+def generate_radio_v18_mp3(output_path, duration=1800.0, seed=42):
+    """Generate the v18 radio MP3 -- V15 synthesis with clean mixing fixes.
+
+    v18 uses V15's original V8 synthesis with:
+    - Tempo: 1.1x-1.45x (user preference)
+    - Clean mixing: separate gain/pan, no noise_perc in melodic voices
+    - Soft-knee limiting to prevent clipping/static
+    - V8's 5 instrument families, serial rendering
+    """
+    import tempfile
+
+    ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
+                            _time.localtime(_time.time()))
+    engine = RadioEngineV18(seed=seed, total_duration=duration)
+    print(f"[{ct_now}] [RadioEngineV18] Initialized (seed={seed}, duration={duration}s)")
+    print(f"[{ct_now}] [RadioEngineV18] {len(engine.instruments)} instruments loaded")
+    print(f"[{ct_now}] [RadioEngineV18] Synthesis: ORIGINAL V8 factory.synthesize_colored_note (pure Python)")
+    print(f"[{ct_now}] [RadioEngineV18] Instruments: v8 5-pool orchestral palette (537 synths)")
+    print(f"[{ct_now}] [RadioEngineV18] Tempo range: 1.1x-1.45x (user preference)")
+    print(f"[{ct_now}] [RadioEngineV18] Mixing: V11-style clean gain/pan + soft-knee limiting")
+    print(f"[{ct_now}] [RadioEngineV18] Static prevention: noise_perc excluded from melodic voices")
+
+    n_segments = len(engine.segments)
+    avg_dur = sum(s[1] for s in engine.segments) / max(n_segments, 1)
+    print(f"[{ct_now}] [RadioEngineV18] {n_segments} mood segments (avg {avg_dur:.0f}s)")
+
+    ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
+                            _time.localtime(_time.time()))
+    print(f"[{ct_now}] [RadioEngineV18] Rendering audio (serial, original synthesis)...")
+
+    t0 = _time.time()
+    left, right = engine.render()
+    t1 = _time.time()
+    print(f"[{ct_now}] [RadioEngineV18] Rendered {len(left)/SAMPLE_RATE:.1f}s in {t1-t0:.1f}s")
+
+    if output_path.endswith('.mp3'):
+        with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
+            wav_path = tmp.name
+        try:
+            render_to_wav(left, right, wav_path)
+            wav_to_mp3(wav_path, output_path)
+        finally:
+            try:
+                os.unlink(wav_path)
+            except OSError:
+                pass
+    else:
+        render_to_wav(left, right, output_path)
+
+    file_size = os.path.getsize(output_path) if os.path.exists(output_path) else 0
+    print(f"[RadioEngineV18] File size: {file_size/1048576:.1f} MB")
+    return output_path
+
+
+def generate_radio_v18_orchestra_mp3(output_path, duration=1800.0, seed=42):
+    """Generate the v18 orchestra MP3 -- expanded palette with character preservation.
+
+    v18 orchestra uses 15 instrument families, 744 MIDI files, with wider variety
+    enforcement and higher color_amount to preserve instrument character identity.
+    """
+    import tempfile
+
+    ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
+                            _time.localtime(_time.time()))
+    engine = RadioEngineV18Orchestra(seed=seed, total_duration=duration)
+    print(f"[{ct_now}] [RadioEngineV18Orchestra] Initialized (seed={seed}, duration={duration}s)")
+    print(f"[{ct_now}] [RadioEngineV18Orchestra] {len(engine.instruments)} instruments loaded")
+    print(f"[{ct_now}] [RadioEngineV18Orchestra] {len(engine.midi_lib._note_sequences)} MIDI sequences loaded")
+    print(f"[{ct_now}] [RadioEngineV18Orchestra] Instruments: 15-pool expanded palette")
+    print(f"[{ct_now}] [RadioEngineV18Orchestra] Tempo range: 1.1x-1.45x")
+    print(f"[{ct_now}] [RadioEngineV18Orchestra] Character preservation: color_amount 0.35-0.55")
+
+    n_segments = len(engine.segments)
+    avg_dur = sum(s[1] for s in engine.segments) / max(n_segments, 1)
+    print(f"[{ct_now}] [RadioEngineV18Orchestra] {n_segments} mood segments (avg {avg_dur:.0f}s)")
+
+    ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
+                            _time.localtime(_time.time()))
+    print(f"[{ct_now}] [RadioEngineV18Orchestra] Rendering audio...")
+
+    t0 = _time.time()
+    left, right = engine.render()
+    t1 = _time.time()
+    print(f"[RadioEngineV18Orchestra] Rendered {len(left)/SAMPLE_RATE:.1f}s in {t1-t0:.1f}s")
+
+    if output_path.endswith('.mp3'):
+        with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
+            wav_path = tmp.name
+        try:
+            render_to_wav(left, right, wav_path)
+            wav_to_mp3(wav_path, output_path)
+        finally:
+            try:
+                os.unlink(wav_path)
+            except OSError:
+                pass
+    else:
+        render_to_wav(left, right, output_path)
+
+    file_size = os.path.getsize(output_path) if os.path.exists(output_path) else 0
+    print(f"[RadioEngineV18Orchestra] File size: {file_size/1048576:.1f} MB")
+    return output_path
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 if __name__ == '__main__':
@@ -7455,10 +7935,14 @@ if __name__ == '__main__':
                        help='Duration in seconds (default: 1800)')
     parser.add_argument('--seed', '-s', type=int, default=42,
                        help='Random seed')
-    parser.add_argument('--version', '-V', choices=['v7', 'v8', 'v9', 'v10', 'v11', 'v12', 'v13', 'v14', 'v15', 'v16'], default='v7',
-                       help='Engine version: v7-v16 (v15=true V8 synth + V12 tempo, v16=true V8 synth + expanded)')
+    parser.add_argument('--version', '-V', choices=['v7', 'v8', 'v9', 'v10', 'v11', 'v12', 'v13', 'v14', 'v15', 'v16', 'v18', 'v18o'], default='v7',
+                       help='Engine version: v7-v18 (v18=clean mixing, v18o=orchestra variety)')
     args = parser.parse_args()
-    if args.version == 'v16':
+    if args.version == 'v18o':
+        generate_radio_v18_orchestra_mp3(args.output, args.duration, args.seed)
+    elif args.version == 'v18':
+        generate_radio_v18_mp3(args.output, args.duration, args.seed)
+    elif args.version == 'v16':
         generate_radio_v16_mp3(args.output, args.duration, args.seed)
     elif args.version == 'v15':
         generate_radio_v15_mp3(args.output, args.duration, args.seed)
