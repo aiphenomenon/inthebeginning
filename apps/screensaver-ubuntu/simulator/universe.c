@@ -1536,6 +1536,12 @@ void universe_init(Universe *u, unsigned int seed)
     env_init(&u->env, T_PLANCK);
 }
 
+void universe_big_bounce(Universe *u)
+{
+    unsigned int seed = u->rng_state;
+    universe_init(u, seed);
+}
+
 void universe_step(Universe *u)
 {
     u->tick += u->step_size;

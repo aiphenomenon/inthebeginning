@@ -290,6 +290,10 @@ void universe_init(Universe *u, unsigned int seed);
 /* Advance the simulation by one step.                                */
 void universe_step(Universe *u);
 
+/* Reset the universe for a new Big Bounce cycle.                     */
+/* Frees current state and re-initialises, preserving the RNG seed.   */
+void universe_big_bounce(Universe *u);
+
 /* Take a snapshot of the current state (lock-free for the renderer). */
 Snapshot universe_snapshot(const Universe *u);
 
