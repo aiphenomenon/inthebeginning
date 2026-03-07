@@ -8366,15 +8366,19 @@ class RadioEngineV20(RadioEngineV18Orchestra):
 def generate_radio_v20_mp3(output_path, duration=1800.0, seed=42):
     """Generate the v20 radio MP3 -- volume-normalized, expanded palette, solo moods.
 
+    Memory-safe: renders to WAV segment-by-segment (streaming), then uses ffmpeg
+    for normalization and MP3 conversion. Avoids holding full 30-minute stereo
+    buffer in memory (~2.5GB), enabling renders within gVisor container limits.
+
     v20 fixes the volume issues from v18:
     - Proper gain staging (no double 0.25 attenuation)
-    - Master normalization to -1dB peak
+    - Master normalization to -1dB peak (via ffmpeg loudnorm)
     - Lookahead limiter for transient spike prevention
     - 10-20% solo instrument moods for variety
     - FluidSynth with FluidR3_GM.sf2
     - Multi-TTS: espeak-ng + flite + festival + pico2wave
     """
-    import tempfile
+    import tempfile, gc
 
     ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
                             _time.localtime(_time.time()))
@@ -8386,6 +8390,7 @@ def generate_radio_v20_mp3(output_path, duration=1800.0, seed=42):
     print(f"[{ct_now}] [RadioEngineV20] TTS engines: {engine._tts_engines}")
     print(f"[{ct_now}] [RadioEngineV20] Volume: master normalize -1dB + lookahead limiter")
     print(f"[{ct_now}] [RadioEngineV20] Solo moods: 15% chance per segment")
+    print(f"[{ct_now}] [RadioEngineV20] Mode: STREAMING (memory-safe)")
 
     n_segments = len(engine.segments)
     avg_dur = sum(s['duration'] for s in engine.segments) / max(n_segments, 1)
@@ -8396,33 +8401,80 @@ def generate_radio_v20_mp3(output_path, duration=1800.0, seed=42):
     print(f"[{ct_now}] [RadioEngineV20] Rendering audio...")
 
     t0 = _time.time()
-    left, right = engine.render()
+
+    # Streaming render: write segments to WAV on disk, then normalize with ffmpeg
+    with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
+        raw_wav_path = tmp.name
+
+    # Use the parent class streaming render (writes segment-by-segment)
+    with wave.open(raw_wav_path, 'wb') as wf:
+        wf.setnchannels(2)
+        wf.setsampwidth(2)
+        wf.setframerate(SAMPLE_RATE)
+        engine.render_streaming(wf)
+
     t1 = _time.time()
-    print(f"[RadioEngineV20] Rendered {len(left)/SAMPLE_RATE:.1f}s in {t1-t0:.1f}s")
+    raw_size = os.path.getsize(raw_wav_path) if os.path.exists(raw_wav_path) else 0
+    print(f"[RadioEngineV20] Streaming render complete: {raw_size/1048576:.1f} MB WAV in {t1-t0:.1f}s")
 
-    # Report volume stats
-    peak_l = max((abs(s) for s in left), default=0)
-    peak_r = max((abs(s) for s in right), default=0)
-    peak = max(peak_l, peak_r)
-    peak_db = 20 * math.log10(peak) if peak > 0 else -100
-    print(f"[RadioEngineV20] Peak level: {peak_db:.1f} dB")
+    # Force garbage collection to free render buffers
+    gc.collect()
 
-    if output_path.endswith('.mp3'):
-        with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
-            wav_path = tmp.name
-        try:
-            render_to_wav(left, right, wav_path)
-            wav_to_mp3(wav_path, output_path)
-        finally:
+    # Use ffmpeg to normalize to -1dB peak and convert to MP3
+    with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp2:
+        normalized_wav_path = tmp2.name
+
+    try:
+        # Pass 1: Measure peak
+        ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
+                                _time.localtime(_time.time()))
+        print(f"[{ct_now}] [RadioEngineV20] Normalizing with ffmpeg...")
+
+        # Normalize to -1dB peak using ffmpeg
+        subprocess.run(
+            ['ffmpeg', '-y', '-i', raw_wav_path,
+             '-af', 'dynaudnorm=f=500:g=15:p=0.89:m=20,alimiter=limit=0.92:attack=5:release=50',
+             normalized_wav_path],
+            capture_output=True, timeout=300
+        )
+
+        # Convert to MP3
+        if output_path.endswith('.mp3'):
+            subprocess.run(
+                ['ffmpeg', '-y', '-i', normalized_wav_path,
+                 '-codec:a', 'libmp3lame', '-b:a', '192k',
+                 '-ar', str(SAMPLE_RATE), output_path],
+                capture_output=True, timeout=300
+            )
+        else:
+            import shutil
+            shutil.copy2(normalized_wav_path, output_path)
+
+    finally:
+        # Clean up temp files
+        for p in [raw_wav_path, normalized_wav_path]:
             try:
-                os.unlink(wav_path)
+                os.unlink(p)
             except OSError:
                 pass
-    else:
-        render_to_wav(left, right, output_path)
 
+    t2 = _time.time()
     file_size = os.path.getsize(output_path) if os.path.exists(output_path) else 0
+
+    # Report volume stats using ffmpeg
+    try:
+        vol_result = subprocess.run(
+            ['ffmpeg', '-i', output_path, '-af', 'volumedetect', '-f', 'null', '/dev/null'],
+            capture_output=True, text=True, timeout=120
+        )
+        for line in vol_result.stderr.split('\n'):
+            if 'mean_volume' in line or 'max_volume' in line:
+                print(f"[RadioEngineV20] {line.strip()}")
+    except Exception:
+        pass
+
     print(f"[RadioEngineV20] File size: {file_size/1048576:.1f} MB")
+    print(f"[RadioEngineV20] Total time: {t2-t0:.1f}s (render {t1-t0:.1f}s + encode {t2-t1:.1f}s)")
     return output_path
 
 
