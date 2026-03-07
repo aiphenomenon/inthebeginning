@@ -159,4 +159,40 @@ sub run {
     return \@results;
 }
 
+=head2 big_bounce
+
+Reset the universe for a new cycle (Big Bounce cosmology).
+Clears all subsystems, enabling perpetual simulation without memory leaks.
+
+=cut
+
+sub big_bounce {
+    my ($self) = @_;
+    $self->{current_epoch} = 0;
+    $self->{current_tick}  = 0;
+    $self->{temperature}   = $T_PLANCK;
+    $self->{scale_factor}  = 1e-35;
+    $self->{quantum_field}   = undef;
+    $self->{atomic_system}   = undef;
+    $self->{chemical_system} = undef;
+    $self->{biosphere}       = undef;
+    $self->{environment}     = undef;
+    $self->{stats} = {
+        particles_created  => 0,
+        atoms_formed       => 0,
+        molecules_formed   => 0,
+        lifeforms_created  => 0,
+    };
+    $self->{_cycle} = ($self->{_cycle} || 0) + 1;
+    return $self;
+}
+
+=head2 cycle
+
+Returns the current Big Bounce cycle number (0 = first run).
+
+=cut
+
+sub cycle { return $_[0]->{_cycle} || 0 }
+
 1;
