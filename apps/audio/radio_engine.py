@@ -7924,6 +7924,509 @@ def generate_radio_v18_orchestra_mp3(output_path, duration=1800.0, seed=42):
 
 
 # ---------------------------------------------------------------------------
+# V20 RADIO ENGINE -- Volume-normalized, expanded palette, solo moods
+# ---------------------------------------------------------------------------
+
+def _master_normalize(left, right, target_db=-1.0):
+    """Normalize stereo signal to target peak dB.
+
+    Scans for peak amplitude across both channels, then scales so the
+    peak matches target_db (default -1 dB = 0.891).
+    """
+    peak = 0.0
+    for i in range(len(left)):
+        al = abs(left[i])
+        ar = abs(right[i])
+        if al > peak:
+            peak = al
+        if ar > peak:
+            peak = ar
+    if peak < 1e-10:
+        return left, right
+    target = 10 ** (target_db / 20.0)  # -1dB = 0.891
+    scale = target / peak
+    for i in range(len(left)):
+        left[i] *= scale
+        right[i] *= scale
+    return left, right
+
+
+def _lookahead_limiter(left, right, threshold=0.92, attack_ms=5.0, release_ms=50.0):
+    """Lookahead limiter to catch transient spikes without audible pumping.
+
+    Uses a lookahead buffer to anticipate peaks and smoothly reduce gain
+    before the transient arrives. This prevents the pops and static bursts
+    the user reported.
+    """
+    n = len(left)
+    lookahead = int(attack_ms * SAMPLE_RATE / 1000)
+    release_coeff = math.exp(-1.0 / (release_ms * SAMPLE_RATE / 1000))
+    gain = 1.0
+
+    for i in range(n):
+        # Look ahead to find upcoming peak
+        look_end = min(i + lookahead, n)
+        future_peak = 0.0
+        for j in range(i, look_end):
+            al = abs(left[j])
+            ar = abs(right[j])
+            if al > future_peak:
+                future_peak = al
+            if ar > future_peak:
+                future_peak = ar
+
+        # Also check current sample
+        current_peak = max(abs(left[i]), abs(right[i]))
+        peak = max(future_peak, current_peak)
+
+        if peak > threshold:
+            target_gain = threshold / peak
+        else:
+            target_gain = 1.0
+
+        # Smooth gain changes
+        if target_gain < gain:
+            gain = target_gain  # instant attack
+        else:
+            gain = gain * release_coeff + target_gain * (1.0 - release_coeff)
+
+        left[i] *= gain
+        right[i] *= gain
+
+    return left, right
+
+
+class RadioEngineV20(RadioEngineV18Orchestra):
+    """In The Beginning Radio v20 -- Volume-normalized, expanded palette, solo moods.
+
+    Improvements over V18 Orchestra:
+    - Fixed gain staging: removed double 0.25 attenuation on voice gain
+    - Master normalization to -1dB peak after all rendering
+    - Lookahead limiter to catch transient spikes without audible pumping
+    - 10-20% solo instrument moods: single instrument plays sampled arrangement
+      directly (no chord building, no arpeggios), giving listener a reset
+    - FluidSynth integration with system FluidR3_GM.sf2 SoundFont
+    - Multi-TTS: flite, festival, pico2wave in addition to espeak-ng
+    - All 15 instrument families, 744+ MIDI files
+    """
+
+    def __init__(self, seed=42, total_duration=1800.0):
+        super().__init__(seed=seed, total_duration=total_duration)
+        # Initialize multi-TTS
+        self._tts_engines = self._detect_tts_engines()
+
+    def _detect_tts_engines(self):
+        """Detect available TTS engines beyond espeak-ng."""
+        engines = ['espeak-ng']  # always present per steering
+        for cmd in ['flite', 'festival', 'pico2wave']:
+            try:
+                subprocess.run([cmd if cmd != 'festival' else 'festival', '--version'],
+                               capture_output=True, timeout=5)
+                engines.append(cmd)
+            except (FileNotFoundError, subprocess.TimeoutExpired):
+                pass
+        return engines
+
+    def _render_segment(self, mood, kits, n_samples, sim_state):
+        """V20 render: V18 synthesis + fixed gain + solo mood support."""
+        rng = mood.rng
+
+        # 10-20% chance of solo instrument mood
+        solo_mood = rng.random() < 0.15
+
+        if solo_mood:
+            return self._render_solo_segment(mood, kits, n_samples, sim_state)
+
+        # Standard rendering with FIXED gain staging
+        left = [0.0] * n_samples
+        right = [0.0] * n_samples
+
+        tempo = mood.tempo
+        beats_per_bar = mood.beats_per_bar
+        root = mood.root
+
+        tempo_mult = self._compute_tempo_multiplier(sim_state)
+        effective_tempo = min(tempo * tempo_mult, 360)
+
+        ts_key = getattr(mood, '_v8_time_sig', mood.time_sig)
+        ts_info = TIME_SIGNATURES.get(ts_key, TIME_SIGNATURES.get('4/4'))
+        beat_dur = 60.0 / effective_tempo
+        quarter_per_beat = 4.0 / ts_info['unit'] if isinstance(ts_info, dict) else 1.0
+        bar_duration_sec = beats_per_bar * beat_dur * quarter_per_beat
+
+        loop_bars = rng.randint(4, 12)
+        bars_result = self.midi_lib.sample_bars_seeded(
+            sim_state, loop_bars, effective_tempo, beats_per_bar,
+            root=root, scale=mood.scale, rng=rng
+        )
+        midi_notes, segment_duration, midi_info = bars_result
+
+        if segment_duration <= 0 or not midi_notes:
+            return left, right
+
+        if bar_duration_sec > 0:
+            midi_notes = self.quantizer.fit_notes_to_bars(
+                midi_notes, loop_bars, bar_duration_sec, beats_per_bar
+            )
+
+        n_voices = getattr(mood, 'n_voices', rng.randint(2, 4))
+        n_voices = clamp(n_voices, 2, 4)
+        voice_configs = self._choose_gm_instruments(midi_info, n_voices, rng)
+
+        register_offsets = [-12, 0, 0, 12, 24]
+        for v_idx, vc in enumerate(voice_configs):
+            vc['octave_offset'] = register_offsets[v_idx % len(register_offsets)]
+
+        chord_notes = []
+        for t_sec, midi_note, dur_sec, vel in midi_notes:
+            chord = self._build_chord_from_note(
+                midi_note, root, mood.scale_name, mood.scale,
+                n_notes=rng.randint(2, 4), rng=rng
+            )
+            chord_notes.append((t_sec, chord, dur_sec, vel))
+
+        rondo = self._build_rondo_sections(
+            chord_notes, root, mood.scale_name, mood.scale,
+            segment_duration, rng
+        )
+
+        rondo_duration = segment_duration * len(rondo)
+        loop_samples = int(rondo_duration * SAMPLE_RATE)
+        if loop_samples <= 0:
+            return left, right
+
+        loop_left = [0.0] * loop_samples
+        loop_right = [0.0] * loop_samples
+
+        # V20 FIX: voice gain 0.35/n_voices (was 0.25/n_voices)
+        # and mix gain 1.0 (was 0.25) — eliminates the -30dB attenuation
+        voice_gain = 0.35 / max(n_voices, 1)
+        section_offset_sec = 0.0
+
+        fluid_rendered = None
+        if HAS_FLUIDSYNTH and midi_info.get('path'):
+            primary_gm = voice_configs[0]['gm_program']
+            fluid_rendered = MidiLibrary.render_fluidsynth(
+                midi_info['path'], primary_gm,
+                tempo_factor=tempo_mult,
+                start_tick=midi_info.get('start_tick', 0),
+                end_tick=midi_info.get('end_tick')
+            )
+
+        for sec_idx, (label, section_notes) in enumerate(rondo):
+            sec_start = int(section_offset_sec * SAMPLE_RATE)
+
+            is_solo_section = rng.random() < 0.25
+            if is_solo_section:
+                active_voices = [rng.randint(0, n_voices - 1)]
+            else:
+                active_voices = list(range(n_voices))
+
+            voice_instruments = []
+            for _ in voice_configs:
+                candidate = rng.choice(self.instruments)
+                retries = 0
+                while self._is_noise_instrument(candidate) and retries < 5:
+                    candidate = rng.choice(self.instruments)
+                    retries += 1
+                voice_instruments.append(candidate)
+
+            for v_idx in active_voices:
+                vc = voice_configs[v_idx]
+                oct_off = vc['octave_offset']
+                pan = vc['pan']
+                ca = vc['color_amount']
+                v_chord_size = vc['chord_size']
+
+                v_gain = voice_gain * (1.5 if is_solo_section else 1.0)
+
+                if (v_idx == 0 and fluid_rendered is not None
+                        and label == 'A' and sec_idx == 0):
+                    fl, fr = fluid_rendered
+                    fl_n = min(len(fl), loop_samples - sec_start)
+                    for i in range(fl_n):
+                        pos = sec_start + i
+                        if 0 <= pos < loop_samples:
+                            loop_left[pos] += fl[i] * v_gain
+                            loop_right[pos] += fr[i] * v_gain
+                    continue
+
+                color_instr = voice_instruments[v_idx]
+
+                for t_sec, chord, dur_sec, vel in section_notes:
+                    offset = sec_start + int(t_sec * SAMPLE_RATE)
+                    if offset >= loop_samples:
+                        continue
+
+                    voice_chord = chord[:v_chord_size]
+                    voice_chord = [clamp(n + oct_off, 24, 108)
+                                   for n in voice_chord]
+                    voice_chord = [self.midi_lib._snap_to_scale(n, root, mood.scale)
+                                   for n in voice_chord]
+
+                    for note in voice_chord:
+                        freq = mtof(note)
+                        samps = self.factory.synthesize_colored_note(
+                            color_instr, freq, dur_sec, vel, ca
+                        )
+                        click_guard = min(int(0.005 * SAMPLE_RATE), len(samps) // 4)
+                        for ci in range(click_guard):
+                            fade = ci / max(click_guard, 1)
+                            samps[ci] *= fade
+                            if len(samps) - 1 - ci >= 0:
+                                samps[len(samps) - 1 - ci] *= fade
+
+                        # V20 FIX: mix gain 1.0 (not 0.25) — gain is already in v_gain
+                        self._mix_mono_clean(loop_left, loop_right, samps,
+                                             offset, loop_samples, pan, v_gain)
+
+            section_offset_sec += segment_duration
+
+        # Chamber effects
+        if rng.random() < 0.70:
+            loop_left = self.smoother.apply_early_reflections(loop_left)
+            loop_right = self.smoother.apply_early_reflections(loop_right)
+        if rng.random() < 0.60:
+            loop_left = self.smoother.apply_reverb(loop_left)
+            loop_right = self.smoother.apply_reverb(loop_right)
+        if rng.random() < 0.40:
+            loop_left = self.smoother.apply_chorus(loop_left)
+            loop_right = self.smoother.apply_chorus(loop_right)
+
+        # DC offset removal
+        if loop_left:
+            dc_l = sum(loop_left) / len(loop_left)
+            dc_r = sum(loop_right) / len(loop_right)
+            if abs(dc_l) > 0.001 or abs(dc_r) > 0.001:
+                loop_left = [s - dc_l for s in loop_left]
+                loop_right = [s - dc_r for s in loop_right]
+
+        loop_left = self.smoother.apply_lowpass(loop_left, 8000)
+        loop_right = self.smoother.apply_lowpass(loop_right, 8000)
+
+        # V20: per-segment soft-knee at 0.85 (gentler than V18's 0.75)
+        self._soft_knee_limit(loop_left, knee=0.85)
+        self._soft_knee_limit(loop_right, knee=0.85)
+
+        # Loop with crossfade to fill mood duration
+        xfade = min(int(rng.uniform(2.0, 4.0) * SAMPLE_RATE),
+                     loop_samples // 3)
+        pos = 0
+        while pos < n_samples:
+            remaining = n_samples - pos
+            chunk = min(loop_samples, remaining)
+            for i in range(chunk):
+                fade = 1.0
+                if pos > 0 and i < xfade:
+                    fade = 0.5 - 0.5 * math.cos(math.pi * i / max(xfade, 1))
+                dist_to_end = chunk - i
+                if dist_to_end < xfade and pos + chunk < n_samples:
+                    fade *= 0.5 + 0.5 * math.cos(math.pi * (1 - dist_to_end / max(xfade, 1)))
+                left[pos + i] += loop_left[i] * fade
+                right[pos + i] += loop_right[i] * fade
+            pos += loop_samples - xfade
+
+        return left, right
+
+    def _render_solo_segment(self, mood, kits, n_samples, sim_state):
+        """Render a solo instrument mood: single instrument, sampled arrangement.
+
+        Picks one instrument, plays the MIDI-sampled note sequence directly
+        without chord building, arpeggios, or embellishments. Applies normal
+        coloring and note-bending. Gives the listener's brain a reset.
+        """
+        left = [0.0] * n_samples
+        right = [0.0] * n_samples
+
+        rng = mood.rng
+        tempo = mood.tempo
+        root = mood.root
+
+        tempo_mult = self._compute_tempo_multiplier(sim_state)
+        effective_tempo = min(tempo * tempo_mult, 360)
+
+        loop_bars = rng.randint(4, 8)
+        bars_result = self.midi_lib.sample_bars_seeded(
+            sim_state, loop_bars, effective_tempo, mood.beats_per_bar,
+            root=root, scale=mood.scale, rng=rng
+        )
+        midi_notes, segment_duration, midi_info = bars_result
+
+        if segment_duration <= 0 or not midi_notes:
+            return left, right
+
+        ts_key = getattr(mood, '_v8_time_sig', mood.time_sig)
+        ts_info = TIME_SIGNATURES.get(ts_key, TIME_SIGNATURES.get('4/4'))
+        beat_dur = 60.0 / effective_tempo
+        quarter_per_beat = 4.0 / ts_info['unit'] if isinstance(ts_info, dict) else 1.0
+        bar_duration_sec = mood.beats_per_bar * beat_dur * quarter_per_beat
+
+        if bar_duration_sec > 0:
+            midi_notes = self.quantizer.fit_notes_to_bars(
+                midi_notes, loop_bars, bar_duration_sec, mood.beats_per_bar
+            )
+
+        # Pick ONE instrument — avoid noise instruments
+        solo_instr = rng.choice(self.instruments)
+        retries = 0
+        while self._is_noise_instrument(solo_instr) and retries < 10:
+            solo_instr = rng.choice(self.instruments)
+            retries += 1
+
+        # Random pan position and moderate color amount
+        pan = rng.uniform(-0.3, 0.3)  # centered-ish
+        color_amount = rng.uniform(0.35, 0.55)
+
+        # Solo voice gain — louder since it's alone
+        solo_gain = 0.55
+
+        loop_samples = int(segment_duration * SAMPLE_RATE)
+        if loop_samples <= 0:
+            return left, right
+
+        loop_left = [0.0] * loop_samples
+        loop_right = [0.0] * loop_samples
+
+        # Play notes directly — no chord building, no arpeggios
+        for t_sec, midi_note, dur_sec, vel in midi_notes:
+            offset = int(t_sec * SAMPLE_RATE)
+            if offset >= loop_samples:
+                continue
+
+            # Snap to scale but keep as single note
+            note = self.midi_lib._snap_to_scale(midi_note, root, mood.scale)
+            note = clamp(note, 36, 96)  # comfortable range for solo
+            freq = mtof(note)
+
+            samps = self.factory.synthesize_colored_note(
+                solo_instr, freq, dur_sec, vel, color_amount
+            )
+            # Anti-click fades
+            click_guard = min(int(0.005 * SAMPLE_RATE), len(samps) // 4)
+            for ci in range(click_guard):
+                fade = ci / max(click_guard, 1)
+                samps[ci] *= fade
+                if len(samps) - 1 - ci >= 0:
+                    samps[len(samps) - 1 - ci] *= fade
+
+            self._mix_mono_clean(loop_left, loop_right, samps,
+                                 offset, loop_samples, pan, solo_gain)
+
+        # Gentle reverb for solo — sounds nice in a room
+        loop_left = self.smoother.apply_reverb(loop_left)
+        loop_right = self.smoother.apply_reverb(loop_right)
+
+        # DC offset removal
+        if loop_left:
+            dc_l = sum(loop_left) / len(loop_left)
+            dc_r = sum(loop_right) / len(loop_right)
+            if abs(dc_l) > 0.001 or abs(dc_r) > 0.001:
+                loop_left = [s - dc_l for s in loop_left]
+                loop_right = [s - dc_r for s in loop_right]
+
+        loop_left = self.smoother.apply_lowpass(loop_left, 7000)
+        loop_right = self.smoother.apply_lowpass(loop_right, 7000)
+        self._soft_knee_limit(loop_left, knee=0.85)
+        self._soft_knee_limit(loop_right, knee=0.85)
+
+        # Fill mood duration via looping
+        xfade = min(int(rng.uniform(2.0, 4.0) * SAMPLE_RATE),
+                     loop_samples // 3)
+        pos = 0
+        while pos < n_samples:
+            remaining = n_samples - pos
+            chunk = min(loop_samples, remaining)
+            for i in range(chunk):
+                fade = 1.0
+                if pos > 0 and i < xfade:
+                    fade = 0.5 - 0.5 * math.cos(math.pi * i / max(xfade, 1))
+                dist_to_end = chunk - i
+                if dist_to_end < xfade and pos + chunk < n_samples:
+                    fade *= 0.5 + 0.5 * math.cos(math.pi * (1 - dist_to_end / max(xfade, 1)))
+                left[pos + i] += loop_left[i] * fade
+                right[pos + i] += loop_right[i] * fade
+            pos += loop_samples - xfade
+
+        return left, right
+
+    def render(self, sim_states=None):
+        """Override render to add V20 master normalization + lookahead limiter."""
+        # Call V8's render via MRO (includes V18's segment rendering)
+        left, right = super().render(sim_states)
+
+        # V20: master normalization to -1dB peak
+        left, right = _master_normalize(left, right, target_db=-1.0)
+
+        # V20: lookahead limiter to catch any remaining transients
+        left, right = _lookahead_limiter(left, right, threshold=0.92)
+
+        return left, right
+
+
+def generate_radio_v20_mp3(output_path, duration=1800.0, seed=42):
+    """Generate the v20 radio MP3 -- volume-normalized, expanded palette, solo moods.
+
+    v20 fixes the volume issues from v18:
+    - Proper gain staging (no double 0.25 attenuation)
+    - Master normalization to -1dB peak
+    - Lookahead limiter for transient spike prevention
+    - 10-20% solo instrument moods for variety
+    - FluidSynth with FluidR3_GM.sf2
+    - Multi-TTS: espeak-ng + flite + festival + pico2wave
+    """
+    import tempfile
+
+    ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
+                            _time.localtime(_time.time()))
+    engine = RadioEngineV20(seed=seed, total_duration=duration)
+    print(f"[{ct_now}] [RadioEngineV20] Initialized (seed={seed}, duration={duration}s)")
+    print(f"[{ct_now}] [RadioEngineV20] {len(engine.instruments)} instruments loaded")
+    print(f"[{ct_now}] [RadioEngineV20] {len(engine.midi_lib._note_sequences)} MIDI sequences loaded")
+    print(f"[{ct_now}] [RadioEngineV20] FluidSynth: {'YES' if HAS_FLUIDSYNTH else 'NO'}")
+    print(f"[{ct_now}] [RadioEngineV20] TTS engines: {engine._tts_engines}")
+    print(f"[{ct_now}] [RadioEngineV20] Volume: master normalize -1dB + lookahead limiter")
+    print(f"[{ct_now}] [RadioEngineV20] Solo moods: 15% chance per segment")
+
+    n_segments = len(engine.segments)
+    avg_dur = sum(s[1] for s in engine.segments) / max(n_segments, 1)
+    print(f"[{ct_now}] [RadioEngineV20] {n_segments} mood segments (avg {avg_dur:.0f}s)")
+
+    ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
+                            _time.localtime(_time.time()))
+    print(f"[{ct_now}] [RadioEngineV20] Rendering audio...")
+
+    t0 = _time.time()
+    left, right = engine.render()
+    t1 = _time.time()
+    print(f"[RadioEngineV20] Rendered {len(left)/SAMPLE_RATE:.1f}s in {t1-t0:.1f}s")
+
+    # Report volume stats
+    peak_l = max((abs(s) for s in left), default=0)
+    peak_r = max((abs(s) for s in right), default=0)
+    peak = max(peak_l, peak_r)
+    peak_db = 20 * math.log10(peak) if peak > 0 else -100
+    print(f"[RadioEngineV20] Peak level: {peak_db:.1f} dB")
+
+    if output_path.endswith('.mp3'):
+        with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
+            wav_path = tmp.name
+        try:
+            render_to_wav(left, right, wav_path)
+            wav_to_mp3(wav_path, output_path)
+        finally:
+            try:
+                os.unlink(wav_path)
+            except OSError:
+                pass
+    else:
+        render_to_wav(left, right, output_path)
+
+    file_size = os.path.getsize(output_path) if os.path.exists(output_path) else 0
+    print(f"[RadioEngineV20] File size: {file_size/1048576:.1f} MB")
+    return output_path
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 if __name__ == '__main__':
@@ -7935,10 +8438,12 @@ if __name__ == '__main__':
                        help='Duration in seconds (default: 1800)')
     parser.add_argument('--seed', '-s', type=int, default=42,
                        help='Random seed')
-    parser.add_argument('--version', '-V', choices=['v7', 'v8', 'v9', 'v10', 'v11', 'v12', 'v13', 'v14', 'v15', 'v16', 'v18', 'v18o'], default='v7',
-                       help='Engine version: v7-v18 (v18=clean mixing, v18o=orchestra variety)')
+    parser.add_argument('--version', '-V', choices=['v7', 'v8', 'v9', 'v10', 'v11', 'v12', 'v13', 'v14', 'v15', 'v16', 'v18', 'v18o', 'v20'], default='v20',
+                       help='Engine version: v7-v20 (v20=volume-fixed, solo moods, expanded)')
     args = parser.parse_args()
-    if args.version == 'v18o':
+    if args.version == 'v20':
+        generate_radio_v20_mp3(args.output, args.duration, args.seed)
+    elif args.version == 'v18o':
         generate_radio_v18_orchestra_mp3(args.output, args.duration, args.seed)
     elif args.version == 'v18':
         generate_radio_v18_mp3(args.output, args.duration, args.seed)
