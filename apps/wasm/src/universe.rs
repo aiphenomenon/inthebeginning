@@ -61,6 +61,9 @@ pub struct Universe {
     earth_seeded: bool,
     earth_molecules_formed: bool,
     hadron_done: bool,
+
+    // Big Bounce cycle counter
+    cycle: u32,
 }
 
 impl Universe {
@@ -84,6 +87,7 @@ impl Universe {
             earth_seeded: false,
             earth_molecules_formed: false,
             hadron_done: false,
+            cycle: 0,
         }
     }
 
@@ -224,6 +228,46 @@ impl Universe {
                 self.cells_born = bio.total_born;
             }
         }
+    }
+
+    /// Reset the universe for a new cycle (Big Bounce).
+    ///
+    /// Clears the tick counter, resets temperature and all subsystems to
+    /// their initial state, and increments the cycle counter.  This allows
+    /// the simulation to be re-run perpetually without leaking memory from
+    /// previous cycles.
+    pub fn big_bounce(&mut self) {
+        self.cycle += 1;
+        self.tick = 0;
+        self.step_size = 1;
+        self.current_epoch_name = "Void";
+
+        // Re-seed the RNG from the original seed mixed with the cycle number
+        // so each cycle is deterministic but distinct.
+        self.rng = SmallRng::seed_from_u64(self.cycle as u64);
+
+        // Reset physical layers
+        self.quantum_field = QuantumField::new(T_PLANCK);
+        self.atomic_system = AtomicSystem::new();
+        self.chemical_system = None;
+        self.biosphere = None;
+        self.environment = Environment::new(T_PLANCK);
+
+        // Reset metrics
+        self.particles_created = 0;
+        self.atoms_formed = 0;
+        self.molecules_formed = 0;
+        self.cells_born = 0;
+
+        // Reset one-time event flags
+        self.earth_seeded = false;
+        self.earth_molecules_formed = false;
+        self.hadron_done = false;
+    }
+
+    /// Return the current cycle number (0 = first run).
+    pub fn cycle(&self) -> u32 {
+        self.cycle
     }
 
     /// Whether the simulation has reached its end.
@@ -467,6 +511,78 @@ mod tests {
         assert!(!snap.epoch_description.is_empty());
         assert!(snap.temperature > 0.0);
         assert!(snap.particle_count >= 0);
+    }
+
+    #[test]
+    fn test_universe_cycle_initial() {
+        let u = Universe::new(42, 300_000);
+        assert_eq!(u.cycle(), 0);
+    }
+
+    #[test]
+    fn test_universe_big_bounce_resets_state() {
+        let mut u = Universe::new(42, 300_000);
+
+        // Run for a while to accumulate state
+        for _ in 0..200 {
+            u.step();
+        }
+        assert!(u.tick > 0);
+        assert!(u.particles_created > 0);
+        assert_eq!(u.cycle(), 0);
+
+        // Bounce
+        u.big_bounce();
+
+        assert_eq!(u.tick, 0);
+        assert_eq!(u.cycle(), 1);
+        assert_eq!(u.current_epoch_name, "Void");
+        assert_eq!(u.particles_created, 0);
+        assert_eq!(u.atoms_formed, 0);
+        assert_eq!(u.molecules_formed, 0);
+        assert_eq!(u.cells_born, 0);
+        assert!(u.quantum_field.particles.is_empty());
+        assert!(u.atomic_system.atoms.is_empty());
+        assert!(u.chemical_system.is_none());
+        assert!(u.biosphere.is_none());
+        assert!(!u.hadron_done);
+    }
+
+    #[test]
+    fn test_universe_big_bounce_multiple_cycles() {
+        let mut u = Universe::new(42, 1000);
+
+        for expected_cycle in 0..3u32 {
+            assert_eq!(u.cycle(), expected_cycle);
+
+            // Run to completion
+            while !u.is_complete() {
+                u.step();
+            }
+            assert!(u.tick >= 1000);
+
+            if expected_cycle < 2 {
+                u.big_bounce();
+            }
+        }
+        assert_eq!(u.cycle(), 2);
+    }
+
+    #[test]
+    fn test_universe_big_bounce_allows_re_run() {
+        let mut u = Universe::new(42, 1000);
+
+        // Complete first cycle
+        while !u.is_complete() {
+            u.step();
+        }
+        assert!(u.is_complete());
+
+        // Bounce and verify we can step again
+        u.big_bounce();
+        assert!(!u.is_complete());
+        u.step();
+        assert_eq!(u.tick, 1);
     }
 
     #[test]
