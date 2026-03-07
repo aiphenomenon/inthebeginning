@@ -35,7 +35,9 @@ described below for each source.
 | R. Schumann | 1810-1856 | 48 | ASAP, MAESTRO |
 | P.I. Tchaikovsky | 1840-1893 | 15 | MAESTRO, synthetic |
 | A. Vivaldi | 1678-1741 | 3 | thewildwestmidis |
-| **Total** | | **744** | |
+| **Subtotal (original)** | | **744** | narcisse-dev, MusicNet, MAESTRO, ASAP |
+| **ADL Piano MIDI** (see below) | | **947** | lucasnfe/adl-piano-midi |
+| **Total** | | **1,691** | |
 
 ## Sources
 
@@ -84,6 +86,30 @@ described below for each source.
   gaps where open-source MIDI files were unavailable.
 - **Composers with synthetic files**: Handel, Haydn, Mendelssohn, Tchaikovsky
 
+### 7. ADL Piano MIDI Dataset (lucasnfe/adl-piano-midi)
+
+- **Repository**: https://github.com/lucasnfe/adl-piano-midi
+- **License**: Creative Commons Attribution 4.0 International (CC-BY 4.0)
+- **Downloaded**: 2026-03-07
+- **Description**: A curated dataset of piano MIDI files organized by genre and
+  artist. We extracted only pre-1900 classical composers (all public domain).
+- **Citation**: Lucas N. Ferreira and Jim Whitehead. "Computer-Generated Music
+  for Tabletop Role-Playing Games." AIIDE 2020.
+- **Files downloaded**: 947 MIDI files from 93+ pre-1900 composers
+- **Key composers added**: Adam, Albeniz, Albinoni, Alkan, Bellini, Bizet,
+  Boccherini, Borodin, Bruckner, C.P.E. Bach, Caccini, Clarke, Clementi,
+  Confrey, Couperin, Czerny, Daquin, Delibes, Diabelli, Donizetti, Dukas,
+  Dussek, Duvernoy, Elgar, Faure, Fibich, Flotow, Franck, Giordani, Glazunov,
+  Gluck, Gounod, Grainger, Heller, Herold, Holst, J.C. Bach, Jadassohn,
+  Krieger, Kuhlau, Lalo, Lamb, Leoncavallo, Leopold Mozart, Lincke, Liszt,
+  Lully, MacDowell, Mahler, Mascagni, Massenet, Maykapar, Mercadante, Minkus,
+  Monti, Mouret, Mussorgsky, Offenbach, Pachelbel, Paderewski, Paganini,
+  Petzold, Pierne, Ponchielli, Puccini, Purcell, Rachmaninoff, Rameau, Ravel,
+  Rebikov, Reinecke, Richard Strauss, Ries, Rossini, Sarasate, Satie,
+  Saint-Saens, Scharwenka, Scriabin, Sousa, Strauss, Tallis, Telemann, Verdi,
+  Wagenseil, Wagner, W.F. Bach, Wanhal, Weber
+- **Note**: Files prefixed with `adl_` to distinguish from existing library entries.
+
 ## Public Domain Status
 
 All compositions are in the public domain. Every composer represented died more than
@@ -96,7 +122,10 @@ The library spans approximately 500 years of Western music:
   Brumel, Compère, Mouton
 - **Baroque** (1600-1750): Corelli, Vivaldi, Bach, Handel, Scarlatti
 - **Classical** (1750-1820): Haydn, Mozart, Hummel, Beethoven
-- **Romantic** (1820-1900): Schubert, Mendelssohn, Chopin, Schumann, Brahms, Tchaikovsky
+- **Romantic** (1820-1900): Schubert, Mendelssohn, Chopin, Schumann, Brahms,
+  Tchaikovsky, Liszt, Wagner, Verdi, Puccini, Bizet, Saint-Saens, Faure, Satie,
+  Mussorgsky, Rachmaninoff, Scriabin, Elgar, Mahler, Ravel, Debussy
+- **Late Romantic/Early Modern** (1890-1920): Holst, Grainger, Sousa, Confrey
 - **Ragtime/Late Romantic** (1890-1920): Joplin, Debussy
 
 ## Date Retrieved
