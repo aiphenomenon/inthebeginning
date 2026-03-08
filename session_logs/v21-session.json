@@ -17,7 +17,7 @@
           "step": 1,
           "tool": "Bash",
           "command": "git checkout claude/resume-v9-document-v8-6yhAe",
-          "output": "Already on 'claude/resume-v9-document-v8-6yhAe'\nYour branch is up to date with 'origin/claude/resume-v9-document-v8-6yhAe'.",
+          "output": "Already on branch. Up to date with origin.",
           "output_lines": 2,
           "truncated": false,
           "timestamp_ct": "10:31 CT"
@@ -34,29 +34,152 @@
         {
           "step": 3,
           "tool": "Write",
-          "command": "Create session_logs/v21-session.md",
-          "output": "File created successfully",
+          "command": "Create session_logs/v21-session.md + v21-session.json",
+          "output": "Files created successfully",
           "output_lines": 1,
           "truncated": false,
           "timestamp_ct": "10:31 CT"
         },
         {
           "step": 4,
-          "tool": "Write",
-          "command": "Create session_logs/v21-session.json",
-          "output": "File created successfully",
-          "output_lines": 1,
+          "tool": "Bash",
+          "command": "git add + commit + push (00d4a88)",
+          "output": "Phase 0 committed and pushed",
+          "output_lines": 3,
           "truncated": false,
-          "timestamp_ct": "10:31 CT"
+          "timestamp_ct": "10:32 CT"
+        },
+        {
+          "step": 5,
+          "tool": "Agent",
+          "command": "Launch 5 parallel worktree agents",
+          "output": "Agent 1 (docs audit), Agent 2 (steering), Agent 3 (music algo), Agent 4 (album engine), Agent 5 (JS visualizer) — all launched",
+          "output_lines": 5,
+          "truncated": false,
+          "timestamp_ct": "10:34 CT"
+        },
+        {
+          "step": 6,
+          "tool": "Bash",
+          "command": "Checkpoint commits (4a9853b, fbdd2b0)",
+          "output": "Progress checkpoints pushed",
+          "output_lines": 4,
+          "truncated": false,
+          "timestamp_ct": "10:34-10:50 CT"
+        },
+        {
+          "step": 7,
+          "tool": "Bash",
+          "command": "Agent merge — copy worktree results to main tree",
+          "output": "26 files changed, 5660 insertions",
+          "output_lines": 30,
+          "truncated": false,
+          "timestamp_ct": "11:00 CT"
+        },
+        {
+          "step": 8,
+          "tool": "Edit",
+          "command": "Add push-after-commit to CLAUDE.md, AGENTS.md, steering-check.sh",
+          "output": "Steering updated in triple-check locations",
+          "output_lines": 6,
+          "truncated": false,
+          "timestamp_ct": "11:02 CT"
+        },
+        {
+          "step": 9,
+          "tool": "Bash",
+          "command": "python3 apps/audio/radio_engine.py -V v20 -o v21_random_759274.mp3 -d 1800 -s 759274",
+          "output": "30-min MP3 render complete: 1800.04s, 192kbps, 41MB",
+          "output_lines": 50,
+          "truncated": true,
+          "timestamp_ct": "11:05-11:23 CT"
+        },
+        {
+          "step": 10,
+          "tool": "Bash",
+          "command": "python -m pytest tests/ -q --tb=short",
+          "output": "295 passed in 4.18s",
+          "output_lines": 10,
+          "truncated": false,
+          "timestamp_ct": "11:10 CT"
+        },
+        {
+          "step": 11,
+          "tool": "Bash",
+          "command": "python -m pytest apps/audio/test_music_engine.py -q --tb=short",
+          "output": "62 passed in 21.47s",
+          "output_lines": 5,
+          "truncated": false,
+          "timestamp_ct": "11:10 CT"
+        },
+        {
+          "step": 12,
+          "tool": "Edit",
+          "command": "Fix album mood duration (42s quantum) + randint edge case",
+          "output": "Duration fixed: 18 tracks, 4746s = 79.1 min",
+          "output_lines": 3,
+          "truncated": false,
+          "timestamp_ct": "11:25 CT"
+        },
+        {
+          "step": 13,
+          "tool": "Agent",
+          "command": "Launch streaming infrastructure agent",
+          "output": "Go SSE: /events/notes + /stream/audio, bash scripts: start_radio.sh + start_album_player.sh",
+          "output_lines": 10,
+          "truncated": false,
+          "timestamp_ct": "11:12-11:30 CT"
+        },
+        {
+          "step": 14,
+          "tool": "Bash",
+          "command": "AlbumEngine(seed=779275).render_album('apps/audio/output/album')",
+          "output": "Album render in progress — 17 tracks, 4746s target",
+          "output_lines": 7,
+          "truncated": false,
+          "timestamp_ct": "11:27 CT (ongoing)"
         }
       ],
-      "outcome": "Phase 0 pre-work artifacts created. Proceeding to initial commit and agent launch.",
+      "outcome": "V21 major features implemented: docs audit (8 files), music algorithm doc, JSON transcript system, album engine + vocoder + note logging, JS visualizer (12 files), streaming infrastructure. Album render and radio engine tests in progress.",
       "files_changed": [
         "future_memories/v21-docs-json-transcript-plan.md",
         "session_logs/v21-session.md",
-        "session_logs/v21-session.json"
+        "session_logs/v21-session.json",
+        "docs/music_algorithm.md",
+        "apps/visualizer/ (12 files)",
+        "apps/audio/radio_engine.py",
+        "apps/audio/test_music_engine.py",
+        "apps/audio/test_radio_engine.py",
+        "CLAUDE.md",
+        "AGENTS.md",
+        ".claude/steering-check.sh",
+        ".claude/settings.json",
+        "session_logs/transcript_schema.json",
+        "apps/go/cmd/server/main.go",
+        "start_radio.sh",
+        "start_album_player.sh",
+        "RELEASE_HISTORY.md",
+        "README.md",
+        "docs/apps_overview.md",
+        "docs/build_guide.md",
+        "docs/roadmap.md",
+        "docs/walkthrough.md",
+        "apps/audio/README.md",
+        "apps/go/README.md"
       ],
-      "redactions": []
+      "redactions": [],
+      "commits": [
+        {"hash": "00d4a88", "message": "Phase 0 pre-work", "timestamp_ct": "10:32 CT"},
+        {"hash": "4a9853b", "message": "Checkpoint 1", "timestamp_ct": "10:34 CT"},
+        {"hash": "fbdd2b0", "message": "Checkpoint 2", "timestamp_ct": "10:50 CT"},
+        {"hash": "ea94c48", "message": "Major merge — 5 agents", "timestamp_ct": "11:00 CT"},
+        {"hash": "bd38526", "message": "Push-after-commit steering", "timestamp_ct": "11:02 CT"},
+        {"hash": "1ecd18c", "message": "Session log + release history", "timestamp_ct": "11:12 CT"},
+        {"hash": "69a5749", "message": "Fix album duration 42s quantum", "timestamp_ct": "11:25 CT"},
+        {"hash": "580ad04", "message": "Fix randint edge case", "timestamp_ct": "11:25 CT"},
+        {"hash": "e77d535", "message": "Streaming infrastructure", "timestamp_ct": "11:30 CT"},
+        {"hash": "c9fab18", "message": "Future memory update", "timestamp_ct": "11:30 CT"}
+      ]
     }
   ]
 }
