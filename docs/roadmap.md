@@ -3,15 +3,17 @@
 This document describes planned future features and enhancements for the
 "In The Beginning" cosmic physics simulator project.
 
-## Current State (v0.7.0)
+## Current State (V21)
 
-- 15 language implementations of the cosmic physics simulator
+- 16 applications across 12 programming languages (including Audio Radio Engine)
 - AST-passing architecture for AI-assisted development
-- Comprehensive test suites across all languages
+- Comprehensive test suites across all languages (~490 Python tests, plus per-language tests)
 - CI/CD with cross-platform releases
 - Session logging and steering infrastructure
-- Audio Radio Engine v7 with 500+ instruments and MIDI sampling
+- Audio Radio Engine v7-v20 with 537+ instruments, 1,771 MIDI files from 120+ composers
 - Audio composition engine with bar-oriented multi-track architecture
+- Golden output tests, cross-language parity tests, screen capture tests
+- Integration tests for Go SSE and PHP snapshot servers
 
 ## Near-Term Roadmap
 
@@ -78,7 +80,7 @@ machine, each 30-minute render uses 1 core and takes ~16 minutes. Potential spee
 ### Cross-Language Physics Consistency Automation
 
 - Automated CI step to verify that physics constants, epoch boundaries, and
-  particle types match across all 15 implementations
+  particle types match across all 16 implementations
 - AST-based comparison tool that extracts constants and enum values from each
   language implementation and diffs them against the Python reference
 

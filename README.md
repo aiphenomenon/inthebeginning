@@ -83,7 +83,7 @@ Universe (Orchestrator)
 Every language implementation has tests. Run the full suite:
 
 ```bash
-# Python (reference — ~400 tests)
+# Python (reference — ~490 tests)
 python -m pytest tests/ -v
 
 # Node.js
@@ -252,7 +252,7 @@ The release workflow builds and uploads cross-compiled binaries on version tags.
 │   ├── reactive.py        Agent-pair protocol
 │   ├── introspect.py      Cross-project introspection
 │   └── *_ast.py           Per-language parsers (13 languages)
-├── tests/                 Python test suite (~400 tests)
+├── tests/                 Python test suite (~490 tests)
 ├── apps/                  Multi-language implementations
 │   ├── nodejs/            Node.js CLI
 │   ├── go/                Go CLI + SSE server
@@ -267,7 +267,8 @@ The release workflow builds and uploads cross-compiled binaries on version tags.
 │   ├── kotlin/            Kotlin Android
 │   ├── swift/             Swift iOS
 │   ├── screensaver-macos/ macOS screensaver
-│   └── screensaver-ubuntu/ Ubuntu screensaver
+│   ├── screensaver-ubuntu/ Ubuntu screensaver
+│   └── audio/             Audio composition engine
 ├── docs/                  Architecture documentation
 │   ├── walkthrough.md     Complete architecture guide
 │   ├── steering.md        AST integration guide

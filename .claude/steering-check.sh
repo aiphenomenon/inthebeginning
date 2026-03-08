@@ -32,6 +32,7 @@ if [ "$PHASE" = "post-tool" ]; then
     echo "  4. Include [YYYY-MM-DD HH:MM CT] timestamps in responses"
     echo "  5. Provide user updates every ~2 minutes during long operations"
     echo "  6. Use CT + UTC dual timestamps in session logs: [YYYY-MM-DD HH:MM CT (HH:MM UTC)]"
+    echo "  7. Generate JSON transcript companion (session_logs/v{VERSION}-session.json)"
     echo "  Do these BEFORE diving into the main task. Skip only if already done this turn."
     exit 0
 fi
@@ -65,6 +66,23 @@ if [ -n "$LATEST_SESSION" ]; then
     echo "[CHECK] Session log exists: $(basename "$LATEST_SESSION")"
 else
     echo "[FAIL-CUE] Session log: Generate session + transcript log in session_logs/"
+fi
+
+# 3b. JSON transcript companion
+if [ -n "$LATEST_SESSION" ]; then
+    JSON_COMPANION="${LATEST_SESSION%.md}.json"
+    if [ -f "$JSON_COMPANION" ]; then
+        echo "[CHECK] JSON transcript companion exists: $(basename "$JSON_COMPANION")"
+    else
+        echo "[FAIL-CUE] JSON transcript: Generate $(basename "${LATEST_SESSION%.md}.json") alongside markdown session log"
+        echo "           Schema: session_logs/transcript_schema.json"
+        echo "           Include: structured turns, tool outputs (truncate at 500 lines),"
+        echo "           user input proofreading (raw_summary + proofread + source),"
+        echo "           redaction records (security tokens only, system paths OK)"
+    fi
+else
+    echo "[FAIL-CUE] JSON transcript: Generate session_logs/v{VERSION}-session.json"
+    echo "           alongside session_logs/v{VERSION}-session.md"
 fi
 
 # 4. Markdown consistency
@@ -126,6 +144,10 @@ echo "             - CI flake detection and repair"
 echo "             - AMD64 build verification (best-effort)"
 echo "             - Executable behavior testing (build, invoke, verify exit codes)"
 echo "             - Screen capture testing (visual evidence, machine vision review)"
+echo "             - JSON transcript companion file generation per conversation turn"
+echo "             - JSON transcript truncation rules (500-line threshold)"
+echo "             - JSON transcript redaction rules (security tokens only, system paths OK)"
+echo "             - User input proofreading with source annotation in JSON transcripts"
 
 # 11. Future memories — iterative plan commits before code mutation
 if [ -d "$PROJECT_ROOT/future_memories" ]; then

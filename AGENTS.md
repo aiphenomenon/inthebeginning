@@ -394,6 +394,61 @@ Each log entry must include:
   language from the user. Preserve quoted user input as-is (except for
   redacting sensitive information).
 
+### JSON Transcript Companion
+
+Alongside each `session_logs/v{VERSION}-session.md`, agents must also generate a
+structured JSON transcript: `session_logs/v{VERSION}-session.json`. The formal
+schema is at `session_logs/transcript_schema.json`.
+
+**Structure**:
+
+```json
+{
+  "session_id": "v21",
+  "version": "V21",
+  "started_at": "2026-03-08 HH:MM CT (HH:MM UTC)",
+  "turns": [{
+    "turn": 1,
+    "timestamp_ct": "2026-03-08 HH:MM CT",
+    "timestamp_utc": "2026-03-08 HH:MM UTC",
+    "user_input": {
+      "raw_summary": "Brief summary of what user said...",
+      "proofread": "Cleaned/proofread version correcting speech-to-text errors",
+      "source": "user (proofread by Claude)"
+    },
+    "actions": [{
+      "step": 1,
+      "tool": "Bash",
+      "command": "git status -s",
+      "output": "M file.py",
+      "output_lines": 1,
+      "truncated": false,
+      "timestamp_ct": "HH:MM CT"
+    }],
+    "outcome": "Description of what was accomplished",
+    "files_changed": ["list", "of", "files"],
+    "redactions": ["[REDACTED: reason] applied N times"]
+  }]
+}
+```
+
+**User input proofreading**: Each turn captures both a `raw_summary` (preserving the
+user's original phrasing) and a `proofread` version (correcting speech-to-text errors,
+autocomplete artifacts, and ambiguities while staying close to the original words).
+The `source` field always indicates the proofreading agent.
+
+**JSON truncation rules**:
+- Tool output of **500 lines or fewer**: include verbatim in the `output` field.
+- Tool output **exceeding 500 lines**: include the first 100 lines, then append
+  `[TRUNCATED: N total lines. Summary: brief description of remaining output]`.
+  Set `truncated: true` and add `truncated_from: N` with the original line count.
+
+**JSON redaction rules**:
+- **System paths are OK** to log -- they are public repo paths, not sensitive.
+- **ONLY redact**: security tokens, API keys, personal user information, credentials.
+- Use `[REDACTED: reason]` markers. Record each redaction in the turn's `redactions`
+  array with a count of how many times it was applied.
+
 ---
 
 ## Future Memories Protocol
@@ -562,6 +617,9 @@ following items:
     approximately every 2 minutes?
 12. **UTC timestamps**: Do my session log entries include both CT and UTC timestamps?
 13. **Future memories**: Did I update the plan file at the start of this turn?
+14. **JSON transcript companion**: Did I generate `session_logs/v{VERSION}-session.json`
+    with structured turn data, tool outputs (truncated at 500 lines), user input
+    proofreading, and redaction records?
 
 ### Reflection Principle (Triple Cross-Check)
 
@@ -606,6 +664,10 @@ propagated to the other two. Specific items that must appear in all three:
 - Screen capture testing: visual evidence at version cuts (terminal ANSI, web server
   responses, Xvfb screenshots), machine vision review of captures, ASCII snippets
   in session logs
+- JSON transcript companion file generation per conversation turn
+- JSON transcript truncation rules (500-line threshold for tool output)
+- JSON transcript redaction rules (security tokens only, system paths OK)
+- User input proofreading with source annotation in JSON transcripts
 
 This triple cross-check principle prevents drift between human-readable
 documentation and machine-enforced hooks.

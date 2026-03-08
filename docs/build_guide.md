@@ -66,7 +66,7 @@ Python is the reference implementation with the most comprehensive test suite.
 python run_demo.py
 ```
 
-**Run all tests (400 tests):**
+**Run all tests (~490 tests):**
 
 ```bash
 python -m pytest tests/ -v

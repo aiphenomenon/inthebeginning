@@ -133,6 +133,7 @@ inthebeginning/
 |-- ast_dsl/                     # AST DSL reactive agent pair
 |   |-- core.py                  # ASTEngine, ASTNode, ASTQuery, ASTResult, PerformanceMetrics
 |   |-- reactive.py              # ReactiveProtocol, AgentState, CueSignal, CueType
+|   |-- introspect.py            # Cross-project AST introspection
 |   |-- python_ast.py            # Deep Python AST analysis (scopes, CFG, dead code, test stubs)
 |   |-- node_ast.js              # Node.js/JavaScript AST via Acorn
 |   |-- go_ast.go                # Go AST via go/ast, go/parser, go/token
@@ -141,6 +142,10 @@ inthebeginning/
 |   |-- rust_ast.py              # Rust AST via regex + rustc
 |   |-- perl_ast.py              # Perl AST via regex + B::Deparse
 |   |-- php_ast.py               # PHP AST via regex + token_get_all
+|   |-- typescript_ast.py        # TypeScript AST parser
+|   |-- swift_ast.py             # Swift AST parser
+|   |-- kotlin_ast.py            # Kotlin AST parser
+|   |-- wasm_ast.py              # WebAssembly (WAT) AST parser
 |
 |-- simulator/                   # Reality physics simulator
 |   |-- constants.py             # Physical constants and epoch timeline
@@ -152,25 +157,32 @@ inthebeginning/
 |   |-- universe.py              # Orchestrator: Big Bang to Present
 |   |-- terminal_ui.py           # Unicode/ANSI terminal rendering
 |
-|-- tests/                       # 352 tests, 93% coverage
+|-- tests/                       # ~490 tests across 15 test files
 |   |-- test_ast_dsl.py
 |   |-- test_quantum.py
 |   |-- test_atomic.py
 |   |-- test_chemistry.py
 |   |-- test_biology.py
+|   |-- test_environment.py
 |   |-- test_universe.py
 |   |-- test_terminal_ui.py
 |   |-- test_language_asts.py
-|   |-- test_environment.py
+|   |-- test_golden_outputs.py
+|   |-- test_cross_language_parity.py
+|   |-- test_server_smoke.py
+|   |-- test_visualizer_golden.py
+|   |-- test_audio_golden.py
+|   |-- test_screen_capture.py
 |
 |-- ast_captures/                # Captured AST outputs
-|   |-- full_ast.json            # Full AST (~16MB, ~4.1M tokens)
 |   |-- compact_ast.txt          # Compact AST (~600KB, ~150K tokens)
 |   |-- symbols.json
-|   |-- session_log.json
-|   |-- simulation_results.json
 |   |-- coverage.json
 |   |-- coverage_map.json
+|   |-- demo_output.txt
+|   |-- introspection_report.json
+|   |-- session_log.json
+|   |-- simulation_results.json
 ```
 
 ---
@@ -1861,7 +1873,7 @@ vs. the full JSON equivalent (~40 lines of nested objects).
 
 ## Test Coverage
 
-The project includes a comprehensive test suite across 9 test modules:
+The project includes a comprehensive test suite across 15 test modules:
 
 | Test Module | Tests What |
 |---|---|
@@ -1873,14 +1885,19 @@ The project includes a comprehensive test suite across 9 test modules:
 | `tests/test_environment.py` | Environment, EnvironmentalEvent, habitability, event generation |
 | `tests/test_universe.py` | Universe orchestration, epoch transitions, full simulation run |
 | `tests/test_terminal_ui.py` | Box drawing, progress bars, sparklines, rendering functions |
-| `tests/test_language_asts.py` | Multi-language AST parsers (JS, Go, C, Java, Rust, Perl, PHP) |
+| `tests/test_language_asts.py` | Multi-language AST parsers (JS, Go, C, Java, Rust, Perl, PHP, TS, Swift, Kotlin, WASM) |
+| `tests/test_golden_outputs.py` | Build and run all CLI apps, compare to golden snapshots |
+| `tests/test_cross_language_parity.py` | Verify epoch transitions match across languages |
+| `tests/test_server_smoke.py` | Go SSE and PHP snapshot server smoke tests |
+| `tests/test_visualizer_golden.py` | Ubuntu screensaver, WASM, Java GUI, macOS screensaver tests |
+| `tests/test_audio_golden.py` | Audio pipeline verification (composer, WAV, spectral) |
+| `tests/test_screen_capture.py` | Screen capture testing for all simulator implementations |
 
 **Summary:**
 
 | Metric | Value |
 |---|---|
-| Total tests | 352 |
-| Coverage | 93% |
+| Total tests | ~490 |
 | Test framework | `unittest` |
 
 The test suite covers the full stack from low-level wave function math to high-level

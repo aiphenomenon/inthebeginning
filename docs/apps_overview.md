@@ -161,7 +161,7 @@ python run_demo.py
 - Configurable seed, max ticks, and step size
 - State snapshots recorded every 1% of simulation progress
 - Sparkline charts for temperature and population history in final report
-- 400 tests across 9 test files covering all subsystems
+- ~490 tests across 15 test files covering all subsystems
 
 **File structure:**
 ```
@@ -175,7 +175,7 @@ simulator/
   environment.py      # Environment, EnvironmentalEvent
   terminal_ui.py      # ANSI rendering: box(), progress_bar(), sparkline()
 run_demo.py           # Entry point
-tests/                # 9 test files, ~3200 lines
+tests/                # 15 test files
 ```
 
 ---
@@ -269,6 +269,7 @@ apps/perl/
     04_chemistry.t     # Chemistry tests
     05_biology.t       # Biology tests
     06_universe.t      # Universe integration tests
+    07_environment.t   # Environment tests
 ```
 
 ---
@@ -332,7 +333,6 @@ apps/go/
     environment.go         # Environment
     universe.go            # Universe orchestrator
   web/                     # Alternate web assets directory
-  builds/                  # Pre-built binaries for 5 platforms
 ```
 
 ---
@@ -973,14 +973,16 @@ cd apps/audio && python generate.py
 **File structure:**
 ```
 apps/audio/
+  radio_engine.py        # Radio engine v7-v20 (standalone music generator)
   composer.py            # Musical composition engine with world traditions
   music_engine.py        # Bar-oriented multi-track structured music engine
   generate.py            # Audio generation entry point
   sample_gen.py          # Instrument sample generation
-  test_audio.py          # Audio engine tests
-  test_composer.py       # Composer tests
-  test_music_engine.py   # Music engine tests
-  samples/               # 45+ instrument samples (MP3)
+  test_radio_engine.py   # Radio engine tests (240 tests)
+  test_audio.py          # Audio engine tests (36 tests)
+  test_composer.py       # Composer tests (67 tests)
+  test_music_engine.py   # Music engine tests (62 tests)
+  samples/               # 60 instrument samples (MP3)
   midi_library/          # 1,771 classical MIDI files from 120+ composers
 ```
 

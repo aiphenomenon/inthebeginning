@@ -8638,6 +8638,1364 @@ def generate_radio_v20_mp3(output_path, duration=1800.0, seed=42):
 
 
 # ---------------------------------------------------------------------------
+# NOTE EVENT LOGGING -- Records every note for visualization
+# ---------------------------------------------------------------------------
+
+class NoteLog:
+    """Record note events during rendering for visualization.
+
+    Captures MIDI note number, instrument name, timing, velocity, and
+    pitch bend for every note synthesized. Also tracks TTS/vocoder events.
+    Output is a compact JSON suitable for browser-based piano roll display.
+    """
+
+    def __init__(self):
+        self.events = []
+
+    def log_note(self, time, duration, midi_note, instrument_name,
+                 velocity, bend=0.0, channel=0):
+        """Log a single note event.
+
+        Args:
+            time: Start time in seconds from piece start.
+            duration: Note duration in seconds.
+            midi_note: MIDI note number (0-127).
+            instrument_name: Human-readable instrument name.
+            velocity: Velocity/amplitude (0.0-1.0).
+            bend: Pitch bend amount in semitones.
+            channel: MIDI channel (0-15 for instruments, 63 for voice).
+        """
+        self.events.append({
+            't': round(time, 3),
+            'dur': round(duration, 3),
+            'note': midi_note,
+            'inst': instrument_name,
+            'vel': round(velocity, 3),
+            'bend': round(bend, 3),
+            'ch': channel,
+        })
+
+    def log_tts(self, time, duration, text, vocoder=False):
+        """Log a TTS speech event.
+
+        Args:
+            time: Start time in seconds.
+            duration: Speech duration in seconds.
+            text: Spoken text (truncated to 50 chars in output).
+            vocoder: Whether vocoder pitch projection was applied.
+        """
+        self.events.append({
+            't': round(time, 3),
+            'dur': round(duration, 3),
+            'note': 0,
+            'inst': 'voice_vocoder' if vocoder else 'voice',
+            'vel': 0.8,
+            'bend': 0.0,
+            'ch': 63,
+            'text': text[:50],
+        })
+
+    def to_dict(self):
+        """Return the note log as a serializable dict.
+
+        Returns:
+            Dict with sorted events, instrument list, total duration, and
+            event count.
+        """
+        return {
+            'events': sorted(self.events, key=lambda e: e['t']),
+            'instruments': sorted(set(e['inst'] for e in self.events)),
+            'duration': max((e['t'] + e['dur'] for e in self.events),
+                            default=0),
+            'n_events': len(self.events),
+        }
+
+    def save(self, path):
+        """Write the note log to a JSON file.
+
+        Args:
+            path: Output file path (.json).
+        """
+        import json
+        with open(path, 'w') as f:
+            json.dump(self.to_dict(), f)
+
+
+# ---------------------------------------------------------------------------
+# VOCODER PITCH PROJECTION -- Pitch-shifts TTS to follow MIDI melody
+# ---------------------------------------------------------------------------
+
+def _vocoder_pitch_shift(tts_samples, melody_notes, sample_rate=44100):
+    """Apply pitch projection: shift TTS voice to follow melody notes.
+
+    Takes a list of TTS audio samples and a melody (list of (midi_note, bend)
+    tuples), slices the TTS into equal-length chunks, and resamples each chunk
+    to shift its pitch to match the corresponding melody note.
+
+    Args:
+        tts_samples: List of float audio samples (mono).
+        melody_notes: List of (midi_note, bend) tuples. bend is semitones
+            of portamento from the previous note.
+        sample_rate: Audio sample rate (default 44100).
+
+    Returns:
+        List of float samples with pitch-shifted TTS.
+    """
+    if not tts_samples or not melody_notes:
+        return tts_samples or []
+
+    result = []
+    samples_per_note = max(1, len(tts_samples) // len(melody_notes))
+    base_freq = 180.0  # Approximate fundamental of typical TTS voice
+
+    prev_ratio = 1.0
+    for i, (midi_note, bend) in enumerate(melody_notes):
+        start = i * samples_per_note
+        end = min(start + samples_per_note, len(tts_samples))
+        chunk = tts_samples[start:end]
+        if not chunk:
+            break
+
+        target_freq = 440.0 * (2.0 ** ((midi_note - 69) / 12.0))
+        ratio = target_freq / base_freq
+
+        # Resample to shift pitch: index into source at ratio speed
+        shifted = []
+        for j in range(len(chunk)):
+            src_idx = j * ratio
+            idx_int = int(src_idx)
+            frac = src_idx - idx_int
+            idx_int = idx_int % len(chunk)
+            idx_next = (idx_int + 1) % len(chunk)
+            # Linear interpolation for smoother resampling
+            val = chunk[idx_int] * (1.0 - frac) + chunk[idx_next] * frac
+            shifted.append(val)
+
+        # Apply portamento (smooth bend from previous note)
+        if i > 0:
+            bend_samples = min(int(0.05 * sample_rate), len(shifted))
+            for j in range(bend_samples):
+                t = j / max(bend_samples, 1)
+                # Crossfade between previous pitch ratio and current
+                blend = (1.0 - t) * prev_ratio / ratio + t
+                shifted[j] *= blend
+        prev_ratio = ratio
+
+        result.extend(shifted)
+
+    return result
+
+
+def _sample_vocoder_melody(midi_lib, rng, n_notes=None):
+    """Sample a short MIDI melody for vocoder pitch projection.
+
+    Picks a random MIDI file and extracts n_notes consecutive notes.
+    Returns list of (midi_note, bend) tuples.
+
+    Args:
+        midi_lib: MidiLibrary instance with loaded sequences.
+        rng: Random instance for deterministic sampling.
+        n_notes: Number of notes to sample (default: random 8-16).
+
+    Returns:
+        List of (midi_note, bend) tuples.
+    """
+    if n_notes is None:
+        n_notes = rng.randint(8, 16)
+
+    melody = []
+    if midi_lib._note_sequences:
+        seq = rng.choice(midi_lib._note_sequences)
+        notes = seq['notes']
+        if len(notes) >= n_notes:
+            start = rng.randint(0, len(notes) - n_notes)
+            prev_note = None
+            for _, pitch, _, _ in notes[start:start + n_notes]:
+                bend = 0.0
+                if prev_note is not None:
+                    bend = float(pitch - prev_note)
+                melody.append((pitch, bend))
+                prev_note = pitch
+
+    # Fallback: generate a simple melody
+    if len(melody) < n_notes:
+        melody = []
+        note = rng.randint(55, 72)
+        for _ in range(n_notes):
+            bend = 0.0 if not melody else float(note - melody[-1][0])
+            melody.append((note, bend))
+            note = clamp(note + rng.choice([-3, -2, -1, 0, 1, 2, 3, 5]),
+                         48, 84)
+
+    return melody
+
+
+# ---------------------------------------------------------------------------
+# V21 RADIO ENGINE FUNCTION -- V20 + note logging
+# ---------------------------------------------------------------------------
+
+def generate_radio_v21_mp3(output_path, duration=1800.0, seed=None):
+    """Generate the v21 radio MP3 -- V20 engine + note event logging + vocoder TTS.
+
+    Same audio rendering as V20 (volume-normalized, expanded palette, solo moods)
+    but also produces a companion note log JSON file for visualization.
+    50% of TTS segments get vocoder pitch projection treatment.
+
+    Args:
+        output_path: Output MP3 (or WAV) file path.
+        duration: Total duration in seconds (default: 1800).
+        seed: Random seed (default: random).
+    """
+    import tempfile, gc, json
+
+    if seed is None:
+        seed = random.randint(100000, 999999)
+
+    ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
+                            _time.localtime(_time.time()))
+    engine = RadioEngineV20(seed=seed, total_duration=duration)
+    note_log = NoteLog()
+
+    print(f"[{ct_now}] [RadioEngineV21] Initialized (seed={seed}, duration={duration}s)")
+    print(f"[{ct_now}] [RadioEngineV21] {len(engine.instruments)} instruments loaded")
+    print(f"[{ct_now}] [RadioEngineV21] Note logging: ENABLED")
+    print(f"[{ct_now}] [RadioEngineV21] Vocoder TTS: 50% chance per speech segment")
+
+    n_segments = len(engine.segments)
+    avg_dur = sum(s['duration'] for s in engine.segments) / max(n_segments, 1)
+    print(f"[{ct_now}] [RadioEngineV21] {n_segments} mood segments (avg {avg_dur:.0f}s)")
+
+    t0 = _time.time()
+
+    # Streaming render with note logging
+    with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
+        raw_wav_path = tmp.name
+
+    with wave.open(raw_wav_path, 'wb') as wf:
+        wf.setnchannels(2)
+        wf.setsampwidth(2)
+        wf.setframerate(SAMPLE_RATE)
+
+        # Use the streaming renderer but intercept segments for note logging
+        total_samples = int(engine.total_duration * SAMPLE_RATE)
+        morph_samples = int(engine.MORPH_DURATION * SAMPLE_RATE)
+        fade_in_samples = int(engine.FADE_IN_DURATION * SAMPLE_RATE)
+        fade_out_samples = int(engine.FADE_OUT_DURATION * SAMPLE_RATE)
+
+        sim_states = engine._generate_sim_states(n_segments)
+
+        # Apply v8 time sig overrides
+        orig, patched = engine._patch_mood_init()
+        MoodSegment.__init__ = patched
+
+        vocoder_rng = random.Random(seed + 77777)
+
+        try:
+            max_seg_samples = int(220 * SAMPLE_RATE)
+            buf_len = max_seg_samples + morph_samples * 2
+            buf_left = [0.0] * buf_len
+            buf_right = [0.0] * buf_len
+            buf_global_start = 0
+            samples_written = 0
+            global_time = 0.0
+
+            for seg_idx in range(n_segments):
+                seg_info = engine.segments[seg_idx]
+                seg_global_start = int(seg_info['start'] * SAMPLE_RATE)
+                seg_duration = seg_info['duration']
+                segment_samples = int(seg_duration * SAMPLE_RATE)
+                if seg_global_start >= total_samples:
+                    break
+
+                time_pos = seg_info['start']
+                epoch_idx = int(time_pos / engine.total_duration * 12.999)
+                epoch_idx = clamp(epoch_idx, 0, 12)
+                epoch = EPOCH_ORDER[epoch_idx]
+                sim_state = sim_states[min(seg_idx, len(sim_states) - 1)]
+
+                mood = MoodSegment(
+                    seg_idx, epoch, epoch_idx, sim_state,
+                    engine.seed + seg_idx * 31337
+                )
+                selected = engine._select_instruments(mood)
+                kits = InstrumentKit.build_kits(
+                    selected, mood.scale, mood.root, mood.n_kits, mood.rng
+                )
+                seg_left, seg_right = engine._render_segment(
+                    mood, kits, segment_samples, sim_state
+                )
+
+                # Log notes for this segment by re-sampling the MIDI data
+                _log_segment_notes(note_log, engine, mood, sim_state,
+                                   seg_info['start'])
+
+                if mood.dampen:
+                    seg_left = engine.smoother.apply_lowpass(seg_left, 5000)
+                    seg_right = engine.smoother.apply_lowpass(seg_right, 5000)
+                    seg_left = engine.smoother.apply_gentle_compression(seg_left)
+                    seg_right = engine.smoother.apply_gentle_compression(seg_right)
+
+                seg_end_global = min(seg_global_start + len(seg_left),
+                                     total_samples)
+                seg_len = seg_end_global - seg_global_start
+
+                for i in range(seg_len):
+                    global_i = seg_global_start + i
+                    buf_i = global_i - buf_global_start
+                    while buf_i >= len(buf_left):
+                        buf_left.append(0.0)
+                        buf_right.append(0.0)
+
+                    fade = 1.0
+                    if i < morph_samples and seg_idx > 0:
+                        fade = 0.5 - 0.5 * math.cos(
+                            math.pi * i / morph_samples)
+                    remaining = seg_len - i
+                    if remaining < morph_samples and seg_idx < n_segments - 1:
+                        fade *= 0.5 + 0.5 * math.cos(
+                            math.pi * (1 - remaining / morph_samples))
+
+                    if global_i < fade_in_samples:
+                        fade *= global_i / fade_in_samples
+                    elif global_i >= total_samples - fade_out_samples:
+                        fade *= (total_samples - global_i) / fade_out_samples
+
+                    buf_left[buf_i] += seg_left[i] * fade
+                    buf_right[buf_i] += seg_right[i] * fade
+
+                # TTS injection with 50% vocoder chance
+                if seg_idx in engine.tts_transitions:
+                    trans_start = seg_global_start + seg_len - morph_samples
+                    trans_time_sec = trans_start / SAMPLE_RATE
+
+                    # 50% chance of vocoder treatment
+                    use_vocoder = vocoder_rng.random() < 0.5
+                    if use_vocoder:
+                        _inject_vocoder_tts_into_buf(
+                            engine, buf_left, buf_right, buf_global_start,
+                            trans_start, total_samples, mood, epoch_idx,
+                            note_log, vocoder_rng)
+                    else:
+                        engine._inject_tts_into_buf(
+                            buf_left, buf_right, buf_global_start,
+                            trans_start, total_samples, mood, epoch_idx)
+                        # Log normal TTS
+                        phrases = engine.tts.get_source_phrases(mood.rng,
+                                                                count=2)
+                        speech_text = '. '.join(phrases)
+                        note_log.log_tts(trans_time_sec, 5.0, speech_text,
+                                         vocoder=False)
+
+                # Flush completed audio
+                if seg_idx < n_segments - 1:
+                    next_seg_start = int(
+                        engine.segments[seg_idx + 1]['start'] * SAMPLE_RATE)
+                    flush_up_to = next_seg_start - morph_samples
+                else:
+                    flush_up_to = total_samples
+
+                flush_end = min(flush_up_to, total_samples)
+                flush_count = flush_end - samples_written
+                if flush_count > 0:
+                    data = bytearray(flush_count * 4)
+                    for j in range(flush_count):
+                        buf_j = (samples_written + j) - buf_global_start
+                        lv = (buf_left[buf_j]
+                              if 0 <= buf_j < len(buf_left) else 0.0)
+                        rv = (buf_right[buf_j]
+                              if 0 <= buf_j < len(buf_right) else 0.0)
+                        lv, rv = lv * 0.9 + rv * 0.1, rv * 0.9 + lv * 0.1
+                        li = int(_soft_limit(lv, 0.8) * 32767)
+                        ri = int(_soft_limit(rv, 0.8) * 32767)
+                        struct.pack_into('<hh', data, j * 4,
+                                         max(-32767, min(32767, li)),
+                                         max(-32767, min(32767, ri)))
+                    wf.writeframes(bytes(data))
+                    samples_written = flush_end
+
+                    shift = flush_end - buf_global_start
+                    if shift > 0 and shift < len(buf_left):
+                        buf_left = buf_left[shift:] + [0.0] * shift
+                        buf_right = buf_right[shift:] + [0.0] * shift
+                        buf_global_start = flush_end
+                    elif shift >= len(buf_left):
+                        buf_left = [0.0] * buf_len
+                        buf_right = [0.0] * buf_len
+                        buf_global_start = flush_end
+
+                # Progress report
+                if (seg_idx + 1) % 5 == 0 or seg_idx == n_segments - 1:
+                    ct_seg = _time.strftime('%Y-%m-%d %H:%M CT',
+                                            _time.localtime(_time.time()))
+                    print(f"  [{ct_seg}] Segment {seg_idx+1}/{n_segments} "
+                          f"rendered ({note_log.to_dict()['n_events']} notes logged)")
+
+        finally:
+            MoodSegment.__init__ = orig
+
+    t1 = _time.time()
+    raw_size = os.path.getsize(raw_wav_path) if os.path.exists(raw_wav_path) else 0
+    print(f"[RadioEngineV21] Streaming render complete: "
+          f"{raw_size/1048576:.1f} MB WAV in {t1-t0:.1f}s")
+
+    gc.collect()
+
+    # Normalize and encode (same as V20)
+    with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp2:
+        normalized_wav_path = tmp2.name
+
+    try:
+        ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
+                                _time.localtime(_time.time()))
+        print(f"[{ct_now}] [RadioEngineV21] Normalizing with ffmpeg...")
+
+        subprocess.run(
+            ['ffmpeg', '-y', '-i', raw_wav_path,
+             '-af', 'dynaudnorm=f=500:g=15:p=0.89:m=20,'
+                    'alimiter=limit=0.92:attack=5:release=50',
+             normalized_wav_path],
+            capture_output=True, timeout=300
+        )
+
+        if output_path.endswith('.mp3'):
+            subprocess.run(
+                ['ffmpeg', '-y', '-i', normalized_wav_path,
+                 '-codec:a', 'libmp3lame', '-b:a', '192k',
+                 '-ar', str(SAMPLE_RATE), output_path],
+                capture_output=True, timeout=300
+            )
+        else:
+            import shutil
+            shutil.copy2(normalized_wav_path, output_path)
+
+    finally:
+        for p in [raw_wav_path, normalized_wav_path]:
+            try:
+                os.unlink(p)
+            except OSError:
+                pass
+
+    t2 = _time.time()
+    file_size = os.path.getsize(output_path) if os.path.exists(output_path) else 0
+
+    # Save note log alongside the output
+    log_path = output_path.rsplit('.', 1)[0] + '_notes.json'
+    note_log.save(log_path)
+
+    print(f"[RadioEngineV21] File size: {file_size/1048576:.1f} MB")
+    print(f"[RadioEngineV21] Note log: {log_path} "
+          f"({note_log.to_dict()['n_events']} events)")
+    print(f"[RadioEngineV21] Total time: {t2-t0:.1f}s "
+          f"(render {t1-t0:.1f}s + encode {t2-t1:.1f}s)")
+    return output_path
+
+
+def _log_segment_notes(note_log, engine, mood, sim_state, seg_start_time):
+    """Log note events for a rendered segment by re-sampling MIDI data.
+
+    This mirrors the note selection logic in _render_segment and
+    _render_solo_segment to capture what was actually played.
+
+    Args:
+        note_log: NoteLog instance to append events to.
+        engine: RadioEngineV20 instance.
+        mood: MoodSegment for this segment.
+        sim_state: Simulation state dict.
+        seg_start_time: Start time of this segment in seconds.
+    """
+    rng = random.Random(mood.rng.random())  # Don't disturb mood's RNG
+    tempo = mood.tempo
+    tempo_mult = engine._compute_tempo_multiplier(sim_state)
+    effective_tempo = min(tempo * tempo_mult, 360)
+
+    loop_bars = rng.randint(4, 12)
+    bars_result = engine.midi_lib.sample_bars_seeded(
+        sim_state, loop_bars, effective_tempo, mood.beats_per_bar,
+        root=mood.root, scale=mood.scale, rng=rng
+    )
+    midi_notes, segment_duration, midi_info = bars_result
+
+    if not midi_notes or segment_duration <= 0:
+        return
+
+    # Determine instrument name(s)
+    instr_names = []
+    for instr in engine.instruments[:4]:
+        name = instr.get('name', 'unknown')
+        if not engine._is_noise_instrument(instr):
+            instr_names.append(name)
+    if not instr_names:
+        instr_names = ['synth']
+
+    # Derive a source name from MIDI info
+    midi_path = midi_info.get('path', '')
+    composer = os.path.basename(os.path.dirname(midi_path)) if midi_path else ''
+
+    for t_sec, midi_note, dur_sec, vel in midi_notes:
+        abs_time = seg_start_time + t_sec
+        inst_name = instr_names[midi_note % len(instr_names)]
+        note_log.log_note(
+            time=abs_time,
+            duration=dur_sec,
+            midi_note=midi_note,
+            instrument_name=inst_name,
+            velocity=vel / 127.0 if vel > 1.0 else vel,
+            bend=0.0,
+            channel=midi_note % 16,
+        )
+
+
+def _inject_vocoder_tts_into_buf(engine, buf_left, buf_right,
+                                  buf_global_start, trans_start,
+                                  total_samples, mood, epoch_idx,
+                                  note_log, vocoder_rng):
+    """Inject vocoder-treated TTS into the streaming buffer.
+
+    Generates TTS speech, samples a MIDI melody, applies pitch projection,
+    and mixes into the buffer with music ducking.
+
+    Args:
+        engine: RadioEngineV20 instance.
+        buf_left: Left channel buffer.
+        buf_right: Right channel buffer.
+        buf_global_start: Global sample offset of buffer start.
+        trans_start: Global sample position for TTS placement.
+        total_samples: Total output length in samples.
+        mood: Current MoodSegment.
+        epoch_idx: Current epoch index.
+        note_log: NoteLog instance.
+        vocoder_rng: Random instance for vocoder decisions.
+    """
+    rng = mood.rng
+    phrases = engine.tts.get_source_phrases(rng, count=2)
+    speech_text = '. '.join(phrases)
+
+    voice_seed = rng.randint(0, 100)
+    tts_samples, tts_sr = engine.tts.generate_speech(
+        speech_text, voice_seed, epoch_idx
+    )
+    if tts_samples is None:
+        return
+
+    if tts_sr != SAMPLE_RATE:
+        tts_samples = engine._resample(tts_samples, tts_sr, SAMPLE_RATE)
+
+    # Normalize TTS
+    peak = max(abs(s) for s in tts_samples) if tts_samples else 1.0
+    if peak > 0:
+        tts_samples = [s / peak * 0.65 for s in tts_samples]
+
+    # Sample melody for vocoder
+    n_notes = vocoder_rng.randint(4, 8)
+    melody = _sample_vocoder_melody(engine.midi_lib, vocoder_rng,
+                                     n_notes=n_notes)
+
+    # Apply vocoder pitch projection
+    vocoded = _vocoder_pitch_shift(tts_samples, melody, SAMPLE_RATE)
+
+    # Normalize vocoded output
+    v_peak = max(abs(s) for s in vocoded) if vocoded else 1.0
+    if v_peak > 0:
+        vocoded = [s / v_peak * 0.65 for s in vocoded]
+
+    # Place in buffer with ducking (same placement as normal TTS)
+    tts_start = max(0, trans_start - len(vocoded) // 4)
+    duck_start = max(0, tts_start - int(0.5 * SAMPLE_RATE))
+    duck_end = min(total_samples,
+                   tts_start + len(vocoded) + int(0.5 * SAMPLE_RATE))
+    duck_ramp = int(0.3 * SAMPLE_RATE)
+
+    for i in range(duck_start, duck_end):
+        buf_i = i - buf_global_start
+        if 0 <= buf_i < len(buf_left):
+            if i < duck_start + duck_ramp:
+                duck = 1.0 - 0.6 * ((i - duck_start) / duck_ramp)
+            elif i > duck_end - duck_ramp:
+                duck = 1.0 - 0.6 * ((duck_end - i) / duck_ramp)
+            else:
+                duck = 0.4
+            buf_left[buf_i] *= duck
+            buf_right[buf_i] *= duck
+
+    for i in range(len(vocoded)):
+        global_i = tts_start + i
+        buf_i = global_i - buf_global_start
+        if 0 <= buf_i < len(buf_left):
+            buf_left[buf_i] += vocoded[i] * 0.5
+            buf_right[buf_i] += vocoded[i] * 0.5
+
+    # Log the vocoder event
+    trans_time_sec = trans_start / SAMPLE_RATE
+    note_log.log_tts(trans_time_sec, len(vocoded) / SAMPLE_RATE,
+                     speech_text, vocoder=True)
+
+    # Log each vocoder note
+    samples_per_note = max(1, len(vocoded) // len(melody))
+    for i, (midi_note, bend) in enumerate(melody):
+        note_time = trans_time_sec + (i * samples_per_note) / SAMPLE_RATE
+        note_dur = samples_per_note / SAMPLE_RATE
+        note_log.log_note(note_time, note_dur, midi_note,
+                          'voice_vocoder', 0.65, bend=bend, channel=63)
+
+
+# ---------------------------------------------------------------------------
+# ALBUM ENGINE -- Full CD-length album generation
+# ---------------------------------------------------------------------------
+
+# Creative track name wordlists
+_TRACK_NAME_ADJECTIVES = [
+    'Cosmic', 'Quantum', 'Eternal', 'Radiant', 'Nebular', 'Stellar',
+    'Atomic', 'Celestial', 'Primordial', 'Harmonic', 'Resonant',
+    'Infinite', 'Spectral', 'Thermal', 'Fractal', 'Luminous',
+    'Entropic', 'Crystalline', 'Volatile', 'Ephemeral', 'Dense',
+    'Sparse', 'Molten', 'Frozen', 'Dark', 'Bright',
+]
+
+_TRACK_NAME_NOUNS = [
+    'Drift', 'Pulse', 'Field', 'Wave', 'Bloom', 'Cascade', 'Thread',
+    'Spiral', 'Echo', 'Phase', 'Lattice', 'Fog', 'Tide', 'Spark',
+    'Fracture', 'Chord', 'Breath', 'Murmur', 'Arc', 'Haze',
+    'Singularity', 'Nebula', 'Flux', 'Void', 'Filament', 'Quasar',
+]
+
+
+class AlbumEngine:
+    """Generate a full CD-length album with multiple tracks.
+
+    Produces 16-18 tracks totaling ~79 minutes (4746 seconds), with each
+    mood segment at 42-second multiples. Tracks have random starting
+    universe epochs with random epoch per subsequent mood. Source code
+    readings appear ~7 times across the album. Vocoder bookends of
+    "In the beginning" open and close the album.
+
+    Attributes:
+        ALBUM_NAME: Album title string.
+        ARTIST: Artist name string.
+        seed: Master random seed.
+        tracks: List of track plan dicts after _plan_tracks().
+    """
+
+    ALBUM_NAME = "In The Beginning Phase 0"
+    ARTIST = "aiphenomenon (A. Johan Bizzle)"
+    TARGET_DURATION = 4746  # 79 min 6 sec
+    MOOD_QUANTUM = 42  # seconds
+
+    def __init__(self, seed=None):
+        if seed is None:
+            seed = random.randint(100000, 999999)
+        self.seed = seed
+        self.rng = random.Random(seed)
+        self.note_log = NoteLog()
+        self.tracks = []
+        self._plan_tracks()
+
+    def _plan_tracks(self):
+        """Distribute ~113 moods across 16-18 tracks.
+
+        Each track gets 3-7 moods (multiples of 42s). Random epoch per mood.
+        Plans source code readings (~7 across album) and vocoder bookends.
+        """
+        total_moods_target = self.TARGET_DURATION // self.MOOD_QUANTUM  # 113
+        n_tracks = self.rng.randint(16, 18)
+
+        # Distribute moods per track: 3-7 each
+        moods_per_track = []
+        remaining = total_moods_target
+        for i in range(n_tracks):
+            if i == n_tracks - 1:
+                # Last track gets whatever remains
+                count = max(3, min(7, remaining))
+            else:
+                avg_remaining = remaining / (n_tracks - i)
+                lo = max(3, int(avg_remaining - 2))
+                hi = min(7, int(avg_remaining + 2))
+                count = self.rng.randint(lo, hi)
+            moods_per_track.append(count)
+            remaining -= count
+
+        # If we overshot or undershot, adjust last tracks
+        total_moods = sum(moods_per_track)
+        while total_moods < total_moods_target and moods_per_track:
+            # Add moods to random tracks under 7
+            candidates = [i for i, m in enumerate(moods_per_track) if m < 7]
+            if not candidates:
+                break
+            idx = self.rng.choice(candidates)
+            moods_per_track[idx] += 1
+            total_moods += 1
+        while total_moods > total_moods_target and moods_per_track:
+            # Remove moods from random tracks over 3
+            candidates = [i for i, m in enumerate(moods_per_track) if m > 3]
+            if not candidates:
+                break
+            idx = self.rng.choice(candidates)
+            moods_per_track[idx] -= 1
+            total_moods -= 1
+
+        # Plan source code readings (~7 across album, roughly every 10 min)
+        # Pick ~7 random mood indices across all moods
+        total_moods = sum(moods_per_track)
+        source_reading_moods = set()
+        n_readings = 7
+        mood_indices = sorted(self.rng.sample(
+            range(total_moods), min(n_readings, total_moods)))
+        source_reading_moods = set(mood_indices)
+
+        # Build track plans
+        self.tracks = []
+        mood_counter = 0
+        album_time = 0.0
+
+        for track_idx in range(n_tracks):
+            n_moods = moods_per_track[track_idx]
+            track_seed = self.seed + track_idx * 54321
+
+            # Random starting epoch
+            start_epoch_idx = self.rng.randint(0, len(EPOCH_ORDER) - 1)
+
+            track_moods = []
+            track_instruments = set()
+            track_epochs = set()
+            track_midi_composers = set()
+            has_source_reading = False
+
+            for m in range(n_moods):
+                # Duration: random multiple of 42s
+                dur_choices = [42, 84, 126, 168, 210]
+                dur = self.rng.choice(dur_choices)
+                # Random epoch for each mood
+                if m == 0:
+                    epoch_idx = start_epoch_idx
+                else:
+                    epoch_idx = self.rng.randint(0, len(EPOCH_ORDER) - 1)
+
+                is_reading = mood_counter in source_reading_moods
+                if is_reading:
+                    has_source_reading = True
+
+                track_moods.append({
+                    'duration': dur,
+                    'epoch_idx': epoch_idx,
+                    'epoch': EPOCH_ORDER[epoch_idx],
+                    'source_reading': is_reading,
+                    'album_start_time': album_time,
+                })
+                track_epochs.add(EPOCH_ORDER[epoch_idx])
+                album_time += dur
+                mood_counter += 1
+
+            track_duration = sum(m['duration'] for m in track_moods)
+            self.tracks.append({
+                'track_idx': track_idx,
+                'seed': track_seed,
+                'n_moods': n_moods,
+                'moods': track_moods,
+                'duration': track_duration,
+                'epochs': sorted(track_epochs),
+                'has_source_reading': has_source_reading,
+                'instruments': set(),  # Filled during render
+                'midi_composers': set(),  # Filled during render
+                'name': None,  # Named after render
+            })
+
+    def _generate_vocoder_bookend(self, tts_text, seed):
+        """Generate a vocoder-treated speech bookend.
+
+        Generates TTS audio of tts_text, samples a random MIDI melody
+        (8-16 notes), picks one random mono instrument, and pitch-shifts
+        the TTS via resampling to follow the melody. Applies portamento
+        between notes.
+
+        Args:
+            tts_text: Text to speak (e.g. "In the beginning").
+            seed: Random seed for melody/instrument selection.
+
+        Returns:
+            Tuple of (left_samples, right_samples) as float lists,
+            or ([], []) if TTS fails.
+        """
+        rng = random.Random(seed)
+        tts_engine = TTSEngine()
+
+        voice_seed = rng.randint(0, 100)
+        tts_samples, tts_sr = tts_engine.generate_speech(
+            tts_text, voice_seed, epoch_idx=0
+        )
+        if tts_samples is None:
+            return [], []
+
+        if tts_sr != SAMPLE_RATE:
+            # Simple linear resample
+            ratio = SAMPLE_RATE / tts_sr
+            new_len = int(len(tts_samples) * ratio)
+            resampled = [0.0] * new_len
+            for i in range(new_len):
+                src = i / ratio
+                idx = int(src)
+                frac = src - idx
+                if idx + 1 < len(tts_samples):
+                    resampled[i] = (tts_samples[idx] * (1.0 - frac) +
+                                    tts_samples[idx + 1] * frac)
+                elif idx < len(tts_samples):
+                    resampled[i] = tts_samples[idx]
+            tts_samples = resampled
+
+        # Normalize
+        peak = max(abs(s) for s in tts_samples) if tts_samples else 1.0
+        if peak > 0:
+            tts_samples = [s / peak * 0.7 for s in tts_samples]
+
+        # Sample melody
+        midi_lib = MidiLibrary()
+        midi_lib.load()
+        n_notes = rng.randint(8, 16)
+        melody = _sample_vocoder_melody(midi_lib, rng, n_notes=n_notes)
+
+        # Apply pitch projection
+        vocoded = _vocoder_pitch_shift(tts_samples, melody, SAMPLE_RATE)
+
+        # Normalize result
+        v_peak = max(abs(s) for s in vocoded) if vocoded else 1.0
+        if v_peak > 0:
+            vocoded = [s / v_peak * 0.7 for s in vocoded]
+
+        # Add 0.5s fade-in and fade-out
+        fade_len = int(0.5 * SAMPLE_RATE)
+        for i in range(min(fade_len, len(vocoded))):
+            vocoded[i] *= i / fade_len
+        for i in range(min(fade_len, len(vocoded))):
+            vocoded[-(i + 1)] *= i / fade_len
+
+        # Log vocoder notes
+        for i, (midi_note, bend) in enumerate(melody):
+            samples_per_note = max(1, len(vocoded) // len(melody))
+            note_time = (i * samples_per_note) / SAMPLE_RATE
+            self.note_log.log_note(
+                note_time, samples_per_note / SAMPLE_RATE,
+                midi_note, 'voice_vocoder', 0.7, bend=bend, channel=63)
+
+        self.note_log.log_tts(0.0, len(vocoded) / SAMPLE_RATE,
+                              tts_text, vocoder=True)
+
+        # Return as stereo (centered)
+        return list(vocoded), list(vocoded)
+
+    def _name_track(self, track_info):
+        """Derive a pithy 1-7 word track name.
+
+        Uses MIDI composer/title, source code file (if read), instruments
+        used, and universe epochs to generate creative, fun names.
+
+        Args:
+            track_info: Track plan dict with epochs, instruments, etc.
+
+        Returns:
+            String track name (1-7 words).
+        """
+        rng = random.Random(track_info['seed'] + 99)
+        epochs = track_info.get('epochs', [])
+        instruments = track_info.get('instruments', set())
+        has_reading = track_info.get('has_source_reading', False)
+
+        # Strategy: pick from a few naming patterns
+        pattern = rng.randint(0, 5)
+
+        if pattern == 0 and epochs:
+            # Epoch-based: "Quantum Drift" or "Stellar Cascade"
+            epoch = rng.choice(epochs)
+            noun = rng.choice(_TRACK_NAME_NOUNS)
+            # Shorten epoch if multi-word
+            epoch_word = epoch.split()[0] if ' ' in epoch else epoch
+            return f"{epoch_word} {noun}"
+
+        elif pattern == 1:
+            # Adjective + noun
+            adj = rng.choice(_TRACK_NAME_ADJECTIVES)
+            noun = rng.choice(_TRACK_NAME_NOUNS)
+            return f"{adj} {noun}"
+
+        elif pattern == 2 and has_reading:
+            # Source code reference
+            nouns = ['Recitation', 'Fragment', 'Codex', 'Transcript',
+                     'Logbook', 'Signal']
+            adj = rng.choice(_TRACK_NAME_ADJECTIVES)
+            return f"{adj} {rng.choice(nouns)}"
+
+        elif pattern == 3 and epochs:
+            # Two epochs combined
+            if len(epochs) >= 2:
+                e1, e2 = rng.sample(epochs, 2)
+                w1 = e1.split()[0] if ' ' in e1 else e1
+                w2 = e2.split()[-1] if ' ' in e2 else e2
+                return f"{w1} to {w2}"
+            else:
+                return f"Through {epochs[0]}"
+
+        elif pattern == 4:
+            # Number-based: "Phase N" or "Epoch N"
+            label = rng.choice(['Phase', 'Epoch', 'Cycle', 'Interval',
+                                'Measure'])
+            num = track_info['track_idx'] + 1
+            adj = rng.choice(_TRACK_NAME_ADJECTIVES)
+            return f"{adj} {label} {num}"
+
+        else:
+            # Simple two-word combo
+            adj = rng.choice(_TRACK_NAME_ADJECTIVES)
+            noun = rng.choice(_TRACK_NAME_NOUNS)
+            return f"{adj} {noun}"
+
+    def render_album(self, output_dir):
+        """Render the full album: all tracks with vocoder bookends.
+
+        For each track:
+        1. Creates a RadioEngineV20 with track-specific seed and duration.
+        2. Overrides segments with this track's planned moods.
+        3. Renders streaming to WAV.
+        4. Logs note events.
+        5. Normalizes and encodes to MP3 with full ID3 metadata.
+
+        Vocoder bookend is prepended to track 1 and appended to last track.
+        Generates per-track visualization JSON.
+
+        Args:
+            output_dir: Directory for output files. Created if needed.
+
+        Returns:
+            List of output MP3 file paths.
+        """
+        import tempfile, gc, json
+
+        os.makedirs(output_dir, exist_ok=True)
+
+        ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
+                                _time.localtime(_time.time()))
+        print(f"[{ct_now}] [AlbumEngine] === {self.ALBUM_NAME} ===")
+        print(f"[{ct_now}] [AlbumEngine] Artist: {self.ARTIST}")
+        print(f"[{ct_now}] [AlbumEngine] Seed: {self.seed}")
+        print(f"[{ct_now}] [AlbumEngine] Tracks: {len(self.tracks)}")
+        total_dur = sum(t['duration'] for t in self.tracks)
+        print(f"[{ct_now}] [AlbumEngine] Target duration: "
+              f"{total_dur}s ({total_dur/60:.1f} min)")
+
+        output_paths = []
+        n_tracks = len(self.tracks)
+
+        # Generate vocoder bookends
+        print(f"[{ct_now}] [AlbumEngine] Generating vocoder bookends...")
+        opening_left, opening_right = self._generate_vocoder_bookend(
+            "In the beginning", self.seed + 11111)
+        closing_left, closing_right = self._generate_vocoder_bookend(
+            "In the beginning", self.seed + 22222)
+
+        for track_idx, track_info in enumerate(self.tracks):
+            track_num = track_idx + 1
+            ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
+                                    _time.localtime(_time.time()))
+            print(f"\n[{ct_now}] [AlbumEngine] --- Track {track_num}/"
+                  f"{n_tracks} ---")
+            print(f"  Duration: {track_info['duration']}s "
+                  f"({track_info['duration']/60:.1f} min)")
+            print(f"  Moods: {track_info['n_moods']}")
+            print(f"  Epochs: {', '.join(track_info['epochs'])}")
+
+            track_note_log = NoteLog()
+            track_seed = track_info['seed']
+            track_duration = float(track_info['duration'])
+
+            # Build engine for this track
+            engine = RadioEngineV20(seed=track_seed,
+                                     total_duration=track_duration)
+
+            # Override segments with album plan
+            engine.segments = []
+            t = 0.0
+            for m_idx, mood_plan in enumerate(track_info['moods']):
+                engine.segments.append({
+                    'start': t,
+                    'duration': float(mood_plan['duration']),
+                    'idx': m_idx,
+                    '_epoch_idx': mood_plan['epoch_idx'],
+                    '_source_reading': mood_plan.get('source_reading', False),
+                })
+                t += mood_plan['duration']
+
+            # Plan TTS for source readings only
+            engine.tts_transitions = set()
+            for m_idx, mood_plan in enumerate(track_info['moods']):
+                if mood_plan.get('source_reading', False):
+                    engine.tts_transitions.add(m_idx)
+
+            t0_track = _time.time()
+
+            # Render to temp WAV
+            with tempfile.NamedTemporaryFile(suffix='.wav',
+                                              delete=False) as tmp:
+                raw_wav_path = tmp.name
+
+            with wave.open(raw_wav_path, 'wb') as wf:
+                wf.setnchannels(2)
+                wf.setsampwidth(2)
+                wf.setframerate(SAMPLE_RATE)
+                _render_album_track(engine, wf, track_info, track_note_log,
+                                    self.rng)
+
+            # Prepend vocoder bookend to track 1
+            if track_idx == 0 and opening_left:
+                _prepend_audio_to_wav(raw_wav_path, opening_left,
+                                       opening_right)
+
+            # Append vocoder bookend to last track
+            if track_idx == n_tracks - 1 and closing_left:
+                _append_audio_to_wav(raw_wav_path, closing_left,
+                                      closing_right)
+
+            t1_track = _time.time()
+
+            # Collect instrument names for track naming
+            inst_names = set()
+            for evt in track_note_log.events:
+                if evt.get('inst') and evt['inst'] != 'voice' \
+                        and evt['inst'] != 'voice_vocoder':
+                    inst_names.add(evt['inst'])
+            track_info['instruments'] = inst_names
+
+            # Name the track
+            track_info['name'] = self._name_track(track_info)
+            track_name = track_info['name']
+            print(f"  Track name: \"{track_name}\"")
+
+            # Clean filename
+            clean_name = track_name.replace(' ', '_')
+            for ch in ['/', '\\', '"', "'", '?', '*', '<', '>', '|', ':']:
+                clean_name = clean_name.replace(ch, '')
+
+            mp3_filename = (f"In_The_Beginning_Phase_0-aiphenomenon-"
+                            f"{track_num:02d}-{clean_name}.mp3")
+            mp3_path = os.path.join(output_dir, mp3_filename)
+
+            # Normalize and encode to MP3 with ID3 metadata
+            with tempfile.NamedTemporaryFile(suffix='.wav',
+                                              delete=False) as tmp2:
+                normalized_wav_path = tmp2.name
+
+            try:
+                # Normalize
+                subprocess.run(
+                    ['ffmpeg', '-y', '-i', raw_wav_path,
+                     '-af', 'dynaudnorm=f=500:g=15:p=0.89:m=20,'
+                            'alimiter=limit=0.92:attack=5:release=50',
+                     normalized_wav_path],
+                    capture_output=True, timeout=300
+                )
+
+                # Build comment string
+                inst_list = sorted(inst_names)[:10]  # Cap at 10
+                epoch_list = track_info['epochs']
+                comment = (f"Instruments: {', '.join(inst_list)} | "
+                           f"Epochs: {', '.join(epoch_list)}")
+
+                # Encode to MP3 with full ID3 metadata
+                ffmpeg_cmd = [
+                    'ffmpeg', '-y', '-i', normalized_wav_path,
+                    '-metadata', f'album={self.ALBUM_NAME}',
+                    '-metadata', f'title={track_name}',
+                    '-metadata', f'track={track_num}/{n_tracks}',
+                    '-metadata', 'genre=67',
+                    '-metadata', f'artist={self.ARTIST}',
+                    '-metadata',
+                    'copyright=2026 aiphenomenon. Licensed under '
+                    'CC BY-SA 4.0',
+                    '-metadata',
+                    'license=https://creativecommons.org/licenses/'
+                    'by-sa/4.0/',
+                    '-metadata',
+                    'url=https://github.com/aiphenomenon/inthebeginning',
+                    '-metadata', f'comment={comment}',
+                    '-id3v2_version', '3', '-write_id3v1', '1',
+                    '-codec:a', 'libmp3lame', '-b:a', '192k',
+                    '-ar', str(SAMPLE_RATE),
+                    mp3_path,
+                ]
+                subprocess.run(ffmpeg_cmd, capture_output=True, timeout=300)
+
+            finally:
+                for p in [raw_wav_path, normalized_wav_path]:
+                    try:
+                        os.unlink(p)
+                    except OSError:
+                        pass
+
+            t2_track = _time.time()
+            file_size = (os.path.getsize(mp3_path)
+                         if os.path.exists(mp3_path) else 0)
+            print(f"  Output: {mp3_path} ({file_size/1048576:.1f} MB)")
+            print(f"  Time: {t2_track-t0_track:.1f}s "
+                  f"(render {t1_track-t0_track:.1f}s + "
+                  f"encode {t2_track-t1_track:.1f}s)")
+            print(f"  Notes logged: {track_note_log.to_dict()['n_events']}")
+
+            # Save per-track note log
+            log_path = mp3_path.rsplit('.', 1)[0] + '_notes.json'
+            track_note_log.save(log_path)
+
+            # Merge into album-level note log with time offset
+            album_offset = track_info['moods'][0]['album_start_time']
+            for evt in track_note_log.events:
+                shifted = dict(evt)
+                shifted['t'] = round(shifted['t'] + album_offset, 3)
+                self.note_log.events.append(shifted)
+
+            output_paths.append(mp3_path)
+
+            # Force garbage collection after each track
+            del engine
+            gc.collect()
+
+        # Save album-level note log
+        album_log_path = os.path.join(output_dir, 'album_notes.json')
+        self.note_log.save(album_log_path)
+
+        # Print summary
+        ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
+                                _time.localtime(_time.time()))
+        print(f"\n[{ct_now}] [AlbumEngine] === Album complete ===")
+        print(f"  Tracks: {n_tracks}")
+        print(f"  Total events: {self.note_log.to_dict()['n_events']}")
+        print(f"  Album note log: {album_log_path}")
+        for i, track in enumerate(self.tracks):
+            dur_min = track['duration'] / 60.0
+            print(f"  {i+1:2d}. {track['name']} ({dur_min:.1f} min)")
+
+        return output_paths
+
+
+def _render_album_track(engine, wav_file, track_info, note_log, album_rng):
+    """Render a single album track to a WAV file with note logging.
+
+    Uses the engine's streaming approach but with album-planned segments
+    and per-mood epoch overrides.
+
+    Args:
+        engine: RadioEngineV20 instance with overridden segments.
+        wav_file: Open wave.Wave_write instance.
+        track_info: Track plan dict.
+        note_log: NoteLog instance for this track.
+        album_rng: Album-level Random instance.
+    """
+    total_samples = int(engine.total_duration * SAMPLE_RATE)
+    n_segments = len(engine.segments)
+    morph_samples = int(engine.MORPH_DURATION * SAMPLE_RATE)
+    fade_in_samples = int(engine.FADE_IN_DURATION * SAMPLE_RATE)
+    fade_out_samples = int(engine.FADE_OUT_DURATION * SAMPLE_RATE)
+
+    sim_states = engine._generate_sim_states(n_segments)
+
+    orig, patched = engine._patch_mood_init()
+    MoodSegment.__init__ = patched
+
+    vocoder_rng = random.Random(track_info['seed'] + 77777)
+
+    try:
+        max_seg_samples = int(220 * SAMPLE_RATE)
+        buf_len = max_seg_samples + morph_samples * 2
+        buf_left = [0.0] * buf_len
+        buf_right = [0.0] * buf_len
+        buf_global_start = 0
+        samples_written = 0
+
+        for seg_idx in range(n_segments):
+            seg_info = engine.segments[seg_idx]
+            seg_global_start = int(seg_info['start'] * SAMPLE_RATE)
+            seg_duration = seg_info['duration']
+            segment_samples = int(seg_duration * SAMPLE_RATE)
+            if seg_global_start >= total_samples:
+                break
+
+            # Use album-planned epoch
+            epoch_idx = seg_info.get('_epoch_idx', 0)
+            epoch_idx = clamp(epoch_idx, 0, len(EPOCH_ORDER) - 1)
+            epoch = EPOCH_ORDER[epoch_idx]
+            sim_state = sim_states[min(seg_idx, len(sim_states) - 1)]
+
+            mood = MoodSegment(
+                seg_idx, epoch, epoch_idx, sim_state,
+                engine.seed + seg_idx * 31337
+            )
+            selected = engine._select_instruments(mood)
+            kits = InstrumentKit.build_kits(
+                selected, mood.scale, mood.root, mood.n_kits, mood.rng
+            )
+            seg_left, seg_right = engine._render_segment(
+                mood, kits, segment_samples, sim_state
+            )
+
+            # Log notes
+            _log_segment_notes(note_log, engine, mood, sim_state,
+                               seg_info['start'])
+
+            if mood.dampen:
+                seg_left = engine.smoother.apply_lowpass(seg_left, 5000)
+                seg_right = engine.smoother.apply_lowpass(seg_right, 5000)
+                seg_left = engine.smoother.apply_gentle_compression(seg_left)
+                seg_right = engine.smoother.apply_gentle_compression(seg_right)
+
+            seg_end_global = min(seg_global_start + len(seg_left),
+                                 total_samples)
+            seg_len = seg_end_global - seg_global_start
+
+            for i in range(seg_len):
+                global_i = seg_global_start + i
+                buf_i = global_i - buf_global_start
+                while buf_i >= len(buf_left):
+                    buf_left.append(0.0)
+                    buf_right.append(0.0)
+
+                fade = 1.0
+                if i < morph_samples and seg_idx > 0:
+                    fade = 0.5 - 0.5 * math.cos(
+                        math.pi * i / morph_samples)
+                remaining = seg_len - i
+                if remaining < morph_samples and seg_idx < n_segments - 1:
+                    fade *= 0.5 + 0.5 * math.cos(
+                        math.pi * (1 - remaining / morph_samples))
+
+                if global_i < fade_in_samples:
+                    fade *= global_i / fade_in_samples
+                elif global_i >= total_samples - fade_out_samples:
+                    fade *= (total_samples - global_i) / fade_out_samples
+
+                buf_left[buf_i] += seg_left[i] * fade
+                buf_right[buf_i] += seg_right[i] * fade
+
+            # TTS for source readings (vocoder treatment for album)
+            if seg_idx in engine.tts_transitions:
+                trans_start = seg_global_start + seg_len - morph_samples
+                _inject_vocoder_tts_into_buf(
+                    engine, buf_left, buf_right, buf_global_start,
+                    trans_start, total_samples, mood, epoch_idx,
+                    note_log, vocoder_rng)
+
+            # Flush completed audio
+            if seg_idx < n_segments - 1:
+                next_seg_start = int(
+                    engine.segments[seg_idx + 1]['start'] * SAMPLE_RATE)
+                flush_up_to = next_seg_start - morph_samples
+            else:
+                flush_up_to = total_samples
+
+            flush_end = min(flush_up_to, total_samples)
+            flush_count = flush_end - samples_written
+            if flush_count > 0:
+                data = bytearray(flush_count * 4)
+                for j in range(flush_count):
+                    buf_j = (samples_written + j) - buf_global_start
+                    lv = (buf_left[buf_j]
+                          if 0 <= buf_j < len(buf_left) else 0.0)
+                    rv = (buf_right[buf_j]
+                          if 0 <= buf_j < len(buf_right) else 0.0)
+                    lv, rv = lv * 0.9 + rv * 0.1, rv * 0.9 + lv * 0.1
+                    li = int(_soft_limit(lv, 0.8) * 32767)
+                    ri = int(_soft_limit(rv, 0.8) * 32767)
+                    struct.pack_into('<hh', data, j * 4,
+                                     max(-32767, min(32767, li)),
+                                     max(-32767, min(32767, ri)))
+                wav_file.writeframes(bytes(data))
+                samples_written = flush_end
+
+                shift = flush_end - buf_global_start
+                if shift > 0 and shift < len(buf_left):
+                    buf_left = buf_left[shift:] + [0.0] * shift
+                    buf_right = buf_right[shift:] + [0.0] * shift
+                    buf_global_start = flush_end
+                elif shift >= len(buf_left):
+                    buf_left = [0.0] * buf_len
+                    buf_right = [0.0] * buf_len
+                    buf_global_start = flush_end
+
+    finally:
+        MoodSegment.__init__ = orig
+
+    return samples_written
+
+
+def _prepend_audio_to_wav(wav_path, left, right):
+    """Prepend stereo audio samples to an existing WAV file.
+
+    Reads the existing WAV, prepends the new samples, and rewrites.
+
+    Args:
+        wav_path: Path to existing WAV file.
+        left: Left channel samples (list of floats).
+        right: Right channel samples (list of floats).
+    """
+    import tempfile, shutil
+
+    # Read existing WAV data
+    with wave.open(wav_path, 'rb') as wf:
+        params = wf.getparams()
+        existing_frames = wf.readframes(params.nframes)
+
+    # Build prepend data
+    n_prepend = min(len(left), len(right))
+    prepend_data = bytearray(n_prepend * 4)
+    for i in range(n_prepend):
+        li = int(max(-1.0, min(1.0, left[i])) * 32767)
+        ri = int(max(-1.0, min(1.0, right[i])) * 32767)
+        struct.pack_into('<hh', prepend_data, i * 4,
+                         max(-32767, min(32767, li)),
+                         max(-32767, min(32767, ri)))
+
+    # Write new WAV
+    with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
+        tmp_path = tmp.name
+
+    with wave.open(tmp_path, 'wb') as wf:
+        wf.setnchannels(params.nchannels)
+        wf.setsampwidth(params.sampwidth)
+        wf.setframerate(params.framerate)
+        wf.writeframes(bytes(prepend_data))
+        wf.writeframes(existing_frames)
+
+    shutil.move(tmp_path, wav_path)
+
+
+def _append_audio_to_wav(wav_path, left, right):
+    """Append stereo audio samples to an existing WAV file.
+
+    Args:
+        wav_path: Path to existing WAV file.
+        left: Left channel samples (list of floats).
+        right: Right channel samples (list of floats).
+    """
+    n_append = min(len(left), len(right))
+    append_data = bytearray(n_append * 4)
+    for i in range(n_append):
+        li = int(max(-1.0, min(1.0, left[i])) * 32767)
+        ri = int(max(-1.0, min(1.0, right[i])) * 32767)
+        struct.pack_into('<hh', append_data, i * 4,
+                         max(-32767, min(32767, li)),
+                         max(-32767, min(32767, ri)))
+
+    with wave.open(wav_path, 'rb') as wf:
+        params = wf.getparams()
+        existing_frames = wf.readframes(params.nframes)
+
+    import tempfile, shutil
+    with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
+        tmp_path = tmp.name
+
+    with wave.open(tmp_path, 'wb') as wf:
+        wf.setnchannels(params.nchannels)
+        wf.setsampwidth(params.sampwidth)
+        wf.setframerate(params.framerate)
+        wf.writeframes(existing_frames)
+        wf.writeframes(bytes(append_data))
+
+    shutil.move(tmp_path, wav_path)
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 if __name__ == '__main__':
@@ -8647,34 +10005,48 @@ if __name__ == '__main__':
                        help='Output file path (WAV or MP3)')
     parser.add_argument('--duration', '-d', type=float, default=1800.0,
                        help='Duration in seconds (default: 1800)')
-    parser.add_argument('--seed', '-s', type=int, default=42,
-                       help='Random seed')
-    parser.add_argument('--version', '-V', choices=['v7', 'v8', 'v9', 'v10', 'v11', 'v12', 'v13', 'v14', 'v15', 'v16', 'v18', 'v18o', 'v20'], default='v20',
-                       help='Engine version: v7-v20 (v20=volume-fixed, solo moods, expanded)')
+    parser.add_argument('--seed', '-s', type=int, default=None,
+                       help='Random seed (default: random)')
+    parser.add_argument('--version', '-V', choices=['v7', 'v8', 'v9', 'v10', 'v11', 'v12', 'v13', 'v14', 'v15', 'v16', 'v18', 'v18o', 'v20', 'v21'], default='v21',
+                       help='Engine version: v7-v21 (v21=note logging + vocoder TTS)')
+    parser.add_argument('--album', action='store_true',
+                       help='Generate full CD-length album (overrides --duration)')
+    parser.add_argument('--album-dir', default=None,
+                       help='Album output directory (default: apps/audio/output/album/)')
     args = parser.parse_args()
-    if args.version == 'v20':
-        generate_radio_v20_mp3(args.output, args.duration, args.seed)
+
+    if args.album:
+        album_dir = args.album_dir or os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), 'output', 'album')
+        album_seed = args.seed if args.seed is not None else random.randint(100000, 999999)
+        album = AlbumEngine(seed=album_seed)
+        album.render_album(album_dir)
+    elif args.version == 'v21':
+        v21_seed = args.seed if args.seed is not None else random.randint(100000, 999999)
+        generate_radio_v21_mp3(args.output, args.duration, v21_seed)
+    elif args.version == 'v20':
+        generate_radio_v20_mp3(args.output, args.duration, args.seed or 42)
     elif args.version == 'v18o':
-        generate_radio_v18_orchestra_mp3(args.output, args.duration, args.seed)
+        generate_radio_v18_orchestra_mp3(args.output, args.duration, args.seed or 42)
     elif args.version == 'v18':
-        generate_radio_v18_mp3(args.output, args.duration, args.seed)
+        generate_radio_v18_mp3(args.output, args.duration, args.seed or 42)
     elif args.version == 'v16':
-        generate_radio_v16_mp3(args.output, args.duration, args.seed)
+        generate_radio_v16_mp3(args.output, args.duration, args.seed or 42)
     elif args.version == 'v15':
-        generate_radio_v15_mp3(args.output, args.duration, args.seed)
+        generate_radio_v15_mp3(args.output, args.duration, args.seed or 42)
     elif args.version == 'v14':
-        generate_radio_v14_mp3(args.output, args.duration, args.seed)
+        generate_radio_v14_mp3(args.output, args.duration, args.seed or 42)
     elif args.version == 'v13':
-        generate_radio_v13_mp3(args.output, args.duration, args.seed)
+        generate_radio_v13_mp3(args.output, args.duration, args.seed or 42)
     elif args.version == 'v12':
-        generate_radio_v12_mp3(args.output, args.duration, args.seed)
+        generate_radio_v12_mp3(args.output, args.duration, args.seed or 42)
     elif args.version == 'v11':
-        generate_radio_v11_mp3(args.output, args.duration, args.seed)
+        generate_radio_v11_mp3(args.output, args.duration, args.seed or 42)
     elif args.version == 'v10':
-        generate_radio_v10_mp3(args.output, args.duration, args.seed)
+        generate_radio_v10_mp3(args.output, args.duration, args.seed or 42)
     elif args.version == 'v9':
-        generate_radio_v9_mp3(args.output, args.duration, args.seed)
+        generate_radio_v9_mp3(args.output, args.duration, args.seed or 42)
     elif args.version == 'v8':
-        generate_radio_v8_mp3(args.output, args.duration, args.seed)
+        generate_radio_v8_mp3(args.output, args.duration, args.seed or 42)
     else:
-        generate_radio_mp3(args.output, args.duration, args.seed)
+        generate_radio_mp3(args.output, args.duration, args.seed or 42)

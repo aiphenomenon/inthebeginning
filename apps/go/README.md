@@ -34,7 +34,6 @@ go/
     index.html             # Alternate web UI assets
     app.js
     style.css
-  builds/                  # Pre-built binaries
   go.mod
 ```
 
@@ -96,4 +95,4 @@ go test ./...
 
 - The module path is `inthebeginning/go-sse`.
 - The SSE server embeds the web UI files from `cmd/server/web/`.
-- Pre-built binaries for multiple platforms are available in the `builds/` directory.
+- Cross-compiled binaries are produced by the CI release workflow.

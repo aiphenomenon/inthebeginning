@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/aiphenomenon/inthebeginning/session_logs/transcript_schema.json",
+  "title": "Session Transcript",
+  "description": "JSON transcript companion file for session logs. Generated alongside session_logs/v{VERSION}-session.md at each conversation turn.",
+  "type": "object",
+  "required": ["session_id", "version", "started_at", "turns"],
+  "properties": {
+    "session_id": {
+      "type": "string",
+      "description": "Session identifier, e.g. 'v21'",
+      "examples": ["v21"]
+    },
+    "version": {
+      "type": "string",
+      "description": "Version label, e.g. 'V21'",
+      "examples": ["V21"]
+    },
+    "started_at": {
+      "type": "string",
+      "description": "Session start time in CT with UTC, format: 'YYYY-MM-DD HH:MM CT (HH:MM UTC)'",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2} CT \\(\\d{2}:\\d{2} UTC\\)$",
+      "examples": ["2026-03-08 14:30 CT (20:30 UTC)"]
+    },
+    "turns": {
+      "type": "array",
+      "description": "Array of conversation turn records",
+      "items": {
+        "$ref": "#/$defs/turn"
+      }
+    }
+  },
+  "$defs": {
+    "turn": {
+      "type": "object",
+      "required": ["turn", "timestamp_ct", "timestamp_utc", "user_input", "actions", "outcome", "files_changed"],
+      "properties": {
+        "turn": {
+          "type": "integer",
+          "description": "Turn number (1-indexed)",
+          "minimum": 1
+        },
+        "timestamp_ct": {
+          "type": "string",
+          "description": "Turn timestamp in Central Time, format: 'YYYY-MM-DD HH:MM CT'",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2} CT$",
+          "examples": ["2026-03-08 14:30 CT"]
+        },
+        "timestamp_utc": {
+          "type": "string",
+          "description": "Turn timestamp in UTC, format: 'YYYY-MM-DD HH:MM UTC'",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2} UTC$",
+          "examples": ["2026-03-08 20:30 UTC"]
+        },
+        "user_input": {
+          "$ref": "#/$defs/user_input"
+        },
+        "actions": {
+          "type": "array",
+          "description": "Ordered list of tool actions taken during this turn",
+          "items": {
+            "$ref": "#/$defs/action"
+          }
+        },
+        "outcome": {
+          "type": "string",
+          "description": "Description of what was accomplished in this turn"
+        },
+        "files_changed": {
+          "type": "array",
+          "description": "List of file paths created, modified, or deleted",
+          "items": {
+            "type": "string"
+          }
+        },
+        "redactions": {
+          "type": "array",
+          "description": "List of redaction markers applied in this turn, with counts",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["[REDACTED: API key] applied 2 times"]]
+        }
+      }
+    },
+    "user_input": {
+      "type": "object",
+      "required": ["raw_summary", "proofread", "source"],
+      "description": "Captured and proofread user input for the turn",
+      "properties": {
+        "raw_summary": {
+          "type": "string",
+          "description": "Brief summary of what the user said, preserving original phrasing including typos, speech-to-text artifacts, and exploratory language"
+        },
+        "proofread": {
+          "type": "string",
+          "description": "Cleaned/proofread version of user input, correcting speech-to-text errors, pauses, and ambiguities while staying close to original words"
+        },
+        "source": {
+          "type": "string",
+          "description": "Attribution for the proofreading, e.g. 'user (proofread by Claude)'",
+          "examples": ["user (proofread by Claude)"]
+        }
+      }
+    },
+    "action": {
+      "type": "object",
+      "required": ["step", "tool", "timestamp_ct"],
+      "properties": {
+        "step": {
+          "type": "integer",
+          "description": "Step number within the turn (1-indexed)",
+          "minimum": 1
+        },
+        "tool": {
+          "type": "string",
+          "description": "Tool name used for this action (e.g. 'Bash', 'Read', 'Edit', 'Write', 'Grep', 'Glob')",
+          "examples": ["Bash", "Read", "Edit", "Write", "Grep", "Glob"]
+        },
+        "command": {
+          "type": "string",
+          "description": "Command executed (for Bash actions) or file path (for Read/Edit/Write actions)"
+        },
+        "output": {
+          "type": "string",
+          "description": "Tool output. If output exceeds 500 lines, include first 100 lines followed by '[TRUNCATED: N total lines. Summary: brief description of remaining output]'"
+        },
+        "output_lines": {
+          "type": "integer",
+          "description": "Number of lines in the output (before truncation if truncated)",
+          "minimum": 0
+        },
+        "truncated": {
+          "type": "boolean",
+          "description": "Whether the output was truncated (true if original output exceeded 500 lines)",
+          "default": false
+        },
+        "truncated_from": {
+          "type": "integer",
+          "description": "Original line count before truncation (present only when truncated is true)",
+          "minimum": 1
+        },
+        "timestamp_ct": {
+          "type": "string",
+          "description": "Timestamp of this action in Central Time, format: 'HH:MM CT'",
+          "pattern": "^\\d{2}:\\d{2} CT$",
+          "examples": ["14:30 CT"]
+        }
+      }
+    }
+  }
+}
