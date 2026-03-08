@@ -178,7 +178,97 @@
         {"hash": "69a5749", "message": "Fix album duration 42s quantum", "timestamp_ct": "11:25 CT"},
         {"hash": "580ad04", "message": "Fix randint edge case", "timestamp_ct": "11:25 CT"},
         {"hash": "e77d535", "message": "Streaming infrastructure", "timestamp_ct": "11:30 CT"},
-        {"hash": "c9fab18", "message": "Future memory update", "timestamp_ct": "11:30 CT"}
+        {"hash": "c9fab18", "message": "Future memory update", "timestamp_ct": "11:30 CT"},
+        {"hash": "3d41b08", "message": "JSON transcript full action log", "timestamp_ct": "11:30 CT"},
+        {"hash": "39c82e8", "message": "Test results — 2,143+ tests", "timestamp_ct": "11:35 CT"},
+        {"hash": "f94254b", "message": "Album Track 01 — Bright Signal", "timestamp_ct": "11:37 CT"},
+        {"hash": "0239f3c", "message": "Album Track 02 — Stellar Filament", "timestamp_ct": "11:48 CT"},
+        {"hash": "fcdde13", "message": "Album Track 03 — Crystalline Fracture", "timestamp_ct": "12:04 CT"},
+        {"hash": "e718533", "message": "Session budget failsafe + resume instructions", "timestamp_ct": "12:05 CT"}
+      ]
+    },
+    {
+      "turn": 2,
+      "timestamp_ct": "2026-03-08 12:30 CT",
+      "timestamp_utc": "2026-03-08 17:30 UTC",
+      "user_input": {
+        "raw_summary": "User requested: (1) budget estimation facility for analyzing usage dashboard screenshots, estimating burn rate, planning multi-window work, preemptive pause decisions; (2) continued emphasis on pushing early and often for crash resilience; (3) don't repeat same music in subsequent album tracks.",
+        "proofread": "It would be interesting to have a facility where if the user gives a screenshot, then you can make an estimation about what the budget burn is going to be leading up to the 5-hour limit as well as the weekly limit, and you can make a call about roughly when you should pause execution if the budget is going to be burned prior to the cutoff. If we had work that anticipated spanning multiple consecutive 5-hour windows, plan for that. Also: push early and often so that we don't lose information along the way. Don't repeat the same music in subsequent album tracks.",
+        "source": "user (proofread by Claude)"
+      },
+      "actions": [
+        {
+          "step": 1,
+          "tool": "Bash",
+          "command": "Check album render status, git status, running processes",
+          "output": "3/17 tracks complete, album PID terminated, test PIDs terminated",
+          "output_lines": 10,
+          "truncated": false,
+          "timestamp_ct": "12:30 CT"
+        },
+        {
+          "step": 2,
+          "tool": "Edit",
+          "command": "Add Session Budget Management to CLAUDE.md, AGENTS.md, steering-check.sh",
+          "output": "104 insertions across 3 files — screenshot analysis protocol, pause thresholds, crash resilience, budget log format",
+          "output_lines": 3,
+          "truncated": false,
+          "timestamp_ct": "12:31 CT"
+        },
+        {
+          "step": 3,
+          "tool": "Bash",
+          "command": "git commit + push (2735add)",
+          "output": "Budget steering committed and pushed",
+          "output_lines": 3,
+          "truncated": false,
+          "timestamp_ct": "12:31 CT"
+        },
+        {
+          "step": 4,
+          "tool": "Edit",
+          "command": "Update session_logs/v21-session.md with Turn 2, future_memories/ with progress",
+          "output": "Turn 2 appended to session log, future memory updated with terminated process status",
+          "output_lines": 4,
+          "truncated": false,
+          "timestamp_ct": "12:32 CT"
+        },
+        {
+          "step": 5,
+          "tool": "Bash",
+          "command": "git commit + push (9ecea84, d39b6b7)",
+          "output": "Session log, future memory, screen captures committed and pushed",
+          "output_lines": 5,
+          "truncated": false,
+          "timestamp_ct": "12:33 CT"
+        },
+        {
+          "step": 6,
+          "tool": "Bash",
+          "command": "Launch resume_album.py in background (PID 5042)",
+          "output": "Album render resumed for tracks 4-17, each track has unique seed (54321 increment), auto-commits on completion",
+          "output_lines": 5,
+          "truncated": false,
+          "timestamp_ct": "12:33 CT"
+        }
+      ],
+      "outcome": "Session budget management facility memorialized in triple-check steering. Album render resumed for tracks 4-17 in background. Screen captures and ast_captures committed.",
+      "files_changed": [
+        "CLAUDE.md",
+        "AGENTS.md",
+        ".claude/steering-check.sh",
+        "session_logs/v21-session.md",
+        "session_logs/v21-session.json",
+        "future_memories/v21-docs-json-transcript-plan.md",
+        "ast_captures/session_log.json",
+        "ast_captures/simulation_results.json",
+        "tests/screen_captures/ (18 files)"
+      ],
+      "redactions": [],
+      "commits": [
+        {"hash": "2735add", "message": "Session budget management facility", "timestamp_ct": "12:31 CT"},
+        {"hash": "9ecea84", "message": "Turn 2 session log + future memory", "timestamp_ct": "12:32 CT"},
+        {"hash": "d39b6b7", "message": "Screen captures + ast_captures update", "timestamp_ct": "12:33 CT"}
       ]
     }
   ]
