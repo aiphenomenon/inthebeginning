@@ -51,3 +51,9 @@ apps/cpp/docs/
 credentials.*
 apps/kotlin/.gradle/
 apps/screensaver-ubuntu/test_simulator
+
+# Build artifacts
+apps/go/sim_binary
+apps/go/sse_server_test
+tests/golden_snapshots/audio/test_output.wav
+.claude/worktrees/
