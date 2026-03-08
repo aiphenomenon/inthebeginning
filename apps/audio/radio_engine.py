@@ -9360,9 +9360,8 @@ class AlbumEngine:
             has_source_reading = False
 
             for m in range(n_moods):
-                # Duration: random multiple of 42s
-                dur_choices = [42, 84, 126, 168, 210]
-                dur = self.rng.choice(dur_choices)
+                # Duration: exactly 42s per mood (113 moods × 42s = 4746s target)
+                dur = self.MOOD_QUANTUM
                 # Random epoch for each mood
                 if m == 0:
                     epoch_idx = start_epoch_idx
