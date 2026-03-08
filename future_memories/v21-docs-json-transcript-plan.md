@@ -149,9 +149,31 @@
 - Test suite runs (2,143+ pass across 10 languages, audio tests still running)
 - Estimated album completion: ~1:00-1:30 PM CT based on current render rate
 
-### Timing constraints
+### Timing constraints (UPDATED 12:05 CT from user screenshot)
 - Session started: 10:24 CT
-- 5-hour limit: ~15:24 CT (3:24 PM CT)
-- Remaining: ~3.5h
-- Album render ETA: ~75 min remaining (~12:50-1:15 CT)
-- Radio engine tests: 65/240 complete, CPU-intensive
+- **Session budget**: 18% used, resets ~1:01 PM CT (58 min from 12:03 CT)
+- **Weekly budget**: 3% used (plenty of headroom)
+- After session reset at ~1:01 PM CT, we get a fresh session allowance
+- Album render is a background OS process — continues regardless of LLM budget
+- **Critical**: Commit and push each track as it completes (failsafe)
+- All tracks 1-3 already committed and pushed
+- Track 4 rendering now (294s audio, started ~12:04 CT)
+
+### Failsafe: If session budget exhausted before album finishes
+1. Album render continues as background process (PID 1182)
+2. All completed tracks are committed and pushed
+3. Future memory plan describes what remains
+4. After session reset (~1:01 PM CT), resume by:
+   a. Check `ls apps/audio/output/album/*.mp3` for completed tracks
+   b. `git add` and commit any uncommitted tracks
+   c. Check if render process still alive: `ps -p 1182`
+   d. If render complete, finalize session log and version cut
+   e. If render still running, continue monitoring
+
+### Album render process details
+- PID: 1182 (python3 AlbumEngine)
+- Seed: 779275
+- Tracks: 17 total
+- Output dir: apps/audio/output/album/
+- Note logs: per-track *_notes.json + album_notes.json (after all done)
+- Also running: 2 pytest processes (radio engine tests, PID 48408 + 52199)
