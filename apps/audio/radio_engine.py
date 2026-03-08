@@ -9145,6 +9145,71 @@ def _log_segment_notes(note_log, engine, mood, sim_state, seg_start_time):
         )
 
 
+def _inject_plain_tts_into_buf(engine, buf_left, buf_right,
+                                buf_global_start, trans_start,
+                                total_samples, mood, epoch_idx, note_log):
+    """Inject plain TTS speech into the streaming buffer (no vocoder).
+
+    Uses the engine's TTS to generate source code phrase speech and mixes
+    it into the buffer with music ducking.
+    """
+    rng = mood.rng
+    phrases = engine.tts.get_source_phrases(rng, count=2)
+    speech_text = '. '.join(phrases)
+
+    voice_seed = rng.randint(0, 100)
+    tts_samples, tts_sr = engine.tts.generate_speech(
+        speech_text, voice_seed, epoch_idx
+    )
+    if tts_samples is None:
+        return
+
+    if tts_sr != SAMPLE_RATE:
+        tts_samples = engine._resample(tts_samples, tts_sr, SAMPLE_RATE)
+
+    # Normalize TTS
+    peak = max(abs(s) for s in tts_samples) if tts_samples else 1.0
+    if peak > 0:
+        tts_samples = [s / peak * 0.65 for s in tts_samples]
+
+    # Place in buffer with ducking
+    tts_start = max(0, trans_start - len(tts_samples) // 4)
+    duck_start = max(0, tts_start - int(0.5 * SAMPLE_RATE))
+    duck_end = min(total_samples,
+                   tts_start + len(tts_samples) + int(0.5 * SAMPLE_RATE))
+    duck_ramp = int(0.3 * SAMPLE_RATE)
+
+    for i in range(duck_start, min(duck_end, total_samples)):
+        buf_i = i - buf_global_start
+        if buf_i < 0 or buf_i >= len(buf_left):
+            continue
+
+        # Duck music
+        duck = 0.35
+        dist_start = i - duck_start
+        dist_end = duck_end - i
+        if dist_start < duck_ramp:
+            duck = 1.0 - 0.65 * (dist_start / duck_ramp)
+        elif dist_end < duck_ramp:
+            duck = 1.0 - 0.65 * (dist_end / duck_ramp)
+        buf_left[buf_i] *= duck
+        buf_right[buf_i] *= duck
+
+        # Mix in TTS
+        tts_i = i - tts_start
+        if 0 <= tts_i < len(tts_samples):
+            buf_left[buf_i] += tts_samples[tts_i] * 0.8
+            buf_right[buf_i] += tts_samples[tts_i] * 0.8
+
+    # Log TTS event
+    note_log.log_event({
+        't': trans_start / SAMPLE_RATE,
+        'type': 'tts',
+        'inst': 'voice',
+        'text': speech_text[:100],
+    })
+
+
 def _inject_vocoder_tts_into_buf(engine, buf_left, buf_right,
                                   buf_global_start, trans_start,
                                   total_samples, mood, epoch_idx,
@@ -9263,10 +9328,11 @@ class AlbumEngine:
     """Generate a full CD-length album with multiple tracks.
 
     Produces 16-18 tracks totaling ~79 minutes (4746 seconds), with each
-    mood segment at 42-second multiples. Tracks have random starting
-    universe epochs with random epoch per subsequent mood. Source code
-    readings appear ~7 times across the album. Vocoder bookends of
-    "In the beginning" open and close the album.
+    mood segment at 42-second multiples (42, 84, 126, 168, or 210 seconds).
+    Longer moods create more immersive, evolving passages. Tracks have
+    random starting universe epochs with random epoch per subsequent mood.
+    Source code readings appear ~7 times across the album. Plain TTS
+    bookends open and close the album as separate short tracks.
 
     Attributes:
         ALBUM_NAME: Album title string.
@@ -9290,90 +9356,86 @@ class AlbumEngine:
         self._plan_tracks()
 
     def _plan_tracks(self):
-        """Distribute ~113 moods across 16-18 tracks.
+        """Distribute ~4746s of audio across 16-18 tracks.
 
-        Each track gets 3-7 moods (multiples of 42s). Random epoch per mood.
-        Plans source code readings (~7 across album) and vocoder bookends.
+        Each mood is a multiple of 42s (42, 84, 126, 168, or 210 seconds).
+        Shorter tracks (earlier) tend toward more 42s moods; longer tracks
+        get a mix of durations for variety. Total target: 4746s.
         """
-        total_moods_target = self.TARGET_DURATION // self.MOOD_QUANTUM  # 113
+        Q = self.MOOD_QUANTUM  # 42
         n_tracks = self.rng.randint(16, 18)
+        remaining_time = self.TARGET_DURATION
 
-        # Distribute moods per track: 3-7 each
-        moods_per_track = []
-        remaining = total_moods_target
+        # Plan each track's duration in seconds (must be multiples of 42)
+        track_durations = []
         for i in range(n_tracks):
             if i == n_tracks - 1:
-                # Last track gets whatever remains
-                count = max(3, min(7, remaining))
+                dur = max(3 * Q, remaining_time)
             else:
-                avg_remaining = remaining / (n_tracks - i)
-                lo = max(3, int(avg_remaining - 2))
-                hi = min(7, int(avg_remaining + 2))
+                avg = remaining_time / (n_tracks - i)
+                lo = max(3 * Q, int((avg - 2 * Q) / Q) * Q)
+                hi = min(8 * Q, int((avg + 2 * Q) / Q) * Q)
                 if lo > hi:
                     lo, hi = hi, lo
-                if lo == hi:
-                    count = lo
-                else:
-                    count = self.rng.randint(lo, hi)
-            moods_per_track.append(count)
-            remaining -= count
+                dur = self.rng.randint(lo // Q, hi // Q) * Q
+            track_durations.append(dur)
+            remaining_time -= dur
 
-        # If we overshot or undershot, adjust last tracks
-        total_moods = sum(moods_per_track)
-        while total_moods < total_moods_target and moods_per_track:
-            # Add moods to random tracks under 7
-            candidates = [i for i, m in enumerate(moods_per_track) if m < 7]
-            if not candidates:
-                break
-            idx = self.rng.choice(candidates)
-            moods_per_track[idx] += 1
-            total_moods += 1
-        while total_moods > total_moods_target and moods_per_track:
-            # Remove moods from random tracks over 3
-            candidates = [i for i, m in enumerate(moods_per_track) if m > 3]
-            if not candidates:
-                break
-            idx = self.rng.choice(candidates)
-            moods_per_track[idx] -= 1
-            total_moods -= 1
+        # Adjust to hit target
+        total = sum(track_durations)
+        while total < self.TARGET_DURATION:
+            idx = self.rng.randint(0, n_tracks - 1)
+            if track_durations[idx] < 8 * Q:
+                track_durations[idx] += Q
+                total += Q
+        while total > self.TARGET_DURATION:
+            idx = self.rng.randint(0, n_tracks - 1)
+            if track_durations[idx] > 3 * Q:
+                track_durations[idx] -= Q
+                total -= Q
 
-        # Plan source code readings (~7 across album, roughly every 10 min)
-        # Pick ~7 random mood indices across all moods
-        total_moods = sum(moods_per_track)
-        source_reading_moods = set()
+        # Plan moods within each track — variable durations
+        # Weights favor 42s but include longer moods
+        dur_choices = [Q, Q, Q, 2*Q, 2*Q, 3*Q, 4*Q, 5*Q]
+
+        # Plan source code readings (~7 across album)
+        total_estimated_moods = sum(d // Q for d in track_durations)
         n_readings = 7
-        mood_indices = sorted(self.rng.sample(
-            range(total_moods), min(n_readings, total_moods)))
-        source_reading_moods = set(mood_indices)
+        reading_positions = sorted(self.rng.sample(
+            range(max(1, total_estimated_moods)),
+            min(n_readings, max(1, total_estimated_moods))))
+        source_reading_set = set(reading_positions)
 
-        # Build track plans
         self.tracks = []
         mood_counter = 0
         album_time = 0.0
 
         for track_idx in range(n_tracks):
-            n_moods = moods_per_track[track_idx]
+            track_dur_target = track_durations[track_idx]
             track_seed = self.seed + track_idx * 54321
-
-            # Random starting epoch
             start_epoch_idx = self.rng.randint(0, len(EPOCH_ORDER) - 1)
 
             track_moods = []
-            track_instruments = set()
             track_epochs = set()
-            track_midi_composers = set()
             has_source_reading = False
+            time_left = track_dur_target
 
-            for m in range(n_moods):
-                # Duration: exactly 42s per mood (113 moods × 42s = 4746s target)
-                dur = self.MOOD_QUANTUM
-                # Random epoch for each mood
-                if m == 0:
+            while time_left >= Q:
+                # Pick a mood duration (must fit in remaining time)
+                valid = [d for d in dur_choices if d <= time_left]
+                if not valid:
+                    break
+                dur = self.rng.choice(valid)
+                # Ensure we don't leave a remainder < Q
+                if time_left - dur > 0 and time_left - dur < Q:
+                    dur = time_left
+
+                if len(track_moods) == 0:
                     epoch_idx = start_epoch_idx
                 else:
                     epoch_idx = self.rng.randint(0, len(EPOCH_ORDER) - 1)
 
-                is_reading = mood_counter in source_reading_moods
+                is_reading = mood_counter in source_reading_set
                 if is_reading:
                     has_source_reading = True
 
@@ -9386,20 +9448,21 @@ class AlbumEngine:
                 })
                 track_epochs.add(EPOCH_ORDER[epoch_idx])
                 album_time += dur
+                time_left -= dur
                 mood_counter += 1
 
             track_duration = sum(m['duration'] for m in track_moods)
             self.tracks.append({
                 'track_idx': track_idx,
                 'seed': track_seed,
-                'n_moods': n_moods,
+                'n_moods': len(track_moods),
                 'moods': track_moods,
                 'duration': track_duration,
                 'epochs': sorted(track_epochs),
                 'has_source_reading': has_source_reading,
-                'instruments': set(),  # Filled during render
-                'midi_composers': set(),  # Filled during render
-                'name': None,  # Named after render
+                'instruments': set(),
+                'midi_composers': set(),
+                'name': None,
             })
 
     def _generate_vocoder_bookend(self, tts_text, seed):
@@ -9585,13 +9648,6 @@ class AlbumEngine:
         output_paths = []
         n_tracks = len(self.tracks)
 
-        # Generate vocoder bookends
-        print(f"[{ct_now}] [AlbumEngine] Generating vocoder bookends...")
-        opening_left, opening_right = self._generate_vocoder_bookend(
-            "In the beginning", self.seed + 11111)
-        closing_left, closing_right = self._generate_vocoder_bookend(
-            "In the beginning", self.seed + 22222)
-
         for track_idx, track_info in enumerate(self.tracks):
             track_num = track_idx + 1
             ct_now = _time.strftime('%Y-%m-%d %H:%M CT',
@@ -9643,16 +9699,6 @@ class AlbumEngine:
                 wf.setframerate(SAMPLE_RATE)
                 _render_album_track(engine, wf, track_info, track_note_log,
                                     self.rng)
-
-            # Prepend vocoder bookend to track 1
-            if track_idx == 0 and opening_left:
-                _prepend_audio_to_wav(raw_wav_path, opening_left,
-                                       opening_right)
-
-            # Append vocoder bookend to last track
-            if track_idx == n_tracks - 1 and closing_left:
-                _append_audio_to_wav(raw_wav_path, closing_left,
-                                      closing_right)
 
             t1_track = _time.time()
 
@@ -9798,8 +9844,6 @@ def _render_album_track(engine, wav_file, track_info, note_log, album_rng):
     orig, patched = engine._patch_mood_init()
     MoodSegment.__init__ = patched
 
-    vocoder_rng = random.Random(track_info['seed'] + 77777)
-
     try:
         max_seg_samples = int(220 * SAMPLE_RATE)
         buf_len = max_seg_samples + morph_samples * 2
@@ -9872,13 +9916,13 @@ def _render_album_track(engine, wav_file, track_info, note_log, album_rng):
                 buf_left[buf_i] += seg_left[i] * fade
                 buf_right[buf_i] += seg_right[i] * fade
 
-            # TTS for source readings (vocoder treatment for album)
+            # TTS for source readings (plain speech, no vocoder)
             if seg_idx in engine.tts_transitions:
                 trans_start = seg_global_start + seg_len - morph_samples
-                _inject_vocoder_tts_into_buf(
+                _inject_plain_tts_into_buf(
                     engine, buf_left, buf_right, buf_global_start,
                     trans_start, total_samples, mood, epoch_idx,
-                    note_log, vocoder_rng)
+                    note_log)
 
             # Flush completed audio
             if seg_idx < n_segments - 1:
