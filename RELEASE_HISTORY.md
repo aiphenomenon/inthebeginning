@@ -1170,6 +1170,53 @@ implementations of the cosmic physics simulator.
 
 Initial implementation of the cosmic physics simulator in Python.
 
+---
+
+## V21 — 2026-03-08 — "In The Beginning Phase 0" Album Release
+
+### Summary
+
+Major feature release: full CD-length album generation, 64×64 JavaScript grid
+visualizer, enhanced streaming infrastructure, comprehensive documentation audit,
+JSON transcript logging system, and music algorithm documentation.
+
+### Turn 1 — 2026-03-08 10:24 CT (15:24 UTC) — V21 Kickoff
+
+- **Documentation audit**: Cross-referenced all markdown against source code,
+  fixed 85 insertions / 45 deletions across 8 docs files
+- **Music algorithm documentation**: Created `docs/music_algorithm.md` (664 lines)
+  describing the generative music approach in accessible language
+- **JSON transcript logging**: New steering rule — companion `.json` alongside
+  `.md` session logs with proofread user input, truncation (500-line threshold),
+  redaction rules (security tokens only, system paths OK)
+- **Steering triple-check**: Updated CLAUDE.md, AGENTS.md, steering-check.sh with
+  JSON transcript rules, push-after-every-commit, and UTC timestamps
+- **Album engine**: `AlbumEngine` class (radio_engine.py) for multi-track CD-length
+  albums with vocoder bookends, creative track naming, per-track JSON note logs
+- **Vocoder pitch projection**: TTS audio pitch-shifted to follow MIDI melodies
+  with portamento bending
+- **Note event logging**: `NoteLog` class recording every note for visualization
+- **64×64 JavaScript visualizer**: 12-file pure JS app with grid, player, score,
+  stream modules + full test suite (apps/visualizer/)
+- **30-min MP3 render**: V20 engine, seed 759274, rendering in progress
+- **Test results**: 295 core tests pass, 62 music engine tests pass
+
+#### Agent Architecture (5 parallel worktree agents)
+- Agent 1: Documentation audit (8 files, 85+/45- lines)
+- Agent 2: Steering & JSON transcript system
+- Agent 3: Music algorithm documentation
+- Agent 4: Album engine + vocoder + note logging (~1358 new lines)
+- Agent 5: JavaScript 64×64 grid visualizer (12 files, ~83KB)
+
+#### Files Created/Modified
+- NEW: docs/music_algorithm.md, apps/visualizer/ (12 files),
+  apps/audio/test_music_engine.py, apps/audio/test_radio_engine.py,
+  session_logs/transcript_schema.json
+- MODIFIED: CLAUDE.md, AGENTS.md, .claude/steering-check.sh,
+  .claude/settings.json, apps/audio/radio_engine.py (+1358 lines),
+  README.md, docs/apps_overview.md, docs/build_guide.md, docs/roadmap.md,
+  docs/walkthrough.md, apps/audio/README.md, apps/go/README.md
+
 ### Changes
 
 - **Simulator modules**: quantum.py, atomic.py, chemistry.py, biology.py,
