@@ -1,7 +1,7 @@
 {
   "metrics": {
-    "wall_time_s": 0.639,
-    "cpu_user_s": 0.63,
+    "wall_time_s": 0.568,
+    "cpu_user_s": 0.55,
     "cpu_system_s": 0.0,
     "peak_memory_kb": 611,
     "ticks": 300000,
