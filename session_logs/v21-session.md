@@ -58,10 +58,41 @@ Total verified: 2,143+ tests across 10 languages, 0 failures
 Session context was compressed at ~11:10 CT. Resumed with full plan awareness
 from future_memories/v21-docs-json-transcript-plan.md.
 
-### Pending
+### Pending (Turn 1)
 
-- 30-min MP3 render (seed 759274) — running, ~93% CPU
-- Album render — waiting for 30-min MP3 to finish (sequential to avoid OOM)
-- Streaming infrastructure — agent working in background
-- Radio engine tests — running
+- ~~30-min MP3 render (seed 759274)~~ — completed (41MB, 1800.04s)
+- Album render — tracks 1-3 complete, tracks 4-17 stalled (background process terminated)
+- ~~Streaming infrastructure~~ — completed (e77d535)
+- ~~Radio engine tests~~ — processes terminated
+- Final version cut and push
+
+---
+
+## Turn 2 — 2026-03-08 12:30 CT (17:30 UTC)
+
+### Context
+
+Session resumed after context window compression. Album background render
+process (PID 1182) terminated — only 3 of 17 tracks completed. Test processes
+also terminated. All prior work committed and pushed.
+
+### Request
+
+User requested:
+1. Budget estimation facility — analyze usage dashboard screenshots, estimate
+   burn rate, recommend preemptive pauses at 85%/90% thresholds, plan multi-window
+   work. Memorialize in project steering docs (triple cross-check).
+2. Continued emphasis on pushing early and often for crash resilience.
+
+### Actions
+
+- 12:30 CT: Session resumed, assessed state — 3/17 album tracks, no running processes
+- 12:30 CT: Added Session Budget Management to CLAUDE.md, AGENTS.md, steering-check.sh
+- 12:31 CT: Committed and pushed budget steering (2735add)
+- 12:31 CT: Updated session log and future memory with Turn 2
+
+### Pending (Turn 2)
+
+- Album render: Need to re-launch for tracks 4-17 (14 remaining tracks)
+- Radio engine tests: Need to re-run
 - Final version cut and push

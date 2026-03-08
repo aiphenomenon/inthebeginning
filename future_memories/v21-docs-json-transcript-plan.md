@@ -171,9 +171,26 @@
    e. If render still running, continue monitoring
 
 ### Album render process details
-- PID: 1182 (python3 AlbumEngine)
+- PID: 1182 (python3 AlbumEngine) — **TERMINATED** (session/container reset)
 - Seed: 779275
-- Tracks: 17 total
+- Tracks: 17 total, **3 completed** (tracks 1-3 committed and pushed)
 - Output dir: apps/audio/output/album/
 - Note logs: per-track *_notes.json + album_notes.json (after all done)
-- Also running: 2 pytest processes (radio engine tests, PID 48408 + 52199)
+- Also running: 2 pytest processes (radio engine tests, PID 48408 + 52199) — **TERMINATED**
+
+### 12:30 CT — Turn 2 (session resumed after context compression)
+- Album render background process terminated — only 3/17 tracks completed
+- Test processes also terminated
+- All prior work committed and pushed (latest: e718533)
+- Added Session Budget Management facility to triple-check steering:
+  - CLAUDE.md: new section with screenshot analysis protocol, pause thresholds, crash resilience
+  - AGENTS.md: steering checklist item 15 + triple cross-check entry
+  - steering-check.sh: FAIL-CUE item 25
+- Committed and pushed (2735add)
+
+### Remaining work
+- [ ] Resume album render (tracks 4-17) — need to re-launch AlbumEngine
+- [ ] Re-run radio engine tests
+- [ ] Update JSON transcript companion with Turn 2
+- [ ] Commit screen captures and ast_captures changes
+- [ ] Final version cut and push
