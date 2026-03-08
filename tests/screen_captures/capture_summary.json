@@ -2,17 +2,17 @@
   "captures": [
     {
       "file": "c_terminal.html",
-      "size_bytes": 1883,
+      "size_bytes": 1881,
       "type": "html"
     },
     {
       "file": "c_terminal.txt",
-      "size_bytes": 1387,
+      "size_bytes": 1385,
       "type": "txt"
     },
     {
       "file": "capture_summary.json",
-      "size_bytes": 2365,
+      "size_bytes": 2369,
       "type": "json"
     },
     {
@@ -27,7 +27,7 @@
     },
     {
       "file": "go_sse_api.json",
-      "size_bytes": 21169,
+      "size_bytes": 21311,
       "type": "json"
     },
     {
@@ -57,12 +57,12 @@
     },
     {
       "file": "nodejs_terminal.html",
-      "size_bytes": 4129,
+      "size_bytes": 4139,
       "type": "html"
     },
     {
       "file": "nodejs_terminal.txt",
-      "size_bytes": 2667,
+      "size_bytes": 2677,
       "type": "txt"
     },
     {
@@ -87,12 +87,12 @@
     },
     {
       "file": "php_terminal.html",
-      "size_bytes": 2469,
+      "size_bytes": 2466,
       "type": "html"
     },
     {
       "file": "php_terminal.txt",
-      "size_bytes": 1977,
+      "size_bytes": 1974,
       "type": "txt"
     },
     {
@@ -121,5 +121,5 @@
       "type": "png"
     }
   ],
-  "timestamp": "2026-03-07 22:11 CT"
+  "timestamp": "2026-03-08 16:16 CT"
 }

@@ -7,34 +7,34 @@
                  13.8 billion years in the blink of an eye
   ========================================================================
 
-  Seed: 1772921449832300874
+  Seed: 1772986552062182256
 
   [ 1/13] Planck             [***                                     ]   8%
          Quantum gravity dominates; spacetime foam
-         T=9.56e+09 K | particles: 42
+         T=9.56e+09 K | particles: 40
 
   [ 2/13] Inflation          [~~~~~~                                  ]  15%
          Exponential expansion of spacetime
-         T=6.10e+09 K | particles: 482
+         T=6.10e+09 K | particles: 512
 
   [ 3/13] Electroweak        [!!!!!!!!!                               ]  23%
          Electroweak symmetry breaking; W/Z bosons acquire mass
-         T=6.87e+07 K | particles: 1124
+         T=6.87e+07 K | particles: 1140
 
   [ 4/13] QuarkGluon         [############                            ]  31%
          Quark-gluon plasma; free quarks and gluons
-         T=2.73e+00 K | particles: 1124
+         T=2.73e+00 K | particles: 1140
 
   [ 5/13] Hadron             [@@@@@@@@@@@@@@@                         ]  38%
          Quarks confine into protons and neutrons
-         T=2.73e+00 K | particles: 1066
+         T=2.73e+00 K | particles: 1082
            >> Quark confinement: 29 hadrons formed
 
   [ 6/13] Nucleosynthesis    [%%%%%%%%%%%%%%%%%%                      ]  46%
          Light nuclei form: H, He, Li
-         T=2.73e+00 K | particles: 1066
+         T=2.73e+00 K | particles: 1082
 
   [ 7/13] Recombination      [&&&&&&&&&&&&&&&&&&&&&&                  ]  54%
          Electrons captured by nuclei; atoms form
-         T=2.85e+00 K | particles: 1008 | atoms: 29
-           >> Recombination: 29 atoms formed
+         T=2.67e+00 K | particles: 1026 | atoms: 28
+           >> Recombination: 28 atoms formed
