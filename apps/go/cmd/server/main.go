@@ -337,8 +337,14 @@ func handleNoteSSE(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Try parsing as {"events": [...]} (NoteLog format) or flat [...]
 	var notes []noteEvent
-	if err := json.Unmarshal(data, &notes); err != nil {
+	var wrapper struct {
+		Events []noteEvent `json:"events"`
+	}
+	if err := json.Unmarshal(data, &wrapper); err == nil && len(wrapper.Events) > 0 {
+		notes = wrapper.Events
+	} else if err := json.Unmarshal(data, &notes); err != nil {
 		http.Error(w, fmt.Sprintf("Failed to parse notes JSON: %v", err), http.StatusBadRequest)
 		return
 	}
@@ -393,11 +399,16 @@ func handleNoteSSE(w http.ResponseWriter, r *http.Request) {
 		default:
 		}
 
-		noteJSON, err := json.Marshal(note)
+		// Wrap in {events: [...]} to match StreamClient expected format
+		wrapper := map[string]interface{}{
+			"events": []noteEvent{note},
+			"index":  i,
+		}
+		wrapperJSON, err := json.Marshal(wrapper)
 		if err != nil {
 			continue
 		}
-		fmt.Fprintf(w, "id: %d\ndata: %s\n\n", i, noteJSON)
+		fmt.Fprintf(w, "event: notes\nid: %d\ndata: %s\n\n", i, wrapperJSON)
 		flusher.Flush()
 	}
 
