@@ -621,6 +621,8 @@ following items:
 14. **JSON transcript companion**: Did I generate `session_logs/v{VERSION}-session.json`
     with structured turn data, tool outputs (truncated at 500 lines), user input
     proofreading, and redaction records?
+15. **Session budget**: If the user provided a usage screenshot, did I analyze it,
+    estimate burn rate, and record budget guidance in the session log?
 
 ### Reflection Principle (Triple Cross-Check)
 
@@ -669,6 +671,22 @@ propagated to the other two. Specific items that must appear in all three:
 - JSON transcript truncation rules (500-line threshold for tool output)
 - JSON transcript redaction rules (security tokens only, system paths OK)
 - User input proofreading with source annotation in JSON transcripts
+- Session budget management (screenshot analysis, burn rate estimation, preemptive pause)
+
+### Session Budget Management
+
+When the user provides a usage dashboard screenshot, agents should:
+
+1. **Analyze the screenshot** to extract session window usage (%), weekly usage (%),
+   and time until resets.
+2. **Estimate burn rate** from elapsed usage and project remaining capacity.
+3. **Recommend pausing** at 85% of the 5-hour window or 90% of the weekly limit.
+4. **Plan multi-window work** by documenting phased handoff points in future memories.
+5. **Push early and often** — budget exhaustion, crashes, and container restarts can
+   all terminate a session. Every commit should be pushed immediately. Background
+   render processes should use auto-commit watcher scripts for crash resilience.
+6. **Record budget analysis** in the session log with burn rate, projections, and
+   recommendation (continue / pace / pause).
 
 This triple cross-check principle prevents drift between human-readable
 documentation and machine-enforced hooks.

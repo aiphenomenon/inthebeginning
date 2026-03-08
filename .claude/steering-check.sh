@@ -148,6 +148,7 @@ echo "             - JSON transcript companion file generation per conversation 
 echo "             - JSON transcript truncation rules (500-line threshold)"
 echo "             - JSON transcript redaction rules (security tokens only, system paths OK)"
 echo "             - User input proofreading with source annotation in JSON transcripts"
+echo "             - Session budget management (screenshot analysis, burn rate, preemptive pause)"
 
 # 11. Future memories — iterative plan commits before code mutation
 if [ -d "$PROJECT_ROOT/future_memories" ]; then
@@ -284,6 +285,19 @@ echo "           - Machine vision: use agent multimodal capability to inspect ca
 echo "             and verify sensible output (not blank, broken, or stuck)"
 echo "           - Session log evidence: include ~20-30 line ASCII snippets or file refs"
 echo "           Run: python -m pytest tests/test_screen_capture.py -v"
+
+# 25. Session budget management
+echo "[FAIL-CUE] Session budget management:"
+echo "           When the user provides a usage dashboard screenshot:"
+echo "           1. Read the screenshot and extract session window %, weekly %, reset times"
+echo "           2. Estimate burn rate from elapsed usage"
+echo "           3. Recommend pausing at 85% of 5-hour window or 90% of weekly limit"
+echo "           4. Plan multi-window work with phased handoff points in future memories"
+echo "           5. Push after every commit (crash resilience)"
+echo "           6. Record budget analysis in session log (burn rate, projection, recommendation)"
+echo "           Budget exhaustion is only ONE termination cause — crashes and container"
+echo "           restarts happen anytime. Push early and often. Use auto-commit watchers"
+echo "           for background renders."
 
 # 22. Big Bounce perpetual simulation
 echo "[FAIL-CUE] Big Bounce: All 13 language implementations support bigBounce()."

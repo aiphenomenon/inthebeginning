@@ -16,10 +16,11 @@ and similar LLM-based coding assistants working on this repository.
 7. [Session Logging Protocol](#session-logging-protocol)
 8. [Markdown Consistency Check](#markdown-consistency-check)
 9. [Self-Cueing and gVisor Enforcement](#self-cueing-and-gvisor-enforcement)
-10. [Cross-Compilation](#cross-compilation)
-11. [CI/CD](#cicd)
-12. [File Structure](#file-structure)
-13. [For Agentic Tools](#for-agentic-tools-jules-codex-devin-etc)
+10. [Session Budget Management](#session-budget-management)
+11. [Cross-Compilation](#cross-compilation)
+12. [CI/CD](#cicd)
+13. [File Structure](#file-structure)
+14. [For Agentic Tools](#for-agentic-tools-jules-codex-devin-etc)
 
 ---
 
@@ -1087,6 +1088,73 @@ items that must appear in all three:
 - JSON transcript truncation rules (500-line threshold for tool output)
 - JSON transcript redaction rules (security tokens only, system paths OK)
 - User input proofreading with source annotation in JSON transcripts
+- Session budget management (screenshot analysis, burn rate estimation, preemptive pause)
+
+---
+
+## Session Budget Management
+
+When the user provides a screenshot of their usage dashboard (e.g., Claude Code
+session or API usage panel), the agent should analyze it and provide budget guidance.
+
+### Screenshot Analysis Protocol
+
+1. **Read the screenshot** using the multimodal Read tool.
+2. **Extract key metrics**:
+   - **Session window usage**: Percentage used in the current 5-hour rolling window
+   - **Weekly usage**: Percentage used against the weekly limit
+   - **Time until reset**: Minutes/hours until the 5-hour window resets
+   - **Time until weekly reset**: Days/hours until weekly limit resets
+3. **Estimate burn rate**: Based on usage percentage and elapsed time, calculate
+   approximate tokens/minute or cost/minute consumption rate.
+4. **Project remaining capacity**: Extrapolate current burn rate to determine:
+   - How much time remains before the 5-hour window budget is exhausted
+   - How much time remains before the weekly budget is exhausted
+   - Whether the planned work fits within available budget
+
+### Preemptive Pause Decision
+
+The agent should recommend pausing execution when:
+
+- **5-hour window**: Projected to exceed 85% utilization before the window resets.
+  At this threshold, commit all work, push to remote, update session logs and future
+  memories, and advise the user to wait for the reset.
+- **Weekly limit**: Projected to exceed 90% utilization before the weekly reset.
+  At this threshold, prioritize only critical remaining tasks, defer non-essential
+  work, and document what remains in future memories for the next session.
+- **Multi-window planning**: If work is expected to span multiple consecutive 5-hour
+  windows, document the phased plan in future memories with clear handoff points
+  between windows. Each phase should be independently committable and resumable.
+
+### Crash Resilience (Push Early and Often)
+
+Budget exhaustion is only one reason a session can terminate. Crashes, network
+failures, and container restarts can happen at any time. Therefore:
+
+1. **Push after every commit** — this is already a steering rule, but it is doubly
+   important in budget-constrained sessions.
+2. **Future memories as insurance** — update the plan file at every milestone so
+   the next session (whether planned or crash-forced) can resume cleanly.
+3. **Prefer small, complete units of work** — structure tasks so each commit
+   represents a coherent, tested, pushable state. Avoid leaving the repo in a
+   half-modified state between pushes.
+4. **Auto-commit watchers for background renders** — when long-running processes
+   (album renders, test suites) are running in the background, deploy a watcher
+   script that auto-commits and pushes completed artifacts. This ensures work
+   survives session termination.
+
+### Budget Log in Session Notes
+
+When budget analysis is performed, record it in the session log:
+
+```
+### Budget Analysis [YYYY-MM-DD HH:MM CT (HH:MM UTC)]
+- 5-hour window: XX% used, resets in Xh Xm
+- Weekly: XX% used, resets in Xd Xh
+- Burn rate: ~X% per hour (estimated from elapsed usage)
+- Projected remaining: Xh before 85% threshold
+- Recommendation: [continue / pace / pause]
+```
 
 ---
 
