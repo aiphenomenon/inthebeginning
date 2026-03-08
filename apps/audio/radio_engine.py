@@ -8705,7 +8705,7 @@ class NoteLog:
         return {
             'events': sorted(self.events, key=lambda e: e['t']),
             'instruments': sorted(set(e['inst'] for e in self.events)),
-            'duration': max((e['t'] + e['dur'] for e in self.events),
+            'duration': max((e['t'] + e.get('dur', 0) for e in self.events),
                             default=0),
             'n_events': len(self.events),
         }
