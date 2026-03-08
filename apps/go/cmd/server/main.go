@@ -8,6 +8,9 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
+	"sort"
 	"strconv"
 	"sync"
 	"time"
@@ -91,9 +94,21 @@ func (ls *latestStore) get() *snapshot {
 	return ls.snap
 }
 
+// noteEvent represents a single musical note event from the audio engine.
+type noteEvent struct {
+	T    float64 `json:"t"`
+	Dur  float64 `json:"dur"`
+	Note int     `json:"note"`
+	Inst string  `json:"inst"`
+	Vel  float64 `json:"vel"`
+	Bend float64 `json:"bend"`
+	Ch   int     `json:"ch"`
+}
+
 func main() {
 	port := flag.Int("port", 8080, "HTTP server port")
 	seed := flag.Int64("seed", 0, "Simulation seed (0 = time-based)")
+	audioDir := flag.String("audio-dir", "", "Directory containing MP3 files for /stream/audio")
 	flag.Parse()
 
 	if *seed == 0 {
@@ -135,6 +150,16 @@ func main() {
 			return
 		}
 		json.NewEncoder(w).Encode(s)
+	})
+
+	// SSE endpoint for streaming note events from audio engine JSON files.
+	http.HandleFunc("/events/notes", func(w http.ResponseWriter, r *http.Request) {
+		handleNoteSSE(w, r)
+	})
+
+	// Audio stream endpoint: serves MP3 files with Range request support.
+	http.HandleFunc("/stream/audio", func(w http.ResponseWriter, r *http.Request) {
+		handleAudioStream(w, r, *audioDir)
 	})
 
 	// Static file server for the embedded web frontend.
@@ -280,6 +305,181 @@ func runSimulation(seed int64, b *broker, latest *latestStore) {
 		// Brief pause between cycles for visual breathing room
 		time.Sleep(2 * time.Second)
 	}
+}
+
+// handleNoteSSE streams note events from a JSON file as SSE, pacing them
+// according to each note's timestamp to simulate real-time playback.
+func handleNoteSSE(w http.ResponseWriter, r *http.Request) {
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		http.Error(w, "Streaming not supported", http.StatusInternalServerError)
+		return
+	}
+
+	// Determine which notes file to stream.
+	notesFile := r.URL.Query().Get("file")
+	if notesFile == "" {
+		notesFile = "../../audio/output/album_notes.json"
+	}
+
+	// Parse playback speed multiplier (default 1.0).
+	speed := 1.0
+	if qs := r.URL.Query().Get("speed"); qs != "" {
+		if s, err := strconv.ParseFloat(qs, 64); err == nil && s > 0 {
+			speed = s
+		}
+	}
+
+	// Read and parse the notes JSON file.
+	data, err := os.ReadFile(notesFile)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to read notes file: %v", err), http.StatusNotFound)
+		return
+	}
+
+	var notes []noteEvent
+	if err := json.Unmarshal(data, &notes); err != nil {
+		http.Error(w, fmt.Sprintf("Failed to parse notes JSON: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	// Sort notes by time to ensure correct playback order.
+	sort.Slice(notes, func(i, j int) bool {
+		return notes[i].T < notes[j].T
+	})
+
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	// Send metadata event first.
+	meta := map[string]interface{}{
+		"type":       "notes_start",
+		"total":      len(notes),
+		"speed":      speed,
+		"source":     notesFile,
+	}
+	metaJSON, _ := json.Marshal(meta)
+	fmt.Fprintf(w, "data: %s\n\n", metaJSON)
+	flusher.Flush()
+
+	ctx := r.Context()
+	startTime := time.Now()
+	var baseTime float64
+	if len(notes) > 0 {
+		baseTime = notes[0].T
+	}
+
+	for i, note := range notes {
+		// Calculate when this note should be sent relative to stream start.
+		noteOffset := (note.T - baseTime) / speed
+		targetTime := startTime.Add(time.Duration(noteOffset * float64(time.Second)))
+
+		// Wait until it is time to send this note.
+		waitDur := time.Until(targetTime)
+		if waitDur > 0 {
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(waitDur):
+			}
+		}
+
+		// Check for client disconnect.
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
+
+		noteJSON, err := json.Marshal(note)
+		if err != nil {
+			continue
+		}
+		fmt.Fprintf(w, "id: %d\ndata: %s\n\n", i, noteJSON)
+		flusher.Flush()
+	}
+
+	// Send completion event.
+	complete := map[string]interface{}{
+		"type":    "notes_complete",
+		"total":   len(notes),
+		"elapsed": time.Since(startTime).Seconds(),
+	}
+	completeJSON, _ := json.Marshal(complete)
+	fmt.Fprintf(w, "data: %s\n\n", completeJSON)
+	flusher.Flush()
+}
+
+// handleAudioStream serves MP3 files as a streaming audio endpoint with support
+// for HTTP Range requests (seeking). Compatible with VLC, mpv, and browsers.
+func handleAudioStream(w http.ResponseWriter, r *http.Request, defaultDir string) {
+	// Determine which file to stream.
+	requestedFile := r.URL.Query().Get("file")
+
+	if requestedFile == "" {
+		// If no file specified, look for the most recent MP3 in the audio output dir.
+		searchDir := defaultDir
+		if searchDir == "" {
+			searchDir = "../../audio/output"
+		}
+
+		// Find the newest MP3 file in the directory.
+		entries, err := os.ReadDir(searchDir)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Cannot read audio directory: %v", err), http.StatusNotFound)
+			return
+		}
+
+		var newestMP3 string
+		var newestTime time.Time
+		for _, entry := range entries {
+			if entry.IsDir() {
+				continue
+			}
+			if filepath.Ext(entry.Name()) != ".mp3" {
+				continue
+			}
+			info, err := entry.Info()
+			if err != nil {
+				continue
+			}
+			if newestMP3 == "" || info.ModTime().After(newestTime) {
+				newestMP3 = filepath.Join(searchDir, entry.Name())
+				newestTime = info.ModTime()
+			}
+		}
+
+		if newestMP3 == "" {
+			http.Error(w, "No MP3 files found in audio output directory", http.StatusNotFound)
+			return
+		}
+		requestedFile = newestMP3
+	}
+
+	// Open the file.
+	f, err := os.Open(requestedFile)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Cannot open audio file: %v", err), http.StatusNotFound)
+		return
+	}
+	defer f.Close()
+
+	stat, err := f.Stat()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Cannot stat audio file: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Set audio-appropriate headers.
+	w.Header().Set("Content-Type", "audio/mpeg")
+	w.Header().Set("Accept-Ranges", "bytes")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+
+	// Use http.ServeContent which handles Range requests automatically.
+	http.ServeContent(w, r, filepath.Base(requestedFile), stat.ModTime(), f)
 }
 
 // handleSSE handles an individual SSE connection: subscribes to the broker,
