@@ -62,11 +62,34 @@
 
 ## Milestones
 
-- [ ] Phase 0 committed
-- [ ] Wave 1 agents launched (1-3)
-- [ ] Wave 2 agents launched (4-5)
-- [ ] Engine code merged
-- [ ] Album rendered
-- [ ] Visualizer built
+- [x] Phase 0 committed (10:32 CT)
+- [x] Wave 1 agents launched — all 5 agents (1-5) running in parallel (10:34 CT)
+- [ ] Agents complete — awaiting results
+- [ ] Governor merge + reconciliation
+- [ ] Engine code verified (pytest)
+- [ ] Streaming agent (Agent 6) launched
+- [ ] MP3 renders (Agent 7): 30-min + album
+- [ ] Test suite (Agent 8)
 - [ ] All tests pass
 - [ ] V21 released and pushed
+
+## Progress Log
+
+### 10:32 CT — Phase 0 committed and pushed
+- Created future memory plan, session log, JSON transcript
+- Commit 00d4a88
+
+### 10:34 CT — Wave 1 launched (5 agents in parallel worktrees)
+- Agent 1 (add6878a): Documentation audit
+- Agent 2 (ad510742): Steering & JSON transcript
+- Agent 3 (a8cdd66a): Music algorithm doc
+- Agent 4 (a9dec08d): Album engine + vocoder + note logging
+- Agent 5 (ab0f8fae): JavaScript 64×64 grid visualizer
+
+### 11:16 CT — All agents active, large writes in progress
+- Agent 1: 379 output lines, actively auditing docs
+- Agent 2: 202 lines, large CLAUDE.md/AGENTS.md write
+- Agent 3: 110 lines, writing music_algorithm.md
+- Agent 4: 233 lines, building album engine code
+- Agent 5: 63 lines, creating visualizer app files
+- Random seed for 30-min MP3: 759274
