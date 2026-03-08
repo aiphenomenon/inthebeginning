@@ -134,3 +134,24 @@
 - Go SSE: /events/notes + /stream/audio endpoints
 - Bash scripts: start_radio.sh, start_album_player.sh
 - Go server builds OK
+
+### 11:37 CT — Album Track 1 "Bright Signal" complete (f94254b)
+- 2.8 min, 3.9MB, 361 notes, Epochs: Earth, Inflation, Planck, Quark
+- Render: 270s for 168s audio = 1.6x realtime
+
+### 11:48 CT — Album Track 2 "Stellar Filament" complete (0239f3c)
+- 3.5 min, 4.8MB, 822 notes, Epochs: Earth, Hadron, Present, Solar System
+- Render: 484s for 210s audio = 2.3x realtime (CPU contention from test processes)
+
+### 11:48-ongoing — Track 3 rendering
+- 4.9 min audio, 7 moods, Epochs: Electroweak, Inflation, Planck, Present, Star Formation
+- 3 CPU-intensive processes competing: album render + 2 radio engine test runs (240 tests)
+- Test suite runs (2,143+ pass across 10 languages, audio tests still running)
+- Estimated album completion: ~1:00-1:30 PM CT based on current render rate
+
+### Timing constraints
+- Session started: 10:24 CT
+- 5-hour limit: ~15:24 CT (3:24 PM CT)
+- Remaining: ~3.5h
+- Album render ETA: ~75 min remaining (~12:50-1:15 CT)
+- Radio engine tests: 65/240 complete, CPU-intensive
