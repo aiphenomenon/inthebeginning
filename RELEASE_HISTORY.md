@@ -4,6 +4,49 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.21.0 — 2026-03-08 — V21 Album + Visualizer + Streaming
+
+### Summary
+
+Full CD-length album "In The Beginning Phase 0" (79 min, 17 tracks + TTS bookends),
+64x64 JavaScript grid visualizer, Go SSE streaming infrastructure, documentation
+audit, music algorithm documentation, JSON transcript logging system.
+
+### Album: "In The Beginning Phase 0"
+
+- Artist: aiphenomenon (A. Johan Bizzle)
+- 19 tracks (Overture + 17 music + Coda), 79.4 min total, 110MB
+- Seed: 779275, deterministically reproducible
+- Variable mood durations (42s multiples: 42, 84, 126, 168, 210s)
+- Plain TTS bookends, source code readings across album
+- Genre: Psychedelic Rock (ID3 genre 67), CC BY-SA 4.0
+- 8,626 note events logged for visualization
+
+### JavaScript Visualizer (apps/visualizer/)
+
+- 64x64 grid with instrument-to-color mapping
+- Three modes: album, single, stream
+- Score.js loads NoteLog JSON, Player with seek/volume/track nav/fullscreen
+
+### Streaming Infrastructure
+
+- Go SSE server: /events/notes + /stream/audio endpoints
+- StreamClient.js for real-time note event consumption
+- Bash scripts: start_radio.sh, start_album_player.sh
+
+### Documentation & Steering
+
+- Documentation audit (8 files), music_algorithm.md (664 lines)
+- JSON transcript companion system, session budget management
+- Vocoder removed → plain TTS injection
+
+### Other
+
+- 30-min MP3: v21_random_759274.mp3 (41MB, 1800s, 192kbps)
+- NoteLog bug fixes, parallel album rendering (2 workers)
+
+---
+
 ## v0.20.0 — 2026-03-07 — V20 Audio Engine: Volume Fix + Expanded Palette
 
 ### Summary

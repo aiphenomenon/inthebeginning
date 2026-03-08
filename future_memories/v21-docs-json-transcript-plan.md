@@ -188,9 +188,21 @@
   - steering-check.sh: FAIL-CUE item 25
 - Committed and pushed (2735add)
 
+### 14:44 CT — Turn 3 (session resumed after context compression)
+- Tracks 1-11 had completed, tracks 10-11 uncommitted (MCP code-sign crash)
+- Committed tracks 10-11 (a75c3fe) and pushed
+- Restarted parallel render for tracks 12-17 (PID 4967)
+- 15:25 CT: All 17 tracks complete, auto-committed and pushed
+- 15:30 CT: Generated album_notes.json (904KB, 8626 events), committed (976981c)
+
+### Album — COMPLETE
+- **"In The Beginning Phase 0"** — 19 tracks, 79.4 min, 110MB
+- All tracks committed and pushed to `claude/resume-v9-document-v8-6yhAe`
+- Seed: 779275, deterministically reproducible
+
 ### Remaining work
-- [ ] Resume album render (tracks 4-17) — need to re-launch AlbumEngine
+- [x] Album render complete (all 17 tracks + bookends)
+- [x] Album notes JSON generated
 - [ ] Re-run radio engine tests
-- [ ] Update JSON transcript companion with Turn 2
-- [ ] Commit screen captures and ast_captures changes
-- [ ] Final version cut and push
+- [ ] Final session log and JSON transcript update
+- [ ] Version cut and push
