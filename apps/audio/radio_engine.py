@@ -9309,7 +9309,12 @@ class AlbumEngine:
                 avg_remaining = remaining / (n_tracks - i)
                 lo = max(3, int(avg_remaining - 2))
                 hi = min(7, int(avg_remaining + 2))
-                count = self.rng.randint(lo, hi)
+                if lo > hi:
+                    lo, hi = hi, lo
+                if lo == hi:
+                    count = lo
+                else:
+                    count = self.rng.randint(lo, hi)
             moods_per_track.append(count)
             remaining -= count
 
