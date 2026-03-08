@@ -9202,8 +9202,8 @@ def _inject_plain_tts_into_buf(engine, buf_left, buf_right,
             buf_right[buf_i] += tts_samples[tts_i] * 0.8
 
     # Log TTS event
-    note_log.log_event({
-        't': trans_start / SAMPLE_RATE,
+    note_log.events.append({
+        't': round(trans_start / SAMPLE_RATE, 3),
         'type': 'tts',
         'inst': 'voice',
         'text': speech_text[:100],
