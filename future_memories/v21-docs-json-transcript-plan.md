@@ -64,12 +64,13 @@
 
 - [x] Phase 0 committed (10:32 CT)
 - [x] Wave 1 agents launched — all 5 agents (1-5) running in parallel (10:34 CT)
-- [ ] Agents complete — awaiting results
-- [ ] Governor merge + reconciliation
-- [ ] Engine code verified (pytest)
-- [ ] Streaming agent (Agent 6) launched
-- [ ] MP3 renders (Agent 7): 30-min + album
-- [ ] Test suite (Agent 8)
+- [x] Agents complete (all 5 delivered)
+- [x] Governor merge + reconciliation (ea94c48)
+- [x] Engine code verified (pytest: 295+62 pass)
+- [x] Streaming agent (Agent 6) complete (e77d535)
+- [x] 30-min MP3 render complete (v21_random_759274.mp3)
+- [ ] Album render in progress (seed 779275, 17 tracks)
+- [ ] Test suite (Agent 8) — radio engine tests running
 - [ ] All tests pass
 - [ ] V21 released and pushed
 
@@ -106,3 +107,30 @@
 - Agent 5: 85 lines, creating multi-file JS app
 - MP3 render: actively running (99% CPU)
 - Checkpoint commit 4a9853b pushed
+
+### 11:00 CT — All 5 agents completed, merged (ea94c48)
+- 26 files changed, 5660 insertions
+- Major deliverables: docs audit, music_algorithm.md, steering updates,
+  album engine + vocoder + note logging, JS visualizer
+
+### 11:02 CT — Push-after-commit steering update (bd38526)
+- Added to CLAUDE.md item 11, AGENTS.md item 10, steering-check.sh item 17
+
+### 11:10 CT — Context window compressed, session resumed
+- 295 core tests pass (4.18s), 62 music engine tests pass (21.47s)
+- 30-min MP3 complete: v21_random_759274.mp3 (41MB, 1800s, 192kbps)
+- Session log + RELEASE_HISTORY updated (1ecd18c)
+
+### 11:25 CT — Album duration bug fix
+- Each mood was [42,84,126,168,210]s → fixed to 42s quantum
+- Also fixed randint(lo,hi) edge case when lo > hi
+- Commits: 69a5749, 580ad04
+
+### 11:27 CT — Album render started (seed 779275)
+- 17 tracks, 4746s target, sequential rendering
+- Vocoder bookends generating
+
+### 11:30 CT — Streaming infrastructure complete (e77d535)
+- Go SSE: /events/notes + /stream/audio endpoints
+- Bash scripts: start_radio.sh, start_album_player.sh
+- Go server builds OK
