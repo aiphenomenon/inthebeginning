@@ -1217,7 +1217,29 @@ JSON transcript logging system, and music algorithm documentation.
   README.md, docs/apps_overview.md, docs/build_guide.md, docs/roadmap.md,
   docs/walkthrough.md, apps/audio/README.md, apps/go/README.md
 
-### Changes
+### Turn 2 — 2026-03-08 12:30 CT (17:30 UTC) — Budget Facility + Album Resume
+
+- **Session budget management facility**: New steering section in CLAUDE.md, AGENTS.md,
+  and steering-check.sh for analyzing usage dashboard screenshots, estimating burn rate,
+  planning multi-window work, and making preemptive pause decisions (85%/90% thresholds)
+- **Album render resumed**: Background process for tracks 4-17 (14 remaining tracks),
+  each with unique seed (54321 increment), auto-commits on completion
+- **Screen captures committed**: Updated terminal captures and API snapshots from test runs
+- **JSON transcript updated**: Turn 2 actions logged with full structured data
+- **Crash resilience**: Budget management docs emphasize push-after-every-commit,
+  auto-commit watchers for background renders, and future memories as session insurance
+
+#### Files Modified
+- CLAUDE.md (new Session Budget Management section + TOC update)
+- AGENTS.md (checklist item 15 + triple cross-check entry + budget section)
+- .claude/steering-check.sh (FAIL-CUE item 25 for budget management)
+- session_logs/v21-session.md (Turn 2 appended)
+- session_logs/v21-session.json (Turn 2 structured data)
+- future_memories/v21-docs-json-transcript-plan.md (status update)
+- ast_captures/ (2 files updated)
+- tests/screen_captures/ (18 files updated)
+
+### Changes (Historical — V20 and earlier)
 
 - **Simulator modules**: quantum.py, atomic.py, chemistry.py, biology.py,
   environment.py, universe.py, constants.py, terminal_ui.py
