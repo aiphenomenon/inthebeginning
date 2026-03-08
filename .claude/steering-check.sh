@@ -197,11 +197,11 @@ echo "           - Small screenshots or ASCII captures of visual outputs"
 echo "           - Executable smoke test results (exit codes, output headers)"
 echo "           This evidence is part of the version cut journal."
 
-# 17. Frequent commits (multiple small commits per turn)
-echo "[FAIL-CUE] Frequent commits:"
+# 17. Frequent commits AND pushes (push after every commit)
+echo "[FAIL-CUE] Frequent commits and pushes:"
 echo "           Commit at every significant milestone (not just end of turn)."
-echo "           Aim for multiple small, descriptive commits rather than one"
-echo "           monolithic commit. This reduces risk of lost work."
+echo "           Push to the remote branch after EVERY commit."
+echo "           Never accumulate unpushed commits."
 
 # 18. User update cadence (~2 minutes)
 echo "[FAIL-CUE] User update cadence:"

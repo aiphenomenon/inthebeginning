@@ -612,7 +612,8 @@ following items:
    the current codebase?
 9. **Gold standard evidence**: At version cuts, did I capture test result snippets
    and small screenshots/ASCII captures of visual outputs?
-10. **Frequent commits**: Did I commit at significant milestones (not just end of turn)?
+10. **Frequent commits and pushes**: Did I commit at significant milestones (not just
+    end of turn)? Did I push to the remote branch after every commit?
 11. **User updates**: During long operations, did I provide CT-stamped status updates
     approximately every 2 minutes?
 12. **UTC timestamps**: Do my session log entries include both CT and UTC timestamps?
@@ -648,7 +649,7 @@ propagated to the other two. Specific items that must appear in all three:
 - AMD64 build verification (best-effort)
 - Executable behavior testing (build, invoke, verify exit codes and output)
 - Gold standard test evidence (screenshots/snippets at version cuts)
-- Frequent commits (multiple small commits per turn, not monolithic)
+- Frequent commits and pushes (push after every commit, not monolithic)
 - User update cadence (~2 minutes during long operations, CT-stamped)
 - UTC timestamps in session/transcript journaling (CT + UTC dual format)
 - Future memories: generation/update at start of every turn (mandatory)

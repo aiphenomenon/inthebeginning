@@ -1021,9 +1021,11 @@ At every conversation turn, complete the following checklist:
     or ASCII snippets of test results and visual outputs (simulator banners, audio
     waveforms). Include these in the session log for the version cut journal.
 
-11. **Frequent commits** -- commit at every significant milestone (not just end of
-    turn). Aim for multiple small, descriptive commits per turn rather than one
-    monolithic commit. This reduces risk of lost work and improves git history.
+11. **Frequent commits and pushes** -- commit at every significant milestone (not
+    just end of turn). Aim for multiple small, descriptive commits per turn rather
+    than one monolithic commit. **Push to the remote branch after every commit.**
+    This reduces risk of lost work and improves git history. Never accumulate
+    unpushed commits.
 
 12. **User update cadence (~2 minutes)** -- provide a Central Time-stamped status
     update in the chat dialog approximately every 2 minutes during long-running
