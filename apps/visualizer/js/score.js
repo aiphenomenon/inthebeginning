@@ -65,6 +65,32 @@ class Score {
       score.tracks = json.tracks.map((t, idx) => ScoreTrack.fromJSON(t, idx));
     }
 
+    // Handle NoteLog format: {events: [...]} with no tracks wrapper
+    if (!json.tracks && json.events && Array.isArray(json.events)) {
+      const track = new ScoreTrack();
+      track.trackNum = 1;
+      track.title = json.title || 'Untitled';
+      track.startTime = 0;
+      track.events = json.events
+        .filter(e => typeof e.t === 'number' && typeof e.dur === 'number')
+        .map(e => ({
+          t: e.t || 0,
+          dur: e.dur || 0,
+          note: e.note || 60,
+          inst: e.inst || 'piano',
+          vel: e.vel !== undefined ? e.vel : 0.5,
+          bend: e.bend || 0,
+          ch: e.ch !== undefined ? e.ch : 0
+        }));
+      if (track.events.length > 0) {
+        const lastEvent = track.events[track.events.length - 1];
+        track.duration = lastEvent.t + lastEvent.dur;
+        score.duration = track.duration;
+      }
+      score.tracks = [track];
+      score.mode = 'single';
+    }
+
     // Build flat sorted event list with absolute times
     score._buildEventIndex();
 
