@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Cosmic Runner — In The Beginning</title>
+  <link rel="stylesheet" href="css/game.css">
+</head>
+<body>
+  <!-- Title Screen -->
+  <div id="title-screen" class="screen active">
+    <div class="title-content">
+      <h1 class="title-text">COSMIC RUNNER</h1>
+      <p class="subtitle">In The Beginning Phase 0</p>
+      <div class="title-aki" id="title-aki"></div>
+      <button class="start-btn" id="start-btn">START</button>
+      <p class="controls-hint">SPACE / TAP to jump &bull; Music plays automatically</p>
+    </div>
+  </div>
+
+  <!-- Game Screen -->
+  <div id="game-screen" class="screen">
+    <canvas id="game-canvas"></canvas>
+
+    <!-- HUD overlay -->
+    <div class="hud">
+      <div class="hud-left">
+        <span class="hud-score" id="hud-score">0</span>
+        <span class="hud-label">DISTANCE</span>
+      </div>
+      <div class="hud-center">
+        <span class="hud-track" id="hud-track"></span>
+        <span class="hud-epoch" id="hud-epoch"></span>
+      </div>
+      <div class="hud-right">
+        <button class="hud-btn" id="pause-btn" title="Pause">&#9646;&#9646;</button>
+        <button class="hud-btn" id="mute-btn" title="Mute">&#128266;</button>
+      </div>
+    </div>
+
+    <!-- Music player bar (bottom) -->
+    <div class="music-bar" id="music-bar">
+      <div class="music-controls">
+        <button class="music-btn" id="prev-btn" title="Previous">&#9198;</button>
+        <button class="music-btn" id="play-btn" title="Play/Pause">&#9654;</button>
+        <button class="music-btn" id="next-btn" title="Next">&#9197;</button>
+      </div>
+      <div class="music-progress">
+        <input type="range" class="music-seek" id="music-seek" min="0" max="100" value="0" step="0.1">
+        <span class="music-time" id="music-time">0:00 / 0:00</span>
+      </div>
+      <div class="music-volume">
+        <input type="range" class="music-vol" id="music-vol" min="0" max="100" value="80">
+      </div>
+    </div>
+  </div>
+
+  <!-- Track list overlay (toggleable) -->
+  <div class="track-overlay" id="track-overlay">
+    <div class="track-list-panel" id="track-list-panel"></div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/background.js"></script>
+  <script src="js/runner.js"></script>
+  <script src="js/obstacles.js"></script>
+  <script src="js/music-sync.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
