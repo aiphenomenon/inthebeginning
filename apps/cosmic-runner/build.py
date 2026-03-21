@@ -59,10 +59,12 @@ def build():
         js_path = os.path.join(base_dir, js_file)
         content = read_file(js_path)
         # Remove Node.js module.exports blocks (not needed in browser bundle)
+        # Use DOTALL to match nested braces (e.g., module.exports = { Foo };)
         content = re.sub(
-            r"if\s*\(typeof module !== 'undefined' && module\.exports\)\s*\{[^}]+\}",
+            r"if\s*\(typeof module !== 'undefined' && module\.exports\)\s*\{.*?\}\s*\}",
             '',
-            content
+            content,
+            flags=re.DOTALL
         )
         js_bundle.append(f'// === {js_file} ===')
         js_bundle.append(content)

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Cosmic Runner — In The Beginning</title>
+  <title>Cosmic Runner: In The Beginning</title>
   <style>
 /* ==========================================================================
    Cosmic Runner — In The Beginning
@@ -730,7 +730,8 @@ class Background {
   }
 }
 
-;
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { Background };
 }
 
 // === js/runner.js ===
@@ -1227,7 +1228,8 @@ class Runner {
   }
 }
 
-;
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { Runner, AKI_FORMS };
 }
 
 // === js/obstacles.js ===
@@ -1712,7 +1714,8 @@ class ObstacleManager {
   }
 }
 
-;
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { Obstacle, ObstacleManager, OBSTACLE_TYPES };
 }
 
 // === js/music-sync.js ===
@@ -1930,7 +1933,8 @@ class MusicSync {
   }
 }
 
-;
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { MusicSync };
 }
 
 // === js/game.js ===
@@ -2279,7 +2283,8 @@ class Game {
   }
 }
 
-;
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { Game };
 }
 
 // === js/player.js ===
@@ -2596,7 +2601,8 @@ class GamePlayer {
   }
 }
 
-;
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { GamePlayer };
 }
 
 // === js/app.js ===
@@ -2974,7 +2980,8 @@ if (typeof document !== 'undefined') {
   });
 }
 
-;
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { CosmicRunnerApp };
 }
 
 </script>
