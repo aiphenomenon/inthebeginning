@@ -4,6 +4,49 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.23.0 — 2026-03-21 — V8 Sessions Album + Cosmic Runner V2
+
+### Summary
+
+Three-mode Cosmic Runner V2 with a 12-track "V8 Sessions" album derived from
+the two favorite MP3s (cosmic_radio_v8.mp3 and cosmic_radio_v18_v8-42.mp3).
+
+### V8 Sessions Album
+
+- 12 tracks with nature-themed names symbolizing universe evolution:
+  Ember, Torrent, Quartz, Tide, Root, Glacier, Bloom, Dusk, Coral, Moss,
+  Thunder, Horizon
+- Rendered from RadioEngineV8(seed=42) + RadioEngineV15_V8Tempo(seed=42)
+- Split at low-energy boundaries into 3-6 minute tracks
+- Per-track JSON note metadata for synchronized visualization
+- Located in `apps/audio/output/v8_album/`
+
+### Cosmic Runner V2
+
+- Three modes of operation:
+  - **Music Player**: standalone audio with ambient background grid
+  - **Game**: side-scroller with Aki, subdued cells, parallax stars
+  - **Grid**: full 64x64 cell visualization synced to music
+- Mode switching via tabs or keyboard (1/2/3 keys)
+- Note info panel shows currently playing notes (pitch + instrument)
+- GitHub Pages-ready: single-file build at `dist/index.html`
+- Located in `apps/cosmic-runner-v2/`
+
+### Testing
+
+- 29 tests (3 skipped until album generation completes)
+- Covers file structure, HTML/CSS/JS content, build output, album generation
+
+---
+
+## v0.22.0 — 2026-03-21 — Cosmic Runner (Original)
+
+### Summary
+
+Original Cosmic Runner game with music-synced side-scroller. Superseded by V2.
+
+---
+
 ## v0.21.0 — 2026-03-08 — V21 Album + Visualizer + Streaming
 
 ### Summary

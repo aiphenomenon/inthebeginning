@@ -1009,3 +1009,5 @@ apps/audio/
 | Kotlin Android     | `cd apps/kotlin && ./gradlew assembleRelease`          | Install APK via adb                             | Android app                     |
 | macOS Screensaver  | `cd apps/screensaver-macos && make`                    | `make install`, select in System Preferences    | .saver bundle                   |
 | Ubuntu Screensaver | `cd apps/screensaver-ubuntu && make`                   | `./inthebeginning-screensaver`                  | X11/OpenGL fullscreen           |
+| Cosmic Runner V2   | `cd apps/cosmic-runner-v2 && python build.py`          | Serve directory via HTTP, open `index.html`     | Browser game/visualizer/player  |
+| Audio Album (V8)   | `cd apps/audio && python generate_v8_album.py`         | Play MP3s from `output/v8_album/`               | 12-track album + JSON notes     |
