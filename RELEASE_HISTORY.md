@@ -4,6 +4,66 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.24.0 — 2026-03-22 — GitHub Pages Deployment + MIDI Mode
+
+### Summary
+
+Cosmic Runner V3 made fully self-contained and deployable to any GitHub Pages
+repository. Added in-browser MIDI playback mode with 1,854 classical MIDI files
+from 120 composers, comprehensive provenance tracking, and infinite shuffle mode.
+
+### Cosmic Runner V3 — Self-Contained Audio
+
+- Copied 12 V8 Sessions MP3s into V3's own `audio/` directory
+- Fixed audio paths in `app.js` to use local `audio/` only (no cross-directory refs)
+- All audio assets (MP3s, JSON note files, album index) are now in one directory
+- V3 is fully deployable as a standalone static site
+
+### MIDI Mode
+
+- **MIDI catalog**: 1,854 classical MIDI files from 120 composers, indexed in
+  `midi_catalog.json` with full provenance (composer, era, source, license)
+- **Web Audio API player** (`midi-player.js`): Complete SMF Format 0/1 parser with
+  VLQ decoding, running status, all meta events (tempo, track name, end of track)
+- **Synthesizer**: Multi-channel oscillators (sine/triangle/sawtooth), ADSR envelopes,
+  filtered noise percussion (channel 9), convolver reverb, BiquadFilter
+- **16 mutation presets**: Celestial, Subterranean, Crystal, Nebula, Quantum,
+  Solar Wind, Deep Space, Pulsar, Cosmic Ray, Dark Matter, Supernova,
+  Event Horizon, Starlight, Graviton, Photon
+- **Real-time grid sync**: Note events emitted at 20Hz for 64x64 grid visualization
+- **Provenance display**: Composer, piece name, era, and mutation shown in-game
+
+### Infinite Mode
+
+- Toggle infinite shuffle on title screen for both MP3 album and MIDI library
+- MP3 infinite: random track selection, never repeats consecutive tracks
+- MIDI infinite: random selection from 1,854 pieces with 20-piece back-list
+
+### Build & Deploy
+
+- `build.py`: Bundles all JS/CSS into single 189KB `dist/index.html`
+- `build.py --with-midi`: Includes MIDI library (~25MB) in `dist/midi/`
+- `build.py --full`: Full build with asset verification
+- `DEPLOY.md`: Comprehensive deployment guide for GitHub Pages
+
+### Testing
+
+- **95 Python tests** (71 V3 integration + 24 MIDI catalog validation)
+- **111 JS tests** (27 MIDI player + 84 existing game/radio/config/theme tests)
+- All tests passing
+- Build script produces verified output
+
+### Eras Represented in MIDI Library
+
+- Renaissance (1400-1600): 134 files — DuFay, Josquin, Ockeghem, etc.
+- Baroque (1600-1750): 459 files — Bach, Vivaldi, Handel, Corelli, etc.
+- Classical (1750-1820): 498 files — Mozart, Haydn, Beethoven, etc.
+- Romantic (1820-1900): 556 files — Chopin, Liszt, Brahms, Tchaikovsky, etc.
+- Late Romantic (1890-1920): 127 files — Debussy, Ravel, Elgar, etc.
+- Folk (pre-1900): 80 files — English and Celtic traditional tunes
+
+---
+
 ## v0.23.0 — 2026-03-21 — V8 Sessions Album + Cosmic Runner V2
 
 ### Summary

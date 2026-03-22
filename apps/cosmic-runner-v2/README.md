@@ -1,5 +1,8 @@
 # Cosmic Runner V2 — V8 Sessions
 
+> **Note:** V3 is the latest version with MIDI mode, 2-player, 3D terrain, and
+> GitHub Pages deployment. See `apps/cosmic-runner-v3/`.
+
 A three-mode cosmic music experience built on the V8 Sessions album.
 
 ## Modes
