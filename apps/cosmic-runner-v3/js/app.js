@@ -374,8 +374,13 @@ class CosmicRunnerApp {
       this.musicLoaded = true;
     }
 
-    // Try loading MIDI catalog for MIDI mode
-    const midiLoaded = await this.musicSync.loadMidiCatalog('audio/midi_catalog.json');
+    // Try loading MIDI catalog for MIDI mode.
+    // The catalog index lives in audio/ but MIDI files are served from midi/.
+    // Try midi/ first (deployed layout), then audio/ (development layout).
+    let midiLoaded = await this.musicSync.loadMidiCatalog('midi/midi_catalog.json');
+    if (!midiLoaded) {
+      midiLoaded = await this.musicSync.loadMidiCatalog('audio/midi_catalog.json');
+    }
     this.midiAvailable = midiLoaded;
 
     if (!this.musicLoaded) {

@@ -213,13 +213,20 @@ class MusicSync {
    * @param {string} catalogUrl - URL to midi_catalog.json
    * @returns {Promise<boolean>}
    */
-  async loadMidiCatalog(catalogUrl) {
+  /**
+   * Load MIDI catalog from a JSON index.
+   * @param {string} catalogUrl - URL to midi_catalog.json
+   * @param {string} [midiBaseUrl] - Override base URL for MIDI file paths
+   * @returns {Promise<boolean>}
+   */
+  async loadMidiCatalog(catalogUrl, midiBaseUrl) {
     try {
       const resp = await fetch(catalogUrl);
       if (!resp.ok) return false;
       const data = await resp.json();
       this.midiCatalog = data.midis || [];
-      this.midiBaseUrl = catalogUrl.substring(0, catalogUrl.lastIndexOf('/') + 1);
+      this.midiBaseUrl = midiBaseUrl ||
+        catalogUrl.substring(0, catalogUrl.lastIndexOf('/') + 1);
       return this.midiCatalog.length > 0;
     } catch (e) {
       return false;
