@@ -2,7 +2,7 @@
  * Character definitions for Cosmic Runner V3.
  *
  * Each level/track has a unique character with distinct shape and colors.
- * Characters are drawn as cute pixel-art sprites using canvas primitives.
+ * In two-player mode, P2 gets a slightly darker/shifted variant.
  */
 
 const CHARACTERS = [
@@ -21,6 +21,60 @@ const CHARACTERS = [
 ];
 
 /**
+ * Darken a hex color by a factor (for P2 shading).
+ * @param {string} hex
+ * @param {number} factor - 0-1, where 0.7 = 30% darker
+ * @returns {string}
+ */
+function _darkenHex(hex, factor) {
+  const r = Math.round(parseInt(hex.slice(1, 3), 16) * factor);
+  const g = Math.round(parseInt(hex.slice(3, 5), 16) * factor);
+  const b = Math.round(parseInt(hex.slice(5, 7), 16) * factor);
+  return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
+}
+
+/**
+ * Shift a hex color hue slightly (for P2 differentiation).
+ * @param {string} hex
+ * @param {number} shift - Hue shift in degrees
+ * @returns {string}
+ */
+function _shiftHexHue(hex, shift) {
+  let r = parseInt(hex.slice(1, 3), 16) / 255;
+  let g = parseInt(hex.slice(3, 5), 16) / 255;
+  let b = parseInt(hex.slice(5, 7), 16) / 255;
+
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h, s, l;
+  l = (max + min) / 2;
+  if (max === min) { h = s = 0; }
+  else {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+    else if (max === g) h = ((b - r) / d + 2) / 6;
+    else h = ((r - g) / d + 4) / 6;
+  }
+  h = ((h * 360 + shift) % 360) / 360;
+  if (h < 0) h += 1;
+
+  // HSL to RGB
+  function hue2rgb(p2, q2, t2) {
+    if (t2 < 0) t2 += 1; if (t2 > 1) t2 -= 1;
+    if (t2 < 1/6) return p2 + (q2 - p2) * 6 * t2;
+    if (t2 < 1/2) return q2;
+    if (t2 < 2/3) return p2 + (q2 - p2) * (2/3 - t2) * 6;
+    return p2;
+  }
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+  const p = 2 * l - q;
+  r = Math.round(hue2rgb(p, q, h + 1/3) * 255);
+  g = Math.round(hue2rgb(p, q, h) * 255);
+  b = Math.round(hue2rgb(p, q, h - 1/3) * 255);
+  return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
+}
+
+/**
  * Draw a character at the given position.
  * @param {CanvasRenderingContext2D} ctx
  * @param {Object} char - Character definition from CHARACTERS.
@@ -32,10 +86,19 @@ const CHARACTERS = [
  * @param {boolean} grounded - Whether on ground.
  * @param {number} glowAlpha - Glow intensity (0-1).
  * @param {number} squash - Squash/stretch factor.
+ * @param {boolean} [isP2=false] - If true, use darker/shifted shading for P2.
  */
-function drawCharacter(ctx, char, cx, cy, w, h, runTimer, grounded, glowAlpha, squash) {
+function drawCharacter(ctx, char, cx, cy, w, h, runTimer, grounded, glowAlpha, squash, isP2) {
   const hw = w / 2;
   const hh = h / 2;
+
+  // P2 variant: darker body, shifted hue
+  let bodyColor = char.color;
+  let accentColor = char.accent;
+  if (isP2) {
+    bodyColor = _darkenHex(_shiftHexHue(char.color, 30), 0.75);
+    accentColor = _darkenHex(_shiftHexHue(char.accent, 30), 0.8);
+  }
 
   ctx.save();
   ctx.translate(cx, cy);
@@ -46,8 +109,8 @@ function drawCharacter(ctx, char, cx, cy, w, h, runTimer, grounded, glowAlpha, s
     ctx.save();
     ctx.globalAlpha = glowAlpha * 0.4;
     const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, hw * 2.5);
-    grad.addColorStop(0, char.color);
-    grad.addColorStop(0.5, char.accent);
+    grad.addColorStop(0, bodyColor);
+    grad.addColorStop(0.5, accentColor);
     grad.addColorStop(1, 'transparent');
     ctx.fillStyle = grad;
     ctx.beginPath();
@@ -57,13 +120,13 @@ function drawCharacter(ctx, char, cx, cy, w, h, runTimer, grounded, glowAlpha, s
   }
 
   // Body
-  ctx.fillStyle = char.color;
+  ctx.fillStyle = bodyColor;
   switch (char.shape) {
     case 'blob':
       ctx.beginPath();
       ctx.ellipse(0, 0, hw, hh, 0, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = char.accent;
+      ctx.fillStyle = accentColor;
       ctx.beginPath();
       ctx.ellipse(0, -hh * 0.15, hw * 0.7, hh * 0.6, 0, 0, Math.PI * 2);
       ctx.fill();
@@ -78,7 +141,7 @@ function drawCharacter(ctx, char, cx, cy, w, h, runTimer, grounded, glowAlpha, s
       ctx.lineTo(-hw, 0);
       ctx.closePath();
       ctx.fill();
-      ctx.fillStyle = char.accent;
+      ctx.fillStyle = accentColor;
       ctx.beginPath();
       ctx.moveTo(0, -hh + 5);
       ctx.lineTo(hw * 0.5, 0);
@@ -91,7 +154,7 @@ function drawCharacter(ctx, char, cx, cy, w, h, runTimer, grounded, glowAlpha, s
     case 'star':
       _drawStar(ctx, 0, 0, 5, hw, hw * 0.5);
       ctx.fill();
-      ctx.fillStyle = char.accent;
+      ctx.fillStyle = accentColor;
       _drawStar(ctx, 0, 0, 5, hw * 0.5, hw * 0.3);
       ctx.fill();
       break;
@@ -103,7 +166,7 @@ function drawCharacter(ctx, char, cx, cy, w, h, runTimer, grounded, glowAlpha, s
       ctx.lineTo(-hw, hh);
       ctx.closePath();
       ctx.fill();
-      ctx.fillStyle = char.accent;
+      ctx.fillStyle = accentColor;
       ctx.beginPath();
       ctx.moveTo(0, -hh + 8);
       ctx.lineTo(hw * 0.6, hh - 4);
@@ -115,7 +178,7 @@ function drawCharacter(ctx, char, cx, cy, w, h, runTimer, grounded, glowAlpha, s
     case 'hexagon':
       _drawPoly(ctx, 0, 0, 6, Math.min(hw, hh));
       ctx.fill();
-      ctx.fillStyle = char.accent;
+      ctx.fillStyle = accentColor;
       _drawPoly(ctx, 0, 0, 6, Math.min(hw, hh) * 0.65);
       ctx.fill();
       break;
@@ -136,7 +199,7 @@ function drawCharacter(ctx, char, cx, cy, w, h, runTimer, grounded, glowAlpha, s
       ctx.quadraticCurveTo(-hw * 0.3, hh, -hw * 0.7, hh * 0.3);
       ctx.quadraticCurveTo(-hw, -hh * 0.3, 0, -hh);
       ctx.fill();
-      ctx.fillStyle = char.accent;
+      ctx.fillStyle = accentColor;
       ctx.beginPath();
       ctx.ellipse(0, hh * 0.1, hw * 0.35, hh * 0.4, 0, 0, Math.PI * 2);
       ctx.fill();
@@ -150,7 +213,7 @@ function drawCharacter(ctx, char, cx, cy, w, h, runTimer, grounded, glowAlpha, s
       ctx.lineTo(-hw, 0);
       ctx.closePath();
       ctx.fill();
-      ctx.fillStyle = char.accent;
+      ctx.fillStyle = accentColor;
       ctx.beginPath();
       ctx.moveTo(0, -hh + 6);
       ctx.lineTo(hw - 6, 0);
@@ -168,7 +231,7 @@ function drawCharacter(ctx, char, cx, cy, w, h, runTimer, grounded, glowAlpha, s
       ctx.beginPath();
       ctx.arc(hw * 0.3, -hh * 0.2, hw * 0.7, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = char.accent;
+      ctx.fillStyle = accentColor;
       ctx.beginPath();
       ctx.arc(-hw * 0.2, hh * 0.1, hw * 0.3, 0, Math.PI * 2);
       ctx.fill();
@@ -180,7 +243,7 @@ function drawCharacter(ctx, char, cx, cy, w, h, runTimer, grounded, glowAlpha, s
       ctx.quadraticCurveTo(hw * 1.2, -hh * 0.2, 0, hh);
       ctx.quadraticCurveTo(-hw * 1.2, -hh * 0.2, 0, -hh);
       ctx.fill();
-      ctx.strokeStyle = char.accent;
+      ctx.strokeStyle = accentColor;
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(0, -hh + 4);
@@ -192,7 +255,7 @@ function drawCharacter(ctx, char, cx, cy, w, h, runTimer, grounded, glowAlpha, s
       ctx.beginPath();
       ctx.arc(0, 0, Math.min(hw, hh), 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = char.accent;
+      ctx.fillStyle = accentColor;
       ctx.globalAlpha = 0.5;
       ctx.beginPath();
       ctx.ellipse(-hw * 0.25, -hh * 0.25, hw * 0.35, hh * 0.25, -0.4, 0, Math.PI * 2);
@@ -206,7 +269,7 @@ function drawCharacter(ctx, char, cx, cy, w, h, runTimer, grounded, glowAlpha, s
       ctx.quadraticCurveTo(hw, 0, 0, hh);
       ctx.quadraticCurveTo(-hw, 0, 0, -hh);
       ctx.fill();
-      ctx.fillStyle = char.accent;
+      ctx.fillStyle = accentColor;
       ctx.beginPath();
       ctx.arc(0, hh * 0.2, hw * 0.35, 0, Math.PI * 2);
       ctx.fill();
@@ -216,13 +279,24 @@ function drawCharacter(ctx, char, cx, cy, w, h, runTimer, grounded, glowAlpha, s
       ctx.fillRect(-hw, -hh, w, h);
   }
 
+  // P2 indicator: small outline ring
+  if (isP2) {
+    ctx.strokeStyle = accentColor;
+    ctx.lineWidth = 1.5;
+    ctx.globalAlpha = 0.5;
+    ctx.beginPath();
+    ctx.arc(0, 0, Math.max(hw, hh) + 3, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
   // Eyes
   _drawEyes(ctx, char.eyes, hw, hh, runTimer);
 
   // Legs (when grounded)
   if (grounded) {
     const legOff = Math.sin(runTimer * 16) * 4;
-    ctx.strokeStyle = char.color;
+    ctx.strokeStyle = bodyColor;
     ctx.lineWidth = 3;
     ctx.lineCap = 'round';
     ctx.beginPath();
@@ -303,11 +377,6 @@ function _drawPoly(ctx, cx, cy, sides, r) {
   ctx.closePath();
 }
 
-/**
- * Generate a random VCV/VVC/CVC name (2 vowels + 1 consonant).
- * @param {function} rng - Random function returning 0-1.
- * @returns {string}
- */
 function generatePlayerName(rng) {
   const vowels = 'AEIOU';
   const consonants = 'BCDFGHJKLMNPQRSTVWXYZ';
@@ -315,10 +384,10 @@ function generatePlayerName(rng) {
   const c = () => consonants[Math.floor(rng() * consonants.length)];
 
   const patterns = [
-    () => v() + c() + v(),  // VCV: Abe, Ira
-    () => v() + v() + c(),  // VVC: Aar, Eel
-    () => c() + v() + v(),  // CVV: Bae, Loo
-    () => v() + c() + c(),  // VCC: Abb, Eff (bonus variety)
+    () => v() + c() + v(),
+    () => v() + v() + c(),
+    () => c() + v() + v(),
+    () => v() + c() + c(),
   ];
   return patterns[Math.floor(rng() * patterns.length)]();
 }

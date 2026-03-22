@@ -3,49 +3,39 @@
  *
  * Loads compressed V3 note JSON format (legend-based).
  * Provides time-based event lookups with full-track coverage.
+ * Supports MIDI mode with Web Audio API MIDI playback.
  */
 
 const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
-/**
- * Convert MIDI note number to note name with octave.
- * @param {number} midi
- * @returns {string}
- */
 function midiToNoteName(midi) {
   if (midi < 0 || midi > 127) return '?';
   return `${NOTE_NAMES[midi % 12]}${Math.floor(midi / 12) - 1}`;
 }
 
-/**
- * MusicSync manages compressed score data and time-based lookups.
- */
 class MusicSync {
   constructor() {
-    /** @type {Object|null} */
     this.albumData = null;
-    /** @type {Array<Object>} */
     this.tracks = [];
-    /** @type {Map<number, {legend: Object, events: Array}>} */
     this.trackData = new Map();
-    /** @type {number} */
     this.currentTrack = 0;
-    /** @type {number} */
     this.hueOffset = 0;
-    /** @type {number} */
     this._lastHueShift = 0;
-    /** @type {string} */
     this.baseUrl = '';
-    /** @type {string} */
     this.audioBaseUrl = '';
+
+    /** @type {boolean} Whether in MIDI mode. */
+    this.midiMode = false;
+    /** @type {Array<{path: string, name: string, composer: string}>} MIDI catalog. */
+    this.midiCatalog = [];
+    /** @type {number} Current MIDI index in catalog. */
+    this.currentMidiIndex = 0;
+    /** @type {Array<number>} History of played MIDI indices (up to 144). */
+    this.midiHistory = [];
+    /** @type {string} Base URL for MIDI files. */
+    this.midiBaseUrl = '';
   }
 
-  /**
-   * Load album index JSON.
-   * @param {string} url
-   * @param {string} [audioBaseUrl] - Base URL for MP3 files (if different from notes).
-   * @returns {Promise<boolean>}
-   */
   async loadAlbum(url, audioBaseUrl) {
     try {
       this.baseUrl = url.substring(0, url.lastIndexOf('/') + 1);
@@ -59,6 +49,7 @@ class MusicSync {
         index: i,
         trackNum: t.track_num || (i + 1),
         title: t.title || 'Unknown',
+        epochName: EPOCH_NAMES[i] || 'Unknown Epoch',
         file: t.file,
         audioFile: t.audio_file,
         duration: t.duration || 0,
@@ -72,11 +63,6 @@ class MusicSync {
     }
   }
 
-  /**
-   * Load compressed track events.
-   * @param {number} trackIndex
-   * @returns {Promise<Object>}
-   */
   async loadTrackEvents(trackIndex) {
     if (this.trackData.has(trackIndex)) {
       return this.trackData.get(trackIndex);
@@ -89,14 +75,11 @@ class MusicSync {
       if (!resp.ok) return { legend: {}, events: [] };
       const data = await resp.json();
 
-      // Support both compressed V3 format and legacy V2 format
       let legend, events;
       if (data.legend && Array.isArray(data.events) && Array.isArray(data.events[0])) {
-        // V3 compressed: events are arrays [t, dur, note, inst_idx, vel, ch]
         legend = data.legend;
         events = data.events;
       } else {
-        // V2 legacy: events are objects {t, dur, note, inst, vel, ch}
         legend = { instruments: {}, fields: ['t', 'dur', 'note', 'inst', 'vel', 'ch'] };
         const instMap = {};
         let idx = 0;
@@ -120,12 +103,6 @@ class MusicSync {
     }
   }
 
-  /**
-   * Get active note events at playback time.
-   * Returns expanded objects for rendering.
-   * @param {number} time
-   * @returns {Array<{t: number, dur: number, note: number, inst: string, vel: number, ch: number}>}
-   */
   getActiveEvents(time) {
     const data = this.trackData.get(this.currentTrack);
     if (!data || !data.events.length) return [];
@@ -133,7 +110,6 @@ class MusicSync {
     const instMap = data.legend.instruments || {};
     const active = [];
 
-    // Binary search for start position (events sorted by time)
     const events = data.events;
     let lo = 0, hi = events.length - 1;
     while (lo < hi) {
@@ -142,31 +118,21 @@ class MusicSync {
       else hi = mid;
     }
 
-    // Scan forward from approximate start
     for (let i = Math.max(0, lo - 5); i < events.length; i++) {
       const ev = events[i];
       const t = ev[0], dur = ev[1];
       if (t > time + 0.1) break;
       if (t <= time && t + dur > time) {
         active.push({
-          t: t,
-          dur: dur,
-          note: ev[2],
+          t: t, dur: dur, note: ev[2],
           inst: instMap[String(ev[3])] || 'unknown',
-          vel: ev[4],
-          ch: ev[5],
+          vel: ev[4], ch: ev[5],
         });
       }
     }
     return active;
   }
 
-  /**
-   * Get all events in a time window (for pre-rendering).
-   * @param {number} startTime
-   * @param {number} endTime
-   * @returns {Array}
-   */
   getEventsInRange(startTime, endTime) {
     const data = this.trackData.get(this.currentTrack);
     if (!data || !data.events.length) return [];
@@ -186,11 +152,6 @@ class MusicSync {
     return result;
   }
 
-  /**
-   * Get note info for display.
-   * @param {Array} events
-   * @returns {Array<{pitch: string, inst: string, vel: number}>}
-   */
   getNoteInfo(events) {
     const info = [];
     const seen = new Set();
@@ -205,7 +166,6 @@ class MusicSync {
     return info.slice(0, 12);
   }
 
-  /** Get epoch for current position. */
   getEpoch(time, duration) {
     if (duration <= 0) return { name: 'Quantum Dawn', index: 0 };
     const epochs = [
@@ -216,7 +176,13 @@ class MusicSync {
     return { name: epochs[idx], index: idx };
   }
 
-  /** Update hue offset. */
+  /** Get full display title: "Earth Name — Epoch Name". */
+  getFullTitle(trackIndex) {
+    const track = this.tracks[trackIndex];
+    if (!track) return '';
+    return `${track.title} \u2014 ${track.epochName}`;
+  }
+
   updateHue(time) {
     const shift = Math.floor(time / 120);
     if (shift > this._lastHueShift) {
@@ -225,7 +191,6 @@ class MusicSync {
     }
   }
 
-  /** Get intensity 0-1. */
   getIntensity(time) {
     const events = this.getActiveEvents(time);
     if (!events.length) return 0.1;
@@ -234,7 +199,6 @@ class MusicSync {
     return Math.min(1, avgVel * 0.6 + density * 0.4);
   }
 
-  /** Get audio URL for a track. */
   getAudioUrl(trackIndex) {
     const track = this.tracks[trackIndex];
     if (!track) return '';
@@ -243,6 +207,58 @@ class MusicSync {
 
   getTrackCount() { return this.tracks.length; }
   getTrack(index) { return this.tracks[index] || null; }
+
+  /**
+   * Load MIDI catalog from a JSON index.
+   * @param {string} catalogUrl - URL to midi_catalog.json
+   * @returns {Promise<boolean>}
+   */
+  async loadMidiCatalog(catalogUrl) {
+    try {
+      const resp = await fetch(catalogUrl);
+      if (!resp.ok) return false;
+      const data = await resp.json();
+      this.midiCatalog = data.midis || [];
+      this.midiBaseUrl = catalogUrl.substring(0, catalogUrl.lastIndexOf('/') + 1);
+      return this.midiCatalog.length > 0;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /** Get a random MIDI from catalog (avoiding recent history). */
+  getRandomMidi() {
+    if (this.midiCatalog.length === 0) return null;
+    const recent = new Set(this.midiHistory.slice(-20));
+    let attempts = 0;
+    let idx;
+    do {
+      idx = Math.floor(Math.random() * this.midiCatalog.length);
+      attempts++;
+    } while (recent.has(idx) && attempts < 50);
+
+    this.currentMidiIndex = idx;
+    this.midiHistory.push(idx);
+    if (this.midiHistory.length > MIDI_BACK_LIST_MAX) {
+      this.midiHistory.shift();
+    }
+    return this.midiCatalog[idx];
+  }
+
+  /** Get MIDI info for display (sanitized to prevent XSS). */
+  getMidiDisplayInfo(midi) {
+    if (!midi) return { name: '', composer: '' };
+    // Sanitize: strip HTML tags and dangerous chars
+    const sanitize = (s) => String(s || '')
+      .replace(/[<>]/g, '')
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .slice(0, 200);
+    return {
+      name: sanitize(midi.name),
+      composer: sanitize(midi.composer),
+    };
+  }
 }
 
 if (typeof module !== 'undefined' && module.exports) {

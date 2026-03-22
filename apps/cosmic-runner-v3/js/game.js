@@ -1,9 +1,15 @@
 /**
  * Game Engine for Cosmic Runner V3.
  *
- * Manages game loop, canvas rendering, physics, collision detection.
- * Supports three modes (game, grid, player), two-player mode,
- * progressive 3D transition, and accessibility settings.
+ * Features:
+ * - Spacetime counter (E notation, Big Bang to present)
+ * - True 3D terrain with rolling hills
+ * - Player position management with constraints
+ * - Scoring: jump over = 3pts, hit = 1pt
+ * - Two-player with right-player jump bonus
+ * - 3D disable option for game mode
+ * - Grid cell explosions
+ * - Blast artifact cleanup on mode switch
  */
 
 class Game {
@@ -16,18 +22,12 @@ class Game {
     this.height = 0;
     this.groundY = 0;
 
-    /** @type {Background} */
     this.background = null;
-    /** @type {Renderer3D} */
     this.renderer3d = new Renderer3D();
-    /** @type {BlastEffect} */
     this.blastEffect = blastCanvas ? new BlastEffect(blastCanvas) : null;
-    /** @type {ThemeManager} */
     this.themeManager = new ThemeManager();
 
-    /** @type {Runner[]} Player runners (1 or 2). */
     this.runners = [];
-    /** @type {ObstacleManager|null} */
     this.obstacles = null;
 
     this.baseSpeed = 1;
@@ -42,34 +42,31 @@ class Game {
     this._lastTime = 0;
     this._rafId = 0;
 
-    /** @type {string} 'game', 'grid', or 'player' */
     this.mode = 'game';
-
-    /** @type {number} Number of players (1 or 2). */
     this.numPlayers = 1;
-
-    /** @type {number} Current level/track (0-based). */
     this.currentLevel = 0;
-
-    /** @type {string} Accessibility mode. */
     this.accessMode = 'normal';
-
-    /** @type {string} Grid dimension: '2d' or '3d'. */
     this.gridDim = '2d';
+
+    /** @type {boolean} Whether 3D is disabled for gameplay (separate from grid 3D). */
+    this.game3DDisabled = false;
+
+    // Spacetime counter
+    /** @type {number} Current spacetime distance (years after Big Bang). */
+    this.spacetimeYears = 0;
 
     // Callbacks
     this.onScoreUpdate = null;
     this.onBlast = null;
     this.onEpochChange = null;
+    this.onSpacetimeUpdate = null;
 
     this._currentEpoch = -1;
     this._musicEvents = [];
     this._hueOffset = 0;
     this._groundSegments = [];
 
-    /** @type {number} Track duration for glow calculations. */
     this.trackDuration = 0;
-    /** @type {number} Track progress 0-1. */
     this.trackProgress = 0;
 
     this._resize();
@@ -91,8 +88,14 @@ class Game {
     this.groundY = Math.floor(this.height * 0.78);
 
     if (this.background) this.background.resize(this.width, this.height);
-    for (const r of this.runners) r.setGroundY(this.groundY);
-    if (this.obstacles) this.obstacles.resize(this.width, this.groundY);
+    for (const r of this.runners) {
+      r.setGroundY(this.groundY);
+      r.setScreenWidth(this.width);
+    }
+    if (this.obstacles) {
+      this.obstacles.resize(this.width, this.groundY);
+      this.obstacles.setScreenHeight(this.height);
+    }
   }
 
   _initGround() {
@@ -106,20 +109,30 @@ class Game {
   }
 
   setMode(mode) {
+    const prevMode = this.mode;
     this.mode = mode;
+
+    // Clear blast artifacts when switching away from game mode
+    if (prevMode === 'game' && mode !== 'game' && this.blastEffect) {
+      this.blastEffect.clear();
+    }
+
     if (this.background) {
       switch (mode) {
         case 'grid':
           this.background.setGridOpacity(1.0);
-          this.background.showStars = false;
+          this.background.showStars = true;
+          this.background.starsTwinkle = true; // Soft twinkling in grid mode
           break;
         case 'player':
           this.background.setGridOpacity(0.08);
           this.background.showStars = true;
+          this.background.starsTwinkle = true; // Soft twinkling in player mode
           break;
         default:
           this.background.setGridOpacity(0.12);
           this.background.showStars = true;
+          this.background.starsTwinkle = false; // Parallax scrolling in game
       }
     }
   }
@@ -132,18 +145,27 @@ class Game {
   setAccessMode(mode) {
     this.accessMode = mode;
     if (this.background) this.background.accessMode = mode;
+    if (this.blastEffect) {
+      this.blastEffect.setBrightness(ACCESS_MODES[mode]?.blastBrightness || 0.25);
+    }
   }
 
-  /**
-   * Set up for a new level/track.
-   * @param {number} level
-   */
+  setGame3DDisabled(disabled) {
+    this.game3DDisabled = disabled;
+    this.renderer3d.disabled3D = disabled;
+  }
+
   setLevel(level) {
     this.currentLevel = level;
     if (this.obstacles) this.obstacles.setLevel(level);
     this.renderer3d.updateForLevel(level, 0.1);
     for (const r of this.runners) r.setLevel(level);
     if (this.background) this.background.setTrackIndex(level);
+
+    // Reset spacetime for new track
+    // Each track represents a cosmic epoch
+    const trackFraction = level / 12;
+    this.spacetimeYears = trackFraction * SPACETIME_SCALE;
   }
 
   start() {
@@ -154,12 +176,13 @@ class Game {
 
     if (this.mode === 'game') {
       this._initRunners();
-      this.obstacles = new ObstacleManager(this.width, this.groundY);
+      this.obstacles = new ObstacleManager(this.width, this.groundY, this.height);
       this.obstacles.setLevel(this.currentLevel);
     }
 
     this.totalPoints = 0;
     this.blastCount = 0;
+    this.spacetimeYears = 0;
     this.speed = this.baseSpeed;
     this.running = true;
     this.paused = false;
@@ -169,11 +192,11 @@ class Game {
 
   _initRunners() {
     this.runners = [];
-    this.runners.push(new Runner(this.groundY, 0));
+    this.runners.push(new Runner(this.groundY, 0, this.numPlayers, this.width));
     this.runners[0].setLevel(this.currentLevel);
 
     if (this.numPlayers === 2) {
-      const r2 = new Runner(this.groundY, 1);
+      const r2 = new Runner(this.groundY, 1, this.numPlayers, this.width);
       r2.setLevel(this.currentLevel);
       this.runners.push(r2);
     }
@@ -197,14 +220,50 @@ class Game {
     if (this._rafId) { cancelAnimationFrame(this._rafId); this._rafId = 0; }
   }
 
-  /**
-   * Jump for a specific player.
-   * @param {number} [playerIndex=0]
-   */
   jump(playerIndex) {
     if (!this.running || this.paused || this.mode !== 'game') return;
     const idx = playerIndex || 0;
     if (this.runners[idx]) this.runners[idx].jump();
+  }
+
+  fastDrop(playerIndex) {
+    if (!this.running || this.paused || this.mode !== 'game') return;
+    const idx = playerIndex || 0;
+    if (this.runners[idx]) this.runners[idx].fastDrop();
+  }
+
+  movePlayer(playerIndex, delta) {
+    if (!this.running || this.mode !== 'game') return;
+    const idx = playerIndex || 0;
+    if (!this.runners[idx]) return;
+    this.runners[idx].moveHorizontal(delta);
+    this._enforcePlayerSeparation();
+  }
+
+  setPlayerPosition(playerIndex, fraction) {
+    if (!this.runners[playerIndex]) return;
+    this.runners[playerIndex].setPositionFraction(fraction);
+    this._enforcePlayerSeparation();
+  }
+
+  /** Ensure P2 is always to the right of P1 with minimum separation. */
+  _enforcePlayerSeparation() {
+    if (this.numPlayers < 2 || this.runners.length < 2) return;
+    const p1 = this.runners[0];
+    const p2 = this.runners[1];
+    const minSep = PLAYER_MIN_SEPARATION;
+
+    if (p2.positionFraction < p1.positionFraction + minSep) {
+      p2.positionFraction = p1.positionFraction + minSep;
+      p2._clampPosition();
+      p2.x = p2.positionFraction * p2.screenWidth;
+      // If P2 can't move right enough, push P1 left
+      if (p2.positionFraction < p1.positionFraction + minSep) {
+        p1.positionFraction = p2.positionFraction - minSep;
+        p1._clampPosition();
+        p1.x = p1.positionFraction * p1.screenWidth;
+      }
+    }
   }
 
   adjustSpeed(delta) {
@@ -260,18 +319,34 @@ class Game {
     // Update 3D renderer
     this.renderer3d.updateForLevel(this.currentLevel, dt);
 
+    // Update spacetime counter
     if (this.mode === 'game') {
-      // Update runners
+      // Spacetime increments based on scroll speed and track position
+      const trackYears = SPACETIME_SCALE / 12; // years per track
+      this.spacetimeYears += (this.scrollSpeed * dt / 1000) * trackYears * 0.0001;
+      // Also advance based on track progress
+      const targetYears = (this.currentLevel + this.trackProgress) / 12 * SPACETIME_SCALE;
+      this.spacetimeYears += (targetYears - this.spacetimeYears) * dt * 0.5;
+
+      if (this.onSpacetimeUpdate) {
+        this.onSpacetimeUpdate(this.spacetimeYears);
+      }
+    }
+
+    if (this.mode === 'game') {
+      // Adjust runner ground Y based on terrain
       for (const runner of this.runners) {
+        const terrainGroundY = this.renderer3d.getGroundYAtX(
+          runner.x, this.groundY, this.background.scrollX);
+        runner.setGroundY(terrainGroundY);
         runner.update(dt, this.scrollSpeed, this.trackDuration, this.trackProgress);
       }
 
-      // Update obstacles
       if (this.obstacles) {
         this.obstacles.update(dt, this.speed, this.scrollSpeed);
       }
 
-      // Update ground
+      // Ground segments
       for (const seg of this._groundSegments) {
         seg.x -= this.scrollSpeed * dt;
         if (seg.x + seg.w < 0) {
@@ -280,33 +355,45 @@ class Game {
         }
       }
 
-      // Check collisions and scoring
-      for (const runner of this.runners) {
-        if (this.obstacles) {
-          // Check jump-overs for scoring
-          const jumpedCount = this.obstacles.checkJumpedOver(runner.getBounds());
-          if (jumpedCount > 0) {
-            runner.jumpOverCount += jumpedCount;
-          }
+      // Collisions and scoring
+      for (let ri = 0; ri < this.runners.length; ri++) {
+        const runner = this.runners[ri];
+        if (!this.obstacles) continue;
 
-          // Check hits
-          const hit = this.obstacles.checkCollision(runner.getBounds());
-          if (hit) {
-            hit.blast();
-            runner.blast();
-            this.blastCount++;
+        // Check jump-overs
+        const jumpedCount = this.obstacles.checkJumpedOver(runner.getBounds());
+        if (jumpedCount > 0) {
+          runner.jumpOverCount += jumpedCount;
+        }
+
+        // Check hits
+        const hit = this.obstacles.checkCollision(runner.getBounds());
+        if (hit) {
+          hit.blast();
+          runner.blast();
+          this.blastCount++;
+
+          // Scoring: hit = 1pt, but in 2P if right player jumps same obstacle = 3pts for them
+          if (this.numPlayers === 2 && ri === 0 && !hit.scored) {
+            // P1 (left) hit it
             this.totalPoints += SCORE.HIT_OBJECT;
-
-            // Full-screen blast effect
-            if (this.blastEffect && ACCESS_MODES[this.accessMode]?.blastZoom) {
-              this.blastEffect.trigger(
-                runner.x + runner.w / 2,
-                runner.y - runner.h / 2,
-                hit.color);
-            }
-
-            if (this.onBlast) this.onBlast(this.blastCount);
+            hit.scored = true;
+          } else if (this.numPlayers === 2 && ri === 1 && !hit.scored) {
+            // P2 (right) hit it
+            this.totalPoints += SCORE.HIT_OBJECT;
+            hit.scored = true;
+          } else {
+            this.totalPoints += SCORE.HIT_OBJECT;
           }
+
+          if (this.blastEffect && ACCESS_MODES[this.accessMode]?.blastZoom) {
+            this.blastEffect.trigger(
+              runner.x + runner.w / 2,
+              runner.y - runner.h / 2,
+              hit.color);
+          }
+
+          if (this.onBlast) this.onBlast(this.blastCount);
         }
       }
 
@@ -318,7 +405,7 @@ class Game {
       for (const r of this.runners) points += r.points;
       if (this.onScoreUpdate) this.onScoreUpdate(points);
 
-      // Check cooperative glow (if either player has streak > 50%)
+      // Cooperative glow
       if (this.numPlayers === 2) {
         const anyGlow = this.runners.some(r => r.glowTarget > 0);
         if (anyGlow) {
@@ -344,14 +431,15 @@ class Game {
       if (this.renderer3d.tilt < 0.1) {
         for (const seg of this._groundSegments) {
           ctx.fillStyle = seg.color;
-          ctx.fillRect(seg.x, this.groundY + 2, seg.w, seg.h);
+          const terrainH = this.renderer3d.getTerrainHeight(
+            this.background.scrollX + seg.x);
+          ctx.fillRect(seg.x, this.groundY - terrainH + 2, seg.w, seg.h);
         }
       }
 
       // Obstacles
       if (this.obstacles) {
         if (this.renderer3d.tilt > 0.01) {
-          // 3D obstacle rendering
           for (const obs of this.obstacles.obstacles) {
             if (!obs.blasted) {
               const rendered = this.renderer3d.renderObstacle3D(
@@ -370,6 +458,9 @@ class Game {
       for (const runner of this.runners) {
         runner.render(ctx);
       }
+
+      // Spacetime counter
+      this._renderSpacetime(ctx);
     }
 
     // Blast effect overlay
@@ -378,8 +469,37 @@ class Game {
     }
   }
 
+  _renderSpacetime(ctx) {
+    const years = this.spacetimeYears;
+    let label;
+    if (years < 1000) {
+      label = `${years.toFixed(0)} yr`;
+    } else if (years < 1e6) {
+      label = `${(years / 1e3).toFixed(1)}E3 yr`;
+    } else if (years < 1e9) {
+      label = `${(years / 1e6).toFixed(2)}E6 yr`;
+    } else {
+      label = `${(years / 1e9).toFixed(3)}E9 yr`;
+    }
+
+    ctx.save();
+    ctx.font = '10px "Courier New", monospace';
+    ctx.fillStyle = 'rgba(180, 200, 220, 0.5)';
+    ctx.textAlign = 'right';
+    ctx.fillText(`Spacetime: ${label}`, this.width - 12, this.height - 55);
+    ctx.restore();
+  }
+
   getPlayerNames() {
     return this.runners.map(r => r.name);
+  }
+
+  /** Find which runner (if any) is at screen position (for drag). */
+  getRunnerAtPosition(sx, sy) {
+    for (let i = this.runners.length - 1; i >= 0; i--) {
+      if (this.runners[i].hitTest(sx, sy)) return i;
+    }
+    return -1;
   }
 
   destroy() {

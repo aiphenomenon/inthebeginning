@@ -1,34 +1,51 @@
 /**
  * Theme system for Cosmic Runner V3.
  *
- * Users can select a color theme and a star style from the title screen
- * or in-game. Themes tint the overall color palette while respecting
- * per-track color schemes.
+ * Themes tint the overall color palette while respecting per-track colors.
+ * Star styles now show their actual symbol in the picker.
  */
 
-/** Predefined color themes. Each adjusts hue/saturation/brightness. */
 const THEMES = [
   { name: 'Cosmic',     hueShift: 0,   satMult: 1.0, brightMult: 1.0, accent: [100, 180, 255] },
-  { name: 'Ember',      hueShift: -20, satMult: 1.2, brightMult: 1.0, accent: [255, 120, 60] },
-  { name: 'Neon',       hueShift: 30,  satMult: 1.4, brightMult: 1.1, accent: [0, 255, 180] },
+  { name: 'Ember',      hueShift: -20, satMult: 1.2, brightMult: 1.05, accent: [255, 120, 60] },
+  { name: 'Neon',       hueShift: 30,  satMult: 1.4, brightMult: 1.15, accent: [0, 255, 180] },
   { name: 'Midnight',   hueShift: 0,   satMult: 0.6, brightMult: 0.8, accent: [80, 80, 160] },
-  { name: 'Sunset',     hueShift: -30, satMult: 1.1, brightMult: 1.0, accent: [255, 150, 80] },
-  { name: 'Aurora',     hueShift: 60,  satMult: 1.3, brightMult: 1.0, accent: [100, 255, 150] },
+  { name: 'Sunset',     hueShift: -30, satMult: 1.15, brightMult: 1.05, accent: [255, 150, 80] },
+  { name: 'Aurora',     hueShift: 60,  satMult: 1.3, brightMult: 1.1, accent: [100, 255, 150] },
   { name: 'Void',       hueShift: 0,   satMult: 0.3, brightMult: 0.6, accent: [120, 120, 140] },
   { name: 'Plasma',     hueShift: 45,  satMult: 1.5, brightMult: 1.2, accent: [255, 80, 255] },
 ];
 
-/** Star style definitions. 34 different star appearances. */
+/** Star style definitions with display symbols for the picker. */
 const STAR_STYLES = [];
 (function() {
-  const shapes = ['circle', 'diamond', 'cross', 'dot', 'ring', 'triangle',
-    'square', 'spark', 'hex', 'asterisk', 'crescent', 'teardrop', 'flower',
-    'spiral', 'arrow', 'wave', 'bolt'];
+  const defs = [
+    { shape: 'circle',   symbol: '\u25CF' },     // ●
+    { shape: 'diamond',  symbol: '\u25C6' },     // ◆
+    { shape: 'cross',    symbol: '\u271A' },     // ✚
+    { shape: 'dot',      symbol: '\u00B7' },     // ·
+    { shape: 'ring',     symbol: '\u25CB' },     // ○
+    { shape: 'triangle', symbol: '\u25B2' },     // ▲
+    { shape: 'square',   symbol: '\u25A0' },     // ■
+    { shape: 'spark',    symbol: '\u2737' },     // ✷
+    { shape: 'hex',      symbol: '\u2B22' },     // ⬢
+    { shape: 'asterisk', symbol: '\u2731' },     // ✱
+    { shape: 'crescent', symbol: '\u263D' },     // ☽
+    { shape: 'teardrop', symbol: '\u{1F4A7}' },  // 💧
+    { shape: 'flower',   symbol: '\u2740' },     // ❀
+    { shape: 'spiral',   symbol: '\u{1F300}' },  // 🌀
+    { shape: 'arrow',    symbol: '\u2191' },     // ↑
+    { shape: 'wave',     symbol: '\u223F' },     // ∿
+    { shape: 'bolt',     symbol: '\u26A1' },     // ⚡
+  ];
   const sizes = ['tiny', 'small'];
   let idx = 0;
-  for (const shape of shapes) {
+  for (const def of defs) {
     for (const size of sizes) {
-      STAR_STYLES.push({ id: idx, shape, size, name: `${shape} (${size})` });
+      STAR_STYLES.push({
+        id: idx, shape: def.shape, size, symbol: def.symbol,
+        name: `${def.symbol} ${def.shape} (${size})`
+      });
       idx++;
       if (idx >= 34) break;
     }
@@ -36,39 +53,19 @@ const STAR_STYLES = [];
   }
 })();
 
-/**
- * ThemeManager handles theme state and provides color transforms.
- */
 class ThemeManager {
   constructor() {
-    /** @type {number} Active theme index. */
     this.themeIndex = 0;
-    /** @type {number} Active star style index. */
     this.starStyleIndex = 0;
   }
 
-  /** Get the active theme. */
   getTheme() { return THEMES[this.themeIndex]; }
-
-  /** Get the active star style. */
   getStarStyle() { return STAR_STYLES[this.starStyleIndex]; }
 
-  /**
-   * Apply theme hue shift to a base hue.
-   * @param {number} hue - Base hue (0-360).
-   * @returns {number} Shifted hue.
-   */
   shiftHue(hue) {
     return (hue + this.getTheme().hueShift + 360) % 360;
   }
 
-  /**
-   * Apply theme to an HSL color.
-   * @param {number} h - Hue (0-360).
-   * @param {number} s - Saturation (0-100).
-   * @param {number} l - Lightness (0-100).
-   * @returns {string} CSS hsl string.
-   */
   applyTheme(h, s, l) {
     const t = this.getTheme();
     const nh = (h + t.hueShift + 360) % 360;
@@ -77,10 +74,6 @@ class ThemeManager {
     return `hsl(${nh}, ${ns}%, ${nl}%)`;
   }
 
-  /**
-   * Get CSS accent color for current theme.
-   * @returns {string}
-   */
   getAccentCSS() {
     const a = this.getTheme().accent;
     return `rgb(${a[0]}, ${a[1]}, ${a[2]})`;

@@ -1,9 +1,11 @@
 /**
  * Main Application Controller for Cosmic Runner V3.
  *
- * Supports: three modes (player/game/grid), two-player cooperative,
- * progressive 3D transition, theme/accessibility settings,
- * lock-screen audio, and full-track music visualization.
+ * Supports: three modes (player/game/grid) + MIDI mode,
+ * two-player cooperative, progressive 3D transition,
+ * theme/accessibility settings, player position controls,
+ * arrow key + touch + mouse input, settings persistence,
+ * restart, help overlay, and comprehensive keyboard mapping.
  */
 
 class CosmicRunnerApp {
@@ -29,10 +31,31 @@ class CosmicRunnerApp {
     this.hudTrack = null;
     this.hudEpoch = null;
     this.hudNames = null;
+    this.hudSpacetime = null;
     this.noteInfoPanel = null;
     this.noteInfoContent = null;
     this.songTitleDisplay = null;
     this.pauseOverlay = null;
+
+    // Settings
+    this.settings = this._loadSettings();
+
+    // MIDI mode
+    this.midiMode = false;
+    this.midiAvailable = false;
+    /** @type {number} Saved JSON track position when entering MIDI mode. */
+    this._savedJsonTrack = 0;
+    this._savedJsonTime = 0;
+
+    // Input state
+    this._dragPlayerIndex = -1;
+    this._dragStartX = 0;
+
+    // P2 key states (for continuous movement)
+    this._p2LeftHeld = false;
+    this._p2RightHeld = false;
+    this._p1LeftHeld = false;
+    this._p1RightHeld = false;
   }
 
   async init() {
@@ -44,6 +67,7 @@ class CosmicRunnerApp {
     this.hudTrack = document.getElementById('hud-track');
     this.hudEpoch = document.getElementById('hud-epoch');
     this.hudNames = document.getElementById('hud-names');
+    this.hudSpacetime = document.getElementById('hud-spacetime');
     this.noteInfoPanel = document.getElementById('note-info');
     this.noteInfoContent = document.getElementById('note-info-content');
     this.songTitleDisplay = document.getElementById('song-title-display');
@@ -70,6 +94,10 @@ class CosmicRunnerApp {
     const startBtn = document.getElementById('start-btn');
     if (startBtn) startBtn.addEventListener('click', () => this._start());
 
+    // Restart
+    const restartBtn = document.getElementById('restart-btn');
+    if (restartBtn) restartBtn.addEventListener('click', () => this._restart());
+
     // Pause
     const pauseBtn = document.getElementById('pause-btn');
     if (pauseBtn) pauseBtn.addEventListener('click', () => this._togglePause());
@@ -82,6 +110,15 @@ class CosmicRunnerApp {
     });
     if (speedUp) speedUp.addEventListener('click', () => {
       if (this.game) this.game.adjustSpeed(SPEED_STEP);
+    });
+
+    // Mute
+    const muteBtn = document.getElementById('mute-btn');
+    if (muteBtn) muteBtn.addEventListener('click', () => {
+      if (this.player) {
+        this.player.audio.muted = !this.player.audio.muted;
+        muteBtn.textContent = this.player.audio.muted ? '\u{1F507}' : '\u{1F50A}';
+      }
     });
 
     // Mode tabs
@@ -100,22 +137,86 @@ class CosmicRunnerApp {
 
     // Theme overlay
     this._initThemeOverlay();
-
-    // Accessibility overlay
     this._initAccessibilityOverlay();
+    this._initSettingsOverlay();
+    this._initHelpOverlay();
 
-    // In-game overlays
+    // In-game overlay buttons
     const ingameTheme = document.getElementById('ingame-theme-btn');
     const ingameAccess = document.getElementById('ingame-access-btn');
-    if (ingameTheme) ingameTheme.addEventListener('click', () => {
-      document.getElementById('theme-overlay')?.classList.toggle('visible');
-    });
-    if (ingameAccess) ingameAccess.addEventListener('click', () => {
-      document.getElementById('accessibility-overlay')?.classList.toggle('visible');
-    });
+    const ingameHelp = document.getElementById('ingame-help-btn');
+    if (ingameTheme) ingameTheme.addEventListener('click', () => this._showOverlay('theme-overlay'));
+    if (ingameAccess) ingameAccess.addEventListener('click', () => this._showOverlay('accessibility-overlay'));
+    if (ingameHelp) ingameHelp.addEventListener('click', () => this._showOverlay('help-overlay'));
+
+    // Track title and epoch tappable
+    if (this.hudTrack) {
+      this.hudTrack.style.cursor = 'pointer';
+      this.hudTrack.addEventListener('click', () => {
+        document.getElementById('track-overlay')?.classList.toggle('visible');
+      });
+    }
+    if (this.hudEpoch) {
+      this.hudEpoch.style.cursor = 'pointer';
+      this.hudEpoch.addEventListener('click', () => {
+        document.getElementById('track-overlay')?.classList.toggle('visible');
+      });
+    }
+
+    // Game 3D toggle
+    const game3DToggle = document.getElementById('game-3d-toggle');
+    if (game3DToggle) {
+      game3DToggle.checked = !this.settings.game3DDisabled;
+      game3DToggle.addEventListener('change', () => {
+        this.settings.game3DDisabled = !game3DToggle.checked;
+        this._saveSettings();
+        if (this.game) this.game.setGame3DDisabled(this.settings.game3DDisabled);
+      });
+    }
+
+    // Note display toggle
+    const noteDisplayToggle = document.getElementById('note-display-toggle');
+    if (noteDisplayToggle) {
+      noteDisplayToggle.checked = this.settings.showNotes !== false;
+      noteDisplayToggle.addEventListener('change', () => {
+        this.settings.showNotes = noteDisplayToggle.checked;
+        this._saveSettings();
+        this._updateNoteInfoVisibility();
+      });
+    }
 
     this._bindInput();
     await this._loadMusic();
+
+    // Apply saved settings
+    if (this.settings.themeIndex !== undefined) {
+      this.themeManager.themeIndex = this.settings.themeIndex;
+    }
+    if (this.settings.starStyleIndex !== undefined) {
+      this.themeManager.starStyleIndex = this.settings.starStyleIndex;
+    }
+  }
+
+  _showOverlay(id) {
+    const overlay = document.getElementById(id);
+    if (!overlay) return;
+    overlay.classList.add('visible');
+    // Pause gameplay when opening overlays in game mode
+    if (this.mode === 'game' && this.game && !this.game.paused) {
+      this._togglePause();
+      this._pausedByOverlay = true;
+    }
+  }
+
+  _hideOverlay(id) {
+    const overlay = document.getElementById(id);
+    if (!overlay) return;
+    overlay.classList.remove('visible');
+    // Resume if we paused for overlay
+    if (this._pausedByOverlay && this.game?.paused) {
+      this._togglePause();
+      this._pausedByOverlay = false;
+    }
   }
 
   _initThemeOverlay() {
@@ -127,7 +228,7 @@ class CosmicRunnerApp {
     if (grid) {
       THEMES.forEach((theme, i) => {
         const btn = document.createElement('button');
-        btn.className = 'theme-chip' + (i === 0 ? ' selected' : '');
+        btn.className = 'theme-chip' + (i === this.themeManager.themeIndex ? ' selected' : '');
         const a = theme.accent;
         btn.style.borderColor = `rgb(${a[0]}, ${a[1]}, ${a[2]})`;
         btn.textContent = theme.name;
@@ -135,29 +236,40 @@ class CosmicRunnerApp {
           grid.querySelectorAll('.theme-chip').forEach(b => b.classList.remove('selected'));
           btn.classList.add('selected');
           this.themeManager.themeIndex = i;
+          this.settings.themeIndex = i;
+          this._saveSettings();
         });
         grid.appendChild(btn);
       });
     }
 
     if (starGrid) {
-      // Show first 12 star styles as buttons (fitting in the panel)
       for (let i = 0; i < Math.min(34, STAR_STYLES.length); i++) {
         const style = STAR_STYLES[i];
         const btn = document.createElement('button');
-        btn.className = 'star-chip' + (i === 0 ? ' selected' : '');
+        btn.className = 'star-chip' + (i === this.themeManager.starStyleIndex ? ' selected' : '');
+        // Show symbol + name
         btn.textContent = style.name;
         btn.addEventListener('click', () => {
           starGrid.querySelectorAll('.star-chip').forEach(b => b.classList.remove('selected'));
           btn.classList.add('selected');
           this.themeManager.starStyleIndex = i;
+          this.settings.starStyleIndex = i;
+          this._saveSettings();
         });
         starGrid.appendChild(btn);
       }
     }
 
     if (close && overlay) {
-      close.addEventListener('click', () => overlay.classList.remove('visible'));
+      close.addEventListener('click', () => this._hideOverlay('theme-overlay'));
+    }
+
+    // Click outside to close
+    if (overlay) {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) this._hideOverlay('theme-overlay');
+      });
     }
 
     // Open from title screen
@@ -176,12 +288,19 @@ class CosmicRunnerApp {
         document.querySelectorAll('.access-btn').forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
         const mode = btn.dataset.access;
+        this.settings.accessMode = mode;
+        this._saveSettings();
         if (this.game) this.game.setAccessMode(mode);
       });
     });
 
     if (close && overlay) {
-      close.addEventListener('click', () => overlay.classList.remove('visible'));
+      close.addEventListener('click', () => this._hideOverlay('accessibility-overlay'));
+    }
+    if (overlay) {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) this._hideOverlay('accessibility-overlay');
+      });
     }
 
     const accessBtn = document.getElementById('accessibility-btn');
@@ -190,27 +309,41 @@ class CosmicRunnerApp {
     }
   }
 
+  _initSettingsOverlay() {
+    const overlay = document.getElementById('settings-overlay');
+    const close = document.getElementById('settings-close');
+    if (close && overlay) {
+      close.addEventListener('click', () => this._hideOverlay('settings-overlay'));
+    }
+    if (overlay) {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) this._hideOverlay('settings-overlay');
+      });
+    }
+  }
+
+  _initHelpOverlay() {
+    const overlay = document.getElementById('help-overlay');
+    const close = document.getElementById('help-close');
+    if (close && overlay) {
+      close.addEventListener('click', () => this._hideOverlay('help-overlay'));
+    }
+    if (overlay) {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) this._hideOverlay('help-overlay');
+      });
+    }
+  }
+
   async _loadMusic() {
-    // Try multiple paths for the album notes
-    const paths = [
-      'audio/album_notes.json',
-      '../cosmic-runner-v3/audio/album_notes.json',
-    ];
-    // Audio files are in v2 dir (shared)
-    const audioPaths = [
-      '../cosmic-runner-v2/audio/',
-      'audio/',
-    ];
+    const paths = ['audio/album_notes.json', '../cosmic-runner-v3/audio/album_notes.json'];
+    const audioPaths = ['../cosmic-runner-v2/audio/', 'audio/'];
 
     for (let i = 0; i < paths.length; i++) {
       const loaded = await this.musicSync.loadAlbum(paths[i], audioPaths[i]);
-      if (loaded) {
-        this.musicLoaded = true;
-        break;
-      }
+      if (loaded) { this.musicLoaded = true; break; }
     }
 
-    // Also try with audio files in same directory
     if (!this.musicLoaded) {
       const loaded = await this.musicSync.loadAlbum('audio/album_notes.json');
       if (loaded) this.musicLoaded = true;
@@ -228,19 +361,19 @@ class CosmicRunnerApp {
     this.screen = 'main';
     document.body.className = `mode-${this.mode}`;
 
-    // Update tabs
     document.querySelectorAll('.tab-btn').forEach(tab => {
       tab.classList.toggle('active', tab.dataset.mode === this.mode);
     });
 
-    // Show grid dim tabs only in grid mode
     this._updateGridDimTabs();
 
-    // Init game
     this.game = new Game(this.canvas, this.blastCanvas);
     this.game.mode = this.mode;
     this.game.numPlayers = this.numPlayers;
     this.game.themeManager = this.themeManager;
+    this.game.setGame3DDisabled(this.settings.game3DDisabled || false);
+    this.game.setAccessMode(this.settings.accessMode || 'normal');
+
     this.game.onScoreUpdate = (score) => {
       if (this.hudScore) this.hudScore.textContent = score;
     };
@@ -248,12 +381,16 @@ class CosmicRunnerApp {
       if (this.hudEpoch) this.hudEpoch.textContent = name;
     };
     this.game.onBlast = (count) => {
-      this.canvas.style.transform = `translateX(${(Math.random() - 0.5) * 6}px)`;
-      setTimeout(() => { this.canvas.style.transform = ''; }, 80);
+      this.canvas.style.transform = `translateX(${(Math.random() - 0.5) * 4}px)`;
+      setTimeout(() => { this.canvas.style.transform = ''; }, 60);
+    };
+    this.game.onSpacetimeUpdate = (years) => {
+      if (this.hudSpacetime) {
+        this.hudSpacetime.textContent = this._formatSpacetime(years);
+      }
     };
     this.game.start();
 
-    // Init player
     this.player = new GamePlayer(this.musicSync);
     this.player.bindUI();
     this.player.onTimeUpdate = (time) => this._onMusicTime(time);
@@ -270,8 +407,25 @@ class CosmicRunnerApp {
     this._updateNames();
   }
 
+  _restart() {
+    if (this.game) { this.game.destroy(); this.game = null; }
+    if (this.player) { this.player.destroy(); this.player = null; }
+    this._hidePauseOverlay();
+
+    this.mainScreen.classList.remove('active');
+    this.titleScreen.classList.add('active');
+    this.screen = 'title';
+    document.body.className = '';
+
+    // Reset state
+    this.midiMode = false;
+    this._savedJsonTrack = 0;
+    this._savedJsonTime = 0;
+  }
+
   _switchMode(newMode) {
     if (newMode === this.mode) return;
+    const prevMode = this.mode;
     this.mode = newMode;
     document.body.className = `mode-${this.mode}`;
 
@@ -285,7 +439,7 @@ class CosmicRunnerApp {
       this.game.setMode(this.mode);
       if (this.mode === 'game' && this.game.runners.length === 0) {
         this.game._initRunners();
-        this.game.obstacles = new ObstacleManager(this.game.width, this.game.groundY);
+        this.game.obstacles = new ObstacleManager(this.game.width, this.game.groundY, this.game.height);
         this.game.obstacles.setLevel(this.game.currentLevel);
       } else if (this.mode !== 'game') {
         this.game.runners = [];
@@ -299,13 +453,15 @@ class CosmicRunnerApp {
       }
     }
 
-    // Show/hide score and player names
+    // Show/hide score, names, spacetime
     const scoreEl = document.getElementById('hud-score');
     const scoreLabelEl = document.getElementById('hud-score-label');
     const namesEl = document.getElementById('hud-names');
+    const spacetimeEl = document.getElementById('hud-spacetime');
     if (scoreEl) scoreEl.style.display = this.mode === 'game' ? '' : 'none';
     if (scoreLabelEl) scoreLabelEl.style.display = this.mode === 'game' ? '' : 'none';
     if (namesEl) namesEl.style.display = this.mode === 'game' ? '' : 'none';
+    if (spacetimeEl) spacetimeEl.style.display = this.mode === 'game' ? '' : 'none';
 
     this._updateNoteInfoVisibility();
     this._updateSongTitleDisplay();
@@ -318,7 +474,8 @@ class CosmicRunnerApp {
 
   _updateNoteInfoVisibility() {
     if (this.noteInfoPanel) {
-      const show = this.mode === 'grid' || this.mode === 'player';
+      const showNotes = this.settings.showNotes !== false;
+      const show = showNotes && (this.mode === 'grid' || this.mode === 'player');
       this.noteInfoPanel.classList.toggle('visible', show);
     }
   }
@@ -327,11 +484,13 @@ class CosmicRunnerApp {
     if (!this.songTitleDisplay) return;
 
     if (this.mode === 'player') {
-      const track = this.musicSync.getTrack(this.player?.currentTrack || 0);
+      const trackIdx = this.player?.currentTrack || 0;
+      const track = this.musicSync.getTrack(trackIdx);
       if (track) {
-        const tc = TRACK_COLORS[(this.player?.currentTrack || 0) % TRACK_COLORS.length];
+        const tc = TRACK_COLORS[trackIdx % TRACK_COLORS.length];
         const color = `rgb(${tc.primary[0]}, ${tc.primary[1]}, ${tc.primary[2]})`;
-        this.songTitleDisplay.textContent = `${track.trackNum}. ${track.title}`;
+        // Full title: earth-name — epoch name
+        this.songTitleDisplay.textContent = this.musicSync.getFullTitle(trackIdx);
         this.songTitleDisplay.style.color = color;
         this.songTitleDisplay.style.textShadow = `0 0 30px ${color}`;
         this.songTitleDisplay.classList.add('visible');
@@ -355,7 +514,6 @@ class CosmicRunnerApp {
     const epoch = this.musicSync.getEpoch(time, duration);
     this.game.setEpoch(epoch.index, epoch.name);
 
-    // Track progress for glow calculations
     if (duration > 0) {
       this.game.setTrackProgress(time / duration, duration);
     }
@@ -394,7 +552,12 @@ class CosmicRunnerApp {
   _updateTrackDisplay(trackIndex) {
     const track = this.musicSync.getTrack(trackIndex);
     if (track && this.hudTrack) {
+      // Show both earth-name and epoch name
       this.hudTrack.textContent = `${track.trackNum}. ${track.title}`;
+      this.hudTrack.title = this.musicSync.getFullTitle(trackIndex);
+    }
+    if (track && this.hudEpoch) {
+      this.hudEpoch.textContent = track.epochName;
     }
   }
 
@@ -449,18 +612,13 @@ class CosmicRunnerApp {
       if (!track) continue;
       const entry = document.createElement('div');
       entry.className = 'track-entry' + (i === 0 ? ' active' : '');
-      entry.textContent = `${track.trackNum}. ${track.title}`;
+      entry.textContent = `${track.trackNum}. ${track.title} \u2014 ${track.epochName}`;
       entry.dataset.index = i;
       entry.addEventListener('click', () => {
         this.player.loadTrack(i).then(() => this.player.play());
         overlay.classList.remove('visible');
       });
       panel.appendChild(entry);
-    }
-
-    if (this.hudTrack) {
-      this.hudTrack.style.cursor = 'pointer';
-      this.hudTrack.addEventListener('click', () => overlay.classList.toggle('visible'));
     }
 
     overlay.addEventListener('click', (e) => {
@@ -476,97 +634,283 @@ class CosmicRunnerApp {
     });
   }
 
+  _formatSpacetime(years) {
+    if (years < 1e3) return `${years.toFixed(0)} yr`;
+    if (years < 1e6) return `${(years / 1e3).toFixed(1)}E3 yr`;
+    if (years < 1e9) return `${(years / 1e6).toFixed(2)}E6 yr`;
+    return `${(years / 1e9).toFixed(3)}E9 yr`;
+  }
+
+  // ──── Input Handling ────
+
   _bindInput() {
     document.addEventListener('keydown', (e) => {
       if (e.target.tagName === 'INPUT') return;
-
-      switch (e.code) {
-        case 'Space':
-          e.preventDefault();
-          if (this.screen === 'title') {
-            this._start();
-          } else if (this.game?.paused) {
-            this._togglePause();
-          } else if (this.mode === 'game') {
-            // In two-player: space = player 1 (left side)
-            this.game?.jump(0);
-          }
-          break;
-        case 'ArrowUp':
-          e.preventDefault();
-          if (this.mode === 'game') this.game?.jump(0);
-          break;
-        case 'ArrowRight':
-          // In two-player mode: arrow keys = player 2
-          if (this.numPlayers === 2 && this.mode === 'game') {
-            e.preventDefault();
-            this.game?.jump(1);
-          }
-          break;
-        case 'KeyP':
-        case 'Escape':
-          e.preventDefault();
-          if (this.screen === 'main') this._togglePause();
-          break;
-        case 'Digit1': e.preventDefault(); if (this.screen === 'main') this._switchMode('player'); break;
-        case 'Digit2': e.preventDefault(); if (this.screen === 'main') this._switchMode('game'); break;
-        case 'Digit3': e.preventDefault(); if (this.screen === 'main') this._switchMode('grid'); break;
-        case 'Equal':
-        case 'NumpadAdd':
-          e.preventDefault();
-          if (this.game) this.game.adjustSpeed(SPEED_STEP);
-          break;
-        case 'Minus':
-        case 'NumpadSubtract':
-          e.preventDefault();
-          if (this.game) this.game.adjustSpeed(-SPEED_STEP);
-          break;
-      }
+      this._handleKeyDown(e);
     });
 
-    // Touch handling for two-player
-    document.addEventListener('touchstart', (e) => {
-      if (this.screen !== 'main' || this.mode !== 'game') return;
-      if (e.target.closest('.hud') || e.target.closest('.music-bar') ||
-          e.target.closest('.track-overlay') || e.target.closest('.pause-overlay') ||
-          e.target.closest('.note-info') || e.target.closest('.overlay')) {
-        return;
-      }
+    document.addEventListener('keyup', (e) => {
+      this._handleKeyUp(e);
+    });
 
-      e.preventDefault();
+    // Touch handling
+    this.canvas?.addEventListener('touchstart', (e) => this._handleTouchStart(e), { passive: false });
+    this.canvas?.addEventListener('touchmove', (e) => this._handleTouchMove(e), { passive: false });
+    this.canvas?.addEventListener('touchend', (e) => this._handleTouchEnd(e), { passive: false });
 
-      if (this.game?.paused) {
-        this._togglePause();
-        return;
-      }
+    // Mouse handling
+    this.canvas?.addEventListener('mousedown', (e) => this._handleMouseDown(e));
+    this.canvas?.addEventListener('mousemove', (e) => this._handleMouseMove(e));
+    this.canvas?.addEventListener('mouseup', (e) => this._handleMouseUp(e));
 
-      if (this.numPlayers === 2) {
-        // Two-player: left half = player 1, right half = player 2
-        for (let i = 0; i < e.changedTouches.length; i++) {
-          const touch = e.changedTouches[i];
-          const mid = window.innerWidth / 2;
-          if (touch.clientX < mid) {
-            this.game?.jump(0);
-          } else {
-            this.game?.jump(1);
-          }
+    // Continuous movement tick
+    this._movementInterval = setInterval(() => this._handleContinuousMovement(), 16);
+  }
+
+  _handleKeyDown(e) {
+    switch (e.code) {
+      // ──── Player 1 Controls ────
+      case 'Space':
+        e.preventDefault();
+        if (this.screen === 'title') { this._start(); }
+        else if (this.game?.paused) { this._togglePause(); }
+        else if (this.mode === 'game') { this.game?.jump(0); }
+        break;
+
+      case 'ArrowUp':
+        e.preventDefault();
+        if (this.mode === 'game') this.game?.jump(0);
+        break;
+
+      case 'ArrowDown':
+        e.preventDefault();
+        if (this.mode === 'game') this.game?.fastDrop(0);
+        break;
+
+      case 'ArrowLeft':
+        e.preventDefault();
+        if (this.mode === 'game') {
+          this._p1LeftHeld = true;
         }
-      } else {
-        this.game?.jump(0);
-      }
-    }, { passive: false });
+        break;
 
-    // Mouse click for jump
-    if (this.canvas) {
-      this.canvas.addEventListener('click', () => {
-        if (this.screen !== 'main' || this.mode !== 'game') return;
-        if (this.game?.paused) {
-          this._togglePause();
-        } else {
-          this.game?.jump(0);
+      case 'ArrowRight':
+        e.preventDefault();
+        if (this.mode === 'game') {
+          this._p1RightHeld = true;
         }
-      });
+        break;
+
+      // ──── Player 2 Controls (WASD) ────
+      case 'KeyW':
+        if (this.numPlayers === 2 && this.mode === 'game') {
+          e.preventDefault();
+          this.game?.jump(1);
+        }
+        break;
+
+      case 'KeyS':
+        if (this.numPlayers === 2 && this.mode === 'game') {
+          e.preventDefault();
+          this.game?.fastDrop(1);
+        }
+        break;
+
+      case 'KeyA':
+        if (this.numPlayers === 2 && this.mode === 'game') {
+          e.preventDefault();
+          this._p2LeftHeld = true;
+        }
+        break;
+
+      case 'KeyD':
+        if (this.numPlayers === 2 && this.mode === 'game') {
+          e.preventDefault();
+          this._p2RightHeld = true;
+        }
+        break;
+
+      // ──── Player 2 Alt Controls (Numpad) ────
+      case 'Numpad8':
+        if (this.numPlayers === 2 && this.mode === 'game') {
+          e.preventDefault();
+          this.game?.jump(1);
+        }
+        break;
+
+      case 'Numpad5':
+      case 'Numpad2':
+        if (this.numPlayers === 2 && this.mode === 'game') {
+          e.preventDefault();
+          this.game?.fastDrop(1);
+        }
+        break;
+
+      case 'Numpad4':
+        if (this.numPlayers === 2 && this.mode === 'game') {
+          e.preventDefault();
+          this._p2LeftHeld = true;
+        }
+        break;
+
+      case 'Numpad6':
+        if (this.numPlayers === 2 && this.mode === 'game') {
+          e.preventDefault();
+          this._p2RightHeld = true;
+        }
+        break;
+
+      // ──── General Controls ────
+      case 'KeyP':
+      case 'Escape':
+        e.preventDefault();
+        if (this.screen === 'main') this._togglePause();
+        break;
+
+      case 'Digit1': e.preventDefault(); if (this.screen === 'main') this._switchMode('player'); break;
+      case 'Digit2': e.preventDefault(); if (this.screen === 'main') this._switchMode('game'); break;
+      case 'Digit3': e.preventDefault(); if (this.screen === 'main') this._switchMode('grid'); break;
+
+      case 'Equal':
+      case 'NumpadAdd':
+        e.preventDefault();
+        if (this.game) this.game.adjustSpeed(SPEED_STEP);
+        break;
+
+      case 'Minus':
+      case 'NumpadSubtract':
+        e.preventDefault();
+        if (this.game) this.game.adjustSpeed(-SPEED_STEP);
+        break;
     }
+  }
+
+  _handleKeyUp(e) {
+    switch (e.code) {
+      case 'ArrowLeft': this._p1LeftHeld = false; break;
+      case 'ArrowRight': this._p1RightHeld = false; break;
+      case 'KeyA': this._p2LeftHeld = false; break;
+      case 'KeyD': this._p2RightHeld = false; break;
+      case 'Numpad4': this._p2LeftHeld = false; break;
+      case 'Numpad6': this._p2RightHeld = false; break;
+    }
+  }
+
+  _handleContinuousMovement() {
+    if (!this.game || this.mode !== 'game' || this.game.paused) return;
+    const moveSpeed = 0.005; // fraction per tick
+    if (this._p1LeftHeld) this.game.movePlayer(0, -moveSpeed);
+    if (this._p1RightHeld) this.game.movePlayer(0, moveSpeed);
+    if (this._p2LeftHeld) this.game.movePlayer(1, -moveSpeed);
+    if (this._p2RightHeld) this.game.movePlayer(1, moveSpeed);
+  }
+
+  // ──── Touch Handling ────
+
+  _handleTouchStart(e) {
+    if (this.screen !== 'main') return;
+    if (e.target.closest('.hud') || e.target.closest('.music-bar') ||
+        e.target.closest('.track-overlay') || e.target.closest('.pause-overlay') ||
+        e.target.closest('.note-info') || e.target.closest('.overlay')) return;
+
+    e.preventDefault();
+
+    if (this.game?.paused) { this._togglePause(); return; }
+
+    if (this.mode !== 'game') return;
+
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      const touch = e.changedTouches[i];
+
+      // Check if touching a runner (for drag)
+      const runnerIdx = this.game.getRunnerAtPosition(touch.clientX, touch.clientY);
+      if (runnerIdx >= 0) {
+        this._dragPlayerIndex = runnerIdx;
+        this._dragStartX = touch.clientX;
+        touch._dragId = touch.identifier;
+        return;
+      }
+
+      // Otherwise: jump
+      if (this.numPlayers === 2) {
+        const mid = window.innerWidth / 2;
+        this.game.jump(touch.clientX < mid ? 0 : 1);
+      } else {
+        this.game.jump(0);
+      }
+    }
+  }
+
+  _handleTouchMove(e) {
+    if (this._dragPlayerIndex < 0) return;
+    e.preventDefault();
+
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      const touch = e.changedTouches[i];
+      const fraction = touch.clientX / window.innerWidth;
+      this.game.setPlayerPosition(this._dragPlayerIndex, fraction);
+    }
+  }
+
+  _handleTouchEnd(e) {
+    // Check for swipe down (fast drop)
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      const touch = e.changedTouches[i];
+      // If it was a drag, end it
+      if (this._dragPlayerIndex >= 0) {
+        this._dragPlayerIndex = -1;
+        return;
+      }
+    }
+    this._dragPlayerIndex = -1;
+  }
+
+  // ──── Mouse Handling ────
+
+  _handleMouseDown(e) {
+    if (this.screen !== 'main' || this.mode !== 'game') return;
+
+    if (this.game?.paused) { this._togglePause(); return; }
+
+    // Check if clicking on a runner (for drag)
+    const runnerIdx = this.game?.getRunnerAtPosition(e.clientX, e.clientY);
+    if (runnerIdx >= 0) {
+      this._dragPlayerIndex = runnerIdx;
+      this._dragStartX = e.clientX;
+      return;
+    }
+
+    // Otherwise: jump (mouse acts as P2 jump in 2-player, P1 in 1-player)
+    if (this.numPlayers === 2) {
+      this.game?.jump(1); // Mouse = P2 jump in 2-player
+    } else {
+      this.game?.jump(0);
+    }
+  }
+
+  _handleMouseMove(e) {
+    if (this._dragPlayerIndex < 0) return;
+    const fraction = e.clientX / window.innerWidth;
+    this.game?.setPlayerPosition(this._dragPlayerIndex, fraction);
+  }
+
+  _handleMouseUp(e) {
+    this._dragPlayerIndex = -1;
+  }
+
+  // ──── Settings Persistence ────
+
+  _loadSettings() {
+    try {
+      const s = localStorage.getItem('cosmicRunnerV3Settings');
+      return s ? JSON.parse(s) : {};
+    } catch (e) { return {}; }
+  }
+
+  _saveSettings() {
+    try {
+      localStorage.setItem('cosmicRunnerV3Settings', JSON.stringify(this.settings));
+    } catch (e) { /* ignore */ }
   }
 }
 

@@ -141,7 +141,8 @@ html, body {
 .link-btn:hover { background: rgba(255,255,255,0.06); color: var(--text); }
 
 .controls-hint {
-  margin-top: 16px; font-size: 11px; color: var(--text-dim); letter-spacing: 0.08em;
+  margin-top: 10px; font-size: 10px; color: var(--text-dim); letter-spacing: 0.06em;
+  line-height: 1.6;
 }
 
 /* ---------- Overlays ---------- */
@@ -155,6 +156,7 @@ html, body {
 .overlay.visible { display: flex; }
 
 .overlay-panel {
+  position: relative;
   background: rgba(15, 15, 30, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px; padding: 20px;
@@ -165,15 +167,19 @@ html, body {
 .overlay-panel h2 { font-size: 16px; letter-spacing: 0.15em; margin-bottom: 14px; }
 .overlay-panel h3 { font-size: 12px; color: var(--text-dim); margin: 14px 0 8px; letter-spacing: 0.1em; }
 
-.overlay-close {
-  display: block; width: 100%;
-  margin-top: 16px; padding: 10px;
-  background: rgba(100, 180, 255, 0.15); border: 1px solid rgba(100, 180, 255, 0.3);
-  color: var(--accent); font-family: inherit; font-size: 13px;
-  border-radius: 8px; cursor: pointer; transition: all 0.2s;
+/* X close button */
+.overlay-x {
+  position: absolute; top: 10px; right: 12px;
+  background: none; border: none;
+  color: var(--text-dim); font-size: 22px;
+  cursor: pointer; line-height: 1;
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
 }
 
-.overlay-close:hover { background: rgba(100, 180, 255, 0.25); }
+.overlay-x:hover { color: var(--text); background: rgba(255,255,255,0.1); }
 
 /* Theme / Star chips */
 .theme-grid, .star-grid {
@@ -215,6 +221,46 @@ html, body {
 .access-btn:hover { background: rgba(255,255,255,0.08); }
 .access-btn.selected { background: rgba(100,180,255,0.1); border-color: var(--accent); }
 
+/* Settings rows */
+.settings-row {
+  margin-top: 12px; padding: 8px;
+  font-size: 12px; color: var(--text-dim);
+}
+
+.settings-row label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.settings-row input[type="checkbox"] { accent-color: var(--accent); }
+
+/* Help overlay */
+.help-panel { max-width: 550px; }
+
+.help-section { margin-bottom: 14px; }
+.help-section h3 { font-size: 12px; color: var(--accent); margin-bottom: 6px; }
+.help-section p { font-size: 11px; color: var(--text-dim); line-height: 1.5; }
+
+.help-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 11px;
+}
+
+.help-table td {
+  padding: 3px 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  color: var(--text-dim);
+}
+
+.help-table td:first-child {
+  color: var(--text); font-weight: 600;
+  white-space: nowrap; width: 40%;
+}
+
+.help-sub {
+  color: var(--accent) !important;
+  font-size: 10px !important;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding-top: 8px !important;
+}
+
 /* ---------- Main Canvas ---------- */
 #main-screen { flex-direction: column; }
 
@@ -232,15 +278,17 @@ html, body {
   position: absolute;
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  font-size: clamp(24px, 6vw, 60px);
+  font-size: clamp(20px, 5vw, 48px);
   font-weight: 900;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-align: center;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.5s;
   z-index: 4;
-  max-width: 80%;
+  max-width: 85%;
+  cursor: pointer;
+  pointer-events: auto;
 }
 
 .song-title-display.visible { opacity: 0.7; }
@@ -257,18 +305,30 @@ html, body {
 
 .hud > * { pointer-events: auto; }
 .hud-left, .hud-right, .hud-center { display: flex; align-items: center; gap: 6px; }
+.hud-center { flex-direction: column; gap: 2px; align-items: center; }
 
 .hud-score { font-size: 22px; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; }
 .hud-label { font-size: 9px; color: var(--text-dim); letter-spacing: 0.15em; }
 .hud-names { font-size: 10px; color: var(--accent); letter-spacing: 0.1em; margin-left: 8px; }
+.hud-spacetime {
+  font-size: 9px; color: rgba(180, 200, 220, 0.6);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+  margin-left: 8px;
+}
 
 .hud-track {
   font-size: 11px; color: var(--accent);
-  max-width: 180px; overflow: hidden;
+  max-width: 220px; overflow: hidden;
   text-overflow: ellipsis; white-space: nowrap;
+  cursor: pointer;
 }
 
-.hud-epoch { font-size: 9px; color: var(--text-dim); letter-spacing: 0.1em; }
+.hud-epoch {
+  font-size: 9px; color: var(--text-dim);
+  letter-spacing: 0.1em;
+  cursor: pointer;
+}
 
 .hud-btn {
   background: rgba(255, 255, 255, 0.08);
@@ -415,7 +475,7 @@ html, body {
   background: rgba(15, 15, 30, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px; padding: 16px;
-  max-width: 380px; width: 90%;
+  max-width: 420px; width: 90%;
   max-height: 70vh; overflow-y: auto;
 }
 
@@ -439,17 +499,18 @@ html, body {
 /* ---------- Mode-specific ---------- */
 body.mode-player #main-canvas { opacity: 0.15; }
 body.mode-player .hud-score, body.mode-player .hud-label#hud-score-label,
-body.mode-player .hud-names { display: none !important; }
+body.mode-player .hud-names, body.mode-player .hud-spacetime { display: none !important; }
 
 body.mode-grid #main-canvas { opacity: 1; }
 body.mode-grid .hud-score, body.mode-grid .hud-label#hud-score-label,
-body.mode-grid .hud-names { display: none !important; }
+body.mode-grid .hud-names, body.mode-grid .hud-spacetime { display: none !important; }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 640px) {
   .hud { padding: 3px 6px; }
   .hud-score { font-size: 16px; }
   .hud-track { max-width: 90px; font-size: 9px; }
+  .hud-spacetime { display: none; }
   .music-bar { padding: 3px 6px; gap: 4px; height: 38px; }
   .music-vol, .music-volume { display: none; }
   .music-time { font-size: 9px; min-width: 55px; }
@@ -457,10 +518,13 @@ body.mode-grid .hud-names { display: none !important; }
   .mode-btn, .player-count-btn { padding: 10px 14px; min-width: 70px; }
   .mode-icon { font-size: 20px; }
   .star-grid { max-height: 150px; overflow-y: auto; }
+  .overlay-panel { padding: 14px; }
+  .help-table td { font-size: 10px; padding: 2px 4px; }
 }
 
 @media (max-width: 400px) {
   #prev-btn, #next-btn { display: none; }
   .mode-tabs { display: none; }
   .grid-dim-tabs { display: none; }
+  .hud-center { display: none; }
 }

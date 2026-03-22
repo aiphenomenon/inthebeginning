@@ -2,7 +2,8 @@
  * Audio Player for Cosmic Runner V3.
  *
  * HTML5 Audio playback with lock-screen support via Media Session API.
- * Handles track navigation, seek synchronization, and background audio.
+ * Shows full track title (earth-name + epoch name).
+ * Handles track navigation including rewind-to-start on first track.
  */
 
 class GamePlayer {
@@ -17,7 +18,6 @@ class GamePlayer {
     this._rafId = 0;
     this._seeking = false;
 
-    // UI elements
     this.playBtn = null;
     this.prevBtn = null;
     this.nextBtn = null;
@@ -26,7 +26,6 @@ class GamePlayer {
     this.volSlider = null;
     this.muteBtn = null;
 
-    // Callbacks
     this.onTimeUpdate = null;
     this.onTrackChange = null;
   }
@@ -84,13 +83,9 @@ class GamePlayer {
       }
     });
 
-    // Visibility change: handle lock screen return
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible' && this.isPlaying) {
-        // Sync the game state to current audio position
-        if (this.onTimeUpdate) {
-          this.onTimeUpdate(this.audio.currentTime);
-        }
+        if (this.onTimeUpdate) this.onTimeUpdate(this.audio.currentTime);
       }
     });
   }
@@ -107,23 +102,19 @@ class GamePlayer {
     }
 
     await this.musicSync.loadTrackEvents(index);
-
-    // Update Media Session API for lock screen controls
     this._updateMediaSession(index);
-
     if (this.onTrackChange) this.onTrackChange(index);
   }
 
   _updateMediaSession(index) {
     if (!('mediaSession' in navigator)) return;
-
     const track = this.musicSync.getTrack(index);
     if (!track) return;
 
     navigator.mediaSession.metadata = new MediaMetadata({
-      title: track.title,
+      title: `${track.title} \u2014 ${track.epochName}`,
       artist: 'aiphenomenon',
-      album: 'In The Beginning Phase 0 — V8 Sessions',
+      album: 'In The Beginning Phase 0 \u2014 V8 Sessions',
     });
 
     navigator.mediaSession.setActionHandler('play', () => this.play());
@@ -153,7 +144,10 @@ class GamePlayer {
   }
 
   prevTrack() {
-    if (this.currentTrack > 0) {
+    if (this.currentTrack === 0) {
+      // On first track, restart it
+      this.audio.currentTime = 0;
+    } else {
       this.loadTrack(this.currentTrack - 1).then(() => {
         if (this.isPlaying) this.play();
       });
@@ -166,6 +160,7 @@ class GamePlayer {
         if (this.isPlaying) this.play();
       });
     }
+    // On last track, forward button does nothing
   }
 
   getCurrentTime() { return this.audio.currentTime || 0; }
