@@ -43,6 +43,9 @@ class CosmicRunnerApp {
     // MIDI mode
     this.midiMode = false;
     this.midiAvailable = false;
+    this.midiPlayer = null;
+    this.infiniteMode = false;
+    this.currentMutationIndex = 0;
     /** @type {number} Saved JSON track position when entering MIDI mode. */
     this._savedJsonTrack = 0;
     this._savedJsonTime = 0;
@@ -183,6 +186,34 @@ class CosmicRunnerApp {
         this._saveSettings();
         this._updateNoteInfoVisibility();
       });
+    }
+
+    // MIDI mode toggle
+    const midiToggle = document.getElementById('midi-mode-toggle');
+    if (midiToggle) {
+      midiToggle.addEventListener('change', () => {
+        this.midiMode = midiToggle.checked;
+      });
+    }
+
+    // Infinite mode toggle
+    const infiniteToggle = document.getElementById('infinite-mode-toggle');
+    if (infiniteToggle) {
+      infiniteToggle.addEventListener('change', () => {
+        this.infiniteMode = infiniteToggle.checked;
+      });
+    }
+
+    // MIDI skip button
+    const midiSkip = document.getElementById('midi-skip');
+    if (midiSkip) {
+      midiSkip.addEventListener('click', () => this._nextMidi());
+    }
+
+    // MIDI mutation button
+    const midiMutate = document.getElementById('midi-mutate');
+    if (midiMutate) {
+      midiMutate.addEventListener('click', () => this._cycleMutation());
     }
 
     this._bindInput();
@@ -394,15 +425,39 @@ class CosmicRunnerApp {
     this.player.onTimeUpdate = (time) => this._onMusicTime(time);
     this.player.onTrackChange = (idx) => this._onTrackChange(idx);
 
-    if (this.musicLoaded && this.musicSync.getTrackCount() > 0) {
+    if (this.midiMode && this.midiAvailable) {
+      // Start in MIDI mode
+      await this._startMidiMode();
+    } else if (this.musicLoaded && this.musicSync.getTrackCount() > 0) {
       await this.player.loadTrack(0);
       this.player.play();
       this._updateTrackDisplay(0);
     }
 
+    // In infinite mode with MP3s, auto-advance and shuffle
+    if (this.infiniteMode && !this.midiMode && this.player) {
+      this.player.audio.addEventListener('ended', () => {
+        // Shuffle to a random track
+        const count = this.musicSync.getTrackCount();
+        let next = Math.floor(Math.random() * count);
+        while (next === this.player.currentTrack && count > 1) {
+          next = Math.floor(Math.random() * count);
+        }
+        this.player.loadTrack(next).then(() => this.player.play());
+      });
+    }
+
     this._buildTrackList();
     this._updateNoteInfoVisibility();
     this._updateNames();
+
+    // Hide MIDI toggle hint if not available
+    if (!this.midiAvailable) {
+      const hint = document.getElementById('midi-hint');
+      if (hint) hint.textContent = '(not available)';
+      const toggle = document.getElementById('midi-mode-toggle');
+      if (toggle) toggle.disabled = true;
+    }
   }
 
   _restart() {
@@ -637,6 +692,137 @@ class CosmicRunnerApp {
     if (years < 1e6) return `${(years / 1e3).toFixed(1)}E3 yr`;
     if (years < 1e9) return `${(years / 1e6).toFixed(2)}E6 yr`;
     return `${(years / 1e9).toFixed(3)}E9 yr`;
+  }
+
+  // ──── MIDI Mode ────
+
+  async _startMidiMode() {
+    if (!this.midiAvailable || !this.musicSync.midiCatalog.length) return;
+
+    // Save current MP3 position
+    if (this.player) {
+      this._savedJsonTrack = this.player.currentTrack;
+      this._savedJsonTime = this.player.getCurrentTime();
+      this.player.pause();
+    }
+
+    // Initialize MIDI player if needed
+    if (!this.midiPlayer && typeof MidiPlayer !== 'undefined') {
+      this.midiPlayer = new MidiPlayer();
+      this.midiPlayer.onNoteEvent = (events) => {
+        if (this.game) {
+          this.game.setMusicEvents(events, this.musicSync.hueOffset);
+          const intensity = events.length > 0 ?
+            Math.min(1, events.reduce((s, e) => s + (e.vel || 0.5), 0) / Math.max(1, events.length) * 0.6 + Math.min(1, events.length / 15) * 0.4) : 0.1;
+          this.game.setIntensity(intensity);
+        }
+        this._updateNoteInfo(events);
+      };
+      this.midiPlayer.onTrackEnd = () => {
+        if (this.infiniteMode) this._nextMidi();
+      };
+    }
+
+    this.musicSync.midiMode = true;
+    this._showMidiControls(true);
+    await this._nextMidi();
+  }
+
+  _stopMidiMode() {
+    if (this.midiPlayer) {
+      this.midiPlayer.stop();
+    }
+    this.musicSync.midiMode = false;
+    this._showMidiControls(false);
+    this._hideMidiInfo();
+
+    // Restore MP3 playback
+    if (this.player) {
+      this.player.loadTrack(this._savedJsonTrack).then(() => {
+        this.player.audio.currentTime = this._savedJsonTime;
+        this.player.play();
+      });
+    }
+  }
+
+  async _nextMidi() {
+    if (!this.midiPlayer || !this.musicSync.midiCatalog.length) return;
+
+    const midi = this.musicSync.getRandomMidi();
+    if (!midi) return;
+
+    const info = this.musicSync.getMidiDisplayInfo(midi);
+    this._showMidiInfo(info, midi);
+
+    // Build the MIDI URL
+    const midiUrl = this.musicSync.midiBaseUrl + midi.path;
+
+    try {
+      const resp = await fetch(midiUrl);
+      if (!resp.ok) {
+        console.warn('MIDI fetch failed:', midiUrl, resp.status);
+        // Try next one
+        if (this.infiniteMode) setTimeout(() => this._nextMidi(), 500);
+        return;
+      }
+      const buffer = await resp.arrayBuffer();
+
+      const mutation = MIDI_MUTATIONS[this.currentMutationIndex];
+      this.midiPlayer.setMutation(mutation);
+      await this.midiPlayer.loadMidi(buffer);
+      this.midiPlayer.play();
+
+      // Update media session
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: info.name || 'Classical MIDI',
+          artist: info.composer || 'Unknown Composer',
+          album: 'In The Beginning — MIDI Library',
+        });
+      }
+    } catch (e) {
+      console.warn('MIDI load error:', e);
+      if (this.infiniteMode) setTimeout(() => this._nextMidi(), 500);
+    }
+  }
+
+  _cycleMutation() {
+    this.currentMutationIndex = (this.currentMutationIndex + 1) % MIDI_MUTATIONS.length;
+    const mutation = MIDI_MUTATIONS[this.currentMutationIndex];
+    const nameEl = document.getElementById('midi-mutation-name');
+    if (nameEl) nameEl.textContent = mutation.name;
+
+    if (this.midiPlayer) {
+      this.midiPlayer.setMutation(mutation);
+    }
+
+    // Update provenance display
+    const mutEl = document.getElementById('midi-mutation');
+    if (mutEl) mutEl.textContent = `Mutation: ${mutation.name}`;
+  }
+
+  _showMidiControls(show) {
+    const controls = document.getElementById('midi-controls');
+    if (controls) controls.style.display = show ? 'flex' : 'none';
+  }
+
+  _showMidiInfo(info, midi) {
+    const panel = document.getElementById('midi-info');
+    const composerEl = document.getElementById('midi-composer');
+    const pieceEl = document.getElementById('midi-piece');
+    const eraEl = document.getElementById('midi-era');
+    const mutEl = document.getElementById('midi-mutation');
+
+    if (composerEl) composerEl.textContent = info.composer || '';
+    if (pieceEl) pieceEl.textContent = info.name || '';
+    if (eraEl) eraEl.textContent = midi?.era ? `${midi.era} Era` : '';
+    if (mutEl) mutEl.textContent = `Mutation: ${MIDI_MUTATIONS[this.currentMutationIndex].name}`;
+    if (panel) panel.classList.add('visible');
+  }
+
+  _hideMidiInfo() {
+    const panel = document.getElementById('midi-info');
+    if (panel) panel.classList.remove('visible');
   }
 
   // ──── Input Handling ────
