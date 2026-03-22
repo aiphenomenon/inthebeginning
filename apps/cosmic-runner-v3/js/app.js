@@ -336,18 +336,16 @@ class CosmicRunnerApp {
   }
 
   async _loadMusic() {
-    const paths = ['audio/album_notes.json', '../cosmic-runner-v3/audio/album_notes.json'];
-    const audioPaths = ['../cosmic-runner-v2/audio/', 'audio/'];
-
-    for (let i = 0; i < paths.length; i++) {
-      const loaded = await this.musicSync.loadAlbum(paths[i], audioPaths[i]);
-      if (loaded) { this.musicLoaded = true; break; }
+    // Self-contained: all audio assets live in the local audio/ directory.
+    // The album_notes.json index and all MP3/JSON files must be in audio/.
+    const loaded = await this.musicSync.loadAlbum('audio/album_notes.json', 'audio/');
+    if (loaded) {
+      this.musicLoaded = true;
     }
 
-    if (!this.musicLoaded) {
-      const loaded = await this.musicSync.loadAlbum('audio/album_notes.json');
-      if (loaded) this.musicLoaded = true;
-    }
+    // Try loading MIDI catalog for MIDI mode
+    const midiLoaded = await this.musicSync.loadMidiCatalog('audio/midi_catalog.json');
+    this.midiAvailable = midiLoaded;
 
     if (!this.musicLoaded) {
       const startBtn = document.getElementById('start-btn');
