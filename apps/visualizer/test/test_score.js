@@ -251,3 +251,189 @@ describe('ScoreTrack.fromJSON', () => {
     assert.equal(track.events[0].ch, 0);
   });
 });
+
+// --- V3 compressed format tests ---
+
+const SAMPLE_COMPRESSED_V3_ALBUM = {
+  format: 'compressed_v3',
+  version: '3.0',
+  total_duration: 720.0,
+  sample_rate: 44100,
+  color_shift_interval: 300,
+  instruments: ['piano', 'violin', 'cello'],
+  instrument_families: { piano: 'keys', violin: 'strings', cello: 'strings' },
+  tracks: [
+    {
+      track_num: 1,
+      title: 'Singularity',
+      start_time: 0.0,
+      duration: 360.0,
+      audio_file: 'singularity.mp3',
+      file: 'singularity_notes.json'
+    },
+    {
+      track_num: 2,
+      title: 'Nucleosynthesis',
+      start_time: 360.0,
+      duration: 360.0,
+      audio_file: 'nucleosynthesis.mp3',
+      file: 'nucleosynthesis_notes.json'
+    }
+  ]
+};
+
+const SAMPLE_COMPRESSED_V3_SINGLE = {
+  title: 'Compressed Track',
+  version: '3.0',
+  legend: {
+    instruments: {
+      '0': 'piano',
+      '1': 'violin',
+      '2': 'flute'
+    }
+  },
+  events: [
+    // [t, dur, note, inst_index, vel, ch]
+    [0.5, 1.0, 60, 0, 0.8, 1],
+    [1.0, 0.5, 67, 1, 0.6, 2],
+    [2.0, 1.5, 72, 2, 0.9, 5],
+    [5.0, 2.0, 48, 0, 0.7, 1]
+  ]
+};
+
+describe('V3 compressed album format', () => {
+  it('should parse compressed album metadata', () => {
+    const score = Score.fromJSON(SAMPLE_COMPRESSED_V3_ALBUM);
+    assert.equal(score.version, '3.0');
+    assert.equal(score.colorShiftInterval, 300);
+    assert.equal(score.instruments.length, 3);
+    assert.deepEqual(score.instrumentFamilies, {
+      piano: 'keys', violin: 'strings', cello: 'strings'
+    });
+  });
+
+  it('should set mode to album', () => {
+    const score = Score.fromJSON(SAMPLE_COMPRESSED_V3_ALBUM);
+    assert.equal(score.mode, 'album');
+  });
+
+  it('should create tracks with noteFile property', () => {
+    const score = Score.fromJSON(SAMPLE_COMPRESSED_V3_ALBUM);
+    assert.equal(score.tracks.length, 2);
+    assert.equal(score.tracks[0].noteFile, 'singularity_notes.json');
+    assert.equal(score.tracks[1].noteFile, 'nucleosynthesis_notes.json');
+    assert.equal(score.tracks[0].title, 'Singularity');
+    assert.equal(score.tracks[0].audioFile, 'singularity.mp3');
+    assert.equal(score.tracks[0].startTime, 0.0);
+    assert.equal(score.tracks[1].startTime, 360.0);
+    assert.equal(score.tracks[1].duration, 360.0);
+  });
+
+  it('should handle total_duration', () => {
+    const score = Score.fromJSON(SAMPLE_COMPRESSED_V3_ALBUM);
+    assert.equal(score.duration, 720.0);
+  });
+
+  it('should have empty events initially (lazy loading)', () => {
+    const score = Score.fromJSON(SAMPLE_COMPRESSED_V3_ALBUM);
+    assert.equal(score.tracks[0].events.length, 0);
+    assert.equal(score.tracks[1].events.length, 0);
+    assert.equal(score.allEvents.length, 0);
+  });
+});
+
+describe('V3 single-track compressed format', () => {
+  it('should parse compressed events with legend', () => {
+    const score = Score.fromJSON(SAMPLE_COMPRESSED_V3_SINGLE);
+    assert.equal(score.tracks.length, 1);
+    assert.equal(score.tracks[0].events.length, 4);
+    assert.equal(score.tracks[0].title, 'Compressed Track');
+  });
+
+  it('should expand instrument indices to names', () => {
+    const score = Score.fromJSON(SAMPLE_COMPRESSED_V3_SINGLE);
+    const events = score.tracks[0].events;
+    assert.equal(events[0].inst, 'piano');
+    assert.equal(events[1].inst, 'violin');
+    assert.equal(events[2].inst, 'flute');
+    assert.equal(events[3].inst, 'piano');
+  });
+
+  it('should calculate duration from last event', () => {
+    const score = Score.fromJSON(SAMPLE_COMPRESSED_V3_SINGLE);
+    // Last event: t=5.0, dur=2.0 -> duration = 7.0
+    assert.equal(score.tracks[0].duration, 7.0);
+    assert.equal(score.duration, 7.0);
+  });
+
+  it('should set mode to single', () => {
+    const score = Score.fromJSON(SAMPLE_COMPRESSED_V3_SINGLE);
+    assert.equal(score.mode, 'single');
+  });
+
+  it('should make getActiveEvents work with expanded events', () => {
+    const score = Score.fromJSON(SAMPLE_COMPRESSED_V3_SINGLE);
+    // At t=0.8: piano (0.5-1.5) active
+    const at08 = score.getActiveEvents(0.8);
+    assert.equal(at08.length, 1);
+    assert.equal(at08[0].inst, 'piano');
+    assert.equal(at08[0].note, 60);
+
+    // At t=1.0: piano (0.5-1.5) and violin (1.0-1.5) both active
+    // Binary search finds absTime <= 1.0, violin starts exactly at 1.0
+    const at10 = score.getActiveEvents(1.01);
+    const insts = at10.map(e => e.inst).sort();
+    assert.deepEqual(insts, ['piano', 'violin']);
+
+    // At t=5.5: only last piano (5.0-7.0)
+    const at55 = score.getActiveEvents(5.5);
+    assert.equal(at55.length, 1);
+    assert.equal(at55[0].inst, 'piano');
+    assert.equal(at55[0].note, 48);
+  });
+});
+
+describe('Score._buildEventIndexForTrack', () => {
+  it('should build index with local times (startTime = 0)', () => {
+    const score = Score.fromJSON(SAMPLE_COMPRESSED_V3_ALBUM);
+    // Simulate loading events into track 1 (startTime=360)
+    score.tracks[1].events = [
+      { t: 1.0, dur: 0.5, note: 60, inst: 'piano', vel: 0.8, bend: 0, ch: 1 },
+      { t: 3.0, dur: 1.0, note: 72, inst: 'violin', vel: 0.6, bend: 0, ch: 2 }
+    ];
+    score._buildEventIndexForTrack(1);
+
+    // Events should use local times (t values directly), not absolute
+    assert.equal(score.allEvents.length, 2);
+    assert.equal(score.allEvents[0].absTime, 1.0);
+    assert.equal(score.allEvents[0].endTime, 1.5);
+    assert.equal(score.allEvents[1].absTime, 3.0);
+    assert.equal(score.allEvents[1].endTime, 4.0);
+    assert.equal(score.allEvents[0].trackIndex, 1);
+  });
+
+  it('should make getActiveEvents work with local times after per-track build', () => {
+    const score = Score.fromJSON(SAMPLE_COMPRESSED_V3_ALBUM);
+    score.tracks[0].events = [
+      { t: 0.5, dur: 1.0, note: 64, inst: 'cello', vel: 0.9, bend: 0, ch: 3 },
+      { t: 2.0, dur: 0.8, note: 55, inst: 'violin', vel: 0.7, bend: 0.1, ch: 4 }
+    ];
+    score._buildEventIndexForTrack(0);
+
+    // Query at local time 0.8 should find cello (0.5-1.5)
+    const events = score.getActiveEvents(0.8);
+    assert.equal(events.length, 1);
+    assert.equal(events[0].inst, 'cello');
+    assert.equal(events[0].bend, 0);
+
+    // Query at local time 2.3 should find violin (2.0-2.8)
+    const events2 = score.getActiveEvents(2.3);
+    assert.equal(events2.length, 1);
+    assert.equal(events2[0].inst, 'violin');
+    assert.equal(events2[0].bend, 0.1);
+
+    // Query at local time 5.0 should find nothing
+    const events3 = score.getActiveEvents(5.0);
+    assert.equal(events3.length, 0);
+  });
+});
