@@ -43,6 +43,10 @@ class Score {
 
   /**
    * Parse a JSON score object.
+   * Supports three formats:
+   * 1. Standard album format with tracks containing object events
+   * 2. V3 compressed format (legend-based arrays per track)
+   * 3. NoteLog format (flat events array, no tracks wrapper)
    * @param {Object} json - Parsed JSON score data.
    * @returns {Score} The populated Score instance.
    */
@@ -63,6 +67,24 @@ class Score {
 
     if (Array.isArray(json.tracks)) {
       score.tracks = json.tracks.map((t, idx) => ScoreTrack.fromJSON(t, idx));
+    }
+
+    // Handle V3 compressed album format: {format: "compressed_v3", tracks: [...]}
+    // Each track has metadata but events are loaded separately per-track JSON
+    if (json.format === 'compressed_v3' && Array.isArray(json.tracks)) {
+      score.mode = 'album';
+      score.duration = json.total_duration || 0;
+      score.tracks = json.tracks.map((t, idx) => {
+        const track = new ScoreTrack();
+        track.trackNum = t.track_num || (idx + 1);
+        track.title = t.title || `Track ${track.trackNum}`;
+        track.startTime = t.start_time || 0;
+        track.duration = t.duration || 0;
+        track.audioFile = t.audio_file || '';
+        track.noteFile = t.file || '';
+        track.events = []; // loaded lazily per-track
+        return track;
+      });
     }
 
     // Handle NoteLog format: {events: [...]} with no tracks wrapper
@@ -91,10 +113,112 @@ class Score {
       score.mode = 'single';
     }
 
+    // Handle single-track V3 compressed format: {legend: {...}, events: [[...]]}
+    if (!json.tracks && json.legend && Array.isArray(json.events) &&
+        json.events.length > 0 && Array.isArray(json.events[0])) {
+      const track = new ScoreTrack();
+      track.trackNum = 1;
+      track.title = json.title || 'Untitled';
+      track.startTime = 0;
+      const instMap = json.legend.instruments || {};
+      track.events = json.events.map(ev => ({
+        t: ev[0],
+        dur: ev[1],
+        note: ev[2],
+        inst: instMap[String(ev[3])] || 'unknown',
+        vel: ev[4],
+        bend: 0,
+        ch: ev[5] || 0
+      }));
+      if (track.events.length > 0) {
+        const last = track.events[track.events.length - 1];
+        track.duration = last.t + last.dur;
+        score.duration = track.duration;
+      }
+      score.tracks = [track];
+      score.mode = 'single';
+    }
+
     // Build flat sorted event list with absolute times
     score._buildEventIndex();
 
     return score;
+  }
+
+  /**
+   * Load V3 compressed track events from a URL.
+   * Expands legend-based arrays into object events and rebuilds the index.
+   * When loading per-track data, the index is rebuilt with ONLY this track's
+   * events (startTime forced to 0) so getActiveEvents works with local time.
+   * @param {number} trackIndex - Track index (0-based).
+   * @param {string} url - URL to the track's note JSON file.
+   * @returns {Promise<boolean>} True if loaded successfully.
+   */
+  async loadTrackEvents(trackIndex, url) {
+    if (trackIndex < 0 || trackIndex >= this.tracks.length) return false;
+    const track = this.tracks[trackIndex];
+
+    try {
+      const resp = await fetch(url);
+      if (!resp.ok) return false;
+      const data = await resp.json();
+
+      if (data.legend && Array.isArray(data.events) &&
+          data.events.length > 0 && Array.isArray(data.events[0])) {
+        const instMap = data.legend.instruments || {};
+        track.events = data.events.map(ev => ({
+          t: ev[0],
+          dur: ev[1],
+          note: ev[2],
+          inst: instMap[String(ev[3])] || 'unknown',
+          vel: ev[4],
+          bend: 0,
+          ch: ev[5] || 0
+        }));
+      } else if (Array.isArray(data.events)) {
+        track.events = data.events.map(e => ({
+          t: e.t || 0,
+          dur: e.dur || 0,
+          note: e.note || 60,
+          inst: e.inst || 'piano',
+          vel: e.vel !== undefined ? e.vel : 0.5,
+          bend: e.bend || 0,
+          ch: e.ch !== undefined ? e.ch : 0
+        }));
+      }
+
+      // Rebuild event index for this track only (local time)
+      this._buildEventIndexForTrack(trackIndex);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /**
+   * Build the event index using only the specified track's events,
+   * with startTime forced to 0 so getActiveEvents works with local audio time.
+   * @param {number} trackIndex
+   * @private
+   */
+  _buildEventIndexForTrack(trackIndex) {
+    const track = this.tracks[trackIndex];
+    if (!track) return;
+
+    this.allEvents = [];
+    for (const ev of track.events) {
+      this.allEvents.push({
+        absTime: ev.t,
+        endTime: ev.t + ev.dur,
+        note: ev.note,
+        inst: ev.inst,
+        vel: ev.vel,
+        bend: ev.bend || 0,
+        ch: ev.ch,
+        trackIndex: trackIndex
+      });
+    }
+    this.allEvents.sort((a, b) => a.absTime - b.absTime);
   }
 
   /**
@@ -229,6 +353,9 @@ class ScoreTrack {
 
     /** @type {string} Audio file name */
     this.audioFile = '';
+
+    /** @type {string} Note data file name (V3 compressed format) */
+    this.noteFile = '';
 
     /** @type {Array<{t: number, dur: number, note: number, inst: string, vel: number, bend: number, ch: number}>} */
     this.events = [];

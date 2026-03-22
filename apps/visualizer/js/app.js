@@ -62,10 +62,16 @@ class VisualizerApp {
 
     // Detect mode from URL params
     const params = new URLSearchParams(window.location.search);
-    this.mode = params.get('mode') || 'single';
+    this.mode = params.get('mode') || 'album';
     const scoreUrl = params.get('score') || '';
     const streamUrl = params.get('stream') || '';
     const audioUrl = params.get('audio') || '';
+
+    /** @type {string} Base URL for note JSON files */
+    this._notesBaseUrl = '';
+
+    /** @type {string} Base URL for MP3 audio files */
+    this._audioBaseUrl = '';
 
     // Create player
     this.player = new Player({
@@ -105,9 +111,11 @@ class VisualizerApp {
       });
     }
 
-    // Load score if URL provided
+    // Load score if URL provided, otherwise auto-load V8 Sessions
     if (scoreUrl) {
       this._loadScoreFromUrl(scoreUrl);
+    } else if (!streamUrl) {
+      this._autoLoadV8Sessions();
     }
 
     // Load audio if URL provided
@@ -120,7 +128,72 @@ class VisualizerApp {
       this._startStream(streamUrl);
     }
 
-    this._setStatus('Load a score JSON file to begin visualization.');
+    if (!scoreUrl && !streamUrl && !audioUrl) {
+      this._setStatus('Loading V8 Sessions...');
+    }
+  }
+
+  /**
+   * Auto-load the V8 Sessions album from sibling directories.
+   * Tries multiple relative paths to find the album_notes.json and MP3s.
+   * Works on GitHub Pages without a Python server.
+   * @private
+   */
+  async _autoLoadV8Sessions() {
+    // Possible locations for album_notes.json (relative to visualizer/)
+    const notePaths = [
+      '../cosmic-runner-v3/audio/',
+      '../cosmic-runner-v2/audio/',
+    ];
+    // Possible locations for MP3 files
+    const audioPaths = [
+      '../cosmic-runner-v2/audio/',
+      '../cosmic-runner-v3/audio/',
+    ];
+
+    let albumJson = null;
+    let notesBase = '';
+
+    for (const base of notePaths) {
+      try {
+        const resp = await fetch(base + 'album_notes.json');
+        if (resp.ok) {
+          albumJson = await resp.json();
+          notesBase = base;
+          break;
+        }
+      } catch (e) {
+        // Try next path
+      }
+    }
+
+    if (!albumJson) {
+      this._setStatus('Drop a score JSON or use ?score=URL to load.');
+      return;
+    }
+
+    // Determine audio base URL
+    let audioBase = '';
+    if (albumJson.tracks && albumJson.tracks.length > 0) {
+      const testFile = albumJson.tracks[0].audio_file;
+      for (const base of audioPaths) {
+        try {
+          const resp = await fetch(base + testFile, { method: 'HEAD' });
+          if (resp.ok) {
+            audioBase = base;
+            break;
+          }
+        } catch (e) {
+          // Try next path
+        }
+      }
+    }
+    if (!audioBase) audioBase = notesBase;
+
+    this._notesBaseUrl = notesBase;
+    this._audioBaseUrl = audioBase;
+    this._applyScore(albumJson);
+    this._setStatus('In The Beginning Phase 0 \u2014 V8 Sessions');
   }
 
   /**
@@ -187,8 +260,13 @@ class VisualizerApp {
     // Load first track audio if album mode
     if (this.mode === 'album' && this.score.tracks.length > 0) {
       const firstTrack = this.score.tracks[0];
-      if (firstTrack.audioFile) {
-        this.player.loadAudio(firstTrack.audioFile);
+      const audioUrl = this._resolveAudioUrl(firstTrack.audioFile);
+      if (audioUrl) {
+        this.player.loadAudio(audioUrl);
+      }
+      // Load first track's note events if V3 compressed (lazy loading)
+      if (firstTrack.noteFile) {
+        this._loadTrackNotes(0);
       }
       this._buildTrackList();
     }
@@ -197,6 +275,44 @@ class VisualizerApp {
     if (this.score.tracks.length > 0 && this.player.ui.trackTitle) {
       const t = this.score.tracks[0];
       this.player.ui.trackTitle.textContent = `${t.trackNum}. ${t.title}`;
+    }
+  }
+
+  /**
+   * Resolve audio URL, applying the audio base path.
+   * @param {string} audioFile - Audio file name.
+   * @returns {string} Full URL.
+   * @private
+   */
+  _resolveAudioUrl(audioFile) {
+    if (!audioFile) return '';
+    if (audioFile.startsWith('http') || audioFile.startsWith('/')) return audioFile;
+    return (this._audioBaseUrl || '') + audioFile;
+  }
+
+  /**
+   * Load V3 compressed note events for a track.
+   * @param {number} trackIndex - Track index (0-based).
+   * @returns {Promise<void>}
+   * @private
+   */
+  async _loadTrackNotes(trackIndex) {
+    if (!this.score || trackIndex < 0 || trackIndex >= this.score.tracks.length) return;
+    const track = this.score.tracks[trackIndex];
+    if (!track.noteFile) return;
+    if (track.events && track.events.length > 0) return; // already loaded
+
+    const url = (this._notesBaseUrl || '') + track.noteFile;
+    const loaded = await this.score.loadTrackEvents(trackIndex, url);
+    if (loaded) {
+      // Rebuild instruments from loaded events
+      const instruments = new Set();
+      for (const ev of track.events) {
+        instruments.add(ev.inst);
+      }
+      for (const inst of instruments) {
+        this.grid.getColumn(inst); // assign columns
+      }
     }
   }
 
@@ -218,12 +334,44 @@ class VisualizerApp {
       item.textContent = `${track.trackNum}. ${track.title}`;
       item.dataset.index = i;
       item.addEventListener('click', () => {
-        this.player.currentTrack = i;
-        this.player._loadTrack(i);
-        this.player.onTrackChange(i);
-        this._highlightTrack(i);
+        this._switchToTrack(i);
       });
       this._trackListEl.appendChild(item);
+    }
+  }
+
+  /**
+   * Switch to a specific track, loading notes and audio.
+   * @param {number} index - Track index (0-based).
+   * @private
+   */
+  async _switchToTrack(index) {
+    if (!this.score || index < 0 || index >= this.score.tracks.length) return;
+    const track = this.score.tracks[index];
+
+    this.player.currentTrack = index;
+    this._highlightTrack(index);
+    this.grid.clearGrid();
+    this.grid.resetColumns();
+
+    // Load track audio
+    const audioUrl = this._resolveAudioUrl(track.audioFile);
+    if (audioUrl) {
+      this.player.audio.src = audioUrl;
+      if (this.player.ui.trackTitle) {
+        this.player.ui.trackTitle.textContent = `${track.trackNum}. ${track.title}`;
+      }
+      if (this.player.isPlaying) {
+        this.player.audio.play().catch(() => {});
+      }
+    }
+
+    // Load V3 compressed notes if needed
+    await this._loadTrackNotes(index);
+
+    // If track already has events loaded, rebuild the index for local time
+    if (track.events && track.events.length > 0 && track.noteFile) {
+      this.score._buildEventIndexForTrack(index);
     }
   }
 
@@ -242,13 +390,19 @@ class VisualizerApp {
 
   /**
    * Handle time updates from the player.
+   * For V3 compressed format, events are per-track with local times,
+   * so we use audio.currentTime directly (which is local to the track).
+   * For legacy format, events use absolute times from the score.
    * @param {number} time - Current playback time in seconds.
    * @private
    */
   _onTimeUpdate(time) {
     if (!this.score) return;
 
-    // Get active events at current time
+    // For V3 compressed album format, events are per-track (local time)
+    // The audio.currentTime IS the local track time, so use getActiveEvents
+    // which searches allEvents by absolute time. For V3, each track's events
+    // have startTime=0 effectively since they're loaded individually.
     const events = this.score.getActiveEvents(time);
     this.grid.updateGrid(events);
 
@@ -266,13 +420,12 @@ class VisualizerApp {
   }
 
   /**
-   * Handle track changes.
+   * Handle track changes from the player (auto-advance on track end).
    * @param {number} index - New track index.
    * @private
    */
   _onTrackChange(index) {
-    this._highlightTrack(index);
-    this.grid.clearGrid();
+    this._switchToTrack(index);
   }
 
   /**
