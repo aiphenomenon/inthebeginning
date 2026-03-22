@@ -1,36 +1,42 @@
-# In The Beginning -- 64x64 Grid Visualizer
+# In The Beginning -- 64x64 Grid Visualizer V3
 
 A pure JavaScript web application that visualizes music playback on a 64x64 grid
 of embossed cells. Each cell represents a pitch/instrument intersection, lighting
 up with instrument-family-colored HSL when notes are active.
 
+**V3 features**: In-browser MIDI synthesizer with 16+ instrument timbres, Web Worker
+concurrent parsing, 16 mutation presets, full MIDI library access (1,854 classical
+pieces), pitch bend visualization, and GitHub Pages deployment.
+
 ## Usage
 
 Open `index.html` in any modern browser. No build step, no npm, no server required.
 
-### Loading a Score
+### Loading Content
 
-1. Click **Load Score** (top right) or drag-and-drop a `.json` score file onto the grid.
-2. Press play to start playback.
+1. **Album mode**: Auto-loads V8 Sessions album (12 MP3 tracks) if found in sibling directories.
+2. **MIDI Synth mode**: Click the MIDI Synth tab to switch. Loads and synthesizes MIDI files
+   in real-time using Web Audio API additive synthesis.
+3. **Drag-and-drop**: Drop a `.json` score file or `.mid` MIDI file directly onto the grid.
+4. **File input**: Click **Load Score** to browse for a JSON or MIDI file.
 
 ### URL Parameters
-
-You can also configure the visualizer via URL parameters:
 
 ```
 index.html?mode=album&score=scores/my_score.json&audio=my_album.mp3
 index.html?mode=single&score=scores/render.json&audio=render.mp3
+index.html?mode=midi
 index.html?mode=stream&stream=http://localhost:8080/events
 ```
 
 | Parameter | Description |
 |-----------|-------------|
-| `mode`    | `album`, `single`, or `stream` |
+| `mode`    | `album`, `single`, `midi`, or `stream` |
 | `score`   | URL to a score JSON file |
 | `audio`   | URL to an audio file (MP3, WAV, OGG) |
 | `stream`  | SSE endpoint URL (stream mode only) |
 
-## Three Modes
+## Four Modes
 
 ### Album Mode (`mode=album`)
 
@@ -40,154 +46,145 @@ previous/next track, seek bar, volume, fullscreen.
 
 ### Single Mode (`mode=single`)
 
-Single continuous audio file (e.g., a 30-minute render). No previous/next track
-buttons. Seek bar, skip, play/pause, and volume all active.
+Continuous audio file playback. Like album mode but no track list or prev/next.
+
+### MIDI Synth Mode (`mode=midi`)
+
+**New in V3.** In-browser MIDI synthesis using Web Audio API:
+
+- **Additive synthesis**: 16+ instrument timbres ported from the Python composer.py
+  (violin, cello, flute, oboe, trumpet, piano, bell, gamelan, choir, etc.)
+- **Web Worker parsing**: MIDI files are parsed in a background Web Worker thread
+  for non-blocking performance
+- **16 mutation presets**: Original, Celestial, Subterranean, Crystal, Nebula,
+  Quantum, Solar Wind, Deep Space, Pulsar, Cosmic Ray, Dark Matter, Supernova,
+  Event Horizon, Starlight, Graviton, Photon
+- **MIDI library access**: 1,854 classical MIDI files from 120+ public domain composers
+- **Infinite shuffle**: Enable to continuously play random MIDIs
+- **Pitch bend visualization**: Notes with pitch bend show pulsing glow animation
+- **Composer provenance**: Shows composer name, piece title, and active mutation
+- **ADSR envelopes**: Per-instrument attack/decay/sustain/release curves
+- **Percussion synthesis**: Kick, snare, hi-hat synthesized from scratch
+- **Vibrato/tremolo**: Automatic vibrato on sustained notes
 
 ### Stream Mode (`mode=stream`)
 
-Infinite radio stream via Server-Sent Events. Play/pause only -- no seek, no skip.
-Note data arrives in real-time from the SSE endpoint. Color transitions happen
-automatically.
+Server-Sent Events for infinite radio visualization. Play/pause only (no seek).
 
-## Keyboard Shortcuts
+## Synthesizer Architecture
 
-| Key | Action |
-|-----|--------|
-| Space | Play / Pause |
-| Left Arrow | Skip back 15 seconds |
-| Right Arrow | Skip forward 15 seconds |
-| Up Arrow | Volume up |
-| Down Arrow | Volume down |
-| F | Toggle fullscreen |
-
-## Grid Design
-
-- **64x64 cells** (4096 total)
-- **Y-axis (rows)**: Pitch -- MIDI notes 24-87 (C1 to Eb6, ~5 octaves). Row 0 = highest.
-- **X-axis (columns)**: Instrument channels (up to 64 concurrent instruments).
-- **Color hue**: Instrument family -- strings (red), keys (blue), winds (green),
-  percussion (yellow), world (purple), synth (cyan), voice (white).
-- **Saturation**: 60-100% based on velocity (louder = more saturated).
-- **Brightness**: 30-90% based on velocity (louder = brighter).
-- **Bent notes**: Pulsing glow animation.
-- **Color shift**: Every 10 minutes, hues rotate by 30-60 degrees with a smooth
-  5-second CSS transition.
-- **Inactive cells**: Dark embossed (#1a1a1a) with inset box-shadow.
-
-## JSON Score Format
-
-Score files describe note events with timing information:
-
-```json
-{
-  "version": "1.0",
-  "mode": "album",
-  "sample_rate": 44100,
-  "duration": 4746.0,
-  "color_shift_interval": 600,
-  "tracks": [
-    {
-      "track_num": 1,
-      "title": "Track Name",
-      "start_time": 0.0,
-      "duration": 252.0,
-      "audio_file": "path/to/track.mp3",
-      "events": [
-        {
-          "t": 0.5,
-          "dur": 1.2,
-          "note": 64,
-          "inst": "violin",
-          "vel": 0.8,
-          "bend": 0.0,
-          "ch": 3
-        }
-      ]
-    }
-  ],
-  "instruments": ["violin", "piano", "flute"],
-  "instrument_families": {
-    "violin": "strings",
-    "piano": "keys",
-    "flute": "winds"
-  }
-}
-```
-
-### Event Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `t` | float | Time offset from track start (seconds) |
-| `dur` | float | Note duration (seconds) |
-| `note` | int | MIDI note number (24-87 mapped to grid) |
-| `inst` | string | Instrument name |
-| `vel` | float | Velocity 0.0-1.0 (affects brightness/saturation) |
-| `bend` | float | Pitch bend amount (non-zero triggers glow animation) |
-| `ch` | int | Channel/column assignment (0-63) |
-
-### SSE Stream Format
-
-For stream mode, the SSE endpoint sends `notes` events:
+The synthesizer is a direct port of the Python `AdditiveSynth` from `apps/audio/composer.py`:
 
 ```
-event: notes
-data: {"t":123.4,"events":[{"note":64,"inst":"violin","vel":0.8,"dur":0.5}]}
+MIDI File (.mid) → Web Worker (synth-worker.js) → Parsed Note Events
+                                                        ↓
+Grid Visualization ← Note Events ← SynthEngine (synth-engine.js) → AudioContext
 ```
 
-## Generating Scores
+### Instrument Timbres (Additive Synthesis)
 
-Score JSON files can be generated from the audio composition engine:
+Each instrument is defined by a harmonic profile — amplitudes of overtones relative
+to the fundamental frequency:
+
+| Instrument | Harmonics | Character |
+|------------|-----------|-----------|
+| Violin     | 12        | Rich, sustained bow |
+| Cello      | 10        | Deep, warm strings |
+| Flute      | 4         | Pure, few harmonics |
+| Oboe       | 9         | Nasal, reedy |
+| Clarinet   | 10        | Odd harmonics dominant |
+| Trumpet    | 10        | Bright, brassy |
+| Piano      | 10        | Percussive, rich decay |
+| Bell       | 10        | Metallic, inharmonic overtones |
+| Gamelan    | 8         | Javanese metallic shimmer |
+| Choir (Ah) | 7         | Warm vocal formant |
+| Throat Sing| 10        | Enhanced 6th/10th overtones |
+| Cosmic     | 10        | Alien, otherworldly |
+
+### Color Mapping
+
+Grid cells are colored by instrument family:
+
+| Family     | Hue    | Color   |
+|------------|--------|---------|
+| Strings    | 0°     | Red     |
+| Keys       | 220°   | Blue    |
+| Winds      | 120°   | Green   |
+| Percussion | 50°    | Yellow  |
+| World      | 280°   | Purple  |
+| Synth      | 180°   | Cyan    |
+| Voice      | 0° (low sat) | White |
+| Brass      | 30°    | Orange  |
+
+Saturation scales with velocity (60-100%). Lightness scales with velocity (30-90%).
+Colors shift every 2 minutes in MIDI mode (every 10 minutes in album mode).
+
+## GitHub Pages Deployment
+
+### Build
 
 ```bash
-python apps/audio/radio_engine.py --score-output scores/my_score.json
+python build.py                    # Full build (MP3s + MIDI)
+python build.py --no-midi          # MP3 only (smaller)
+python build.py --no-mp3           # Synth only (smallest)
+python build.py --no-mp3 --no-midi # Just the visualizer shell
 ```
 
-## Browser Compatibility
+### Deploy
 
-Tested on:
-- Chrome 90+
-- Firefox 88+
-- Safari 14+
-- Edge 90+
+1. Copy the contents of `dist/` to your GitHub Pages repository
+2. Push to the `gh-pages` branch (or configure Pages to serve from `main/docs`)
+3. Open `https://yourusername.github.io/your-repo/`
 
-Requires: ES6, CSS Grid, Fullscreen API, requestAnimationFrame, EventSource (for
-stream mode).
+### Deployment Options
 
-## Running Tests
+| Option | Size | Features |
+|--------|------|----------|
+| Full (MP3 + MIDI) | ~115 MB | Album playback + MIDI synthesis + full library |
+| MP3 only | ~90 MB | Album playback only |
+| MIDI only | ~25 MB | MIDI synthesis + full classical library |
+| Synth only | ~50 KB | Pure synthesizer (drag-and-drop MIDI files) |
+
+## Tests
 
 ```bash
 cd apps/visualizer
-node --test test/test_grid.js test/test_score.js test/test_player.js
+node --test test/test_grid.js test/test_score.js test/test_player.js \
+  test/test_synth_engine.js test/test_midi_player.js
 ```
+
+152 tests covering: grid mapping, score parsing, player controls, synth engine
+timbres/envelopes/colors, MIDI player state management, and mutation presets.
 
 ## File Structure
 
 ```
 apps/visualizer/
-  index.html          Main entry point
-  css/
-    visualizer.css    Grid, controls, and responsive styling
-  js/
-    grid.js           Grid engine: note-to-cell mapping, colors, hue rotation
-    player.js         Audio playback, UI controls, keyboard shortcuts
-    stream.js         SSE client for infinite radio mode
-    score.js          Score JSON loader and binary-search event lookup
-    app.js            Main application: mode detection, initialization
-  test/
-    test_grid.js      Grid mapping and color tests (88 assertions)
-    test_player.js    Player control and state tests
-    test_score.js     Score parsing and event lookup tests
-  scores/             Directory for score JSON files
-  version.json        Version metadata
-  README.md           This file
+├── index.html              Main page (4 modes: album, single, midi, stream)
+├── version.json            Version identifier
+├── build.py                GitHub Pages build script
+├── css/
+│   └── visualizer.css      Styles (responsive, MIDI controls, bend animation)
+├── js/
+│   ├── grid.js             64x64 grid engine (pitch/instrument mapping, colors)
+│   ├── score.js            Score JSON parser (V3 compressed + legacy formats)
+│   ├── synth-engine.js     Additive synthesizer (16+ timbres, ADSR, percussion)
+│   ├── synth-worker.js     Web Worker for MIDI parsing (non-blocking)
+│   ├── midi-player.js      MIDI playback via SynthEngine + Worker
+│   ├── player.js           HTML5 Audio player (album/single modes)
+│   ├── stream.js           SSE client for radio mode
+│   └── app.js              Application controller (mode management, catalog)
+├── test/
+│   ├── test_grid.js        Grid mapping tests (88 assertions)
+│   ├── test_score.js       Score parsing tests
+│   ├── test_player.js      Player control tests
+│   ├── test_synth_engine.js Synth engine tests (timbres, envelopes, colors)
+│   └── test_midi_player.js  MIDI player tests (state, mutations)
+└── scores/                 Example score JSON files
 ```
 
-## Architecture
+## Dependencies
 
-Pure JavaScript -- no frameworks, no npm dependencies, no build tools. The entire
-application is five JS files loaded via script tags, one CSS file, and one HTML file.
-
-Audio playback uses the native HTML5 `<audio>` element. Grid updates run via
-`requestAnimationFrame` at ~30fps, diffing previous state to minimize DOM mutations.
-Binary search through sorted events finds active notes at the current playback time.
+- **Zero external dependencies**. Pure ES6 JavaScript + Web Audio API.
+- Browser requirements: Chrome 90+, Firefox 88+, Safari 14+, Edge 90+
+- Web Worker support (graceful fallback to main thread if unavailable)

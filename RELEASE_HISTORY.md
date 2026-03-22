@@ -4,6 +4,58 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.25.0 — 2026-03-22 — Synthesizer Port + Visualizer V3 Upgrade
+
+### Summary
+
+Major upgrade to both the standalone Visualizer app and Cosmic Runner V3. Ported
+the Python additive synthesizer (composer.py) to Web Audio API. Added Web Worker
+concurrent MIDI parsing, 16+ instrument timbres, ADSR envelopes, percussion
+synthesis, pitch bend visualization, and full MIDI library integration.
+
+### Visualizer V3 (Synthesizer Port)
+
+- **SynthEngine** (`synth-engine.js`): Full additive synthesis with 18 instrument
+  timbres ported from Python composer.py — violin, cello, harp, flute, oboe,
+  clarinet, horn, trumpet, piano, bell, gamelan, tibetan_bowl, choir_ah, choir_oo,
+  throat_sing, warm_pad, cosmic, sine
+- **ADSR envelopes**: Per-instrument attack/decay/sustain/release curves
+- **Percussion synthesis**: Kick drum (sine + pitch drop), snare (tone + noise),
+  hi-hat (bandpass noise), generic noise bursts
+- **Vibrato**: LFO-driven frequency modulation on sustained notes (5.5 Hz, 15 cents)
+- **Pitch bend**: Real-time frequency modulation with visual pulsing glow animation
+- **Web Worker** (`synth-worker.js`): MIDI parsing offloaded to background thread
+  with MessagePort protocol, graceful fallback to main thread
+- **MidiFilePlayer** (`midi-player.js`): Coordinates Worker + SynthEngine with
+  note event emission at 20 Hz for grid visualization
+- **4-mode UI**: Album, MIDI Synth, Single, Stream — switchable via tabs
+- **16 mutation presets**: Shared with Cosmic Runner V3 (pitch shift, tempo, reverb, filter)
+- **MIDI catalog integration**: 1,854 classical MIDI files, infinite shuffle, history
+- **Color mapping**: GM instrument families → HSL hue (10 family colors)
+- **Build script** (`build.py`): Produces self-contained dist/ for GitHub Pages
+  with options for MP3-only, MIDI-only, synth-only, or full deployment
+- **152 tests**: Covers synth engine, MIDI player, grid, score, player
+
+### Cosmic Runner V3 (SynthEngine Integration)
+
+- **Upgraded MIDI player**: Now uses SynthEngine for additive synthesis instead of
+  basic oscillators — dramatically richer instrument sounds
+- **Web Worker parsing**: MIDI files parsed in background thread for smooth gameplay
+- **Pitch bend support**: Extracted from MIDI files and passed to SynthEngine
+- **Shared synth-engine.js**: Same synthesizer code used in both Visualizer and
+  Cosmic Runner V3
+- **94 tests pass** (67 game + 27 MIDI player)
+
+### GitHub Pages Deployment
+
+Both apps deploy as static sites:
+- Full build (MP3 + MIDI): ~115 MB
+- MP3 only: ~90 MB
+- MIDI only: ~25 MB
+- Synth only: ~50 KB (pure synthesizer, drag-and-drop MIDI files)
+
+---
+
 ## v0.24.0 — 2026-03-22 — GitHub Pages Deployment + MIDI Mode
 
 ### Summary

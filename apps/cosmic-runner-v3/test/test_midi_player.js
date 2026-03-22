@@ -235,7 +235,7 @@ describe('MidiPlayer Build Note Events', () => {
       { type: 'noteOff', time: 0.1, ch: 9, note: 36 },
     ];
     const notes = MidiPlayer._buildNoteEvents(events);
-    assert.strictEqual(notes[0].inst, 'drums');
+    assert.strictEqual(notes[0].inst, 'percussion');
   });
 
   it('handles program changes', () => {
