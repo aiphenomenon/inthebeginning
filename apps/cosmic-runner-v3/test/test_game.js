@@ -12,7 +12,7 @@ const assert = require('node:assert/strict');
 // ---------------------------------------------------------------------------
 const {
   GRID_SIZE, GRID_CELLS, TRACK_COLORS, SCORE,
-  GLOW_THRESHOLD, FULL_3D_LEVEL, MAX_MULTI_JUMPS,
+  GLOW_THRESHOLD, FULL_3D_LEVEL, MIDI_MUTATIONS,
   SPEED_MIN, SPEED_MAX, SPEED_STEP, ACCESS_MODES,
 } = require('../js/config.js');
 
@@ -34,9 +34,7 @@ describe('config.js', () => {
 
   it('SCORE values exist', () => {
     assert.equal(typeof SCORE.HIT_OBJECT, 'number');
-    assert.equal(typeof SCORE.JUMP_OVER_1, 'number');
-    assert.equal(typeof SCORE.JUMP_OVER_2, 'number');
-    assert.equal(typeof SCORE.JUMP_OVER_3, 'number');
+    assert.equal(typeof SCORE.JUMP_OVER, 'number');
   });
 
   it('ACCESS_MODES has 3 entries', () => {
@@ -51,8 +49,8 @@ describe('config.js', () => {
     assert.equal(FULL_3D_LEVEL, 6);
   });
 
-  it('MAX_MULTI_JUMPS is 4', () => {
-    assert.equal(MAX_MULTI_JUMPS, 4);
+  it('MIDI_MUTATIONS has 16 presets', () => {
+    assert.equal(MIDI_MUTATIONS.length, 16);
   });
 
   it('GRID_SIZE is 64', () => {
