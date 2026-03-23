@@ -592,6 +592,16 @@ html, body {
 
 .midi-info.visible { display: block; }
 
+.midi-info-source {
+  color: rgba(180, 220, 255, 0.8); font-size: 9px;
+  font-style: italic; margin-bottom: 2px;
+}
+
+.midi-info-notes {
+  color: rgba(180, 220, 255, 0.6); font-size: 9px;
+  margin-bottom: 3px;
+}
+
 .midi-info-composer {
   color: var(--accent); font-weight: 700;
   font-size: 12px; margin-bottom: 2px;

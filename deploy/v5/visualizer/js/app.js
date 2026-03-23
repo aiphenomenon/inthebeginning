@@ -537,6 +537,13 @@ class VisualizerApp {
     if (!this.synthEngine) {
       this.synthEngine = new SynthEngine();
       this.synthEngine.init();
+      // Load instrument samples in background (non-blocking)
+      this.synthEngine.initSamples().then(ok => {
+        if (ok) {
+          const count = this.synthEngine.sampleBank._buffers.size;
+          console.log(`SampleBank: loaded ${count} instrument samples`);
+        }
+      });
     }
   }
 
@@ -598,6 +605,9 @@ class VisualizerApp {
 
       const ok = await this.midiPlayer.loadMidi(buffer);
       if (ok) {
+        // Extract note stats from the parsed MIDI to show raw arrangement
+        const noteStats = this._getMidiNoteStats();
+        this._updateMidiInfo(name, composer, era, noteStats);
         this.midiPlayer.play();
         this._setStatus(`${composer} \u2014 ${name}`);
       } else if (this._infiniteMode) {
@@ -620,7 +630,8 @@ class VisualizerApp {
 
     const name = this._sanitize(midi.name || '');
     const composer = this._sanitize(midi.composer || '');
-    this._updateMidiInfo(name, composer, midi.era ? `${midi.era} Era` : '');
+    const era = midi.era ? `${midi.era} Era` : '';
+    this._updateMidiInfo(name, composer, era);
 
     const midiUrl = this._midiBaseUrl + midi.path;
     fetch(midiUrl)
@@ -631,11 +642,39 @@ class VisualizerApp {
       })
       .then(ok => {
         if (ok) {
+          const noteStats = this._getMidiNoteStats();
+          this._updateMidiInfo(name, composer, era, noteStats);
           this.midiPlayer.play();
           this._setStatus(`${composer} \u2014 ${name}`);
         }
       })
       .catch(() => {});
+  }
+
+  /**
+   * Extract note statistics from the currently loaded MIDI.
+   * Shows the raw arrangement from the source MIDI before effects are applied.
+   */
+  _getMidiNoteStats() {
+    if (!this.midiPlayer) return null;
+    const notes = this.midiPlayer._notes;
+    if (!notes || !notes.length) return null;
+
+    // Count unique channels (tracks) and unique instruments
+    const channels = new Set();
+    const instruments = new Set();
+    for (const n of notes) {
+      if (n.ch !== undefined) channels.add(n.ch);
+      if (n.inst) instruments.add(n.inst);
+      if (n.program !== undefined) instruments.add(n.program);
+    }
+
+    return {
+      totalNotes: notes.length,
+      tracks: channels.size || 1,
+      instruments: instruments.size || 1,
+      duration: this.midiPlayer._duration || 0,
+    };
   }
 
   _cycleMutation() {
@@ -687,15 +726,36 @@ class VisualizerApp {
     }
   }
 
-  _updateMidiInfo(name, composer, era) {
+  _updateMidiInfo(name, composer, era, noteStats) {
     const panel = document.getElementById('midi-info-panel');
     const composerEl = document.getElementById('midi-info-composer');
     const pieceEl = document.getElementById('midi-info-piece');
     const mutEl = document.getElementById('midi-info-mutation');
+    const sourceEl = document.getElementById('midi-info-source');
+    const notesEl = document.getElementById('midi-info-notes');
 
     if (composerEl) composerEl.textContent = composer;
     if (pieceEl) pieceEl.textContent = name;
     if (mutEl) mutEl.textContent = `Mutation: ${MIDI_MUTATIONS[this._mutationIndex].name}`;
+
+    // Show source MIDI file info (the raw material before effects)
+    if (sourceEl) {
+      const eraText = era ? ` (${era})` : '';
+      sourceEl.textContent = name ? `Source MIDI: ${composer} — ${name}${eraText}` : '';
+    }
+
+    // Show raw note arrangement from the MIDI
+    if (notesEl && noteStats) {
+      const parts = [];
+      if (noteStats.totalNotes) parts.push(`${noteStats.totalNotes} notes`);
+      if (noteStats.tracks) parts.push(`${noteStats.tracks} tracks`);
+      if (noteStats.instruments) parts.push(`${noteStats.instruments} instruments`);
+      if (noteStats.duration) parts.push(`${Math.round(noteStats.duration)}s duration`);
+      notesEl.textContent = parts.length ? `Raw arrangement: ${parts.join(' · ')}` : '';
+    } else if (notesEl) {
+      notesEl.textContent = '';
+    }
+
     if (panel) panel.classList.toggle('visible', !!(name || composer));
   }
 

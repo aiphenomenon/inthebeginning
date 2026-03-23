@@ -33,6 +33,11 @@ class GamePlayer {
     // ──── Shared SynthEngine ────
     /** @type {SynthEngine} */
     this._synth = new SynthEngine();
+    // Load instrument samples in background (non-blocking)
+    // Will use sample-based playback when available, additive synthesis as fallback
+    this._synth.initSamples().then(ok => {
+      if (ok) console.log(`SampleBank: ${this._synth.sampleBank._buffers.size} samples loaded`);
+    });
 
     // ──── MIDI Player ────
     /** @type {MidiPlayer} */

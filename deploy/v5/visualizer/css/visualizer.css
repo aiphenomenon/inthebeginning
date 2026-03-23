@@ -545,6 +545,17 @@ html, body {
   z-index: 50;
 }
 .midi-info-panel.visible { opacity: 1; }
+.midi-info-source {
+  font-size: 12px;
+  color: rgba(180, 220, 255, 0.8);
+  margin-bottom: 2px;
+  font-style: italic;
+}
+.midi-info-notes {
+  font-size: 11px;
+  color: rgba(180, 220, 255, 0.6);
+  margin-bottom: 4px;
+}
 .midi-info-composer {
   font-size: 15px;
   font-weight: 600;

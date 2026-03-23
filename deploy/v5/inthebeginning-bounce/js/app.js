@@ -656,6 +656,9 @@ class CosmicRunnerApp {
     if (!this.midiInfoPanel) return;
 
     const mode = this.musicSync.mode;
+    const sourceEl = document.getElementById('midi-source');
+    const notesEl = document.getElementById('midi-notes');
+
     if (mode === AUDIO_MODE.MIDI && this.player?.midiPlayer?.trackInfo) {
       const info = this.player.midiPlayer.trackInfo;
       const composerEl = document.getElementById('midi-composer');
@@ -669,6 +672,34 @@ class CosmicRunnerApp {
       if (mutEl) {
         const mut = MIDI_MUTATIONS[this.currentMutationIndex];
         mutEl.textContent = mut && mut.name !== 'Original' ? `Mutation: ${mut.name}` : '';
+      }
+
+      // Show source MIDI file info (the raw material before effects)
+      if (sourceEl) {
+        const eraText = info.era ? ` (${info.era})` : '';
+        sourceEl.textContent = `Source MIDI: ${info.composer || 'Unknown'} — ${info.name || ''}${eraText}`;
+      }
+
+      // Show raw note arrangement from the MIDI
+      if (notesEl) {
+        const mp = this.player.midiPlayer;
+        if (mp._notes && mp._notes.length) {
+          const channels = new Set();
+          const instruments = new Set();
+          for (const n of mp._notes) {
+            if (n.ch !== undefined) channels.add(n.ch);
+            if (n.inst) instruments.add(n.inst);
+            if (n.program !== undefined) instruments.add(n.program);
+          }
+          const parts = [];
+          parts.push(`${mp._notes.length} notes`);
+          if (channels.size) parts.push(`${channels.size} tracks`);
+          if (instruments.size) parts.push(`${instruments.size} instruments`);
+          if (mp._duration) parts.push(`${Math.round(mp._duration)}s`);
+          notesEl.textContent = `Raw arrangement: ${parts.join(' · ')}`;
+        } else {
+          notesEl.textContent = '';
+        }
       }
 
       this.midiInfoPanel.classList.add('visible');
@@ -685,6 +716,8 @@ class CosmicRunnerApp {
       }
       if (eraEl) eraEl.textContent = '';
       if (mutEl) mutEl.textContent = '';
+      if (sourceEl) sourceEl.textContent = '';
+      if (notesEl) notesEl.textContent = '';
 
       this.midiInfoPanel.classList.add('visible');
     } else {

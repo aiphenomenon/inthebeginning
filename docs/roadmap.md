@@ -98,6 +98,38 @@ machine, each 30-minute render uses 1 core and takes ~16 minutes. Potential spee
 - FreeBSD builds for C/Rust
 - Raspberry Pi optimized builds
 
+### Web Audio: Coloring/Imprinting/Bending Library (Future)
+
+The Python radio_engine implements a library of ~538 sound coloring, imprinting,
+and bending effects that transform instrument tones into unique textures. These
+include:
+
+- **Coloring**: Harmonic overtone shaping, formant shifting, spectral tilt
+- **Imprinting**: Transient injection, resonance seeding, envelope sculpting
+- **Bending**: Pitch micro-modulation, glissando, portamento curves
+
+The Python implementation includes clamping mechanisms to keep effects within
+comfortable human hearing ranges (avoiding harsh frequencies, extreme amplitudes,
+or disorienting pitch shifts).
+
+**Current web state**: The Visualizer and Cosmic Runner apps have 16 mutation
+presets (pitchShift, tempoMult, reverb, filter) which provide a subset of this
+capability. The full ~538 effect library is a future enhancement.
+
+**Implementation considerations for web**:
+- Web Audio API's AudioParam scheduling can reproduce most effects
+- Clamping is critical — the Python clamping logic must be ported faithfully
+- Effects should be applied post-instrument (after sample or additive synthesis)
+- Performance: each effect adds AudioNode overhead; budget for ~4-6 simultaneous
+  effects per voice maximum in real-time browser playback
+- Consider Web Audio Worklet for custom DSP effects that aren't achievable
+  with built-in nodes
+
+**Prerequisites**:
+- Sample-based instrument playback (DONE — SampleBank in synth-engine.js)
+- GM program-to-instrument mapping (DONE — GM_PROGRAM_TO_SAMPLE)
+- Regular Claude Code CLI access for comprehensive SoundFont curation
+
 ## Long-Term Vision
 
 ### Multi-Simulation Modes
