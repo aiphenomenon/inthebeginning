@@ -202,6 +202,7 @@ class ObstacleManager {
     this.typeBias = 0;
     this.totalSpawned = 0;
     this.level = 0;
+    this.laneCount = 3;
     this.availableTypes = getObstacleTypesForLevel(0);
   }
 
@@ -230,6 +231,14 @@ class ObstacleManager {
     this.spawnInterval = Math.max(0.4, 1.5 - level * 0.08);
   }
 
+  /**
+   * Set the number of discrete lanes for obstacle spawning.
+   * @param {number} count - Number of lanes (from Renderer3D.laneCount).
+   */
+  setLaneCount(count) {
+    this.laneCount = Math.max(2, count);
+  }
+
   update(dt, gameSpeed, fallSpeed) {
     this.spawnTimer -= dt;
     if (this.spawnTimer <= 0) {
@@ -246,6 +255,28 @@ class ObstacleManager {
     }
   }
 
+  /**
+   * Pick a discrete lane position. Each lane is evenly distributed across
+   * the road (10%-90% of screen width) with a small random jitter.
+   * @param {number} [excludeLane] - Lane index to avoid (for multi-spawn).
+   * @returns {{ laneX: number, laneIdx: number }}
+   */
+  _pickLane(excludeLane) {
+    const lanes = this.laneCount;
+    let laneIdx;
+    if (excludeLane !== undefined && lanes > 1) {
+      // Pick a different lane
+      laneIdx = (excludeLane + 1 + Math.floor(Math.random() * (lanes - 1))) % lanes;
+    } else {
+      laneIdx = Math.floor(Math.random() * lanes);
+    }
+    // Map lane index to 0.10–0.90 range with small jitter
+    const baseFrac = 0.10 + (laneIdx / (lanes - 1 || 1)) * 0.80;
+    const jitter = (Math.random() - 0.5) * (0.06 / Math.max(1, lanes - 1));
+    const laneX = Math.max(0.08, Math.min(0.92, baseFrac + jitter));
+    return { laneX, laneIdx };
+  }
+
   _spawn(gameSpeed) {
     let typeIdx = Math.floor(Math.random() * this.availableTypes.length);
     if (Math.random() < 0.3 && this.typeBias < this.availableTypes.length) {
@@ -253,23 +284,20 @@ class ObstacleManager {
     }
     const type = this.availableTypes[typeIdx];
 
-    // Random horizontal lane position (10%-90% of screen width)
-    const laneX = 0.10 + Math.random() * 0.80;
+    // Discrete lane-based spawning
+    const { laneX, laneIdx } = this._pickLane();
 
     const obs = new Obstacle(laneX, this.screenWidth, this.screenHeight, type);
     this.obstacles.push(obs);
     this.totalSpawned++;
 
-    // At higher levels, occasionally spawn multiple objects at once
+    // At higher levels, occasionally spawn multiple objects at once in different lanes
     if (this.level >= 3 && Math.random() < 0.15 + this.level * 0.03) {
       const extraType = this.availableTypes[Math.floor(Math.random() * this.availableTypes.length)];
-      const extraLane = 0.10 + Math.random() * 0.80;
-      // Ensure second obstacle is at least 15% away from first
-      if (Math.abs(extraLane - laneX) > 0.15) {
-        const extra = new Obstacle(extraLane, this.screenWidth, this.screenHeight, extraType);
-        this.obstacles.push(extra);
-        this.totalSpawned++;
-      }
+      const { laneX: extraLaneX } = this._pickLane(laneIdx);
+      const extra = new Obstacle(extraLaneX, this.screenWidth, this.screenHeight, extraType);
+      this.obstacles.push(extra);
+      this.totalSpawned++;
     }
   }
 

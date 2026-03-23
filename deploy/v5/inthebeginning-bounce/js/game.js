@@ -46,6 +46,7 @@ class Game {
     this.gridDim = '2d';
 
     this.game3DDisabled = false;
+    this.auto3DTrack = 7; // Auto-switch to 3D at this track index (0-based: track 7 = index 6)
 
     this.spacetimeYears = 0;
 
@@ -145,12 +146,30 @@ class Game {
   setGame3DDisabled(disabled) {
     this.game3DDisabled = disabled;
     this.renderer3d.disabled3D = disabled;
+    // Track that user manually toggled 3D so auto-switch doesn't override
+    this._user3DOverride = true;
   }
 
   setLevel(level) {
     this.currentLevel = level;
-    if (this.obstacles) this.obstacles.setLevel(level);
+    if (this.obstacles) {
+      this.obstacles.setLevel(level);
+      this.obstacles.setLaneCount(this.renderer3d.laneCount);
+    }
     this.renderer3d.updateForLevel(level, 0.1);
+
+    // Auto-switch 2D/3D based on track: tracks 1-6 default 2D, track 7+ default 3D
+    // Only auto-switch if the user hasn't manually disabled 3D
+    if (!this._user3DOverride) {
+      const shouldBe3D = level >= (this.auto3DTrack - 1);
+      this.renderer3d.disabled3D = !shouldBe3D;
+    }
+
+    // Sync lane count after level update
+    if (this.obstacles) {
+      this.obstacles.setLaneCount(this.renderer3d.laneCount);
+    }
+
     for (const r of this.runners) r.setLevel(level);
     if (this.background) this.background.setTrackIndex(level);
 
@@ -316,6 +335,10 @@ class Game {
     this.background.update(this.mode === 'game' ? this.speed : 0.3, dt);
 
     this.renderer3d.updateForLevel(this.currentLevel, dt);
+    // Keep obstacle lane count in sync with renderer
+    if (this.obstacles) {
+      this.obstacles.setLaneCount(this.renderer3d.laneCount);
+    }
 
     if (this.mode === 'game') {
       const trackYears = SPACETIME_SCALE / 12;
@@ -339,6 +362,20 @@ class Game {
       if (this.obstacles) {
         // V5: pass fallSpeed for vertical obstacle movement
         this.obstacles.update(dt, this.speed, this.fallSpeed);
+
+        // In 2D mode, clamp obstacles that have reached ground to the terrain surface
+        // so they appear to sit on the hills rather than pass through them
+        if (this.renderer3d.tilt < 0.1) {
+          for (const obs of this.obstacles.obstacles) {
+            if (obs.blasted) continue;
+            const terrainGroundY = this.renderer3d.getGroundYAtX(
+              obs.x + obs.w / 2, this.groundY, this.background.scrollX);
+            // If obstacle has fallen to or below terrain, clamp it on the surface
+            if (obs.y + obs.h > terrainGroundY) {
+              obs.y = terrainGroundY - obs.h;
+            }
+          }
+        }
       }
 
       // Ground segments still scroll horizontally for visual effect
