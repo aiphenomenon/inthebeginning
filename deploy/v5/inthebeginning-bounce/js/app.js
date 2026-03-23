@@ -473,9 +473,11 @@ class CosmicRunnerApp {
       }
     }
 
-    // Load MIDI catalog
+    // Load MIDI catalog (prefer shared midi/ dir so base URL resolves to MIDI files)
     const midiPaths = [
       'audio/midi_catalog.json',
+      '../../shared/audio/midi/midi_catalog.json',
+      '../shared/audio/midi/midi_catalog.json',
       '../../shared/audio/metadata/v1/midi_catalog.json',
       '../shared/audio/metadata/v1/midi_catalog.json',
     ];

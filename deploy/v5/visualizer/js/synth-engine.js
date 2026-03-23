@@ -442,10 +442,12 @@ class SynthEngine {
 
     // Try multiple paths to find samples
     const paths = baseUrl ? [baseUrl] : [
+      '../inthebeginning-bounce/audio/samples/',
+      '../../shared/audio/instruments/',
+      '../shared/audio/instruments/',
       '../audio/samples/',
       '../../apps/audio/samples/',
       '../cosmic-runner-v5/audio/samples/',
-      '../cosmic-runner-v3/audio/samples/',
       'audio/samples/',
       'samples/',
     ];
