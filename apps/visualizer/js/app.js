@@ -1,20 +1,18 @@
 /**
- * Main Application for In The Beginning Visualizer V3.
+ * Main Application for In The Beginning Visualizer V5.
  *
- * Supports four modes:
+ * Supports five modes:
  * - Album: Multi-track MP3 playback with synchronized grid visualization
  * - Single: Single continuous audio file
- * - MIDI Synth: In-browser MIDI synthesis via SynthEngine + Web Worker
+ * - MIDI: In-browser MIDI synthesis via SynthEngine + Web Worker
+ * - Synth: Procedural music generation (browser-based, no server needed)
  * - Stream: Server-Sent Events for infinite radio
  *
- * MIDI Synth mode features:
- * - Full MIDI library access (1,854 classical pieces)
- * - 16 mutation presets (pitch shift, tempo, reverb, filter)
- * - Web Worker MIDI parsing for non-blocking performance
- * - Additive synthesis with 16+ instrument timbres
- * - Pitch bend visualization (pulsing glow on bent notes)
- * - Infinite shuffle mode
- * - Composer/piece provenance display
+ * V5 changes:
+ * - Prev/Next track buttons work across all modes (album, midi, synth)
+ * - Stream mode shows status banner when server is unavailable
+ * - New Synth mode: procedural music generation entirely in-browser
+ * - Unified control delegation via onPrev/onNext callbacks
  */
 
 /** 16 MIDI mutation presets (matches Cosmic Runner V3 config). */
@@ -51,8 +49,10 @@ class VisualizerApp {
     this.synthEngine = null;
     /** @type {MidiFilePlayer|null} */
     this.midiPlayer = null;
+    /** @type {MusicGenerator|null} */
+    this.musicGenerator = null;
 
-    /** @type {string} Current mode: album, single, midi, stream */
+    /** @type {string} Current mode: album, single, midi, synth, stream */
     this.mode = 'single';
 
     /** @type {number} */
@@ -112,6 +112,9 @@ class VisualizerApp {
       score: null,
       onTimeUpdate: (time) => this._onTimeUpdate(time),
       onTrackChange: (idx) => this._onTrackChange(idx),
+      onPrev: () => this._onPrev(),
+      onNext: () => this._onNext(),
+      onTogglePlay: () => this._onTogglePlay(),
     });
 
     // File input (JSON scores + MIDI files)
@@ -186,12 +189,22 @@ class VisualizerApp {
         this._infiniteMode = infiniteToggle.checked;
       });
     }
+
+    // Stream status dismiss
+    const dismissBtn = document.getElementById('stream-status-dismiss');
+    if (dismissBtn) {
+      dismissBtn.addEventListener('click', () => {
+        const banner = document.getElementById('stream-status');
+        if (banner) banner.style.display = 'none';
+      });
+    }
   }
 
   /** Switch between modes. */
   _switchMode(newMode) {
     // Stop current mode
     if (this.mode === 'midi') this._stopMidiMode();
+    if (this.mode === 'synth') this._stopSynthMode();
     if (this.mode === 'stream' && this.streamClient) {
       this.streamClient.disconnect();
     }
@@ -206,10 +219,17 @@ class VisualizerApp {
       tab.classList.toggle('active', tab.dataset.mode === newMode);
     });
 
-    // Update player mode
+    // Update player mode — show prev/next for album, midi, synth
     if (this.player) {
-      this.player.mode = newMode === 'midi' ? 'single' : newMode;
+      const showNav = (newMode === 'album' || newMode === 'midi' || newMode === 'synth');
+      this.player.mode = showNav ? 'album' : newMode;
       this.player._updateModeVisibility();
+      // Hide seek bar for midi/synth since they use their own time tracking
+      if (newMode === 'midi' || newMode === 'synth') {
+        if (this.player.ui.seekContainer) this.player.ui.seekContainer.style.display = 'none';
+        if (this.player.ui.skipBackBtn) this.player.ui.skipBackBtn.style.display = 'none';
+        if (this.player.ui.skipFwdBtn) this.player.ui.skipFwdBtn.style.display = 'none';
+      }
     }
 
     // Show/hide MIDI controls
@@ -225,9 +245,21 @@ class VisualizerApp {
     const midiPanel = document.getElementById('midi-info-panel');
     if (midiPanel) midiPanel.classList.toggle('visible', newMode === 'midi');
 
+    // Show/hide Synth info
+    const synthPanel = document.getElementById('synth-info-panel');
+    if (synthPanel) synthPanel.classList.toggle('visible', newMode === 'synth');
+
+    // Show/hide stream status
+    const streamBanner = document.getElementById('stream-status');
+    if (streamBanner && newMode !== 'stream') streamBanner.style.display = 'none';
+
     // Start new mode
     if (newMode === 'midi') {
       this._startMidiMode();
+    } else if (newMode === 'synth') {
+      this._startSynthMode();
+    } else if (newMode === 'stream') {
+      this._startStreamMode();
     } else if (newMode === 'album' && this.score && this.score.tracks.length > 0) {
       this.player.play();
     }
@@ -245,6 +277,7 @@ class VisualizerApp {
 
     // Try loading album from sibling directories
     const notePaths = [
+      '../cosmic-runner-v5/audio/',
       '../cosmic-runner-v3/audio/',
       '../cosmic-runner-v2/audio/',
       'scores/',
@@ -286,16 +319,22 @@ class VisualizerApp {
       this._setStatus('Drop a score JSON or MIDI file to load.');
     }
 
-    // Show mode selector if MIDI is available
-    if (this._midiAvailable) {
-      const selector = document.getElementById('mode-selector');
-      if (selector) selector.style.display = 'flex';
+    // Always show mode selector (Synth mode needs no catalog)
+    const selector = document.getElementById('mode-selector');
+    if (selector) selector.style.display = 'flex';
+
+    // Hide MIDI tab if no catalog
+    if (!this._midiAvailable) {
+      const midiTab = document.getElementById('mode-midi');
+      if (midiTab) midiTab.style.display = 'none';
     }
   }
 
   /** Load MIDI catalog from sibling directories. */
   async _loadMidiCatalog() {
     const catalogPaths = [
+      '../cosmic-runner-v5/midi/midi_catalog.json',
+      '../cosmic-runner-v5/audio/midi_catalog.json',
       '../cosmic-runner-v3/midi/midi_catalog.json',
       '../cosmic-runner-v3/audio/midi_catalog.json',
       'midi/midi_catalog.json',
@@ -660,7 +699,186 @@ class VisualizerApp {
     if (panel) panel.classList.toggle('visible', !!(name || composer));
   }
 
+  // ──── Unified prev/next/play across modes ────
+
+  /** Called by player prev button — delegates to active mode. */
+  _onPrev() {
+    switch (this.mode) {
+      case 'album':
+        this.player.prevTrack();
+        break;
+      case 'midi':
+        this._prevMidi();
+        break;
+      case 'synth':
+        this._prevSynthTrack();
+        break;
+    }
+  }
+
+  /** Called by player next button — delegates to active mode. */
+  _onNext() {
+    switch (this.mode) {
+      case 'album':
+        this.player.nextTrack();
+        break;
+      case 'midi':
+        this._nextMidi();
+        break;
+      case 'synth':
+        this._nextSynthTrack();
+        break;
+    }
+  }
+
+  /** Called by player play/pause — delegates to active mode. */
+  _onTogglePlay() {
+    if (this.mode === 'midi') {
+      if (this.midiPlayer) {
+        if (this.midiPlayer.isPlaying) {
+          this.midiPlayer.stop();
+          this.player.isPlaying = false;
+          this.player._updatePlayButton();
+        } else {
+          this.midiPlayer.play();
+          this.player.isPlaying = true;
+          this.player._updatePlayButton();
+        }
+      }
+      return true; // handled
+    }
+    if (this.mode === 'synth') {
+      if (this.musicGenerator) {
+        if (this.musicGenerator.isPlaying) {
+          this.musicGenerator.stop();
+          this.player.isPlaying = false;
+          this.player._updatePlayButton();
+        } else {
+          this.musicGenerator.play();
+          this.player.isPlaying = true;
+          this.player._updatePlayButton();
+        }
+      }
+      return true; // handled
+    }
+    return false; // let player handle it
+  }
+
+  // ──── Synth (procedural generation) mode ────
+
+  _ensureMusicGenerator() {
+    if (this.musicGenerator) return;
+    this._ensureSynthEngine();
+    this.musicGenerator = new MusicGenerator(this.synthEngine);
+    this.musicGenerator.onNoteEvent = (events) => this._onSynthNoteEvent(events);
+    this.musicGenerator.onTrackEnd = () => this._onSynthTrackEnd();
+  }
+
+  _startSynthMode() {
+    this._ensureSynthEngine();
+    this._ensureMusicGenerator();
+    if (this.player) this.player.pause();
+
+    // Random seed for this cycle
+    this.musicGenerator.seed = Math.floor(Math.random() * 999999);
+    this.musicGenerator.generateCycle();
+    this.musicGenerator.currentTrack = 0;
+    this.musicGenerator.play();
+
+    this.player.isPlaying = true;
+    this.player._updatePlayButton();
+
+    this._updateSynthInfo();
+    this._setStatus('Synth: Procedural generation');
+  }
+
+  _stopSynthMode() {
+    if (this.musicGenerator) this.musicGenerator.stop();
+    this.player.isPlaying = false;
+    this.player._updatePlayButton();
+    const panel = document.getElementById('synth-info-panel');
+    if (panel) panel.classList.remove('visible');
+  }
+
+  _nextSynthTrack() {
+    if (!this.musicGenerator) return;
+    const next = this.musicGenerator.currentTrack + 1;
+    if (next >= this.musicGenerator.trackCount) {
+      // New cycle with new seed
+      this.musicGenerator.seed = Math.floor(Math.random() * 999999);
+      this.musicGenerator.generateCycle();
+      this.musicGenerator.currentTrack = 0;
+    } else {
+      this.musicGenerator.currentTrack = next;
+    }
+    this.musicGenerator.stop();
+    this.musicGenerator.play();
+    this.player.isPlaying = true;
+    this.player._updatePlayButton();
+    this._updateSynthInfo();
+  }
+
+  _prevSynthTrack() {
+    if (!this.musicGenerator) return;
+    if (this.musicGenerator.currentTrack > 0) {
+      this.musicGenerator.currentTrack--;
+      this.musicGenerator.stop();
+      this.musicGenerator.play();
+      this.player.isPlaying = true;
+      this.player._updatePlayButton();
+      this._updateSynthInfo();
+    }
+  }
+
+  _onSynthNoteEvent(events) {
+    this.grid.updateGrid(events);
+    this.player.updateAccentColor(this.grid.getDominantHue());
+  }
+
+  _onSynthTrackEnd() {
+    // Auto-advance to next track
+    this._nextSynthTrack();
+  }
+
+  _updateSynthInfo() {
+    if (!this.musicGenerator) return;
+    const epochEl = document.getElementById('synth-info-epoch');
+    const trackEl = document.getElementById('synth-info-track');
+    const seedEl = document.getElementById('synth-info-seed');
+    const panel = document.getElementById('synth-info-panel');
+
+    const epochName = this.musicGenerator._trackNames[this.musicGenerator.currentTrack] || '';
+    if (epochEl) epochEl.textContent = epochName;
+    if (trackEl) trackEl.textContent = `Track ${this.musicGenerator.currentTrack + 1} / ${this.musicGenerator.trackCount}`;
+    if (seedEl) seedEl.textContent = `Seed: ${this.musicGenerator.seed}`;
+    if (panel) panel.classList.add('visible');
+
+    if (this.player && this.player.ui.trackTitle) {
+      this.player.ui.trackTitle.textContent = epochName;
+    }
+  }
+
   // ──── Stream mode ────
+
+  /** Start stream mode with status detection. */
+  _startStreamMode() {
+    const params = new URLSearchParams(window.location.search);
+    const streamUrl = params.get('stream') || '';
+
+    if (!streamUrl) {
+      this._showStreamStatus('No stream URL configured. Use ?stream=http://localhost:8080/events or switch to Synth mode for in-browser generation.');
+      return;
+    }
+
+    this._startStream(streamUrl);
+  }
+
+  _showStreamStatus(msg) {
+    const banner = document.getElementById('stream-status');
+    const textEl = document.getElementById('stream-status-text');
+    if (banner) banner.style.display = 'flex';
+    if (textEl) textEl.textContent = msg;
+  }
 
   _startStream(url) {
     this.streamClient = new StreamClient({
@@ -669,9 +887,19 @@ class VisualizerApp {
         this.grid.updateGrid(events);
         this.player.updateAccentColor(this.grid.getDominantHue());
       },
-      onConnect: () => this._setStatus('Connected to stream.'),
-      onDisconnect: () => this._setStatus('Reconnecting...'),
-      onError: (err) => this._setStatus(`Stream error: ${err.message}`),
+      onConnect: () => {
+        this._setStatus('Connected to stream.');
+        const banner = document.getElementById('stream-status');
+        if (banner) banner.style.display = 'none';
+      },
+      onDisconnect: () => {
+        this._setStatus('Reconnecting...');
+        this._showStreamStatus('Stream disconnected — reconnecting...');
+      },
+      onError: (err) => {
+        this._setStatus(`Stream error: ${err.message}`);
+        this._showStreamStatus(`Stream server not reachable. Try Synth mode for in-browser generation.`);
+      },
     });
     this.streamClient.connect();
   }

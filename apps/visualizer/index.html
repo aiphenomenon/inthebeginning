@@ -36,6 +36,13 @@
       <div class="midi-info-mutation" id="midi-info-mutation"></div>
     </div>
 
+    <!-- Synth info panel (shows epoch, track, seed) -->
+    <div class="synth-info-panel" id="synth-info-panel">
+      <div class="synth-info-epoch" id="synth-info-epoch"></div>
+      <div class="synth-info-track" id="synth-info-track"></div>
+      <div class="synth-info-seed" id="synth-info-seed"></div>
+    </div>
+
     <!-- MIDI mode controls -->
     <div class="midi-controls" id="midi-controls" style="display:none">
       <button class="midi-ctrl-btn" id="midi-prev" title="Previous MIDI">&#9198;</button>
@@ -51,10 +58,18 @@
     <!-- Control bar -->
     <div id="control-bar"></div>
 
+    <!-- Stream status banner (shown when stream unavailable) -->
+    <div class="stream-status" id="stream-status" style="display:none">
+      <span class="stream-status-icon">&#9888;</span>
+      <span class="stream-status-text" id="stream-status-text">Stream server not detected</span>
+      <button class="stream-status-dismiss" id="stream-status-dismiss">&times;</button>
+    </div>
+
     <!-- Mode selector (appears at top-right when MIDI catalog available) -->
     <div class="mode-selector" id="mode-selector" style="display:none">
       <button class="mode-tab active" data-mode="album" id="mode-album">Album</button>
-      <button class="mode-tab" data-mode="midi" id="mode-midi">MIDI Synth</button>
+      <button class="mode-tab" data-mode="midi" id="mode-midi">MIDI</button>
+      <button class="mode-tab" data-mode="synth" id="mode-synth">Synth</button>
       <button class="mode-tab" data-mode="stream" id="mode-stream">Stream</button>
     </div>
   </div>
@@ -65,6 +80,7 @@
   <script src="js/synth-engine.js"></script>
   <script src="js/midi-player.js"></script>
   <script src="js/player.js"></script>
+  <script src="js/music-generator.js"></script>
   <script src="js/stream.js"></script>
   <script src="js/app.js"></script>
 </body>

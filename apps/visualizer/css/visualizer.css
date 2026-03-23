@@ -616,6 +616,65 @@ html, body {
   animation: glow-pulse 0.6s infinite;
 }
 
+/* ---------- Stream Status Banner ---------- */
+.stream-status {
+  position: fixed;
+  top: 44px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(180, 80, 20, 0.85);
+  backdrop-filter: blur(8px);
+  border-radius: 16px;
+  padding: 6px 16px;
+  z-index: 110;
+  color: #fff;
+  font-size: 12px;
+}
+.stream-status-icon { font-size: 14px; }
+.stream-status-dismiss {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+}
+.stream-status-dismiss:hover { color: #fff; }
+
+/* ---------- Synth Info Panel ---------- */
+.synth-info-panel {
+  position: fixed;
+  bottom: calc(var(--control-height, 80px) + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 50;
+}
+.synth-info-panel.visible { opacity: 1; }
+.synth-info-epoch {
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+.synth-info-track {
+  font-size: 13px;
+  margin-top: 2px;
+}
+.synth-info-seed {
+  font-size: 11px;
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
 /* ---------- Mobile MIDI Controls ---------- */
 @media (max-width: 640px) {
   .mode-selector {

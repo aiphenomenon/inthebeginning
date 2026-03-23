@@ -1,9 +1,12 @@
 /**
- * Audio Player with UI controls for In The Beginning Visualizer.
+ * Audio Player with UI controls for In The Beginning Visualizer V5.
  *
  * Manages audio playback via the HTML5 Audio API.
  * Provides play/pause, seek, volume, track navigation, and fullscreen.
  * Controls are colorized to match the dominant grid color scheme.
+ *
+ * V5: Prev/next/play buttons delegate to app-level callbacks,
+ * enabling control across album, MIDI, and synth modes.
  */
 
 /**
@@ -14,9 +17,12 @@ class Player {
    * Create a Player instance.
    * @param {Object} options
    * @param {HTMLElement} options.controlBar - Container for control bar.
-   * @param {string} options.mode - 'album', 'single', or 'stream'.
+   * @param {string} options.mode - 'album', 'single', 'stream', etc.
    * @param {Function} options.onTimeUpdate - Callback(currentTime).
    * @param {Function} options.onTrackChange - Callback(trackIndex).
+   * @param {Function} [options.onPrev] - App-level prev callback.
+   * @param {Function} [options.onNext] - App-level next callback.
+   * @param {Function} [options.onTogglePlay] - App-level play/pause callback. Return true if handled.
    * @param {Score|null} options.score - Score data for album/single modes.
    */
   constructor(options) {
@@ -28,6 +34,15 @@ class Player {
 
     /** @type {Function} */
     this.onTrackChange = options.onTrackChange || (() => {});
+
+    /** @type {Function} App-level prev handler. */
+    this.onPrev = options.onPrev || null;
+
+    /** @type {Function} App-level next handler. */
+    this.onNext = options.onNext || null;
+
+    /** @type {Function} App-level play/pause handler. Returns true if handled. */
+    this.onTogglePlay = options.onTogglePlay || null;
 
     /** @type {Score|null} */
     this.score = options.score || null;
@@ -123,11 +138,21 @@ class Player {
   _bindEvents() {
     if (!this.controlBar) return;
 
-    this.ui.playBtn.addEventListener('click', () => this.togglePlay());
+    this.ui.playBtn.addEventListener('click', () => {
+      // Let app handle play/pause for non-audio modes (midi, synth)
+      if (this.onTogglePlay && this.onTogglePlay()) return;
+      this.togglePlay();
+    });
     this.ui.skipBackBtn.addEventListener('click', () => this.skip(-15));
     this.ui.skipFwdBtn.addEventListener('click', () => this.skip(15));
-    this.ui.prevBtn.addEventListener('click', () => this.prevTrack());
-    this.ui.nextBtn.addEventListener('click', () => this.nextTrack());
+    this.ui.prevBtn.addEventListener('click', () => {
+      if (this.onPrev) this.onPrev();
+      else this.prevTrack();
+    });
+    this.ui.nextBtn.addEventListener('click', () => {
+      if (this.onNext) this.onNext();
+      else this.nextTrack();
+    });
     this.ui.fullscreenBtn.addEventListener('click', () => this.toggleFullscreen());
 
     this.ui.volumeBtn.addEventListener('click', () => {
@@ -160,6 +185,7 @@ class Player {
       switch (e.code) {
         case 'Space':
           e.preventDefault();
+          if (this.onTogglePlay && this.onTogglePlay()) break;
           this.togglePlay();
           break;
         case 'ArrowLeft':
