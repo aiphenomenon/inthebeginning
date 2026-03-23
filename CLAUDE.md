@@ -616,9 +616,16 @@ python -m pytest tests/test_visualizer_golden.py -v
 # Audio golden tests (composer, WAV generation, spectral)
 python -m pytest tests/test_audio_golden.py -v
 
+# Deploy asset validation (MIDI, instruments, metadata, paths)
+python -m pytest tests/test_deploy_assets.py -v
+
+# Deploy application flow tests (simulate JS loading logic)
+python -m pytest tests/test_deploy_app_flows.py -v
+
 # All new integration tests at once
 python -m pytest tests/test_golden_outputs.py tests/test_cross_language_parity.py \
-  tests/test_server_smoke.py tests/test_visualizer_golden.py tests/test_audio_golden.py -v
+  tests/test_server_smoke.py tests/test_visualizer_golden.py tests/test_audio_golden.py \
+  tests/test_deploy_assets.py tests/test_deploy_app_flows.py -v
 
 # Regenerate golden snapshots (after changing simulator output)
 python tools/capture_golden.py
@@ -1255,6 +1262,12 @@ apps/
   cosmic-runner-v5/  V5 game source (development copy)
 deploy/
   shared/            Shared assets for GitHub Pages (see below)
+    audio/
+      tracks/        12 album MP3s + note event JSONs
+      midi/          1,771 MIDI files (120 composers) + catalog
+      instruments/   60 instrument sample MP3s
+      metadata/v1/   Album + MIDI catalog metadata
+      interstitials/ Radio station ID MP3
   v5/                V5 deploy-ready apps (game + visualizer)
 ast_dsl/             AST parsing and transformation engine
 ast_captures/        Pre-computed AST snapshots for reference
@@ -1293,20 +1306,113 @@ When copied to the GitHub Pages repository, the layout is:
         Bach/                          e.g., adl_Air_on_a_G_string.mid
         Beethoven/
         ...
-      instruments/                     SoundFont / instrument sample files
+      instruments/                     60 instrument sample MP3s (piano, violin, etc.)
+        piano.mp3
+        violin.mp3
+        ...                            (60 files, ~2.5MB total)
   v5/                                  Version 5 applications
+    .nojekyll                          Prevents Jekyll processing on GitHub Pages
     inthebeginning-bounce/             Game application
       index.html
       css/styles.css
-      js/app.js, game.js, ...          All JS (no bundler, vanilla ES5+)
-      audio/                           Local copies of album.json + MP3s
+      js/                              All JS (no bundler, vanilla ES5+)
+        app.js                         Main app controller, mode/sound switching
+        game.js                        Game engine (physics, scoring)
+        player.js                      Audio player (MP3/MIDI/synth unified)
+        midi-player.js                 MIDI file parser and playback
+        synth-engine.js                Web Audio API synthesizer + sample bank
+        synth-worker.js                Background worker for MIDI parsing
+        music-sync.js                  Note event sync, album/MIDI catalog loading
+        music-generator.js             Procedural music generation
+        config.js                      Game configuration
+        themes.js                      Visual theme manager
+        runner.js                      Runner character physics
+        obstacles.js                   Obstacle spawning and collision
+        characters.js                  Character sprites
+        background.js                  Background rendering
+        blast-effect.js                Visual effects
+        renderer3d.js                  3D perspective renderer
+      audio/                           Local copies for self-contained operation
+        album.json                     Album metadata with ID3 info per track
+        album_notes.json               Track list with note file references
+        midi_catalog.json              MIDI library catalog
+        in-the-beginning-radio.mp3     Interstitial station ID
+        V8_Sessions-*.mp3              12 album tracks (~84MB)
+        V8_Sessions-*_notes_v3.json    12 note event files (~1.2MB)
     visualizer/                        Visualizer application
       index.html
       css/visualizer.css
-      js/app.js, grid.js, ...
+      js/
+        app.js                         Visualizer controller (5 modes)
+        grid.js                        64x64 color grid renderer
+        player.js                      Audio player
+        midi-player.js                 MIDI parser and playback
+        synth-engine.js                Web Audio API synthesizer
+        synth-worker.js                Background MIDI parsing worker
+        music-generator.js             Procedural music generation
+        stream.js                      SSE stream client
+        score.js                       Score/JSON file parser
   v6/                                  Future version (same structure)
     ...
 ```
+
+### Complete Asset Manifest
+
+The following assets must be present in `deploy/` for a working deployment:
+
+| Category | Location | Count | Size | Description |
+|---|---|---|---|---|
+| Album MP3s | shared/audio/tracks/ | 12 | ~84MB | V8 Sessions album tracks |
+| Note events | shared/audio/tracks/ | 12 | ~1.2MB | Per-track note event JSON |
+| MIDI files | shared/audio/midi/ | 1,771 | ~25MB | Classical MIDI library (120 composers) |
+| MIDI catalog | shared/audio/midi/ | 1 | ~341KB | midi_catalog.json (also in metadata/v1/) |
+| MIDI attribution | shared/audio/midi/ | 1 | ~8KB | ATTRIBUTION.md |
+| Instruments | shared/audio/instruments/ | 60 | ~2.5MB | MP3 instrument samples |
+| Album metadata | shared/audio/metadata/v1/ | 1 | ~8KB | album.json |
+| Metadata catalog | shared/audio/metadata/v1/ | 1 | ~341KB | midi_catalog.json |
+| Interstitial | shared/audio/interstitials/ | 1 | ~81KB | Station ID MP3 |
+| Game JS | v5/inthebeginning-bounce/js/ | 16 | ~200KB | Vanilla JS application |
+| Game CSS | v5/inthebeginning-bounce/css/ | 1 | ~15KB | Stylesheet |
+| Game HTML | v5/inthebeginning-bounce/ | 1 | ~20KB | Entry point |
+| Game audio | v5/inthebeginning-bounce/audio/ | ~28 | ~85MB | Local album copies |
+| Visualizer JS | v5/visualizer/js/ | 9 | ~100KB | Vanilla JS application |
+| Visualizer CSS | v5/visualizer/css/ | 1 | ~8KB | Stylesheet |
+| Visualizer HTML | v5/visualizer/ | 1 | ~12KB | Entry point |
+
+**Total deploy size**: ~200MB (dominated by album MP3s)
+
+### Shared Folder Versioning Strategy
+
+The `shared/` folder is designed to persist across application versions:
+
+1. **One copy, many consumers**: All version folders (v5, v6, v7...) reference
+   `../../shared/audio/` via relative paths. Adding a new version does not
+   duplicate the ~110MB of shared audio assets.
+
+2. **Path resolution pattern**: From any `vN/app-name/` directory,
+   `../../shared/audio/` always resolves to the shared root. This works because
+   all version folders are siblings of `shared/` under `deploy/`.
+
+3. **JS fallback chains**: Each app tries local paths first (e.g., `audio/`),
+   then shared paths (e.g., `../../shared/audio/midi/`). This means apps work
+   both standalone (with local copies) and deployed (using shared assets).
+
+4. **MIDI catalog placement**: `midi_catalog.json` is placed in
+   `shared/audio/midi/` alongside the MIDI files so that the JavaScript base URL
+   derivation (`url.substring(0, url.lastIndexOf('/') + 1)`) automatically
+   produces the correct path for loading individual MIDI files.
+
+5. **When to update shared assets**:
+   - New album tracks or re-renders → update `shared/audio/tracks/`
+   - New MIDI files added → update `shared/audio/midi/` + regenerate catalog
+   - New instrument samples → update `shared/audio/instruments/`
+   - Schema changes → create `shared/audio/metadata/v2/` (never modify v1)
+
+6. **Development workflow**: During development in this repo, shared assets
+   live in `deploy/shared/`. Source MIDIs are in `apps/audio/midi_library/`,
+   source samples in `apps/audio/samples/`. When assets change, copy them
+   to `deploy/shared/` and commit. Tests in `tests/test_deploy_assets.py`
+   verify the copy is complete and consistent.
 
 ### Key Principles
 

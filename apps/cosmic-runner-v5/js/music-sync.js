@@ -100,6 +100,25 @@ class MusicSync {
   }
 
   /**
+   * Load MIDI catalog and store the base URL for MIDI files.
+   * @param {string} catalogUrl - URL to midi_catalog.json
+   * @returns {Promise<boolean>}
+   */
+  async loadMidiCatalog(catalogUrl) {
+    try {
+      const resp = await fetch(catalogUrl);
+      if (!resp.ok) return false;
+      const data = await resp.json();
+      if (!data.midis || data.midis.length === 0) return false;
+      this.midiCatalog = data.midis;
+      this.midiBaseUrl = catalogUrl.substring(0, catalogUrl.lastIndexOf('/') + 1);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /**
    * Load note events for a specific MP3 track.
    * @param {number} trackIndex
    * @returns {Promise<Object>} { legend, events }

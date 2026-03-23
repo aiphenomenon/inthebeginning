@@ -433,8 +433,10 @@ class CosmicRunnerApp {
 
     // Load MIDI catalog
     const midiPaths = [
+      'audio/midi_catalog.json',
+      '../../shared/audio/midi/midi_catalog.json',
+      '../shared/audio/midi/midi_catalog.json',
       '../cosmic-runner-v3/audio/midi_library/midi_catalog.json',
-      '../cosmic-runner-v5/audio/midi_library/midi_catalog.json',
       'audio/midi_library/midi_catalog.json',
     ];
 
