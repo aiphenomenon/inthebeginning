@@ -421,13 +421,11 @@ class CosmicRunnerApp {
     const mutation = MIDI_MUTATIONS[index];
     if (!mutation) return;
     if (this.player) {
-      if (this.player.midiPlayer) {
-        this.player.midiPlayer.setMutation(mutation);
-      }
-      if (this.player.musicGenerator) {
-        // Apply mutation to synth engine for generator too
-        this.player._synth.setMutation(mutation);
-      }
+      // Use the unified setMutation which applies to both MIDI and synth paths.
+      // IMPORTANT: midiPlayer.setMutation internally calls _synth.setMutation,
+      // so we must NOT also call _synth.setMutation separately — double-setting
+      // the filter causes audio glitches that break mutations after 1-2 switches.
+      this.player.setMutation(mutation);
     }
     // Update MIDI info display
     const mutEl = document.getElementById('midi-mutation');
