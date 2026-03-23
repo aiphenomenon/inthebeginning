@@ -531,6 +531,33 @@ html, body {
 }
 
 /* ---------- MIDI Info Panel ---------- */
+/* ---------- ID3 Info Panel ---------- */
+.id3-panel {
+  position: fixed;
+  bottom: calc(var(--control-height, 80px) + 4px);
+  left: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  z-index: 55;
+  max-width: 280px;
+}
+
+.id3-title {
+  font-size: 12px; font-weight: 700; color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.id3-artist {
+  font-size: 10px; color: var(--accent-color);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.id3-album-info {
+  font-size: 9px; color: var(--text-secondary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
 .midi-info-panel {
   position: fixed;
   bottom: calc(var(--control-height, 80px) + 12px);

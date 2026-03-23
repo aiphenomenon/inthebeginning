@@ -162,8 +162,12 @@ class GamePlayer {
     }
 
     // MP3 track ended
-    this.audio.addEventListener('ended', () => {
+    this.audio.addEventListener('ended', async () => {
       if (this.musicSync.mode !== AUDIO_MODE.MP3) return;
+      // Check for interstitial callback before advancing
+      if (this.onTrackEnded) {
+        await this.onTrackEnded(this.currentTrack);
+      }
       if (this.currentTrack < this.musicSync.getTrackCount() - 1) {
         this.nextTrack();
       } else {

@@ -86,12 +86,30 @@ class MusicSync {
         trackNum: t.track_num || (i + 1),
         title: t.title || 'Unknown',
         epochName: (typeof EPOCH_NAMES !== 'undefined' ? EPOCH_NAMES[i] : null) || 'Unknown Epoch',
-        file: t.file,
+        file: t.file || t.notes_file,
         audioFile: t.audio_file,
         duration: t.duration || 0,
         startTime: t.start_time || 0,
         nEvents: t.n_events || 0,
+        id3: t.id3 || null,
+        engine: t.engine || null,
       }));
+
+      // Album-level metadata
+      this.albumMeta = {
+        album: this.albumData.album || '',
+        artist: this.albumData.artist || '',
+        year: this.albumData.year || '',
+        genre: this.albumData.genre || '',
+        copyright: this.albumData.copyright || '',
+        license: this.albumData.license || '',
+      };
+
+      // Interstitial config
+      this.interstitial = this.albumData.interstitial || null;
+      if (this.interstitial && this.interstitial.file) {
+        this.interstitialUrl = this.audioBaseUrl + this.interstitial.file;
+      }
 
       return true;
     } catch (e) {
@@ -359,6 +377,42 @@ class MusicSync {
    * @returns {Object|null}
    */
   getTrack(index) { return this.tracks[index] || null; }
+
+  /**
+   * Get ID3 tag info for display.
+   * @param {number} trackIndex
+   * @returns {Object} { title, artist, album, track, year, genre, copyright, license }
+   */
+  getTrackId3(trackIndex) {
+    const track = this.tracks[trackIndex];
+    if (track && track.id3) return track.id3;
+    // Fallback: construct from album-level metadata
+    if (track && this.albumMeta) {
+      return {
+        title: track.title,
+        artist: this.albumMeta.artist,
+        album: this.albumMeta.album,
+        track: `${track.trackNum}/${this.tracks.length}`,
+        year: String(this.albumMeta.year),
+        genre: this.albumMeta.genre,
+        copyright: this.albumMeta.copyright,
+        license: this.albumMeta.license,
+      };
+    }
+    return { title: track ? track.title : '', artist: '', album: '', track: '', year: '', genre: '', copyright: '', license: '' };
+  }
+
+  /**
+   * Check if interstitial should play after this track index.
+   * Interstitials play every N tracks (e.g., every 4 songs).
+   * @param {number} trackIndex - The track that just finished (0-based).
+   * @returns {boolean}
+   */
+  shouldPlayInterstitial(trackIndex) {
+    if (!this.interstitial) return false;
+    const every = this.interstitial.insert_every || 4;
+    return ((trackIndex + 1) % every === 0) && (trackIndex < this.tracks.length - 1);
+  }
 }
 
 if (typeof module !== 'undefined' && module.exports) {

@@ -275,26 +275,36 @@ class VisualizerApp {
     // Try loading MIDI catalog alongside album data
     const catalogLoaded = this._loadMidiCatalog();
 
-    // Try loading album from sibling directories
+    // Try loading album from sibling directories and shared assets
     const notePaths = [
+      '../inthebeginning-bounce/audio/',
+      '../../shared/audio/tracks/',
+      '../shared/audio/tracks/',
       '../cosmic-runner-v5/audio/',
-      '../cosmic-runner-v3/audio/',
-      '../cosmic-runner-v2/audio/',
       'scores/',
+    ];
+    const metaPaths = [
+      '../inthebeginning-bounce/audio/',
+      '../../shared/audio/metadata/v1/',
+      '../shared/audio/metadata/v1/',
     ];
 
     let albumJson = null;
     let notesBase = '';
 
-    for (const base of notePaths) {
-      try {
-        const resp = await fetch(base + 'album_notes.json');
-        if (resp.ok) {
-          albumJson = await resp.json();
-          notesBase = base;
-          break;
-        }
-      } catch (e) { /* next */ }
+    // Try album.json first (new format with ID3), then album_notes.json (legacy)
+    for (const base of [...metaPaths, ...notePaths]) {
+      for (const name of ['album.json', 'album_notes.json']) {
+        try {
+          const resp = await fetch(base + name);
+          if (resp.ok) {
+            albumJson = await resp.json();
+            notesBase = base;
+            break;
+          }
+        } catch (e) { /* next */ }
+      }
+      if (albumJson) break;
     }
 
     await catalogLoaded;
@@ -304,13 +314,28 @@ class VisualizerApp {
       let audioBase = notesBase;
       if (albumJson.tracks && albumJson.tracks[0]) {
         const testFile = albumJson.tracks[0].audio_file;
-        for (const base of notePaths) {
+        const searchBases = [...notePaths, notesBase];
+        // If notesBase was a metadata path, also check tracks path
+        if (notesBase.includes('metadata/')) {
+          searchBases.unshift(notesBase.replace('metadata/v1/', 'tracks/'));
+        }
+        for (const base of searchBases) {
           try {
             const resp = await fetch(base + testFile, { method: 'HEAD' });
             if (resp.ok) { audioBase = base; break; }
           } catch (e) { /* next */ }
         }
       }
+      // Store album-level metadata for ID3 display
+      this._albumMeta = {
+        album: albumJson.album || '',
+        artist: albumJson.artist || '',
+        year: albumJson.year || '',
+        genre: albumJson.genre || '',
+        copyright: albumJson.copyright || '',
+        license: albumJson.license || '',
+      };
+      this._albumTracks = albumJson.tracks || [];
       this._notesBaseUrl = notesBase;
       this._audioBaseUrl = audioBase;
       this._applyScore(albumJson);
@@ -333,10 +358,10 @@ class VisualizerApp {
   /** Load MIDI catalog from sibling directories. */
   async _loadMidiCatalog() {
     const catalogPaths = [
-      '../cosmic-runner-v5/midi/midi_catalog.json',
+      '../inthebeginning-bounce/audio/midi_catalog.json',
+      '../../shared/audio/metadata/v1/midi_catalog.json',
+      '../shared/audio/metadata/v1/midi_catalog.json',
       '../cosmic-runner-v5/audio/midi_catalog.json',
-      '../cosmic-runner-v3/midi/midi_catalog.json',
-      '../cosmic-runner-v3/audio/midi_catalog.json',
       'midi/midi_catalog.json',
     ];
 
@@ -497,6 +522,9 @@ class VisualizerApp {
       }
       if (this.player.isPlaying) this.player.audio.play().catch(() => {});
     }
+
+    // Update ID3 info display
+    this._updateId3Display(index);
 
     await this._loadTrackNotes(index);
     if (track.events && track.events.length > 0 && track.noteFile) {
@@ -972,6 +1000,39 @@ class VisualizerApp {
 
   _sanitize(s) {
     return String(s || '').replace(/[<>]/g, '').replace(/&/g, '&amp;').slice(0, 200);
+  }
+
+  /** Update ID3 info display near play controls. */
+  _updateId3Display(trackIndex) {
+    const titleEl = document.getElementById('id3-title');
+    const artistEl = document.getElementById('id3-artist');
+    const albumEl = document.getElementById('id3-album-info');
+
+    if (!titleEl) return;
+
+    if (this.mode === 'album' && this._albumTracks && this._albumTracks[trackIndex]) {
+      const t = this._albumTracks[trackIndex];
+      const id3 = t.id3 || {};
+      titleEl.textContent = id3.title || t.title || '';
+      if (artistEl) artistEl.textContent = id3.artist || this._albumMeta?.artist || '';
+      if (albumEl) {
+        const parts = [];
+        if (id3.album || this._albumMeta?.album) parts.push(id3.album || this._albumMeta.album);
+        if (id3.year || this._albumMeta?.year) parts.push(String(id3.year || this._albumMeta.year));
+        if (id3.genre || this._albumMeta?.genre) parts.push(id3.genre || this._albumMeta.genre);
+        if (id3.license || this._albumMeta?.license) parts.push(id3.license || this._albumMeta.license);
+        albumEl.textContent = parts.join(' \u00B7 ');
+      }
+    } else if (this.mode === 'midi') {
+      const info = this.midiPlayer?.trackInfo;
+      titleEl.textContent = info?.name || 'MIDI';
+      if (artistEl) artistEl.textContent = info?.composer || '';
+      if (albumEl) albumEl.textContent = info?.era || '';
+    } else if (this.mode === 'synth') {
+      titleEl.textContent = this.musicGenerator?.getCurrentTrackName?.() || 'Synth';
+      if (artistEl) artistEl.textContent = 'Generated';
+      if (albumEl) albumEl.textContent = '';
+    }
   }
 }
 
