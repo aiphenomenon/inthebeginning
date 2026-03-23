@@ -358,11 +358,11 @@ class VisualizerApp {
   /** Load MIDI catalog from sibling directories. */
   async _loadMidiCatalog() {
     const catalogPaths = [
-      '../inthebeginning-bounce/audio/midi_catalog.json',
       '../../shared/audio/midi/midi_catalog.json',
       '../shared/audio/midi/midi_catalog.json',
       '../../shared/audio/metadata/v1/midi_catalog.json',
       '../shared/audio/metadata/v1/midi_catalog.json',
+      '../inthebeginning-bounce/audio/midi_catalog.json',
       '../cosmic-runner-v5/audio/midi_catalog.json',
       'midi/midi_catalog.json',
     ];
