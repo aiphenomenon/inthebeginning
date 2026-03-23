@@ -37,7 +37,8 @@ html, body {
 .app-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100dvh;
+  height: 100vh; /* fallback for older browsers */
   width: 100vw;
 }
 
@@ -106,8 +107,10 @@ html, body {
   grid-template-columns: repeat(64, 1fr);
   grid-template-rows: repeat(64, 1fr);
   aspect-ratio: 1;
+  width: min(100%, calc(100dvh - var(--control-height) - 24px));
   width: min(100%, calc(100vh - var(--control-height) - 24px));
   max-width: 100%;
+  max-height: calc(100dvh - var(--control-height) - 24px);
   max-height: calc(100vh - var(--control-height) - 24px);
   gap: 1px;
   background: var(--bg-page);
@@ -199,8 +202,10 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 36px;
+  min-width: 44px;
+  min-height: 44px;
   height: 36px;
+  touch-action: manipulation;
 }
 
 .ctrl-btn:hover {
@@ -261,13 +266,14 @@ html, body {
   border-radius: 2px;
   outline: none;
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 .seek-bar::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: var(--accent-color);
   cursor: pointer;
@@ -281,8 +287,8 @@ html, body {
 }
 
 .seek-bar::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: var(--accent-color);
   cursor: pointer;
@@ -359,8 +365,10 @@ html, body {
 }
 
 .file-input-label {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   padding: 6px 14px;
+  min-height: 44px;
   font-size: 12px;
   color: var(--text-primary);
   background: rgba(255, 255, 255, 0.08);
@@ -518,11 +526,13 @@ html, body {
   border: none;
   color: rgba(255, 255, 255, 0.5);
   padding: 6px 16px;
+  min-height: 44px;
   border-radius: 18px;
   cursor: pointer;
   font-size: 13px;
   font-weight: 500;
   transition: all 0.2s ease;
+  touch-action: manipulation;
 }
 .mode-tab:hover { color: rgba(255, 255, 255, 0.8); }
 .mode-tab.active {
@@ -618,13 +628,16 @@ html, body {
   color: rgba(255, 255, 255, 0.8);
   width: 34px;
   height: 34px;
-  border-radius: 17px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 22px;
   cursor: pointer;
   font-size: 16px;
   transition: all 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  touch-action: manipulation;
 }
 .midi-ctrl-btn:hover {
   background: rgba(255, 255, 255, 0.1);
@@ -713,6 +726,24 @@ html, body {
   color: rgba(255, 255, 255, 0.4);
 }
 
+/* ---------- Touch / Mobile ---------- */
+button, .mode-tab, .midi-ctrl-btn, .stream-status-dismiss,
+.file-input-label, .track-item {
+  touch-action: manipulation;
+}
+
+/* Safe-area insets for notched devices */
+@supports (padding: max(0px)) {
+  .control-bar {
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+  .mode-selector {
+    top: max(8px, env(safe-area-inset-top));
+  }
+}
+
 /* ---------- Mobile MIDI Controls ---------- */
 @media (max-width: 640px) {
   .mode-selector {
@@ -721,7 +752,8 @@ html, body {
   }
   .mode-tab {
     padding: 4px 10px;
-    font-size: 11px;
+    font-size: 12px;
+    min-height: 40px;
   }
   .midi-controls {
     bottom: calc(var(--control-height, 60px) + 4px);
@@ -730,10 +762,32 @@ html, body {
     gap: 4px;
   }
   .midi-ctrl-btn {
-    width: 28px;
-    height: 28px;
+    width: 36px;
+    height: 36px;
+    min-width: 44px;
+    min-height: 44px;
     font-size: 14px;
   }
   .midi-mutation-label { display: none; }
-  .midi-info-panel { font-size: 11px; }
+  .midi-info-panel { font-size: 12px; }
+  .id3-panel { left: 8px; max-width: 200px; }
+  .id3-artist { font-size: 11px; }
+  .id3-album-info { display: none; }
+  .track-title { font-size: 12px; }
+  .time-display { font-size: 11px; }
+  .seek-bar::-webkit-slider-thumb { width: 22px; height: 22px; }
+  .seek-bar::-moz-range-thumb { width: 22px; height: 22px; }
+  .status-message { max-width: calc(100vw - 40px); overflow: hidden; text-overflow: ellipsis; }
+}
+
+/* Small phones */
+@media (max-width: 400px) {
+  .id3-panel { display: none; }
+  .stream-status { font-size: 11px; padding: 4px 10px; }
+}
+
+/* Landscape phones — reduce vertical space */
+@media (orientation: landscape) and (max-height: 500px) {
+  :root { --control-height: 54px; }
+  .mode-selector { top: 2px; }
 }
