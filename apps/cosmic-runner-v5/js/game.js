@@ -1,11 +1,9 @@
 /**
  * Game Engine for Cosmic Runner V5.
  *
- * V5 changes:
- * - Obstacles come from top, fall downward toward players
- * - No player pushing — just clamp the moving player
- * - Fall speed replaces scroll speed for obstacle movement
- * - Jump-over detection checks if obstacle passed below player while airborne
+ * 2D mode: obstacles fly right-to-left across the terrain with rolling hills.
+ * 3D mode: obstacles come from top (far) and move toward the player (near).
+ * Jump-over detection adapts to mode direction.
  */
 
 class Game {
@@ -29,7 +27,7 @@ class Game {
     this.baseSpeed = 1;
     this.speed = 1;
     this.scrollSpeed = 200;
-    this.fallSpeed = 220; // V5: vertical fall speed for obstacles
+    this.fallSpeed = 180; // obstacle movement speed (horizontal in 2D, vertical in 3D)
     this.userSpeedMult = 1.0;
     this.totalPoints = 0;
     this.blastCount = 0;
@@ -46,6 +44,7 @@ class Game {
     this.gridDim = '2d';
 
     this.game3DDisabled = false;
+    this.auto3DTrack = 7; // Auto-switch to 3D at this track index (0-based: track 7 = index 6)
 
     this.spacetimeYears = 0;
 
@@ -145,12 +144,30 @@ class Game {
   setGame3DDisabled(disabled) {
     this.game3DDisabled = disabled;
     this.renderer3d.disabled3D = disabled;
+    // Track that user manually toggled 3D so auto-switch doesn't override
+    this._user3DOverride = true;
   }
 
   setLevel(level) {
     this.currentLevel = level;
-    if (this.obstacles) this.obstacles.setLevel(level);
+    if (this.obstacles) {
+      this.obstacles.setLevel(level);
+      this.obstacles.setLaneCount(this.renderer3d.laneCount);
+    }
     this.renderer3d.updateForLevel(level, 0.1);
+
+    // Auto-switch 2D/3D based on track: tracks 1-6 default 2D, track 7+ default 3D
+    // Only auto-switch if the user hasn't manually disabled 3D
+    if (!this._user3DOverride) {
+      const shouldBe3D = level >= (this.auto3DTrack - 1);
+      this.renderer3d.disabled3D = !shouldBe3D;
+    }
+
+    // Sync lane count after level update
+    if (this.obstacles) {
+      this.obstacles.setLaneCount(this.renderer3d.laneCount);
+    }
+
     for (const r of this.runners) r.setLevel(level);
     if (this.background) this.background.setTrackIndex(level);
 
@@ -277,7 +294,9 @@ class Game {
     if (this.mode === 'game') {
       this.speed = (this.baseSpeed + intensity * 0.8) * this.userSpeedMult;
       this.scrollSpeed = (180 + intensity * 120) * this.userSpeedMult;
-      this.fallSpeed = (200 + intensity * 140) * this.userSpeedMult;
+      // Scale obstacle speed based on level: gentler at early levels, still responsive
+      const levelScale = 1.0 + this.currentLevel * 0.04;
+      this.fallSpeed = (140 + intensity * 80) * this.userSpeedMult * levelScale;
     } else {
       this.speed = 0.3;
       this.scrollSpeed = 30;
@@ -316,6 +335,10 @@ class Game {
     this.background.update(this.mode === 'game' ? this.speed : 0.3, dt);
 
     this.renderer3d.updateForLevel(this.currentLevel, dt);
+    // Keep obstacle lane count in sync with renderer
+    if (this.obstacles) {
+      this.obstacles.setLaneCount(this.renderer3d.laneCount);
+    }
 
     if (this.mode === 'game') {
       const trackYears = SPACETIME_SCALE / 12;
@@ -329,6 +352,12 @@ class Game {
     }
 
     if (this.mode === 'game') {
+      // Sync obstacle mode: horizontal (2D) vs vertical (3D)
+      const is2D = this.renderer3d.tilt < 0.1;
+      if (this.obstacles) {
+        this.obstacles.horizontalMode = is2D;
+      }
+
       for (const runner of this.runners) {
         const terrainGroundY = this.renderer3d.getGroundYAtX(
           runner.x, this.groundY, this.background.scrollX);
@@ -337,8 +366,28 @@ class Game {
       }
 
       if (this.obstacles) {
-        // V5: pass fallSpeed for vertical obstacle movement
         this.obstacles.update(dt, this.speed, this.fallSpeed);
+
+        if (is2D) {
+          // 2D mode: obstacles fly right-to-left, sit on terrain surface
+          for (const obs of this.obstacles.obstacles) {
+            if (obs.blasted) continue;
+            // Place obstacle on the terrain at its current X position
+            const terrainGroundY = this.renderer3d.getGroundYAtX(
+              obs.x + obs.w / 2, this.groundY, this.background.scrollX);
+            obs.y = terrainGroundY - obs.h;
+          }
+        } else {
+          // 3D mode: clamp falling obstacles to terrain surface
+          for (const obs of this.obstacles.obstacles) {
+            if (obs.blasted) continue;
+            const terrainGroundY = this.renderer3d.getGroundYAtX(
+              obs.x + obs.w / 2, this.groundY, this.background.scrollX);
+            if (obs.y + obs.h > terrainGroundY) {
+              obs.y = terrainGroundY - obs.h;
+            }
+          }
+        }
       }
 
       // Ground segments still scroll horizontally for visual effect

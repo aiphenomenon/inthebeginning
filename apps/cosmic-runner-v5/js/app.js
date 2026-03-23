@@ -143,7 +143,7 @@ class CosmicRunnerApp {
 
     if (ingameTheme) ingameTheme.addEventListener('click', () => this._showOverlay('theme-overlay'));
     if (ingameAccess) ingameAccess.addEventListener('click', () => this._showOverlay('accessibility-overlay'));
-    if (ingameHelp) ingameHelp.addEventListener('click', () => this._showOverlay('help-overlay'));
+    if (ingameHelp) ingameHelp.addEventListener('click', () => { this._updateHelpSections(); this._showOverlay('help-overlay'); });
     if (mutationBtn) mutationBtn.addEventListener('click', () => this._showOverlay('mutation-overlay'));
     if (styleBtn) styleBtn.addEventListener('click', () => this._showOverlay('style-overlay'));
 
@@ -165,6 +165,17 @@ class CosmicRunnerApp {
         document.getElementById('track-overlay')?.classList.toggle('visible');
       });
     }
+
+    // Track close button
+    const trackClose = document.getElementById('track-close');
+    if (trackClose) {
+      trackClose.addEventListener('click', () => {
+        document.getElementById('track-overlay')?.classList.remove('visible');
+      });
+    }
+
+    // Enable click-outside-to-close for all overlays
+    this._initOverlayBackdropClose();
 
     // Game 3D toggle
     const game3DToggle = document.getElementById('game-3d-toggle');
@@ -242,6 +253,57 @@ class CosmicRunnerApp {
     }
   }
 
+  /**
+   * Enable click-outside-to-close for all overlay elements.
+   * Clicking the overlay backdrop (not the inner panel) closes the overlay.
+   */
+  _initOverlayBackdropClose() {
+    // Standard overlays (theme, accessibility, help, mutation, style)
+    document.querySelectorAll('.overlay').forEach(overlay => {
+      overlay.addEventListener('click', (e) => {
+        // Only close if user clicked the backdrop, not the inner panel
+        if (e.target === overlay) {
+          this._hideOverlay(overlay.id);
+        }
+      });
+    });
+
+    // Track overlay (uses .track-overlay class)
+    const trackOverlay = document.getElementById('track-overlay');
+    if (trackOverlay) {
+      trackOverlay.addEventListener('click', (e) => {
+        if (e.target === trackOverlay) {
+          trackOverlay.classList.remove('visible');
+        }
+      });
+    }
+
+    // Escape key closes any visible overlay
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        this._closeAllOverlays();
+      }
+    });
+  }
+
+  /** Close all visible overlays. */
+  _closeAllOverlays() {
+    const overlayIds = [
+      'theme-overlay', 'accessibility-overlay', 'help-overlay',
+      'mutation-overlay', 'style-overlay', 'track-overlay',
+    ];
+    for (const id of overlayIds) {
+      const el = document.getElementById(id);
+      if (el && el.classList.contains('visible')) {
+        if (id === 'track-overlay') {
+          el.classList.remove('visible');
+        } else {
+          this._hideOverlay(id);
+        }
+      }
+    }
+  }
+
   // ──── Theme Overlay ────
 
   _initThemeOverlay() {
@@ -312,6 +374,24 @@ class CosmicRunnerApp {
     if (close) close.addEventListener('click', () => this._hideOverlay('help-overlay'));
   }
 
+  _updateHelpSections() {
+    const gameSection = document.getElementById('help-game-section');
+    const twoPlayerSection = document.getElementById('help-2p-section');
+    const scoringSection = document.getElementById('help-scoring-section');
+    const playerSection = document.getElementById('help-player-section');
+    const gridSection = document.getElementById('help-grid-section');
+
+    const isGame = this.mode === 'game';
+    const isPlayer = this.mode === 'player';
+    const isGrid = this.mode === 'grid';
+
+    if (gameSection) gameSection.style.display = isGame ? '' : 'none';
+    if (twoPlayerSection) twoPlayerSection.style.display = isGame ? '' : 'none';
+    if (scoringSection) scoringSection.style.display = isGame ? '' : 'none';
+    if (playerSection) playerSection.style.display = (isPlayer || isGrid) ? '' : 'none';
+    if (gridSection) gridSection.style.display = isGrid ? '' : 'none';
+  }
+
   // ──── Mutation Modal ────
 
   _initMutationOverlay() {
@@ -341,13 +421,11 @@ class CosmicRunnerApp {
     const mutation = MIDI_MUTATIONS[index];
     if (!mutation) return;
     if (this.player) {
-      if (this.player.midiPlayer) {
-        this.player.midiPlayer.setMutation(mutation);
-      }
-      if (this.player.musicGenerator) {
-        // Apply mutation to synth engine for generator too
-        this.player._synth.setMutation(mutation);
-      }
+      // Use the unified setMutation which applies to both MIDI and synth paths.
+      // IMPORTANT: midiPlayer.setMutation internally calls _synth.setMutation,
+      // so we must NOT also call _synth.setMutation separately — double-setting
+      // the filter causes audio glitches that break mutations after 1-2 switches.
+      this.player.setMutation(mutation);
     }
     // Update MIDI info display
     const mutEl = document.getElementById('midi-mutation');
@@ -415,29 +493,53 @@ class CosmicRunnerApp {
 
   async _loadMusic() {
     // Try to auto-detect sibling directories for audio assets
+    // Shared assets path (GitHub Pages structure) and local paths
     const bases = [
-      '../cosmic-runner-v3/audio/',
-      '../cosmic-runner-v5/audio/',
       'audio/',
+      '../../shared/audio/tracks/',
+      '../shared/audio/tracks/',
+      '../cosmic-runner-v5/audio/',
     ];
 
+    // Try album.json first, then album_notes.json as fallback
     for (const base of bases) {
-      try {
-        const loaded = await this.musicSync.loadAlbum(base + 'album.json', base);
-        if (loaded) {
-          this.musicLoaded = true;
-          break;
-        }
-      } catch (e) { /* try next */ }
+      for (const name of ['album.json', 'album_notes.json']) {
+        try {
+          const loaded = await this.musicSync.loadAlbum(base + name, base);
+          if (loaded) {
+            this.musicLoaded = true;
+            break;
+          }
+        } catch (e) { /* try next */ }
+      }
+      if (this.musicLoaded) break;
     }
 
-    // Load MIDI catalog
+    // Also try loading album metadata from shared metadata path
+    if (!this.musicLoaded) {
+      const metaBases = [
+        '../../shared/audio/metadata/v1/',
+        '../shared/audio/metadata/v1/',
+      ];
+      for (const base of metaBases) {
+        try {
+          const audioBase = base.replace('metadata/v1/', 'tracks/');
+          const loaded = await this.musicSync.loadAlbum(base + 'album.json', audioBase);
+          if (loaded) {
+            this.musicLoaded = true;
+            break;
+          }
+        } catch (e) { /* try next */ }
+      }
+    }
+
+    // Load MIDI catalog (prefer shared midi/ dir so base URL resolves to MIDI files)
     const midiPaths = [
-      'audio/midi_catalog.json',
       '../../shared/audio/midi/midi_catalog.json',
       '../shared/audio/midi/midi_catalog.json',
-      '../cosmic-runner-v3/audio/midi_library/midi_catalog.json',
-      'audio/midi_library/midi_catalog.json',
+      '../../shared/audio/metadata/v1/midi_catalog.json',
+      '../shared/audio/metadata/v1/midi_catalog.json',
+      'audio/midi_catalog.json',
     ];
 
     for (const path of midiPaths) {
@@ -497,6 +599,11 @@ class CosmicRunnerApp {
     this.player.onTrackChange = (trackIndex) => this._onTrackChange(trackIndex);
     this.player.onTimeUpdate = (time) => this._onTimeUpdate(time);
     this.player.onNoteEvent = (events) => this._onNoteEvent(events);
+    this.player.onTrackEnded = async (trackIndex) => {
+      if (this.musicSync.shouldPlayInterstitial(trackIndex)) {
+        await this._playInterstitial();
+      }
+    };
 
     // Start playing based on mode
     await this._initSoundMode();
@@ -605,6 +712,9 @@ class CosmicRunnerApp {
       this._updateTrackListHighlight(trackIndex);
     }
 
+    // Update ID3 info near play controls
+    this._updateId3Display(trackIndex);
+
     // Update MIDI info panel
     this._updateMidiInfo();
   }
@@ -650,6 +760,68 @@ class CosmicRunnerApp {
         `<span class="note-tag"><span class="note-pitch">${n.pitch}</span> <span class="note-inst">${n.inst}</span></span>`
       ).join('');
     }
+  }
+
+  // ──── ID3 Display ────
+
+  _updateId3Display(trackIndex) {
+    const titleEl = document.getElementById('id3-title');
+    const artistEl = document.getElementById('id3-artist');
+    const albumEl = document.getElementById('id3-album-info');
+
+    if (this.soundMode === 'mp3' && this.musicSync) {
+      const id3 = this.musicSync.getTrackId3(trackIndex);
+      if (titleEl) titleEl.textContent = id3.title || '';
+      if (artistEl) artistEl.textContent = id3.artist || '';
+      if (albumEl) {
+        const parts = [];
+        if (id3.album) parts.push(id3.album);
+        if (id3.year) parts.push(id3.year);
+        if (id3.genre) parts.push(id3.genre);
+        if (id3.license) parts.push(id3.license);
+        albumEl.textContent = parts.join(' \u00B7 ');
+      }
+    } else if (this.soundMode === 'midi') {
+      const info = this.player?.midiPlayer?.trackInfo;
+      if (titleEl) titleEl.textContent = info?.name || 'MIDI';
+      if (artistEl) artistEl.textContent = info?.composer || '';
+      if (albumEl) albumEl.textContent = info?.era || '';
+    } else if (this.soundMode === 'synth') {
+      if (titleEl) titleEl.textContent = this.player?.musicGenerator?.getCurrentTrackName() || 'Synth';
+      if (artistEl) artistEl.textContent = 'Generated';
+      if (albumEl) albumEl.textContent = '';
+    }
+  }
+
+  // ──── Interstitial ────
+
+  _playInterstitial() {
+    if (!this.musicSync?.interstitialUrl) return Promise.resolve();
+    return new Promise((resolve) => {
+      const overlay = document.getElementById('interstitial-overlay');
+      if (overlay) overlay.style.display = 'flex';
+
+      const interAudio = new Audio(this.musicSync.interstitialUrl);
+      interAudio.volume = this.player?.audio?.volume ?? 0.8;
+      interAudio.addEventListener('ended', () => {
+        if (overlay) overlay.style.display = 'none';
+        resolve();
+      });
+      interAudio.addEventListener('error', () => {
+        if (overlay) overlay.style.display = 'none';
+        resolve();
+      });
+      // Timeout safety: max 10 seconds
+      setTimeout(() => {
+        interAudio.pause();
+        if (overlay) overlay.style.display = 'none';
+        resolve();
+      }, 10000);
+      interAudio.play().catch(() => {
+        if (overlay) overlay.style.display = 'none';
+        resolve();
+      });
+    });
   }
 
   // ──── MIDI Info ────
@@ -895,8 +1067,8 @@ class CosmicRunnerApp {
         }
         break;
 
-      // Pause
-      case 'p': case 'P': case 'Escape':
+      // Pause (Escape also closes overlays via _initOverlayBackdropClose)
+      case 'p': case 'P':
         this._togglePause();
         break;
 

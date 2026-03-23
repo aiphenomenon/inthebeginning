@@ -162,8 +162,12 @@ class GamePlayer {
     }
 
     // MP3 track ended
-    this.audio.addEventListener('ended', () => {
+    this.audio.addEventListener('ended', async () => {
       if (this.musicSync.mode !== AUDIO_MODE.MP3) return;
+      // Check for interstitial callback before advancing
+      if (this.onTrackEnded) {
+        await this.onTrackEnded(this.currentTrack);
+      }
       if (this.currentTrack < this.musicSync.getTrackCount() - 1) {
         this.nextTrack();
       } else {
@@ -441,12 +445,17 @@ class GamePlayer {
   // ──── Mutation Control ────
 
   /**
-   * Apply a mutation preset (affects MIDI mode via SynthEngine).
+   * Apply a mutation preset (affects MIDI and Synth modes via SynthEngine).
+   * Note: midiPlayer.setMutation internally calls _synth.setMutation,
+   * so we only need to call it once. Calling _synth.setMutation separately
+   * would double-apply the filter change, causing audio glitches.
    * @param {Object} mutation - { pitchShift, tempoMult, reverb, filter }
    */
   setMutation(mutation) {
+    // Store on MIDI player (which forwards to shared synth engine)
     this.midiPlayer.setMutation(mutation);
-    this._synth.setMutation(mutation);
+    // Also store on the MIDI player's local copy for reference
+    // The synth engine is already updated via midiPlayer.setMutation above.
   }
 
   // ──── Style Sliders (Synth mode) ────
