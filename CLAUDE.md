@@ -1250,6 +1250,10 @@ apps/
   screensaver-macos/ macOS screensaver (Swift + Metal)
   screensaver-ubuntu/ Ubuntu screensaver (C + X11)
   audio/             Audio composition engine (Python)
+  cosmic-runner-v5/  V5 game source (development copy)
+deploy/
+  shared/            Shared assets for GitHub Pages (see below)
+  v5/                V5 deploy-ready apps (game + visualizer)
 ast_dsl/             AST parsing and transformation engine
 ast_captures/        Pre-computed AST snapshots for reference
 tests/               Python test suite
@@ -1259,6 +1263,185 @@ future_memories/     Verbose plan files for session restoration
 .github/workflows/   CI/CD pipelines
 .claude/             gVisor hook scripts and settings
 ```
+
+---
+
+## GitHub Pages Deployment
+
+The `deploy/` directory is structured for **zero-build-step deployment** to GitHub
+Pages. The goal is simple filesystem copies followed by `git add`, `git commit`,
+`git push` -- no build scripts, no bundlers, no Python programs required.
+
+### GitHub Pages Repository Layout
+
+When copied to the GitHub Pages repository, the layout is:
+
+```
+<gh-pages-root>/
+  shared/                              Shared assets (one copy, all versions use it)
+    audio/
+      tracks/                          12 album MP3s + per-track notes JSON files
+      metadata/
+        v1/                            Versioned metadata schema
+          album.json                   Album metadata with ID3 info per track
+          midi_catalog.json            MIDI library catalog with composer/license info
+      interstitials/                   Radio station ID MP3s
+        in-the-beginning-radio.mp3     "In The Beginning Radio" station ID
+      midi/                            MIDI files organized by composer
+        Bach/                          e.g., adl_Air_on_a_G_string.mid
+        Beethoven/
+        ...
+      instruments/                     SoundFont / instrument sample files
+  v5/                                  Version 5 applications
+    inthebeginning-bounce/             Game application
+      index.html
+      css/styles.css
+      js/app.js, game.js, ...          All JS (no bundler, vanilla ES5+)
+      audio/                           Local copies of album.json + MP3s
+    visualizer/                        Visualizer application
+      index.html
+      css/visualizer.css
+      js/app.js, grid.js, ...
+  v6/                                  Future version (same structure)
+    ...
+```
+
+### Key Principles
+
+1. **No build step**: All JS files are vanilla, no transpilation, no bundling.
+   HTML files load scripts via `<script src="js/...">` tags directly.
+
+2. **Shared assets avoid bloat**: MP3s, MIDIs, SoundFonts, and metadata live in
+   `shared/` at the same level as version folders. Version folders use relative
+   paths (`../../shared/audio/tracks/`) to reference them. This means adding a new
+   version (v6, v7...) does NOT duplicate the large audio files.
+
+3. **Local fallback**: Each version folder MAY contain a local `audio/` directory
+   with `album.json` and the MP3 files for self-contained operation. The app code
+   tries local paths first, then falls back to shared paths.
+
+4. **Metadata versioning**: The `shared/audio/metadata/v1/` directory is versioned.
+   If the JSON schema changes, create `v2/` with the new format. Old versions
+   continue to read from `v1/`.
+
+### Copy-and-Push Workflow
+
+To deploy a new version to GitHub Pages:
+
+```bash
+# From the main development repo:
+cd /path/to/inthebeginning
+
+# 1. Copy shared assets (only needed once, or when audio changes)
+cp -r deploy/shared/ /path/to/gh-pages-repo/shared/
+
+# 2. Copy the version folder
+cp -r deploy/v5/ /path/to/gh-pages-repo/v5/
+
+# 3. Push to GitHub Pages
+cd /path/to/gh-pages-repo
+git add shared/ v5/
+git commit -m "v5 game and visualizer-player"
+git push
+```
+
+### MP3 ID3 Tag Standard
+
+All album MP3 files must have these ID3v2 tags:
+
+| Tag | Value |
+|-----|-------|
+| Title (TIT2) | Track name (e.g., "Ember") |
+| Artist (TPE1) | A. Johan Bizzle |
+| Album (TALB) | inthebeginning |
+| Track (TRCK) | N/12 |
+| Year (TDRC) | 2026 |
+| Genre (TCON) | Electronic |
+| Copyright (TCOP) | Copyright 2026 aiphenomenon |
+| License (TXXX:LICENSE) | CC BY-SA 4.0 |
+
+### album.json Schema
+
+The `album.json` file contains full album metadata including per-track ID3 info,
+engine provenance, and interstitial configuration. Each track entry includes an
+`id3` object with the same fields as the ID3 tags above. The `interstitial` object
+configures the "In The Beginning Radio" station ID that plays every N tracks.
+
+### MIDI Catalog Metadata
+
+The `midi_catalog.json` file contains:
+- Composer name and era for each MIDI file
+- Source collection (MAESTRO, ADL Piano MIDI, etc.)
+- License that applies to each source collection
+- Total file count and size
+
+This metadata is displayed in the MIDI info panel in both the game and visualizer
+when the user is in MIDI playback mode.
+
+---
+
+## Web Application Modes
+
+### Cosmic Runner (inthebeginning-bounce)
+
+The game has three user-facing modes and three sound modes:
+
+#### Display Modes
+
+| Mode | Description |
+|------|-------------|
+| **Game** | Runner/dodge game. Objects fall from top; player jumps over or hits them. 2D at early levels, progressively transitions to 3D with rolling terrain at higher levels. LEFT/RIGHT moves runner horizontally. Scoring: 3 pts jump-over, 1 pt hit. |
+| **Player** | Music player mode. Full-screen visualization with album art colors. Play/pause, seek, prev/next track controls. No game scoring or obstacles. |
+| **Grid** | Grid visualizer. 64x64 color grid synchronized to music. Note events light up cells. 2D and 3D grid views available. |
+
+#### Sound Modes
+
+| Mode | Description |
+|------|-------------|
+| **MP3 (Album)** | Plays the 12-track album via HTML5 Audio. Notes JSON drives visualization. "In The Beginning Radio" interstitial plays every 4 tracks. |
+| **MIDI Library** | Random shuffle from 1,800+ classical MIDI files. In-browser synthesis via SynthEngine. 16 mutation presets (pitch shift, tempo, reverb, filter). Composer/piece/era info displayed. |
+| **Synth Generator** | Procedural music generation entirely in-browser. Style sliders: speed, arpeggio, chord density, note bending. No arpeggios on radio voice interstitials. |
+
+#### 3D Game Mechanics
+
+- **2D mode**: Runners move left/right continuously (Arrow keys / WASD). Objects
+  fall straight down from random horizontal positions.
+- **3D mode**: Progressive transition from level 2 onward. Perspective projection
+  with vanishing point. Rolling terrain (procedural sine hills). Obstacles spawn
+  in lanes and approach from the distance. Lane count increases with difficulty.
+- **Collision**: AABB rectangle overlap. Jump-over detection awards 3 points when
+  airborne player clears an obstacle.
+
+#### ID3 Info Display
+
+In all modes, ID3 tag information (title, artist, album, year, genre, license)
+is displayed near the play controls at the bottom of the screen. In MIDI mode,
+composer/piece/era is shown instead. In Synth mode, the generated track name
+is shown.
+
+#### Help Modal
+
+The help modal shows mode-specific sections:
+- **Game mode**: Jump, move, fast-drop, touch, 2-player, scoring
+- **Player mode**: Play/pause, seek, volume, track list, mode switching
+- **Grid mode**: 2D/3D toggle, play/pause
+
+No references to game-specific controls (pointing, scoring) appear in player mode.
+
+### Visualizer (visualizer)
+
+The visualizer is a standalone music visualization application with five modes:
+
+| Mode | Description |
+|------|-------------|
+| **Album** | Multi-track MP3 playback with synchronized 64x64 grid. Track list sidebar. |
+| **MIDI** | In-browser MIDI synthesis. Random shuffle from catalog. Mutation presets. Prev/next/infinite controls. |
+| **Synth** | Procedural music generation. Same engine as the game's synth mode. |
+| **Stream** | Server-Sent Events for infinite radio (requires Go SSE server). |
+| **Single** | Single audio file playback (drag-and-drop or file picker). |
+
+Both the game and visualizer display ID3 info, MIDI composer/piece/era info,
+and note event details depending on the active sound mode and accessibility level.
 
 ---
 
