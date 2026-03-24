@@ -87,6 +87,8 @@ class Runner {
   }
 
   _clampPosition() {
+    // Ensure positionFraction is a valid number (NaN/Infinity protection)
+    if (!isFinite(this.positionFraction)) this.positionFraction = PLAYER1_DEFAULT_POS;
     if (this.numPlayers === 1) {
       this.positionFraction = Math.max(PLAYER_POS_MIN_1P,
         Math.min(PLAYER_POS_MAX_1P, this.positionFraction));

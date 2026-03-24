@@ -1,9 +1,10 @@
 /**
- * Game Engine for Cosmic Runner V5.
+ * Game Engine for inthebeginning bounce V6.
  *
  * 2D mode: obstacles fly right-to-left across the terrain with rolling hills.
  * 3D mode: obstacles come from top (far) and move toward the player (near).
  * Jump-over detection adapts to mode direction.
+ * Obstacles fly past the player in 3D (no piling up at ground level).
  */
 
 class Game {
@@ -325,8 +326,12 @@ class Game {
     const now = performance.now();
     const dt = Math.min(0.05, (now - this._lastTime) / 1000);
     this._lastTime = now;
-    this._update(dt);
-    this._render();
+    try {
+      this._update(dt);
+      this._render();
+    } catch (err) {
+      console.error('Game loop error:', err);
+    }
     this._rafId = requestAnimationFrame(() => this._loop());
   }
 
@@ -378,15 +383,10 @@ class Game {
             obs.y = terrainGroundY - obs.h;
           }
         } else {
-          // 3D mode: clamp falling obstacles to terrain surface
-          for (const obs of this.obstacles.obstacles) {
-            if (obs.blasted) continue;
-            const terrainGroundY = this.renderer3d.getGroundYAtX(
-              obs.x + obs.w / 2, this.groundY, this.background.scrollX);
-            if (obs.y + obs.h > terrainGroundY) {
-              obs.y = terrainGroundY - obs.h;
-            }
-          }
+          // 3D mode: obstacles fly toward the player and past them.
+          // Do NOT clamp to terrain — let them continue moving through
+          // and off the bottom of the screen so they don't pile up.
+          // The isOffScreen() check in ObstacleManager.update() handles cleanup.
         }
       }
 
@@ -453,8 +453,12 @@ class Game {
     this.background.render(ctx);
 
     if (this.mode === 'game') {
+      // Apply theme color shift to ground
+      const theme = this.themeManager.getTheme();
+      const groundColor = trackColor.primary.map((c, i) =>
+        Math.min(255, Math.round(c * theme.brightMult + (theme.accent[i] - 128) * 0.15)));
       this.renderer3d.renderGround(ctx, this.width, this.height,
-        this.groundY, this.background.scrollX, trackColor.primary);
+        this.groundY, this.background.scrollX, groundColor);
 
       if (this.renderer3d.tilt < 0.1) {
         for (const seg of this._groundSegments) {

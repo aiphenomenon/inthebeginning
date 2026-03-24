@@ -1062,6 +1062,12 @@ class CosmicRunnerApp {
       this._onPointerUp();
     }, { passive: false });
 
+    // Clean up drag state on window blur/visibility change
+    window.addEventListener('blur', () => this._onPointerUp());
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) this._onPointerUp();
+    });
+
     // Continuous movement loop
     this._movementLoop();
   }
