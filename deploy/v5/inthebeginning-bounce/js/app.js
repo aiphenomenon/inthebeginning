@@ -1,13 +1,18 @@
 /**
- * Main Application Controller for Cosmic Runner V5.
+ * Main Application Controller for inthebeginning bounce V6.
  *
- * V5 features:
+ * V6 features:
  * - Three sound modes via dropdown: MP3, MIDI Library, Synth Generator
- * - Mutation modal (not cycle button) for MIDI/Synth mutation selection
+ * - Mutation modal for MIDI/Synth mutation selection
  * - Style sliders for synth generation (speed, arpeggio, chords, bending)
  * - Unified player controls across all sound modes
  * - Objects come from top in game mode
  * - No player-pushing collision — just clamp
+ * - Infinite play for all modes (album repeat, MIDI shuffle, synth loop)
+ * - Game completion screen after 12 album tracks (non-infinite)
+ * - P1=Arrows/WASD, P2=IJKL/Numpad (right-side keys)
+ * - Theme colors affect game visuals
+ * - Pause stops both gameplay and music
  */
 
 class CosmicRunnerApp {
@@ -143,26 +148,38 @@ class CosmicRunnerApp {
 
     if (ingameTheme) ingameTheme.addEventListener('click', () => this._showOverlay('theme-overlay'));
     if (ingameAccess) ingameAccess.addEventListener('click', () => this._showOverlay('accessibility-overlay'));
+
+    // Title screen theme/accessibility buttons
+    const titleTheme = document.getElementById('theme-btn');
+    const titleAccess = document.getElementById('accessibility-btn');
+    if (titleTheme) titleTheme.addEventListener('click', () => this._showOverlay('theme-overlay'));
+    if (titleAccess) titleAccess.addEventListener('click', () => this._showOverlay('accessibility-overlay'));
     if (ingameHelp) ingameHelp.addEventListener('click', () => { this._updateHelpSections(); this._showOverlay('help-overlay'); });
     if (mutationBtn) mutationBtn.addEventListener('click', () => this._showOverlay('mutation-overlay'));
     if (styleBtn) styleBtn.addEventListener('click', () => this._showOverlay('style-overlay'));
 
-    // Track title tappable
+    // Track title tappable — only show track list overlay in MP3 mode
     if (this.hudTrack) {
       this.hudTrack.addEventListener('click', () => {
-        document.getElementById('track-overlay')?.classList.toggle('visible');
+        if (this.soundMode === 'mp3') {
+          document.getElementById('track-overlay')?.classList.toggle('visible');
+        }
       });
     }
     if (this.hudEpoch) {
       this.hudEpoch.addEventListener('click', () => {
-        document.getElementById('track-overlay')?.classList.toggle('visible');
+        if (this.soundMode === 'mp3') {
+          document.getElementById('track-overlay')?.classList.toggle('visible');
+        }
       });
     }
 
-    // Song title display tappable (for track list)
+    // Song title display tappable (for track list) — only in MP3 mode
     if (this.songTitleDisplay) {
       this.songTitleDisplay.addEventListener('click', () => {
-        document.getElementById('track-overlay')?.classList.toggle('visible');
+        if (this.soundMode === 'mp3') {
+          document.getElementById('track-overlay')?.classList.toggle('visible');
+        }
       });
     }
 
@@ -216,6 +233,7 @@ class CosmicRunnerApp {
       infiniteToggle.checked = this.infiniteMode;
       infiniteToggle.addEventListener('change', () => {
         this.infiniteMode = infiniteToggle.checked;
+        if (this.player) this.player.infiniteMode = this.infiniteMode;
       });
     }
 
@@ -594,6 +612,7 @@ class CosmicRunnerApp {
 
     // Set sound mode
     this.player.setMode(this.soundMode);
+    this.player.infiniteMode = this.infiniteMode;
 
     // Player callbacks
     this.player.onTrackChange = (trackIndex) => this._onTrackChange(trackIndex);
@@ -604,6 +623,7 @@ class CosmicRunnerApp {
         await this._playInterstitial();
       }
     };
+    this.player.onGameComplete = () => this._onGameComplete();
 
     // Start playing based on mode
     await this._initSoundMode();
@@ -612,16 +632,22 @@ class CosmicRunnerApp {
     this._updateModeTabs();
     this._updatePlayerNames();
     this._buildTrackList();
+    this._updateNoteInfoVisibility();
   }
 
   async _initSoundMode() {
     switch (this.soundMode) {
       case 'midi': {
         const midiBase = this.musicSync.midiBaseUrl || 'audio/midi_library/';
-        await this.player.startMidiMode(
+        const ok = await this.player.startMidiMode(
           midiBase + 'midi_catalog.json',
           midiBase
         );
+        // Auto-play: start from beginning after loading
+        if (ok) {
+          this.player.midiPlayer.seek(0);
+          await this.player.play();
+        }
         break;
       }
       case 'synth':
@@ -691,12 +717,21 @@ class CosmicRunnerApp {
     const paused = this.game.togglePause();
     const pauseBtn = document.getElementById('pause-btn');
     if (pauseBtn) pauseBtn.textContent = paused ? '\u25B6' : '\u23F8\u23F8';
+    // Also pause/resume music when gameplay pauses/resumes
+    if (this.player) {
+      if (paused) {
+        this.player.pause();
+      } else {
+        this.player.play();
+      }
+    }
   }
 
   // ──── Track Change ────
 
   _onTrackChange(trackIndex) {
     if (trackIndex >= 0 && trackIndex < this.musicSync.tracks.length) {
+      // MP3 mode: use album track metadata
       const title = this.musicSync.getFullTitle(trackIndex);
       if (this.hudTrack) this.hudTrack.textContent = title;
       if (this.songTitleDisplay) {
@@ -710,6 +745,27 @@ class CosmicRunnerApp {
       }
 
       this._updateTrackListHighlight(trackIndex);
+    } else if (this.soundMode === 'midi' || this.soundMode === 'synth') {
+      // MIDI/Synth mode: advance level based on internal track counter
+      this._midiSynthTrackCount = (this._midiSynthTrackCount || 0) + 1;
+      const level = this._midiSynthTrackCount % 12;
+
+      // Update HUD title for MIDI/Synth
+      if (this.soundMode === 'midi') {
+        const info = this.player?.midiPlayer?.trackInfo;
+        const title = info ? `${info.composer || 'Unknown'} — ${info.name || 'MIDI'}` : 'MIDI';
+        if (this.hudTrack) this.hudTrack.textContent = title;
+        if (this.songTitleDisplay) this.songTitleDisplay.textContent = title;
+      } else {
+        const trackName = this.player?.musicGenerator?.getCurrentTrackName() || 'Synth';
+        if (this.hudTrack) this.hudTrack.textContent = trackName;
+        if (this.songTitleDisplay) this.songTitleDisplay.textContent = trackName;
+      }
+
+      if (this.game) {
+        this.game.setLevel(level);
+        this.game.setTrackBias(level);
+      }
     }
 
     // Update ID3 info near play controls
@@ -960,6 +1016,22 @@ class CosmicRunnerApp {
     return `${(years / 1e9).toFixed(3)}E9 yr`;
   }
 
+  // ──── Game Completion ────
+
+  _onGameComplete() {
+    // Show completion message — game ends after 12 album tracks
+    if (this.game) this.game.pause();
+    const totalPoints = this.game ?
+      this.game.totalPoints + this.game.runners.reduce((s, r) => s + r.points, 0) : 0;
+    if (this.hudTrack) {
+      this.hudTrack.textContent = `\u{1F389} Complete! Score: ${totalPoints}`;
+    }
+    if (this.songTitleDisplay) {
+      this.songTitleDisplay.textContent = `\u{1F389} Complete! Final Score: ${totalPoints}`;
+      this.songTitleDisplay.classList.add('visible');
+    }
+  }
+
   // ──── Input Handling ────
 
   _bindInput() {
@@ -998,6 +1070,7 @@ class CosmicRunnerApp {
     if (this.screen !== 'main') return;
 
     switch (e.key) {
+      // Player 1: Arrows + WASD
       case ' ':
       case 'ArrowUp':
         e.preventDefault();
@@ -1013,18 +1086,30 @@ class CosmicRunnerApp {
       case 'ArrowRight':
         this._p1RightHeld = true;
         break;
-
-      // Player 2: WASD
       case 'w': case 'W':
-        if (this.game) this.game.jump(1);
+        if (this.game) this.game.jump(0);
         break;
       case 's': case 'S':
-        if (this.game) this.game.fastDrop(1);
+        if (this.game) this.game.fastDrop(0);
         break;
       case 'a': case 'A':
-        this._p2LeftHeld = true;
+        this._p1LeftHeld = true;
         break;
       case 'd': case 'D':
+        this._p1RightHeld = true;
+        break;
+
+      // Player 2: IJKL (right-side keys) + Numpad
+      case 'i': case 'I':
+        if (this.game) this.game.jump(1);
+        break;
+      case 'k': case 'K':
+        if (this.game) this.game.fastDrop(1);
+        break;
+      case 'j': case 'J':
+        this._p2LeftHeld = true;
+        break;
+      case 'l': case 'L':
         this._p2RightHeld = true;
         break;
 
@@ -1084,10 +1169,15 @@ class CosmicRunnerApp {
 
   _onKeyUp(e) {
     switch (e.key) {
+      // P1 keys
       case 'ArrowLeft': this._p1LeftHeld = false; break;
       case 'ArrowRight': this._p1RightHeld = false; break;
-      case 'a': case 'A': this._p2LeftHeld = false; break;
-      case 'd': case 'D': this._p2RightHeld = false; break;
+      case 'a': case 'A': this._p1LeftHeld = false; break;
+      case 'd': case 'D': this._p1RightHeld = false; break;
+      // P2 keys (IJKL)
+      case 'j': case 'J': this._p2LeftHeld = false; break;
+      case 'l': case 'L': this._p2RightHeld = false; break;
+      // P2 numpad
       case '4':
         if (e.location === KeyboardEvent.DOM_KEY_LOCATION_NUMPAD) this._p2LeftHeld = false;
         break;
@@ -1156,7 +1246,7 @@ class CosmicRunnerApp {
 
   _loadSettings() {
     try {
-      const raw = localStorage.getItem('cosmic-runner-v5-settings');
+      const raw = localStorage.getItem('itb-bounce-v6-settings');
       return raw ? JSON.parse(raw) : {};
     } catch (e) {
       return {};
@@ -1165,7 +1255,7 @@ class CosmicRunnerApp {
 
   _saveSettings() {
     try {
-      localStorage.setItem('cosmic-runner-v5-settings', JSON.stringify(this.settings));
+      localStorage.setItem('itb-bounce-v6-settings', JSON.stringify(this.settings));
     } catch (e) { /* ok */ }
   }
 

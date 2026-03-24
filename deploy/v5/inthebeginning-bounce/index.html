@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Cosmic Runner V5: V8 Sessions</title>
+  <title>inthebeginning bounce — V8 Sessions</title>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
   <!-- Title Screen -->
   <div id="title-screen" class="screen active">
     <div class="title-content">
-      <h1 class="title-text">COSMIC RUNNER</h1>
-      <p class="subtitle">V8 Sessions &mdash; V5</p>
+      <h1 class="title-text">inthebeginning bounce</h1>
+      <p class="subtitle">V8 Sessions &mdash; V6</p>
       <div class="mode-select">
         <button class="mode-btn" id="mode-player" data-mode="player">
           <span class="mode-icon">&#9835;</span>
@@ -52,7 +52,7 @@
         LEFT/RIGHT move to dodge &bull; 1/2/3 modes &bull; P pause &bull; +/- speed
       </p>
       <p class="controls-hint">
-        2P: WASD or Numpad 8/4/5/6 &bull; Mouse: click jump, drag to reposition
+        2P: P1=Arrows/WASD &bull; P2=IJKL or Numpad &bull; Mouse: click jump, drag to reposition
       </p>
     </div>
   </div>
@@ -157,9 +157,17 @@
         </table>
       </div>
       <div class="help-section" id="help-2p-section">
-        <h3>2-Player</h3>
+        <h3>2-Player Controls</h3>
         <table class="help-table">
-          <tr><td>P1: SPACE/Arrows</td><td>P2: WASD or Numpad</td></tr>
+          <tr><td colspan="2"><strong>Player 1 (left side)</strong></td></tr>
+          <tr><td>SPACE / UP / W</td><td>Jump</td></tr>
+          <tr><td>DOWN / S</td><td>Fast drop</td></tr>
+          <tr><td>LEFT / RIGHT / A / D</td><td>Move</td></tr>
+          <tr><td colspan="2"><strong>Player 2 (right side)</strong></td></tr>
+          <tr><td>I / Numpad 8</td><td>Jump</td></tr>
+          <tr><td>K / Numpad 5</td><td>Fast drop</td></tr>
+          <tr><td>J / Numpad 4</td><td>Move left</td></tr>
+          <tr><td>L / Numpad 6</td><td>Move right</td></tr>
         </table>
       </div>
       <div class="help-section" id="help-scoring-section">

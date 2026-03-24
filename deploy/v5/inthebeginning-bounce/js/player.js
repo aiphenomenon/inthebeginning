@@ -81,6 +81,10 @@ class GamePlayer {
     this.onTrackChange = null;
     /** @type {Function|null} Called with active note events (for visualization). */
     this.onNoteEvent = null;
+    /** @type {Function|null} Called when game completes (end of album, non-infinite). */
+    this.onGameComplete = null;
+    /** @type {boolean} Whether infinite play is enabled. */
+    this.infiniteMode = true;
 
     // ──── Wire up MIDI and Synth track-end handlers ────
     this.midiPlayer.onTrackEnd = () => this._onMidiTrackEnd();
@@ -170,8 +174,15 @@ class GamePlayer {
       }
       if (this.currentTrack < this.musicSync.getTrackCount() - 1) {
         this.nextTrack();
-      } else {
+      } else if (this.infiniteMode) {
+        // Infinite mode: loop back to track 0
         this.loadMp3Track(0).then(() => this.play());
+      } else {
+        // Non-infinite: game completion
+        this.isPlaying = false;
+        this._updatePlayIcon();
+        this._stopTimeLoop();
+        if (this.onGameComplete) this.onGameComplete();
       }
     });
 
@@ -489,12 +500,12 @@ class GamePlayer {
   _updateMediaSession() {
     if (!('mediaSession' in navigator)) return;
 
-    const title = this.musicSync.getCurrentTitle() || 'Cosmic Runner';
+    const title = this.musicSync.getCurrentTitle() || 'inthebeginning bounce';
 
     navigator.mediaSession.metadata = new MediaMetadata({
       title,
       artist: 'aiphenomenon',
-      album: 'In The Beginning \u2014 Cosmic Runner V5',
+      album: 'inthebeginning \u2014 V8 Sessions',
     });
 
     navigator.mediaSession.setActionHandler('play', () => this.play());
