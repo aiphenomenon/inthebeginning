@@ -797,6 +797,15 @@ class CosmicRunnerApp {
         this.game.setEpoch(epoch.index, epoch.name);
       }
 
+      // Update note info panel for MP3 mode (MIDI/synth use _onNoteEvent)
+      if (this.soundMode === 'mp3' && this.settings.showNotes !== false &&
+          this.noteInfoContent && events.length > 0) {
+        const info = this.musicSync.getNoteInfo(events);
+        this.noteInfoContent.innerHTML = info.map(n =>
+          `<span class="note-tag"><span class="note-pitch">${n.pitch}</span> <span class="note-inst">${n.inst}</span></span>`
+        ).join('');
+      }
+
       this.musicSync.updateHue(time);
     }
   }
