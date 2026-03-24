@@ -21,7 +21,7 @@
       },
       "sequence_id": 1,
       "parent_id": 0,
-      "timestamp": 1774285448.922207,
+      "timestamp": 1774315745.3571591,
       "context_tokens_approx": 0
     },
     {
@@ -31,9 +31,9 @@
         "ast_node_count": 2245,
         "source_hash": "75923ca01cc4a178",
         "metrics": {
-          "wall_time_ms": 913.3924810000735,
-          "cpu_user_ms": 890.0,
-          "cpu_system_ms": 0.0,
+          "wall_time_ms": 1029.72203000013,
+          "cpu_user_ms": 950.0000000000001,
+          "cpu_system_ms": 10.000000000000002,
           "peak_memory_kb": 1594,
           "current_memory_kb": 793,
           "disk_read_bytes": 0,
@@ -20339,7 +20339,7 @@
       },
       "sequence_id": 2,
       "parent_id": 1,
-      "timestamp": 1774285449.8502512,
+      "timestamp": 1774315746.3997757,
       "context_tokens_approx": 60303
     },
     {
@@ -20353,7 +20353,7 @@
       },
       "sequence_id": 3,
       "parent_id": 0,
-      "timestamp": 1774285449.870338,
+      "timestamp": 1774315746.4229667,
       "context_tokens_approx": 0
     },
     {
@@ -20363,8 +20363,8 @@
         "ast_node_count": 0,
         "source_hash": "75923ca01cc4a178",
         "metrics": {
-          "wall_time_ms": 899.4961710000098,
-          "cpu_user_ms": 879.9999999999999,
+          "wall_time_ms": 995.6062940000265,
+          "cpu_user_ms": 929.9999999999999,
           "cpu_system_ms": 0.0,
           "peak_memory_kb": 1586,
           "current_memory_kb": 30,
@@ -20734,7 +20734,7 @@
       },
       "sequence_id": 4,
       "parent_id": 3,
-      "timestamp": 1774285450.7711198,
+      "timestamp": 1774315747.4197965,
       "context_tokens_approx": 956
     },
     {
@@ -20748,7 +20748,7 @@
       },
       "sequence_id": 5,
       "parent_id": 0,
-      "timestamp": 1774285450.7718604,
+      "timestamp": 1774315747.4206657,
       "context_tokens_approx": 0
     },
     {
@@ -20758,8 +20758,8 @@
         "ast_node_count": 0,
         "source_hash": "75923ca01cc4a178",
         "metrics": {
-          "wall_time_ms": 924.4052710000688,
-          "cpu_user_ms": 900.0000000000001,
+          "wall_time_ms": 996.3963490001788,
+          "cpu_user_ms": 929.9999999999998,
           "cpu_system_ms": 0.0,
           "peak_memory_kb": 1586,
           "current_memory_kb": 21,
@@ -20836,7 +20836,7 @@
       },
       "sequence_id": 6,
       "parent_id": 5,
-      "timestamp": 1774285451.6974986,
+      "timestamp": 1774315748.417905,
       "context_tokens_approx": 175
     },
     {
@@ -20850,7 +20850,7 @@
       },
       "sequence_id": 7,
       "parent_id": 0,
-      "timestamp": 1774285451.6980245,
+      "timestamp": 1774315748.4182456,
       "context_tokens_approx": 0
     },
     {
@@ -20860,8 +20860,8 @@
         "ast_node_count": 0,
         "source_hash": "75923ca01cc4a178",
         "metrics": {
-          "wall_time_ms": 1056.9516130001375,
-          "cpu_user_ms": 1030.0000000000002,
+          "wall_time_ms": 995.1384199998756,
+          "cpu_user_ms": 920.0000000000003,
           "cpu_system_ms": 0.0,
           "peak_memory_kb": 1578,
           "current_memory_kb": 12,
@@ -20881,7 +20881,7 @@
       },
       "sequence_id": 8,
       "parent_id": 7,
-      "timestamp": 1774285452.756383,
+      "timestamp": 1774315749.4146187,
       "context_tokens_approx": 28
     },
     {
@@ -20895,7 +20895,7 @@
       },
       "sequence_id": 9,
       "parent_id": 0,
-      "timestamp": 1774285452.7567844,
+      "timestamp": 1774315749.414876,
       "context_tokens_approx": 0
     },
     {
@@ -20905,9 +20905,9 @@
         "ast_node_count": 0,
         "source_hash": "75923ca01cc4a178",
         "metrics": {
-          "wall_time_ms": 953.3538999999109,
-          "cpu_user_ms": 929.9999999999998,
-          "cpu_system_ms": 0.0,
+          "wall_time_ms": 1014.6405320001577,
+          "cpu_user_ms": 940.0,
+          "cpu_system_ms": 9.999999999999995,
           "peak_memory_kb": 1577,
           "current_memory_kb": 17,
           "disk_read_bytes": 0,
@@ -21138,7 +21138,7 @@
       },
       "sequence_id": 10,
       "parent_id": 9,
-      "timestamp": 1774285453.7113383,
+      "timestamp": 1774315750.4308264,
       "context_tokens_approx": 555
     },
     {
@@ -21146,7 +21146,7 @@
       "payload": null,
       "sequence_id": 100,
       "parent_id": 0,
-      "timestamp": 1774285453.712353,
+      "timestamp": 1774315750.43159,
       "context_tokens_approx": 0
     },
     {
@@ -21634,7 +21634,7 @@
       },
       "sequence_id": 11,
       "parent_id": 100,
-      "timestamp": 1774285453.7124417,
+      "timestamp": 1774315750.4316583,
       "context_tokens_approx": 0
     }
   ]
