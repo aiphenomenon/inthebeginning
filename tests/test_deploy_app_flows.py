@@ -19,7 +19,9 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEPLOY_ROOT = os.path.join(PROJECT_ROOT, "deploy")
 SHARED_ROOT = os.path.join(DEPLOY_ROOT, "shared")
 V5_ROOT = os.path.join(DEPLOY_ROOT, "v5")
+V6_ROOT = os.path.join(DEPLOY_ROOT, "v6")
 GAME_ROOT = os.path.join(V5_ROOT, "inthebeginning-bounce")
+V6_GAME_ROOT = os.path.join(V6_ROOT, "inthebeginning-bounce")
 VISUALIZER_ROOT = os.path.join(V5_ROOT, "visualizer")
 
 
@@ -522,6 +524,154 @@ class TestEndToEndMidiPlayback(unittest.TestCase):
                     _file_exists(GAME_ROOT, "audio/" + notes_file),
                     f"Track {i+1} notes missing",
                 )
+
+
+# ──── V6 Game Flow Simulation ────
+
+
+class TestV6GameAlbumLoadingFlow(unittest.TestCase):
+    """Simulate the V6 game's album loading flow (no local MP3s)."""
+
+    def test_album_json_loading(self):
+        """V6 album.json must be loadable locally."""
+        self.assertTrue(_file_exists(V6_GAME_ROOT, "audio/album.json"))
+
+    def test_album_tracks_from_shared(self):
+        """V6 loads album MP3s from shared (no local copies)."""
+        album_path = os.path.join(V6_GAME_ROOT, "audio", "album.json")
+        with open(album_path) as f:
+            album = json.load(f)
+
+        shared_base = "../../shared/audio/tracks/"
+        for track in album["tracks"]:
+            audio_file = track.get("audio_file")
+            if audio_file:
+                self.assertTrue(
+                    _file_exists(V6_GAME_ROOT, shared_base + audio_file),
+                    f"Track not in shared: {audio_file}",
+                )
+
+    def test_album_note_events_loadable(self):
+        """Note event JSON files must be loadable locally in v6."""
+        album_path = os.path.join(V6_GAME_ROOT, "audio", "album.json")
+        with open(album_path) as f:
+            album = json.load(f)
+
+        base = "audio/"
+        for track in album["tracks"]:
+            notes_file = track.get("file") or track.get("notes_file")
+            if notes_file:
+                self.assertTrue(
+                    _file_exists(V6_GAME_ROOT, base + notes_file),
+                    f"Notes file not found: {notes_file}",
+                )
+
+    def test_interstitial_loadable(self):
+        """Interstitial MP3 must exist locally in v6."""
+        self.assertTrue(
+            _file_exists(V6_GAME_ROOT, "audio/in-the-beginning-radio.mp3")
+        )
+
+
+class TestV6GameMidiModeFlow(unittest.TestCase):
+    """Simulate V6 game's MIDI mode initialization flow."""
+
+    def test_midi_catalog_preload(self):
+        """V6 MIDI catalog must be loadable via fallback chain."""
+        midi_paths = [
+            "audio/midi_catalog.json",
+            "../../shared/audio/midi/midi_catalog.json",
+            "../../shared/audio/metadata/v1/midi_catalog.json",
+        ]
+        found = _first_successful_path(V6_GAME_ROOT, midi_paths)
+        self.assertIsNotNone(found, "V6: No MIDI catalog found via any path")
+
+    def test_midi_files_resolve_from_shared(self):
+        """MIDI files must resolve from shared catalog base."""
+        catalog_path = "../../shared/audio/midi/midi_catalog.json"
+        self.assertTrue(_file_exists(V6_GAME_ROOT, catalog_path))
+
+        base_url = catalog_path[: catalog_path.rfind("/") + 1]
+        catalog_full = _resolve(V6_GAME_ROOT, catalog_path)
+        with open(catalog_full) as f:
+            catalog = json.load(f)
+
+        import random
+        sample = random.sample(catalog["midis"], min(20, len(catalog["midis"])))
+        for entry in sample:
+            midi_path = base_url + entry["path"]
+            self.assertTrue(
+                _file_exists(V6_GAME_ROOT, midi_path),
+                f"V6 MIDI not found: {entry['path']}",
+            )
+
+
+class TestV6GameSynthModeFlow(unittest.TestCase):
+    """Simulate V6 game's synth mode."""
+
+    def test_synth_worker_exists(self):
+        self.assertTrue(_file_exists(V6_GAME_ROOT, "js/synth-worker.js"))
+
+    def test_music_generator_exists(self):
+        self.assertTrue(_file_exists(V6_GAME_ROOT, "js/music-generator.js"))
+
+
+class TestV6GameInstrumentLoadingFlow(unittest.TestCase):
+    """Simulate V6 synth-engine.js instrument sample loading."""
+
+    def test_sample_loading_fallback_chain(self):
+        """At least one instrument sample path must resolve from v6."""
+        paths = [
+            "audio/samples/",
+            "../../shared/audio/instruments/",
+            "../shared/audio/instruments/",
+        ]
+        found = None
+        for path in paths:
+            if _file_exists(V6_GAME_ROOT, path + "piano.mp3"):
+                found = path
+                break
+        self.assertIsNotNone(found, "V6: No instrument samples found")
+
+
+class TestV6ModeSwitchingFlow(unittest.TestCase):
+    """Test that V6 game has assets for all display and sound modes."""
+
+    def test_game_mode_assets(self):
+        for f in ["runner.js", "obstacles.js", "game.js", "characters.js"]:
+            self.assertTrue(_file_exists(V6_GAME_ROOT, f"js/{f}"), f"Missing: {f}")
+
+    def test_player_mode_assets(self):
+        for f in ["player.js", "music-sync.js"]:
+            self.assertTrue(_file_exists(V6_GAME_ROOT, f"js/{f}"), f"Missing: {f}")
+
+    def test_sound_mode_assets(self):
+        # MP3
+        self.assertTrue(_file_exists(V6_GAME_ROOT, "audio/album.json"))
+        # MIDI
+        for f in ["midi-player.js", "synth-engine.js"]:
+            self.assertTrue(_file_exists(V6_GAME_ROOT, f"js/{f}"), f"Missing: {f}")
+        # Synth
+        self.assertTrue(_file_exists(V6_GAME_ROOT, "js/music-generator.js"))
+
+
+class TestV6SharedAssetReachability(unittest.TestCase):
+    """Verify V6 can reach all shared assets."""
+
+    def test_v6_reaches_shared_midi(self):
+        game_midi = _resolve(V6_GAME_ROOT, "../../shared/audio/midi/")
+        expected = os.path.normpath(os.path.join(SHARED_ROOT, "audio", "midi"))
+        self.assertEqual(os.path.normpath(game_midi), expected)
+
+    def test_v6_reaches_shared_instruments(self):
+        game_inst = _resolve(V6_GAME_ROOT, "../../shared/audio/instruments/")
+        expected = os.path.normpath(os.path.join(SHARED_ROOT, "audio", "instruments"))
+        self.assertEqual(os.path.normpath(game_inst), expected)
+
+    def test_v6_reaches_shared_tracks(self):
+        game_tracks = _resolve(V6_GAME_ROOT, "../../shared/audio/tracks/")
+        expected = os.path.normpath(os.path.join(SHARED_ROOT, "audio", "tracks"))
+        self.assertEqual(os.path.normpath(game_tracks), expected)
 
 
 if __name__ == "__main__":

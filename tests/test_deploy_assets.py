@@ -14,7 +14,9 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEPLOY_ROOT = os.path.join(PROJECT_ROOT, "deploy")
 SHARED_ROOT = os.path.join(DEPLOY_ROOT, "shared")
 V5_ROOT = os.path.join(DEPLOY_ROOT, "v5")
+V6_ROOT = os.path.join(DEPLOY_ROOT, "v6")
 GAME_ROOT = os.path.join(V5_ROOT, "inthebeginning-bounce")
+V6_GAME_ROOT = os.path.join(V6_ROOT, "inthebeginning-bounce")
 VISUALIZER_ROOT = os.path.join(V5_ROOT, "visualizer")
 MIDI_LIBRARY_SRC = os.path.join(PROJECT_ROOT, "apps", "audio", "midi_library")
 SAMPLES_SRC = os.path.join(PROJECT_ROOT, "apps", "audio", "samples")
@@ -755,6 +757,203 @@ class TestDeploymentCopySimulation(unittest.TestCase):
             f"{len(missing)} MIDIs referenced in catalog but missing: "
             f"{missing[:5]}...",
         )
+
+
+# ──── V6 Game App Completeness ────
+
+
+class TestV6GameAssets(unittest.TestCase):
+    """Test that deploy/v6/inthebeginning-bounce/ has required files."""
+
+    def test_index_html_exists(self):
+        self.assertTrue(os.path.isfile(os.path.join(V6_GAME_ROOT, "index.html")))
+
+    def test_css_exists(self):
+        self.assertTrue(os.path.isfile(os.path.join(V6_GAME_ROOT, "css", "styles.css")))
+
+    def test_required_js_files(self):
+        """All 16 required JS files must be present."""
+        required_js = [
+            "app.js",
+            "game.js",
+            "player.js",
+            "midi-player.js",
+            "synth-engine.js",
+            "synth-worker.js",
+            "music-sync.js",
+            "music-generator.js",
+            "config.js",
+            "themes.js",
+            "runner.js",
+            "obstacles.js",
+            "characters.js",
+            "background.js",
+            "blast-effect.js",
+            "renderer3d.js",
+        ]
+        for js_file in required_js:
+            path = os.path.join(V6_GAME_ROOT, "js", js_file)
+            self.assertTrue(os.path.isfile(path), f"Missing JS: {js_file}")
+
+    def test_local_audio_metadata(self):
+        """V6 audio directory must have metadata JSONs and interstitial."""
+        audio_dir = os.path.join(V6_GAME_ROOT, "audio")
+        self.assertTrue(os.path.isdir(audio_dir))
+        self.assertTrue(os.path.isfile(os.path.join(audio_dir, "album.json")))
+        self.assertTrue(os.path.isfile(os.path.join(audio_dir, "midi_catalog.json")))
+        self.assertTrue(os.path.isfile(os.path.join(audio_dir, "album_notes.json")))
+        self.assertTrue(
+            os.path.isfile(os.path.join(audio_dir, "in-the-beginning-radio.mp3"))
+        )
+
+    def test_twelve_note_event_files(self):
+        """V6 must have all 12 note event JSON files."""
+        audio_dir = os.path.join(V6_GAME_ROOT, "audio")
+        note_files = [
+            f for f in os.listdir(audio_dir) if f.endswith("_notes_v3.json")
+        ]
+        self.assertEqual(len(note_files), 12, f"Expected 12 note JSONs, found {len(note_files)}")
+
+    def test_nojekyll_file(self):
+        """v6 must have .nojekyll for GitHub Pages."""
+        self.assertTrue(os.path.isfile(os.path.join(V6_ROOT, ".nojekyll")))
+
+    def test_no_visualizer(self):
+        """V6 should NOT have a visualizer directory."""
+        self.assertFalse(os.path.isdir(os.path.join(V6_ROOT, "visualizer")))
+
+
+class TestV6GameHTMLIntegrity(unittest.TestCase):
+    """Verify V6 game HTML references correct JS and CSS files."""
+
+    def setUp(self):
+        with open(os.path.join(V6_GAME_ROOT, "index.html"), "r") as f:
+            self.html = f.read()
+
+    def test_all_script_tags_reference_existing_files(self):
+        script_refs = re.findall(r'<script\s+src="([^"]+)"', self.html)
+        for ref in script_refs:
+            path = os.path.join(V6_GAME_ROOT, ref)
+            self.assertTrue(os.path.isfile(path), f"Missing script: {ref}")
+
+    def test_all_css_links_reference_existing_files(self):
+        css_refs = re.findall(r'<link[^>]+href="([^"]+\.css)"', self.html)
+        for ref in css_refs:
+            path = os.path.join(V6_GAME_ROOT, ref)
+            self.assertTrue(os.path.isfile(path), f"Missing CSS: {ref}")
+
+    def test_title_is_v6_branding(self):
+        """Title should reference 'inthebeginning bounce', not 'Cosmic Runner'."""
+        self.assertIn("inthebeginning bounce", self.html)
+        self.assertNotIn("Cosmic Runner", self.html)
+
+
+class TestV6GamePathResolution(unittest.TestCase):
+    """Simulate browser-style path resolution for the V6 game app."""
+
+    def _resolve_from_v6(self, relative_path):
+        return _resolve_relative_path(V6_GAME_ROOT, relative_path)
+
+    def test_local_album_json_resolves(self):
+        path = self._resolve_from_v6("audio/album.json")
+        self.assertTrue(os.path.isfile(path), f"Not found: {path}")
+
+    def test_local_midi_catalog_resolves(self):
+        path = self._resolve_from_v6("audio/midi_catalog.json")
+        self.assertTrue(os.path.isfile(path), f"Not found: {path}")
+
+    def test_shared_midi_catalog_resolves(self):
+        path = self._resolve_from_v6("../../shared/audio/midi/midi_catalog.json")
+        self.assertTrue(os.path.isfile(path), f"Not found: {path}")
+
+    def test_shared_instruments_resolve(self):
+        path = self._resolve_from_v6("../../shared/audio/instruments/piano.mp3")
+        self.assertTrue(os.path.isfile(path), f"Not found: {path}")
+
+    def test_shared_album_tracks_resolve(self):
+        """V6 loads album MP3s from shared (no local copies)."""
+        path = self._resolve_from_v6("../../shared/audio/tracks/")
+        self.assertTrue(os.path.isdir(path))
+        mp3s = [f for f in os.listdir(path) if f.endswith(".mp3")]
+        self.assertEqual(len(mp3s), 12)
+
+    def test_shared_metadata_resolves(self):
+        path = self._resolve_from_v6("../../shared/audio/metadata/v1/album.json")
+        self.assertTrue(os.path.isfile(path))
+
+    def test_interstitial_resolves(self):
+        path = self._resolve_from_v6("audio/in-the-beginning-radio.mp3")
+        self.assertTrue(os.path.isfile(path), f"Not found: {path}")
+
+    def test_v6_can_reach_shared(self):
+        """From v6/inthebeginning-bounce/, ../../shared/ resolves to shared/."""
+        path = _resolve_relative_path(V6_GAME_ROOT, "../../shared")
+        expected = os.path.normpath(SHARED_ROOT)
+        self.assertEqual(path, expected)
+
+
+class TestV6AlbumJSONIntegrity(unittest.TestCase):
+    """Test V6 album.json content integrity."""
+
+    def setUp(self):
+        path = os.path.join(V6_GAME_ROOT, "audio", "album.json")
+        with open(path) as f:
+            self.album = json.load(f)
+
+    def test_has_12_tracks(self):
+        self.assertEqual(len(self.album["tracks"]), 12)
+
+    def test_tracks_have_audio_files(self):
+        for i, track in enumerate(self.album["tracks"]):
+            self.assertIn("audio_file", track, f"Track {i+1} missing audio_file")
+
+    def test_audio_files_exist_in_shared(self):
+        """V6 album MP3s should be in shared/audio/tracks/."""
+        tracks_dir = os.path.join(SHARED_ROOT, "audio", "tracks")
+        for track in self.album["tracks"]:
+            path = os.path.join(tracks_dir, track["audio_file"])
+            self.assertTrue(
+                os.path.isfile(path),
+                f"Missing in shared: {track['audio_file']}",
+            )
+
+    def test_has_interstitial_config(self):
+        self.assertIn("interstitial", self.album)
+        self.assertIn("file", self.album["interstitial"])
+
+    def test_has_id3_metadata(self):
+        self.assertIn("artist", self.album)
+        self.assertIn("album", self.album)
+        self.assertIn("year", self.album)
+
+
+class TestV6GameJSPathReferences(unittest.TestCase):
+    """Validate that V6 JS files have correct path fallback chains."""
+
+    def setUp(self):
+        self.app_js = _read_js_file(os.path.join(V6_GAME_ROOT, "js", "app.js"))
+        self.music_sync = _read_js_file(
+            os.path.join(V6_GAME_ROOT, "js", "music-sync.js")
+        )
+        self.synth_engine = _read_js_file(
+            os.path.join(V6_GAME_ROOT, "js", "synth-engine.js")
+        )
+
+    def test_midi_catalog_paths_include_shared(self):
+        self.assertIn("../../shared/audio/midi/midi_catalog.json", self.app_js)
+
+    def test_music_sync_has_load_midi_catalog(self):
+        self.assertIn("async loadMidiCatalog", self.music_sync)
+
+    def test_synth_engine_includes_shared_instruments(self):
+        self.assertIn("../../shared/audio/instruments/", self.synth_engine)
+
+    def test_album_paths_include_shared_tracks(self):
+        self.assertIn("../../shared/audio/tracks/", self.app_js)
+
+    def test_v6_branding_in_app_js(self):
+        """app.js should use V6 branding, not Cosmic Runner."""
+        self.assertNotIn("Cosmic Runner", self.app_js)
 
 
 if __name__ == "__main__":
