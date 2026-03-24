@@ -1,8 +1,8 @@
 /**
- * Browser-Based Procedural Music Generator for Cosmic Runner V5.
+ * Browser-Based Procedural Music Generator for inthebeginning bounce V6.
  *
- * Ported from Python cosmic music concepts. Generates a 30-minute universe
- * cycle (6 tracks of ~5 min each) entirely in the browser using SynthEngine.
+ * Ported from Python cosmic music concepts. Generates a 60-minute universe
+ * cycle (12 tracks of ~5 min each) entirely in the browser using SynthEngine.
  * Each track represents a cosmic epoch with distinct musical character.
  *
  * Features:
@@ -40,10 +40,10 @@ class MusicGenerator {
     this.speed = 1.0;
 
     // ──── Track Data ────
-    /** @type {number} Total universe cycle duration in seconds (30 min). */
-    this.cycleDuration = 30 * 60;
-    /** @type {number} Number of tracks per cycle. */
-    this.trackCount = 6;
+    /** @type {number} Total universe cycle duration in seconds (60 min = 12 tracks). */
+    this.cycleDuration = 60 * 60;
+    /** @type {number} Number of tracks per cycle (matches 12 game levels). */
+    this.trackCount = 12;
     /** @type {number} Duration per track in seconds (~5 min). */
     this.trackDuration = this.cycleDuration / this.trackCount;
     /** @type {Array<Array<Object>>} Generated note events per track. */
@@ -78,8 +78,8 @@ class MusicGenerator {
     this.onTrackEnd = null;
 
     // ──── Epoch Definitions ────
-    // Each epoch mirrors the Python radio engine's cosmic epochs with
-    // distinct timbres, scales, tempos, and density.
+    // 12 epochs matching the game's 12-level structure. Each epoch has
+    // distinct timbres, scales, tempos, and density for rich sonic variety.
     this._epochs = [
       {
         name: 'Quantum Fluctuation',
@@ -87,11 +87,12 @@ class MusicGenerator {
         melodyInst: 'bell',
         scale: [0, 1, 3, 6, 7, 10],     // whole-tone-ish
         baseNote: 48,
-        tempoBase: 55,
-        percChance: 0.08,
+        tempoBase: 65,
+        percChance: 0.15,
         padInst: 'warm_pad',
         bassInst: 'cello',
-        density: 0.5,  // sparse ambient beginning
+        density: 0.7,
+        fillInst: 'flute',
       },
       {
         name: 'Inflation',
@@ -99,23 +100,77 @@ class MusicGenerator {
         melodyInst: 'piano',
         scale: [0, 2, 4, 5, 7, 9, 11],  // major
         baseNote: 52,
-        tempoBase: 72,
-        percChance: 0.2,
+        tempoBase: 78,
+        percChance: 0.25,
         padInst: 'choir_oo',
         bassInst: 'cello',
-        density: 0.7,
+        density: 0.8,
+        fillInst: 'violin',
       },
       {
-        name: 'Stellar Nucleosynthesis',
+        name: 'Quark-Gluon Plasma',
+        inst: 'cosmic',
+        melodyInst: 'violin',
+        scale: [0, 2, 3, 5, 7, 9, 10],  // dorian
+        baseNote: 50,
+        tempoBase: 85,
+        percChance: 0.3,
+        padInst: 'warm_pad',
+        bassInst: 'cello',
+        density: 0.85,
+        fillInst: 'bell',
+      },
+      {
+        name: 'Nucleosynthesis',
         inst: 'violin',
         melodyInst: 'flute',
         scale: [0, 2, 3, 5, 7, 8, 10],  // natural minor
         baseNote: 55,
-        tempoBase: 88,
-        percChance: 0.3,
+        tempoBase: 90,
+        percChance: 0.35,
         padInst: 'cello',
         bassInst: 'cello',
-        density: 0.85,
+        density: 0.9,
+        fillInst: 'piano',
+      },
+      {
+        name: 'Recombination',
+        inst: 'piano',
+        melodyInst: 'bell',
+        scale: [0, 2, 4, 5, 7, 9, 11],  // major
+        baseNote: 57,
+        tempoBase: 95,
+        percChance: 0.35,
+        padInst: 'choir_ah',
+        bassInst: 'cello',
+        density: 0.9,
+        fillInst: 'flute',
+      },
+      {
+        name: 'Dark Ages',
+        inst: 'cello',
+        melodyInst: 'cosmic',
+        scale: [0, 1, 3, 5, 7, 8, 10],  // aeolian
+        baseNote: 45,
+        tempoBase: 60,
+        percChance: 0.2,
+        padInst: 'warm_pad',
+        bassInst: 'cello',
+        density: 0.75,
+        fillInst: 'horn',
+      },
+      {
+        name: 'First Stars',
+        inst: 'bell',
+        melodyInst: 'trumpet',
+        scale: [0, 2, 4, 7, 9],          // major pentatonic
+        baseNote: 60,
+        tempoBase: 100,
+        percChance: 0.4,
+        padInst: 'choir_oo',
+        bassInst: 'cello',
+        density: 0.95,
+        fillInst: 'violin',
       },
       {
         name: 'Galaxy Formation',
@@ -124,10 +179,11 @@ class MusicGenerator {
         scale: [0, 2, 4, 7, 9],          // major pentatonic
         baseNote: 60,
         tempoBase: 105,
-        percChance: 0.4,
+        percChance: 0.45,
         padInst: 'warm_pad',
         bassInst: 'cello',
         density: 1.0,
+        fillInst: 'flute',
       },
       {
         name: 'Solar Ignition',
@@ -136,10 +192,37 @@ class MusicGenerator {
         scale: [0, 1, 4, 5, 7, 8, 10],  // phrygian dominant
         baseNote: 57,
         tempoBase: 112,
-        percChance: 0.45,
+        percChance: 0.5,
         padInst: 'horn',
         bassInst: 'cello',
         density: 1.0,
+        fillInst: 'bell',
+      },
+      {
+        name: 'Hadean Earth',
+        inst: 'cello',
+        melodyInst: 'piano',
+        scale: [0, 2, 3, 6, 7, 8, 11],  // harmonic minor
+        baseNote: 53,
+        tempoBase: 88,
+        percChance: 0.4,
+        padInst: 'choir_ah',
+        bassInst: 'cello',
+        density: 0.95,
+        fillInst: 'trumpet',
+      },
+      {
+        name: 'Abiogenesis',
+        inst: 'flute',
+        melodyInst: 'violin',
+        scale: [0, 2, 3, 5, 7, 9, 10],  // dorian
+        baseNote: 62,
+        tempoBase: 92,
+        percChance: 0.35,
+        padInst: 'warm_pad',
+        bassInst: 'cello',
+        density: 0.9,
+        fillInst: 'piano',
       },
       {
         name: 'Emergence of Life',
@@ -152,6 +235,7 @@ class MusicGenerator {
         padInst: 'choir_ah',
         bassInst: 'cello',
         density: 0.9,
+        fillInst: 'bell',
       },
     ];
   }
@@ -232,6 +316,12 @@ class MusicGenerator {
     // ──── Arpeggio Layer ────
     this._generateArpeggioLayer(notes, epoch, dur, beatDur);
 
+    // ──── Fill / Texture Layer (ambient tonal fills) ────
+    this._generateFillLayer(notes, epoch, dur, beatDur, density);
+
+    // ──── Ostinato / Rhythmic Pattern Layer ────
+    this._generateOstinatoLayer(notes, epoch, dur, beatDur, density);
+
     // ──── Percussion Layer ────
     this._generatePercussionLayer(notes, epoch, dur, beatDur);
 
@@ -249,7 +339,7 @@ class MusicGenerator {
       const noteLen = padDur + this._rand() * beatDur * 4;
       const scaleIdx = this._randInt(0, epoch.scale.length);
       const pitch = epoch.baseNote - 12 + epoch.scale[scaleIdx];
-      const vel = 0.15 + this._rand() * 0.15;
+      const vel = 0.25 + this._rand() * 0.2;
       const bend = (this._rand() < this.bendAmount) ? (this._rand() - 0.5) * 0.3 : 0;
 
       notes.push({
@@ -290,7 +380,7 @@ class MusicGenerator {
         const rootIdx = this._randInt(0, scale.length);
         const pitch = bassBase + scale[rootIdx];
         const noteDur = beatDur * (1.5 + this._rand() * 2.5);
-        const vel = 0.25 + this._rand() * 0.2;
+        const vel = 0.35 + this._rand() * 0.2;
 
         if (pitch >= 24 && pitch <= 60) {
           notes.push({
@@ -320,7 +410,7 @@ class MusicGenerator {
    * Uses the epoch's melodyInst (different from main inst) for timbral variety.
    */
   _generateCounterMelodyLayer(notes, epoch, dur, beatDur, density) {
-    if (density < 0.6) return; // Skip for sparse early epochs
+    if (density < 0.5) return; // Only skip for very sparse epochs
 
     let t = beatDur * 8; // Enter after the main melody establishes
     let prevPitch = epoch.baseNote + 7; // Start a 5th above
@@ -551,6 +641,82 @@ class MusicGenerator {
 
       beatIdx++;
       t += beatDur;
+    }
+  }
+
+  /**
+   * Generate ambient fill/texture notes for sonic richness.
+   * Uses the epoch's fillInst for timbral variety from other layers.
+   */
+  _generateFillLayer(notes, epoch, dur, beatDur, density) {
+    const fillInst = epoch.fillInst || epoch.padInst;
+    let t = beatDur * 4;
+    const scale = epoch.scale;
+
+    while (t < dur) {
+      if (this._rand() < 0.5 * density) {
+        // Tremolo-style repeated soft notes
+        const pitch = epoch.baseNote + this._pick(scale);
+        const vel = 0.15 + this._rand() * 0.15;
+        const repeats = this._randInt(3, 8);
+        const gap = beatDur * (0.2 + this._rand() * 0.3);
+
+        for (let i = 0; i < repeats && t + i * gap < dur; i++) {
+          notes.push({
+            t: t + i * gap, dur: gap * 0.6,
+            note: pitch + (i % 2 === 0 ? 0 : 12), // alternate octaves
+            vel: vel * (0.6 + 0.4 * Math.sin(i / repeats * Math.PI)),
+            ch: 6, inst: fillInst, bend: 0,
+          });
+        }
+
+        t += repeats * gap + beatDur * 2;
+      }
+
+      t += beatDur * (2 + this._rand() * 6);
+    }
+  }
+
+  /**
+   * Generate a rhythmic ostinato pattern — a repeated melodic cell
+   * that provides forward momentum and rhythmic interest.
+   */
+  _generateOstinatoLayer(notes, epoch, dur, beatDur, density) {
+    if (density < 0.7) return;
+
+    let t = beatDur * 16; // enter after other layers establish
+    const scale = epoch.scale;
+
+    while (t < dur) {
+      if (this._rand() < 0.4 * density) {
+        // Create a short melodic cell (3-5 notes) and repeat it
+        const cellLen = this._randInt(3, 6);
+        const cellNotes = [];
+        const startIdx = this._randInt(0, scale.length);
+        for (let i = 0; i < cellLen; i++) {
+          cellNotes.push(epoch.baseNote + scale[(startIdx + i) % scale.length]);
+        }
+
+        const repeats = this._randInt(4, 12);
+        const stepDur = beatDur * (0.3 + this._rand() * 0.4);
+        const vel = 0.2 + this._rand() * 0.2;
+
+        for (let rep = 0; rep < repeats; rep++) {
+          for (let i = 0; i < cellLen; i++) {
+            const noteT = t + (rep * cellLen + i) * stepDur;
+            if (noteT >= dur) break;
+            notes.push({
+              t: noteT, dur: stepDur * 0.7,
+              note: cellNotes[i], vel: vel * (0.7 + 0.3 * this._rand()),
+              ch: 7, inst: epoch.melodyInst, bend: 0,
+            });
+          }
+        }
+
+        t += repeats * cellLen * stepDur + beatDur * 8;
+      }
+
+      t += beatDur * (6 + this._rand() * 12);
     }
   }
 
