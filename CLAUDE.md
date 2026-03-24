@@ -1269,6 +1269,7 @@ deploy/
       metadata/v1/   Album + MIDI catalog metadata
       interstitials/ Radio station ID MP3
   v5/                V5 deploy-ready apps (game + visualizer)
+  v6/                V6 deploy-ready app (game only, no visualizer)
 ast_dsl/             AST parsing and transformation engine
 ast_captures/        Pre-computed AST snapshots for reference
 tests/               Python test suite
@@ -1352,7 +1353,8 @@ When copied to the GitHub Pages repository, the layout is:
         music-generator.js             Procedural music generation
         stream.js                      SSE stream client
         score.js                       Score/JSON file parser
-  v6/                                  Future version (same structure)
+  v6/                                  V6 game (no visualizer)
+    inthebeginning-bounce/             Game application (same structure as v5)
     ...
 ```
 

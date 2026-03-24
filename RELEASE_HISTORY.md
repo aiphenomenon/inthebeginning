@@ -4,6 +4,58 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.28.0 — 2026-03-23 — inthebeginning bounce V6 (Game Overhaul)
+
+### Summary
+
+Major bug fix and feature enhancement for the web game. Renamed from
+"Cosmic Runner" to "inthebeginning bounce". Removed the standalone visualizer
+(all visualization consolidated into the game). Created deploy/v6 directory.
+
+### Bug Fixes
+
+- **Branding**: "Cosmic Runner" → "inthebeginning bounce" throughout
+- **Theme/Accessibility overlays**: Now open correctly from title screen
+- **MIDI auto-play**: Playhead starts at beginning, auto-plays on game start
+- **Pause**: Pauses both gameplay AND music simultaneously
+- **3D obstacles**: Fly past the player instead of piling up at ground level
+- **P2 controls**: Changed from WASD (left-side) to IJKL/Numpad (right-side)
+  P1 now uses both Arrows and WASD
+- **Track list modal**: Only opens in MP3 mode (no empty modal in synth/grid)
+- **Note info display**: Now shows in grid/player modes for all sound modes
+  (MP3 mode events now update the note info panel)
+- **Player position**: NaN/Infinity protection, drag cleanup on window blur
+- **Game loop**: try/catch prevents silent crashes from stopping rendering
+
+### Features
+
+- **12-epoch synth generator**: Expanded from 6 to 12 cosmic epochs matching
+  the game's 12-level structure. 9 audio layers: pad, bass, melody,
+  counter-melody, chord, arpeggio, fill/texture, ostinato, percussion.
+  Boosted pad and bass volumes for richer presence.
+- **Infinite play**: Album mode repeats after track 12. MIDI infinite shuffle.
+  Synth generator regenerates with new seed after 12 tracks.
+- **Game completion**: End screen with final score after 12 album tracks
+  (non-infinite mode only, no player lives system)
+- **3D level progression**: Works correctly in MIDI and synth modes too
+  (previously only activated in MP3 mode)
+- **Theme-aware ground**: Ground rendering uses theme color shifts
+
+### Architecture
+
+- **Visualizer removed**: deploy/v6 contains only the game application
+- **Shared assets**: v6 audio/ contains only JSON metadata and interstitial;
+  album MP3s load from ../../shared/audio/tracks/
+- **deploy/v6/inthebeginning-bounce/**: Ready for copy-to-GitHub-Pages deployment
+
+### Files Changed
+
+- deploy/v5/inthebeginning-bounce/: All JS files updated with V6 fixes
+- deploy/v6/: New deploy directory (game only, no visualizer)
+- 16 JavaScript files, 1 HTML, 1 CSS, 1 README
+
+---
+
 ## v0.25.0 — 2026-03-22 — Synthesizer Port + Visualizer V3 Upgrade
 
 ### Summary
