@@ -38,6 +38,9 @@ class WasmSynth {
     /** @type {AudioContext|null} Audio context (shared or own). */
     this._ctx = null;
 
+    /** @type {boolean} Whether a SoundFont is loaded in the WASM engine. */
+    this._sf2Loaded = false;
+
     // ──── Playback state ────
     /** @type {boolean} */
     this.isPlaying = false;
@@ -195,6 +198,82 @@ class WasmSynth {
       console.warn('WasmSynth: AudioWorklet not supported, using fallback');
       this._wasmReady = false;
     }
+  }
+
+  // ──── SoundFont Loading ────
+
+  /**
+   * Load a SoundFont (.sf2) file into the WASM engine.
+   * When loaded, the WASM engine uses SF2 samples for higher-fidelity synthesis.
+   * @param {string} sf2Url - URL to the .sf2 file.
+   * @returns {Promise<boolean>} True if SF2 loaded successfully.
+   */
+  async loadSoundFont(sf2Url) {
+    if (!this._wasmReady || !this._workletNode) {
+      console.warn('WasmSynth: Cannot load SF2 — WASM not active');
+      return false;
+    }
+
+    try {
+      const resp = await fetch(sf2Url);
+      if (!resp.ok) {
+        console.warn(`WasmSynth: SF2 not found at ${sf2Url}`);
+        return false;
+      }
+
+      const sf2Bytes = await resp.arrayBuffer();
+      const sizeMB = (sf2Bytes.byteLength / (1024 * 1024)).toFixed(1);
+      console.log(`WasmSynth: Loading SF2 (${sizeMB}MB)...`);
+
+      // Send SF2 data to the AudioWorklet
+      this._workletNode.port.postMessage(
+        { type: 'load_sf2', sf2Bytes: sf2Bytes },
+      );
+
+      // Wait for confirmation
+      return new Promise((resolve) => {
+        const timeout = setTimeout(() => {
+          console.warn('WasmSynth: SF2 load timed out');
+          resolve(false);
+        }, 30000); // 30s timeout for large SF2 files
+
+        const prevHandler = this._workletNode.port.onmessage;
+        this._workletNode.port.onmessage = (e) => {
+          if (e.data.type === 'sf2_loaded') {
+            clearTimeout(timeout);
+            this._sf2Loaded = true;
+            console.log(`WasmSynth: SF2 loaded — ${e.data.presets} presets, ${e.data.samples} samples`);
+            this._workletNode.port.onmessage = prevHandler;
+            resolve(true);
+          } else if (e.data.type === 'sf2_error') {
+            clearTimeout(timeout);
+            console.warn('WasmSynth: SF2 load failed:', e.data.message);
+            this._workletNode.port.onmessage = prevHandler;
+            resolve(false);
+          } else if (prevHandler) {
+            prevHandler(e);
+          }
+        };
+      });
+    } catch (e) {
+      console.warn('WasmSynth: SF2 fetch error:', e.message);
+      return false;
+    }
+  }
+
+  /**
+   * Toggle whether the WASM engine uses SF2 samples or additive synthesis.
+   * @param {boolean} useSf2 - True to use SF2 samples.
+   */
+  setUseSf2(useSf2) {
+    if (this._workletNode) {
+      this._postWorklet({ type: 'set_use_sf2', value: useSf2 });
+    }
+  }
+
+  /** @returns {boolean} Whether a SoundFont is loaded. */
+  get sf2Loaded() {
+    return this._sf2Loaded;
   }
 
   // ──── Worker Setup (reuses synth-worker.js for MIDI parsing) ────
@@ -454,6 +533,7 @@ class WasmSynth {
       composer: sanitize(this.trackInfo?.composer),
       era: sanitize(this.trackInfo?.era),
       wasmActive: this._wasmReady,
+      sf2Loaded: this._sf2Loaded,
     };
   }
 
@@ -464,6 +544,7 @@ class WasmSynth {
       duration: this._duration,
       channels: [...new Set(this._notes.map(n => n.ch))].length,
       wasmActive: this._wasmReady,
+      sf2Loaded: this._sf2Loaded,
       ...(this.trackInfo || {}),
     };
   }
