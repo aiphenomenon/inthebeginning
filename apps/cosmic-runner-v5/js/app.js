@@ -629,6 +629,15 @@ class CosmicRunnerApp {
         this.player.musicGenerator.generate();
         await this.player.play();
         break;
+      case 'wasm': {
+        const midiBase = this.musicSync.midiBaseUrl || 'audio/midi_library/';
+        await this.player.startWasmMode(
+          midiBase + 'midi_catalog.json',
+          midiBase
+        );
+        await this.player.play();
+        break;
+      }
       case 'mp3':
       default:
         if (this.musicLoaded && this.musicSync.tracks.length > 0) {
@@ -790,6 +799,16 @@ class CosmicRunnerApp {
       if (titleEl) titleEl.textContent = this.player?.musicGenerator?.getCurrentTrackName() || 'Synth';
       if (artistEl) artistEl.textContent = 'Generated';
       if (albumEl) albumEl.textContent = '';
+    } else if (this.soundMode === 'wasm') {
+      const info = this.player?.wasmSynth?.getDisplayInfo();
+      if (titleEl) titleEl.textContent = info?.name || 'WASM Synth';
+      if (artistEl) artistEl.textContent = info?.composer || '';
+      if (albumEl) {
+        const parts = [];
+        if (info?.era) parts.push(info.era);
+        parts.push(info?.wasmActive ? 'WASM' : 'Fallback');
+        albumEl.textContent = parts.join(' \u00B7 ');
+      }
     }
   }
 
