@@ -69,6 +69,50 @@ class WasmSynthProcessor extends AudioWorkletProcessor {
           this._engine.stop_all();
         }
         break;
+      case 'load_sf2':
+        if (this._ready && this._wasmExports && msg.sf2Bytes) {
+          this._loadSf2(new Uint8Array(msg.sf2Bytes));
+        }
+        break;
+      case 'set_use_sf2':
+        if (this._engine) {
+          this._wasmExports.wasmsynthengine_set_use_sf2(this._enginePtr, msg.value ? 1 : 0);
+        }
+        break;
+    }
+  }
+
+  _loadSf2(sf2Data) {
+    try {
+      // Allocate WASM memory for the SF2 data
+      const mem = this._wasmMemory;
+      const alloc = this._wasmExports.__wbindgen_malloc;
+      const len = sf2Data.length;
+
+      if (!alloc) {
+        this.port.postMessage({ type: 'sf2_error', message: 'No allocator in WASM' });
+        return;
+      }
+
+      const ptr = alloc(len, 1);
+      const wasmBytes = new Uint8Array(mem.buffer, ptr, len);
+      wasmBytes.set(sf2Data);
+
+      const ok = this._wasmExports.wasmsynthengine_load_sf2(this._enginePtr, ptr, len);
+
+      // Free the allocated memory
+      const dealloc = this._wasmExports.__wbindgen_free;
+      if (dealloc) dealloc(ptr, len, 1);
+
+      if (ok) {
+        const presets = this._wasmExports.wasmsynthengine_sf2_preset_count(this._enginePtr);
+        const samples = this._wasmExports.wasmsynthengine_sf2_sample_count(this._enginePtr);
+        this.port.postMessage({ type: 'sf2_loaded', presets, samples });
+      } else {
+        this.port.postMessage({ type: 'sf2_error', message: 'Failed to parse SF2' });
+      }
+    } catch (e) {
+      this.port.postMessage({ type: 'sf2_error', message: e.message });
     }
   }
 
