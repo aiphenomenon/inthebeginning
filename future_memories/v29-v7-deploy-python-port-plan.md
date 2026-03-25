@@ -66,5 +66,31 @@ All 20 checklist items completed and committed:
 ### Phase 5: Interstitial Voice Waveforms
 - Generate ~10 voice waveform MP3s using Python TTS or synth
 - These substitute for real-time voice generation in browser
+- **DEFERRED** to future session
 
 ### Phase 6: Test, document, commit, push
+
+## Completion Status — 2026-03-25 07:47 CT (12:47 UTC)
+
+**COMPLETED**: Phases 1-4 and 6 are done. V7 deploy is GitHub Pages ready.
+
+### What Was Done
+- All 44 scales, 15 progressions, 25 rhythms, 30 motifs ported from Python
+- Generation algorithms upgraded to use motif-based melody, progression-based
+  chords, structured rhythm patterns, and humanization jitter
+- V7 deploy fully tracked in git with all files
+- Deploy asset tests: 106 passed
+- V6 bugs already fixed in V28 — no additional fixes needed
+
+### What Remains
+- Phase 5 (voice waveform interstitials) deferred to future session
+- Album MP3s need to be in deploy/shared/audio/tracks/ for full playback
+  (they may already be there from previous sessions)
+
+### Deploy Instructions
+```bash
+# Copy to GitHub Pages repo:
+cp -r deploy/shared/ /path/to/gh-pages-repo/shared/
+cp -r deploy/v7/ /path/to/gh-pages-repo/v7/
+cd /path/to/gh-pages-repo && git add shared/ v7/ && git commit -m "V7" && git push
+```

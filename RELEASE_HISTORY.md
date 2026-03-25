@@ -4,6 +4,38 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.29.0 — 2026-03-25 — inthebeginning bounce V7 (World Music Engine)
+
+### Summary
+
+Port of Python composer.py world music engine to JavaScript. The synth
+generator now produces musically rich procedural compositions using 44 world
+musical scales, 15 harmonic progressions, 25 rhythm patterns, and 30 melodic
+motifs from public domain works spanning 6 musical traditions.
+
+### Music Engine Port
+
+- 44 world musical scales (Western, Japanese, Chinese, Middle Eastern, Indian,
+  African, Ancient/tribal)
+- 15 harmonic progressions (classical, minimalist, drone, East Asian, modal)
+- 25 rhythm patterns (African bell, polyrhythmic, gamelan, Indian tala, sparse)
+- 30 melodic motifs from public domain works (Bach, Mozart, Beethoven, Chopin,
+  Debussy, Satie, Grieg, Dvořák, traditional Asian/African)
+- Epoch-aware selection of scales, rhythms, progressions, and motifs
+- Humanization jitter (±10-30ms) on melody, chords, percussion
+
+### Audio Improvements
+
+- Voice cleanup: periodic GC every 2s evicts expired voices
+- Max polyphony reduced 128 → 64 for stability
+- Web Audio nodes disconnected on note end
+
+### Deploy
+
+- `deploy/v7/` is GitHub Pages ready (zero build step)
+
+---
+
 ## v0.28.0 — 2026-03-23 — inthebeginning bounce V6 (Game Overhaul)
 
 ### Summary
