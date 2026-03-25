@@ -47,9 +47,14 @@ class GamePlayer {
     /** @type {MusicGenerator} */
     this.musicGenerator = new MusicGenerator(this._synth);
 
+    // ──── WASM Synth (WASM mode) ────
+    /** @type {WasmSynth} */
+    this.wasmSynth = new WasmSynth(this._synth);
+
     // Wire references into MusicSync
     this.musicSync.midiPlayer = this.midiPlayer;
     this.musicSync.musicGenerator = this.musicGenerator;
+    this.musicSync.wasmSynth = this.wasmSynth;
     this.musicSync.audioElement = this.audio;
 
     // ──── State ────
@@ -94,6 +99,14 @@ class GamePlayer {
     };
     this.musicGenerator.onNoteEvent = (events) => {
       if (this.onNoteEvent && this.musicSync.mode === AUDIO_MODE.SYNTH) {
+        this.onNoteEvent(events);
+      }
+    };
+
+    // ──── Wire WASM track-end and note event handlers ────
+    this.wasmSynth.onTrackEnd = () => this._onWasmTrackEnd();
+    this.wasmSynth.onNoteEvent = (events) => {
+      if (this.onNoteEvent && this.musicSync.mode === AUDIO_MODE.WASM) {
         this.onNoteEvent(events);
       }
     };
@@ -208,6 +221,7 @@ class GamePlayer {
     this.audio.pause();
     this.midiPlayer.stop();
     this.musicGenerator.stop();
+    this.wasmSynth.stop();
     this._stopTimeLoop();
     this._updatePlayIcon();
   }
@@ -235,6 +249,9 @@ class GamePlayer {
         }
         this.musicGenerator.play();
         break;
+      case AUDIO_MODE.WASM:
+        this.wasmSynth.play();
+        break;
       case AUDIO_MODE.MP3:
       default:
         if (this.audio.src || this.audio.currentSrc) {
@@ -256,6 +273,9 @@ class GamePlayer {
         break;
       case AUDIO_MODE.SYNTH:
         this.musicGenerator.pause();
+        break;
+      case AUDIO_MODE.WASM:
+        this.wasmSynth.pause();
         break;
       case AUDIO_MODE.MP3:
       default:
@@ -281,6 +301,12 @@ class GamePlayer {
         this.musicGenerator.prevTrack();
         if (this.isPlaying) this.musicGenerator.play();
         if (this.onTrackChange) this.onTrackChange(this.musicGenerator.currentTrack);
+        break;
+
+      case AUDIO_MODE.WASM:
+        await this.wasmSynth.prevTrack();
+        if (this.isPlaying) this.wasmSynth.play();
+        if (this.onTrackChange) this.onTrackChange(-1);
         break;
 
       case AUDIO_MODE.MP3:
@@ -310,6 +336,12 @@ class GamePlayer {
         this.musicGenerator.nextTrack();
         if (this.isPlaying) this.musicGenerator.play();
         if (this.onTrackChange) this.onTrackChange(this.musicGenerator.currentTrack);
+        break;
+
+      case AUDIO_MODE.WASM:
+        await this.wasmSynth.nextTrack();
+        if (this.isPlaying) this.wasmSynth.play();
+        if (this.onTrackChange) this.onTrackChange(-1);
         break;
 
       case AUDIO_MODE.MP3:
@@ -370,6 +402,24 @@ class GamePlayer {
     this.musicGenerator.generate(seed);
   }
 
+  /**
+   * Start WASM Synth mode: attempt WASM init, load catalog, play.
+   * Falls back to SynthEngine if WASM binary is unavailable.
+   * @param {string} catalogUrl - URL to midi_catalog.json.
+   * @param {string} [baseUrl] - Base URL for MIDI files.
+   * @param {string} [wasmUrl] - URL to the .wasm binary.
+   * @returns {Promise<boolean>}
+   */
+  async startWasmMode(catalogUrl, baseUrl, wasmUrl) {
+    this.setMode(AUDIO_MODE.WASM);
+    // Attempt to load WASM module (non-blocking, fallback on failure)
+    await this.wasmSynth.initWasm(wasmUrl);
+    await this.wasmSynth.initAudio();
+    const ok = await this.wasmSynth.loadCatalog(catalogUrl, baseUrl);
+    if (!ok) return false;
+    return this.wasmSynth.loadNextRandom();
+  }
+
   // ──── Seek ────
 
   /**
@@ -387,6 +437,9 @@ class GamePlayer {
         break;
       case AUDIO_MODE.SYNTH:
         this.musicGenerator.seek(targetTime);
+        break;
+      case AUDIO_MODE.WASM:
+        this.wasmSynth.seek(targetTime);
         break;
       case AUDIO_MODE.MP3:
       default:
@@ -429,6 +482,17 @@ class GamePlayer {
     if (this.onTrackChange) this.onTrackChange(this.musicGenerator.currentTrack);
   }
 
+  _onWasmTrackEnd() {
+    // Auto-advance to next random MIDI via WASM synth
+    this.wasmSynth.nextTrack().then(() => {
+      this.wasmSynth.play();
+      this.isPlaying = true;
+      this._updatePlayIcon();
+      this._updateMediaSession();
+      if (this.onTrackChange) this.onTrackChange(-1);
+    });
+  }
+
   // ──── Speed Control ────
 
   /**
@@ -438,6 +502,7 @@ class GamePlayer {
   setSpeed(speed) {
     this.midiPlayer.setSpeed(speed);
     this.musicGenerator.setSpeed(speed);
+    this.wasmSynth.setSpeed(speed);
     // MP3 mode: use playbackRate
     this.audio.playbackRate = Math.max(0.25, Math.min(4.0, speed));
   }
@@ -454,8 +519,8 @@ class GamePlayer {
   setMutation(mutation) {
     // Store on MIDI player (which forwards to shared synth engine)
     this.midiPlayer.setMutation(mutation);
-    // Also store on the MIDI player's local copy for reference
-    // The synth engine is already updated via midiPlayer.setMutation above.
+    // Forward to WASM synth (handles both WASM module and fallback)
+    this.wasmSynth.setMutation(mutation);
   }
 
   // ──── Style Sliders (Synth mode) ────
@@ -559,6 +624,7 @@ class GamePlayer {
     this.audio.src = '';
     this.midiPlayer.destroy();
     this.musicGenerator.destroy();
+    this.wasmSynth.destroy();
     this._synth.destroy();
   }
 }
