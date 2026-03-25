@@ -23,6 +23,7 @@ const AUDIO_MODE = {
   MP3: 'mp3',
   MIDI: 'midi',
   SYNTH: 'synth',
+  WASM: 'wasm',
 };
 
 class MusicSync {
@@ -175,6 +176,8 @@ class MusicSync {
         return this.midiPlayer ? this.midiPlayer.getCurrentTime() : 0;
       case AUDIO_MODE.SYNTH:
         return this.musicGenerator ? this.musicGenerator.getCurrentTime() : 0;
+      case AUDIO_MODE.WASM:
+        return this.wasmSynth ? this.wasmSynth.getCurrentTime() : 0;
       case AUDIO_MODE.MP3:
       default:
         return this.audioElement ? (this.audioElement.currentTime || 0) : 0;
@@ -191,6 +194,8 @@ class MusicSync {
         return this.midiPlayer ? this.midiPlayer.getDuration() : 0;
       case AUDIO_MODE.SYNTH:
         return this.musicGenerator ? this.musicGenerator.getDuration() : 0;
+      case AUDIO_MODE.WASM:
+        return this.wasmSynth ? this.wasmSynth.getDuration() : 0;
       case AUDIO_MODE.MP3:
       default:
         return this.audioElement ? (this.audioElement.duration || 0) : 0;
@@ -329,6 +334,13 @@ class MusicSync {
       case AUDIO_MODE.SYNTH: {
         if (!this.musicGenerator) return 'Synth';
         return this.musicGenerator.getCurrentTrackName() || 'Synth Generation';
+      }
+      case AUDIO_MODE.WASM: {
+        if (!this.wasmSynth) return 'WASM Synth';
+        const info = this.wasmSynth.getDisplayInfo();
+        const parts = [info.name || 'WASM Synth'];
+        if (info.composer) parts.push(info.composer);
+        return parts.join(' \u2014 ');
       }
       case AUDIO_MODE.MP3:
       default:
