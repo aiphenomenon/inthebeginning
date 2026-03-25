@@ -125,6 +125,7 @@ epoch transitions, and simulation metrics (wall time, CPU time, peak memory).
 | Java GUI           | `apps/java/`               | Java 21        | Swing GUI with terminal/visual/audio    |
 | TypeScript Audio   | `apps/typescript/`         | TypeScript     | Browser Web Audio API sonification      |
 | WebAssembly        | `apps/wasm/`               | Rust -> WASM   | Browser WebGPU particle rendering       |
+| WASM Synth         | `apps/wasm-synth/`         | Rust -> WASM   | WebAssembly audio synthesis engine      |
 | PHP Snapshot       | `apps/php/`                | PHP 8.4        | HTTP auto-refresh snapshot server       |
 | Swift iOS          | `apps/swift/`              | Swift          | SwiftUI + Metal rendering               |
 | Kotlin Android     | `apps/kotlin/`             | Kotlin         | Jetpack Compose + OpenGL ES             |

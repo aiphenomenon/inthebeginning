@@ -103,11 +103,14 @@
 - Or: use the existing 60 MP3 instrument samples as a lightweight alternative
 - Wire SF2 rendering into the WasmSynth AudioWorklet pipeline
 
-## Completion Criteria
-- [ ] WASM is a 4th sound mode in the dropdown
-- [ ] Without WASM binary, gracefully falls back to SynthEngine
-- [ ] With WASM binary, all existing knobs (mutation, style, volume) work
-- [ ] MIDI files play through WASM synthesis
-- [ ] Procedural music can optionally render through WASM
-- [ ] deploy/v8 created with WASM mode
-- [ ] SoundFont integration (Phase 3) done last
+## Completion Status — 2026-03-25 10:30 CT (15:30 UTC)
+
+**Phases 1-2 COMPLETE. Phase 3 (SoundFont) deferred.**
+
+- [x] WASM is a 4th sound mode in the dropdown
+- [x] Without WASM binary, gracefully falls back to SynthEngine
+- [x] With WASM binary, all existing knobs (mutation, style, volume) work
+- [x] MIDI files play through WASM synthesis
+- [x] deploy/v8 created with WASM mode (27KB WASM binary)
+- [ ] Procedural music through WASM (future: route MusicGenerator through WASM)
+- [ ] SoundFont integration (Phase 3) — deferred, do last

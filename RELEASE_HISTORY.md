@@ -14,13 +14,33 @@ Existing knobs (mutation presets, style sliders, volume) work with WASM mode.
 Graceful fallback to SynthEngine when WASM binary is unavailable.
 SoundFont integration deferred to Phase 3 (done last).
 
-### Changes
+### New Sound Mode: WASM Synth
 
-- Added `AUDIO_MODE.WASM` to music-sync.js
-- Created `wasm-synth.js` — WASM loader and JS bridge with SynthEngine fallback
-- Wired WASM mode into player.js (play/pause/prev/next)
-- Wired WASM mode into app.js (mode switching, ID3 display)
-- Added WASM option to sound mode dropdown in index.html
+4th audio mode alongside MP3, MIDI, and Synth Generator. When a 27KB
+WebAssembly binary is available, audio synthesis runs in a Rust-compiled
+WASM module via an AudioWorklet (audio thread). Gracefully falls back to
+the existing SynthEngine when WASM is unavailable.
+
+### Rust WASM Synth Engine
+
+- 13 instrument timbres ported from synth-engine.js (piano, violin, cello,
+  flute, oboe, trumpet, harp, bell, gamelan, choir, warm_pad, cosmic, sine)
+- ADSR envelopes per timbre
+- 64-voice polyphony with oldest-voice stealing
+- GM program mapping (128 instruments → 13 timbres)
+- 7 Rust unit tests
+
+### JS Integration
+
+- `wasm-synth.js` — JS bridge with MIDI catalog, shuffle, note scheduling
+- `wasm-synth-processor.js` — AudioWorkletProcessor for audio-thread rendering
+- All existing knobs (mutation presets, volume, speed) work with WASM mode
+- ID3 display shows WASM/Fallback indicator
+
+### Deploy
+
+- `deploy/v8/` is GitHub Pages ready (zero build step)
+- 27KB WASM binary included at `js/wasm_synth_bg.wasm`
 
 ---
 

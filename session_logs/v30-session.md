@@ -18,3 +18,70 @@ Created `future_memories/v30-wasm-audio-mode-plan.md` with 3-phase approach:
 
 ### Actions
 
+#### Phase 1: JS Infrastructure [10:04-10:14 CT]
+1. **music-sync.js** — Added `AUDIO_MODE.WASM` constant, WASM cases in
+   `getCurrentTime()`, `getDuration()`, `getCurrentTitle()` → commit 8c1d559
+2. **wasm-synth.js** — Created 643-line JS bridge class:
+   - Same API as MidiPlayer (play/pause/stop/seek/getCurrentTime/getDuration)
+   - WASM loader with graceful SynthEngine fallback
+   - MIDI catalog management and shuffle
+   - Mutation/volume/speed forwarding → commit a2e2cfd
+3. **player.js** — Added WASM cases to all playback controls (play/pause/stop/seek,
+   prevTrack/nextTrack, setSpeed/setMutation, _stopAll/destroy), startWasmMode()
+   helper, _onWasmTrackEnd() → commit bc69853
+4. **app.js** — Added 'wasm' case to _initSoundMode() and _updateID3Display()
+   with WASM/Fallback indicator → commit 076f162
+5. **index.html** — Added `<option value="wasm">WASM Synth</option>` and
+   `<script src="js/wasm-synth.js">` → commit 7d15a3b
+
+**Tests**: 196 core + 151 deploy = 347 passing
+
+#### Phase 2: Rust WASM Synth Crate [10:14-10:25 CT]
+1. **Cargo.toml + lib.rs** — Created `apps/wasm-synth/` Rust crate:
+   - 13 instrument timbres (piano, violin, cello, flute, oboe, trumpet, harp,
+     bell, gamelan, choir, warm_pad, cosmic, sine)
+   - ADSR envelopes per timbre
+   - 64-voice polyphony with voice stealing
+   - GM program mapping (128 instruments → 13 timbres)
+   - render_block() fills f32 buffer
+   - 7 unit tests all passing → commit cef4ce9
+2. **wasm-pack build** — Built 27KB WASM binary (wasm-opt disabled for sandbox)
+3. **wasm-synth-processor.js** — AudioWorkletProcessor that instantiates WASM
+   in the audio thread → commit 1f44ef0
+4. **wasm-synth.js updates** — Load real WASM binary, register AudioWorklet,
+   route notes through worklet port → commit 1f44ef0
+
+#### Deploy [10:25-10:30 CT]
+1. **deploy/v8** — Created from v7 base, added WASM files:
+   - wasm-synth.js, wasm-synth-processor.js, wasm_synth_bg.wasm (27KB)
+   - Updated music-sync.js, player.js, app.js, index.html
+   - 151 deploy tests passing → commit 0e8f01b
+
+### Files Changed
+- `apps/cosmic-runner-v5/js/music-sync.js` — Added AUDIO_MODE.WASM
+- `apps/cosmic-runner-v5/js/wasm-synth.js` — NEW: WASM synth JS bridge
+- `apps/cosmic-runner-v5/js/wasm-synth-processor.js` — NEW: AudioWorklet
+- `apps/cosmic-runner-v5/js/player.js` — Wired WASM mode
+- `apps/cosmic-runner-v5/js/app.js` — Wired WASM mode
+- `apps/cosmic-runner-v5/index.html` — WASM option + script tag
+- `apps/wasm-synth/Cargo.toml` — NEW: Rust WASM synth crate
+- `apps/wasm-synth/src/lib.rs` — NEW: Additive synthesis engine
+- `deploy/v8/` — NEW: Complete V8 deploy with WASM mode
+- `.gitignore` — Added apps/wasm-synth/target/
+
+### Test Results
+- Rust tests: 7 passed (synth engine unit tests)
+- Python core: 196 passed
+- Deploy: 151 passed
+- Node.js: all passing
+
+### Commits (8 total, all pushed)
+1. 5001f60 — plan: V30 WASM audio synthesis mode
+2. 8c1d559 — feat(wasm): add AUDIO_MODE.WASM to music-sync.js
+3. a2e2cfd — feat(wasm): create wasm-synth.js
+4. bc69853 — feat(wasm): wire WASM mode into player.js
+5. 076f162 — feat(wasm): wire WASM mode into app.js
+6. 7d15a3b — feat(wasm): add WASM option to HTML
+7. cef4ce9 — feat(wasm): create Rust WASM synth crate
+8. 1f44ef0 — feat(wasm): AudioWorklet + WASM binary integration
+9. 0e8f01b — feat(v8): create deploy/v8 with WASM mode
