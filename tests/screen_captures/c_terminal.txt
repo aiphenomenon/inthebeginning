@@ -26,13 +26,13 @@
 
   Quantum Field:
     Temperature:     1.00e+10 K
-    Particles:       4
-    Total energy:    6259421.00 SU
+    Particles:       2
+    Total energy:    1026155.38 SU
     Protons:         0
     Neutrons:        0
-    Electrons:       2
+    Electrons:       1
     Photons:         0
-    Created total:   4
+    Created total:   2
     Annihilated:     0
   Environment:
     Temperature:     1.00e+10 K
