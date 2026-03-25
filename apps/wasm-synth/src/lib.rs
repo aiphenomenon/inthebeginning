@@ -7,7 +7,19 @@
 //!
 //! Zero external dependencies beyond wasm-bindgen and js-sys.
 
+pub mod sf2;
+
 use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(s: &str);
+}
+
+fn web_sys_log(s: &str) {
+    log(s);
+}
 
 // ──── Constants ────
 
@@ -295,6 +307,10 @@ pub struct WasmSynthEngine {
     programs: [u8; 16],
     /// Output buffer for render_block.
     buffer: Vec<f32>,
+    /// Optional loaded SoundFont for sample-based synthesis.
+    soundfont: Option<sf2::SoundFont>,
+    /// Whether to use SF2 samples when available.
+    use_sf2: bool,
 }
 
 #[wasm_bindgen]
@@ -314,6 +330,8 @@ impl WasmSynthEngine {
             tempo_mult: 1.0,
             programs: [0; 16],
             buffer: Vec::new(),
+            soundfont: None,
+            use_sf2: false,
         }
     }
 
@@ -421,6 +439,51 @@ impl WasmSynthEngine {
     /// Get the tempo multiplier.
     pub fn tempo_mult(&self) -> f32 {
         self.tempo_mult
+    }
+
+    /// Load a SoundFont (.sf2) file from raw bytes.
+    /// After loading, the engine will use SF2 samples for synthesis.
+    /// Returns true on success.
+    pub fn load_sf2(&mut self, data: &[u8]) -> bool {
+        match sf2::SoundFont::parse(data) {
+            Ok(sf) => {
+                let preset_count = sf.presets.len();
+                let sample_count = sf.sample_headers.len();
+                let sample_data_size = sf.samples.len();
+                self.soundfont = Some(sf);
+                self.use_sf2 = true;
+                // Log via console (js-sys)
+                web_sys_log(&format!(
+                    "SF2 loaded: {} presets, {} samples, {}KB sample data",
+                    preset_count, sample_count, sample_data_size * 4 / 1024
+                ));
+                true
+            }
+            Err(e) => {
+                web_sys_log(&format!("SF2 parse error: {}", e));
+                false
+            }
+        }
+    }
+
+    /// Check if a SoundFont is loaded.
+    pub fn has_sf2(&self) -> bool {
+        self.soundfont.is_some()
+    }
+
+    /// Get the number of presets in the loaded SoundFont.
+    pub fn sf2_preset_count(&self) -> u32 {
+        self.soundfont.as_ref().map(|sf| sf.presets.len() as u32).unwrap_or(0)
+    }
+
+    /// Get the number of samples in the loaded SoundFont.
+    pub fn sf2_sample_count(&self) -> u32 {
+        self.soundfont.as_ref().map(|sf| sf.sample_headers.len() as u32).unwrap_or(0)
+    }
+
+    /// Toggle whether to use SF2 samples (true) or additive synthesis (false).
+    pub fn set_use_sf2(&mut self, use_sf2: bool) {
+        self.use_sf2 = use_sf2 && self.soundfont.is_some();
     }
 }
 
