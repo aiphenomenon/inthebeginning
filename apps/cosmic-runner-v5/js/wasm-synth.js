@@ -105,7 +105,7 @@ class WasmSynth {
    * @returns {Promise<boolean>} True if WASM loaded, false if falling back.
    */
   async initWasm(wasmUrl) {
-    wasmUrl = wasmUrl || 'js/wasm-synth.wasm';
+    wasmUrl = wasmUrl || 'js/wasm_synth_bg.wasm';
     try {
       if (typeof WebAssembly === 'undefined') {
         console.warn('WasmSynth: WebAssembly not supported, using fallback');
@@ -118,15 +118,11 @@ class WasmSynth {
         return false;
       }
 
-      const bytes = await resp.arrayBuffer();
-      const { instance } = await WebAssembly.instantiate(bytes, this._getImports());
-
-      this._wasmModule = instance.exports;
-      if (typeof this._wasmModule.init === 'function') {
-        this._wasmModule.init(44100); // sample rate
-      }
+      // Store raw bytes for AudioWorklet initialization
+      this._wasmBytes = await resp.arrayBuffer();
       this._wasmReady = true;
-      console.log('WasmSynth: WASM module loaded successfully');
+      console.log('WasmSynth: WASM binary fetched successfully (' +
+        Math.round(this._wasmBytes.byteLength / 1024) + 'KB)');
       return true;
     } catch (e) {
       console.warn('WasmSynth: Failed to load WASM module, using fallback:', e.message);
@@ -136,45 +132,68 @@ class WasmSynth {
   }
 
   /**
-   * Build the WebAssembly import object.
-   * Provides JS functions that the WASM module can call.
-   * @returns {Object} Import object for WebAssembly.instantiate.
-   */
-  _getImports() {
-    return {
-      env: {
-        // Console logging from WASM
-        log_f64: (val) => console.log('WASM:', val),
-        log_str: (ptr, len) => {
-          // Will be implemented when WASM module has string memory
-        },
-        // Math functions WASM might need
-        sin: Math.sin,
-        cos: Math.cos,
-        pow: Math.pow,
-        exp: Math.exp,
-        log: Math.log,
-        random: Math.random,
-      },
-    };
-  }
-
-  /**
    * Initialize the AudioContext and AudioWorklet for WASM rendering.
-   * If WASM is not available, initializes the fallback SynthEngine instead.
+   * If WASM is available and AudioWorklet is supported, sets up WASM-powered
+   * audio rendering. Otherwise falls back to SynthEngine.
    */
   async initAudio() {
-    if (this._wasmReady) {
-      // Create or reuse AudioContext
-      this._ctx = this._fallbackSynth?.ctx || new (window.AudioContext || window.webkitAudioContext)();
-      // TODO: Register AudioWorklet processor for WASM rendering
-      // For now, use ScriptProcessorNode as a bridge
-      // (AudioWorklet registration will come in Phase 2)
-    }
-
     // Always ensure fallback synth is initialized
     if (this._fallbackSynth) {
       this._fallbackSynth.init();
+    }
+
+    if (!this._wasmReady || !this._wasmBytes) return;
+
+    // Get or create AudioContext
+    this._ctx = this._fallbackSynth?.ctx ||
+      new (window.AudioContext || window.webkitAudioContext)();
+
+    // Try AudioWorklet (modern browsers)
+    if (this._ctx.audioWorklet) {
+      try {
+        await this._ctx.audioWorklet.addModule('js/wasm-synth-processor.js');
+        this._workletNode = new AudioWorkletNode(this._ctx, 'wasm-synth-processor');
+        this._workletNode.connect(this._ctx.destination);
+
+        // Send WASM bytes to the worklet for initialization
+        this._workletNode.port.postMessage(
+          { type: 'init', wasmBytes: this._wasmBytes.slice(0) },
+          // Transfer a copy (can't transfer the original, we might need it)
+        );
+
+        // Wait for worklet to confirm WASM init
+        await new Promise((resolve, reject) => {
+          const timeout = setTimeout(() => {
+            console.warn('WasmSynth: AudioWorklet init timed out, using fallback');
+            this._workletNode.disconnect();
+            this._workletNode = null;
+            this._wasmReady = false;
+            resolve();
+          }, 5000);
+
+          this._workletNode.port.onmessage = (e) => {
+            if (e.data.type === 'ready') {
+              clearTimeout(timeout);
+              console.log('WasmSynth: AudioWorklet WASM engine ready');
+              resolve();
+            } else if (e.data.type === 'error') {
+              clearTimeout(timeout);
+              console.warn('WasmSynth: AudioWorklet init failed:', e.data.message);
+              this._workletNode.disconnect();
+              this._workletNode = null;
+              this._wasmReady = false;
+              resolve();
+            }
+          };
+        });
+      } catch (e) {
+        console.warn('WasmSynth: AudioWorklet setup failed:', e.message, '— using fallback');
+        this._workletNode = null;
+        this._wasmReady = false;
+      }
+    } else {
+      console.warn('WasmSynth: AudioWorklet not supported, using fallback');
+      this._wasmReady = false;
     }
   }
 
@@ -325,12 +344,19 @@ class WasmSynth {
     if (this.isPlaying) return;
     if (!this._notes.length) return;
 
-    // Get the synth (WASM or fallback)
+    // Initialize synth (WASM or fallback)
     const synth = this._getActiveSynth();
     if (synth) {
       synth.init();
       synth.resume();
       synth.setMutation(this._mutation);
+    } else if (this._workletNode) {
+      // WASM mode: ensure AudioContext is resumed and apply settings
+      const ctx = this._getAudioContext();
+      if (ctx && ctx.state === 'suspended') ctx.resume();
+      this._postWorklet({ type: 'set_volume', volume: this._volume });
+      this._postWorklet({ type: 'set_pitch_shift', semitones: this._mutation.pitchShift || 0 });
+      this._postWorklet({ type: 'set_tempo_mult', mult: this._mutation.tempoMult || 1.0 });
     }
 
     this.isPlaying = true;
@@ -350,6 +376,7 @@ class WasmSynth {
     this._currentTime = this.getCurrentTime();
     const synth = this._getActiveSynth();
     if (synth) synth.stopAll();
+    if (this._workletNode) this._postWorklet({ type: 'stop_all' });
     this._cancelLoops();
   }
 
@@ -360,6 +387,7 @@ class WasmSynth {
     this._nextNote = 0;
     const synth = this._getActiveSynth();
     if (synth) synth.stopAll();
+    if (this._workletNode) this._postWorklet({ type: 'stop_all' });
     this._cancelLoops();
   }
 
@@ -372,6 +400,7 @@ class WasmSynth {
     if (this.isPlaying) {
       const synth = this._getActiveSynth();
       if (synth) synth.stopAll();
+      if (this._workletNode) this._postWorklet({ type: 'stop_all' });
       this._cancelLoops();
       this.isPlaying = false;
     }
@@ -450,14 +479,10 @@ class WasmSynth {
     const synth = this._getActiveSynth();
     if (synth) synth.setMutation(this._mutation);
 
-    // If WASM is active, also forward mutation to WASM module
-    if (this._wasmReady && this._wasmModule) {
-      if (typeof this._wasmModule.set_pitch_shift === 'function') {
-        this._wasmModule.set_pitch_shift(this._mutation.pitchShift || 0);
-      }
-      if (typeof this._wasmModule.set_tempo_mult === 'function') {
-        this._wasmModule.set_tempo_mult(this._mutation.tempoMult || 1.0);
-      }
+    // Forward to WASM AudioWorklet
+    if (this._workletNode) {
+      this._postWorklet({ type: 'set_pitch_shift', semitones: this._mutation.pitchShift || 0 });
+      this._postWorklet({ type: 'set_tempo_mult', mult: this._mutation.tempoMult || 1.0 });
     }
   }
 
@@ -478,24 +503,35 @@ class WasmSynth {
     const synth = this._getActiveSynth();
     if (synth) synth.setVolume(this._volume);
 
-    if (this._wasmReady && this._wasmModule) {
-      if (typeof this._wasmModule.set_volume === 'function') {
-        this._wasmModule.set_volume(this._volume);
-      }
+    // Forward to WASM AudioWorklet
+    if (this._workletNode) {
+      this._postWorklet({ type: 'set_volume', volume: this._volume });
     }
   }
 
   // ──── Internal Helpers ────
 
   /**
-   * Get the active synthesis engine (WASM or fallback).
+   * Get the active synthesis engine (WASM worklet or fallback SynthEngine).
+   * When WASM is active, returns null (audio goes through AudioWorklet).
+   * When WASM is not active, returns the fallback SynthEngine.
    * @returns {SynthEngine|null}
    */
   _getActiveSynth() {
-    // For now, always use fallback synth for audio output.
-    // When WASM AudioWorklet is implemented (Phase 2), this will
-    // return the WASM-backed synth when _wasmReady is true.
+    if (this._wasmReady && this._workletNode) {
+      return null; // Audio routed through AudioWorklet
+    }
     return this._fallbackSynth;
+  }
+
+  /**
+   * Send a message to the AudioWorklet (when WASM is active).
+   * @param {Object} msg - Message to send.
+   */
+  _postWorklet(msg) {
+    if (this._workletNode) {
+      this._workletNode.port.postMessage(msg);
+    }
   }
 
   /**
@@ -521,6 +557,7 @@ class WasmSynth {
     const lookAhead = 0.15;
     const speed = this._effectiveSpeed();
     const synth = this._getActiveSynth();
+    const useWorklet = this._wasmReady && this._workletNode;
 
     while (this._nextNote < this._notes.length) {
       const note = this._notes[this._nextNote];
@@ -528,8 +565,28 @@ class WasmSynth {
 
       if (noteTime > now + lookAhead) break;
 
-      if (noteTime >= now - 0.05 && synth) {
-        synth.playNote(note, Math.max(0, noteTime - now));
+      if (noteTime >= now - 0.05) {
+        if (useWorklet) {
+          // Send note to WASM AudioWorklet
+          this._postWorklet({
+            type: 'note_on',
+            note: note.note,
+            velocity: note.vel || 80,
+            channel: note.ch || 0,
+          });
+          // Schedule note off
+          const dur = (note.dur || 0.2) / speed;
+          setTimeout(() => {
+            this._postWorklet({
+              type: 'note_off',
+              note: note.note,
+              channel: note.ch || 0,
+            });
+          }, dur * 1000);
+        } else if (synth) {
+          // Fallback: use SynthEngine
+          synth.playNote(note, Math.max(0, noteTime - now));
+        }
       }
       this._nextNote++;
     }
@@ -538,6 +595,7 @@ class WasmSynth {
     if (this._nextNote >= this._notes.length && now >= this._duration / speed) {
       this.isPlaying = false;
       this._cancelLoops();
+      if (useWorklet) this._postWorklet({ type: 'stop_all' });
       if (this.onTrackEnd) this.onTrackEnd();
       return;
     }
