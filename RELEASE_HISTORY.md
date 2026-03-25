@@ -4,6 +4,26 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.30.0 — 2026-03-25 — WebAssembly Audio Synthesis Mode (V8)
+
+### Summary
+
+Add WebAssembly as a 4th sound mode alongside MP3, MIDI, and Synth. WASM mode
+provides higher-performance audio synthesis via Rust compiled to WebAssembly.
+Existing knobs (mutation presets, style sliders, volume) work with WASM mode.
+Graceful fallback to SynthEngine when WASM binary is unavailable.
+SoundFont integration deferred to Phase 3 (done last).
+
+### Changes
+
+- Added `AUDIO_MODE.WASM` to music-sync.js
+- Created `wasm-synth.js` — WASM loader and JS bridge with SynthEngine fallback
+- Wired WASM mode into player.js (play/pause/prev/next)
+- Wired WASM mode into app.js (mode switching, ID3 display)
+- Added WASM option to sound mode dropdown in index.html
+
+---
+
 ## v0.29.0 — 2026-03-25 — inthebeginning bounce V7 (World Music Engine)
 
 ### Summary
