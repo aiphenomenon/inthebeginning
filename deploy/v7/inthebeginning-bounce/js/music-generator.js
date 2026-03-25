@@ -354,164 +354,21 @@ class MusicGenerator {
 
     // ──── Epoch Definitions ────
     // 12 epochs matching the game's 12-level structure. Each epoch has
-    // distinct timbres, scales, tempos, and density for rich sonic variety.
+    // distinct timbres, tempos, and density. Scales, progressions, rhythms,
+    // and motifs are selected from the MG_EPOCH_* tables above.
     this._epochs = [
-      {
-        name: 'Quantum Fluctuation',
-        inst: 'cosmic',
-        melodyInst: 'bell',
-        scale: [0, 1, 3, 6, 7, 10],     // whole-tone-ish
-        baseNote: 48,
-        tempoBase: 65,
-        percChance: 0.15,
-        padInst: 'warm_pad',
-        bassInst: 'cello',
-        density: 0.7,
-        fillInst: 'flute',
-      },
-      {
-        name: 'Inflation',
-        inst: 'bell',
-        melodyInst: 'piano',
-        scale: [0, 2, 4, 5, 7, 9, 11],  // major
-        baseNote: 52,
-        tempoBase: 78,
-        percChance: 0.25,
-        padInst: 'choir_oo',
-        bassInst: 'cello',
-        density: 0.8,
-        fillInst: 'violin',
-      },
-      {
-        name: 'Quark-Gluon Plasma',
-        inst: 'cosmic',
-        melodyInst: 'violin',
-        scale: [0, 2, 3, 5, 7, 9, 10],  // dorian
-        baseNote: 50,
-        tempoBase: 85,
-        percChance: 0.3,
-        padInst: 'warm_pad',
-        bassInst: 'cello',
-        density: 0.85,
-        fillInst: 'bell',
-      },
-      {
-        name: 'Nucleosynthesis',
-        inst: 'violin',
-        melodyInst: 'flute',
-        scale: [0, 2, 3, 5, 7, 8, 10],  // natural minor
-        baseNote: 55,
-        tempoBase: 90,
-        percChance: 0.35,
-        padInst: 'cello',
-        bassInst: 'cello',
-        density: 0.9,
-        fillInst: 'piano',
-      },
-      {
-        name: 'Recombination',
-        inst: 'piano',
-        melodyInst: 'bell',
-        scale: [0, 2, 4, 5, 7, 9, 11],  // major
-        baseNote: 57,
-        tempoBase: 95,
-        percChance: 0.35,
-        padInst: 'choir_ah',
-        bassInst: 'cello',
-        density: 0.9,
-        fillInst: 'flute',
-      },
-      {
-        name: 'Dark Ages',
-        inst: 'cello',
-        melodyInst: 'cosmic',
-        scale: [0, 1, 3, 5, 7, 8, 10],  // aeolian
-        baseNote: 45,
-        tempoBase: 60,
-        percChance: 0.2,
-        padInst: 'warm_pad',
-        bassInst: 'cello',
-        density: 0.75,
-        fillInst: 'horn',
-      },
-      {
-        name: 'First Stars',
-        inst: 'bell',
-        melodyInst: 'trumpet',
-        scale: [0, 2, 4, 7, 9],          // major pentatonic
-        baseNote: 60,
-        tempoBase: 100,
-        percChance: 0.4,
-        padInst: 'choir_oo',
-        bassInst: 'cello',
-        density: 0.95,
-        fillInst: 'violin',
-      },
-      {
-        name: 'Galaxy Formation',
-        inst: 'piano',
-        melodyInst: 'violin',
-        scale: [0, 2, 4, 7, 9],          // major pentatonic
-        baseNote: 60,
-        tempoBase: 105,
-        percChance: 0.45,
-        padInst: 'warm_pad',
-        bassInst: 'cello',
-        density: 1.0,
-        fillInst: 'flute',
-      },
-      {
-        name: 'Solar Ignition',
-        inst: 'trumpet',
-        melodyInst: 'horn',
-        scale: [0, 1, 4, 5, 7, 8, 10],  // phrygian dominant
-        baseNote: 57,
-        tempoBase: 112,
-        percChance: 0.5,
-        padInst: 'horn',
-        bassInst: 'cello',
-        density: 1.0,
-        fillInst: 'bell',
-      },
-      {
-        name: 'Hadean Earth',
-        inst: 'cello',
-        melodyInst: 'piano',
-        scale: [0, 2, 3, 6, 7, 8, 11],  // harmonic minor
-        baseNote: 53,
-        tempoBase: 88,
-        percChance: 0.4,
-        padInst: 'choir_ah',
-        bassInst: 'cello',
-        density: 0.95,
-        fillInst: 'trumpet',
-      },
-      {
-        name: 'Abiogenesis',
-        inst: 'flute',
-        melodyInst: 'violin',
-        scale: [0, 2, 3, 5, 7, 9, 10],  // dorian
-        baseNote: 62,
-        tempoBase: 92,
-        percChance: 0.35,
-        padInst: 'warm_pad',
-        bassInst: 'cello',
-        density: 0.9,
-        fillInst: 'piano',
-      },
-      {
-        name: 'Emergence of Life',
-        inst: 'flute',
-        melodyInst: 'piano',
-        scale: [0, 2, 4, 6, 7, 9, 11],  // lydian
-        baseNote: 64,
-        tempoBase: 95,
-        percChance: 0.35,
-        padInst: 'choir_ah',
-        bassInst: 'cello',
-        density: 0.9,
-        fillInst: 'bell',
-      },
+      { name: 'Quantum Fluctuation', inst: 'cosmic',  melodyInst: 'bell',    baseNote: 48, tempoBase: 65,  percChance: 0.15, padInst: 'warm_pad',  bassInst: 'cello', density: 0.7,  fillInst: 'flute',   domain: 'subatomic' },
+      { name: 'Inflation',           inst: 'bell',    melodyInst: 'piano',   baseNote: 52, tempoBase: 78,  percChance: 0.25, padInst: 'choir_oo',  bassInst: 'cello', density: 0.8,  fillInst: 'violin',  domain: 'subatomic' },
+      { name: 'Quark-Gluon Plasma',  inst: 'cosmic',  melodyInst: 'violin',  baseNote: 50, tempoBase: 85,  percChance: 0.3,  padInst: 'warm_pad',  bassInst: 'cello', density: 0.85, fillInst: 'bell',    domain: 'atomic' },
+      { name: 'Nucleosynthesis',     inst: 'violin',  melodyInst: 'flute',   baseNote: 55, tempoBase: 90,  percChance: 0.35, padInst: 'cello',     bassInst: 'cello', density: 0.9,  fillInst: 'piano',   domain: 'atomic' },
+      { name: 'Recombination',       inst: 'piano',   melodyInst: 'bell',    baseNote: 57, tempoBase: 95,  percChance: 0.35, padInst: 'choir_ah',  bassInst: 'cello', density: 0.9,  fillInst: 'flute',   domain: 'molecular' },
+      { name: 'Dark Ages',           inst: 'cello',   melodyInst: 'cosmic',  baseNote: 45, tempoBase: 60,  percChance: 0.2,  padInst: 'warm_pad',  bassInst: 'cello', density: 0.75, fillInst: 'horn',    domain: 'cosmic' },
+      { name: 'First Stars',         inst: 'bell',    melodyInst: 'trumpet', baseNote: 60, tempoBase: 100, percChance: 0.4,  padInst: 'choir_oo',  bassInst: 'cello', density: 0.95, fillInst: 'violin',  domain: 'cosmic' },
+      { name: 'Galaxy Formation',    inst: 'piano',   melodyInst: 'violin',  baseNote: 60, tempoBase: 105, percChance: 0.45, padInst: 'warm_pad',  bassInst: 'cello', density: 1.0,  fillInst: 'flute',   domain: 'cosmic' },
+      { name: 'Solar Ignition',      inst: 'trumpet', melodyInst: 'horn',    baseNote: 57, tempoBase: 112, percChance: 0.5,  padInst: 'horn',      bassInst: 'cello', density: 1.0,  fillInst: 'bell',    domain: 'geological' },
+      { name: 'Hadean Earth',        inst: 'cello',   melodyInst: 'piano',   baseNote: 53, tempoBase: 88,  percChance: 0.4,  padInst: 'choir_ah',  bassInst: 'cello', density: 0.95, fillInst: 'trumpet', domain: 'geological' },
+      { name: 'Abiogenesis',         inst: 'flute',   melodyInst: 'violin',  baseNote: 62, tempoBase: 92,  percChance: 0.35, padInst: 'warm_pad',  bassInst: 'cello', density: 0.9,  fillInst: 'piano',   domain: 'biological' },
+      { name: 'Emergence of Life',   inst: 'flute',   melodyInst: 'piano',   baseNote: 64, tempoBase: 95,  percChance: 0.35, padInst: 'choir_ah',  bassInst: 'cello', density: 0.9,  fillInst: 'bell',    domain: 'biological' },
     ];
   }
 
@@ -572,6 +429,28 @@ class MusicGenerator {
     const bpm = epoch.tempoBase + this._randInt(-8, 8);
     const beatDur = 60 / bpm;
     const density = epoch.density || 1.0;
+
+    // Resolve scale from data tables (pick one randomly per track)
+    const epochScales = MG_EPOCH_SCALES[epoch.name];
+    const scaleName = epochScales ? this._pick(epochScales) : 'ionian';
+    epoch.scale = MG_SCALES[scaleName] || MG_SCALES.ionian;
+    epoch._scaleName = scaleName;
+
+    // Resolve progression
+    const epochProgs = MG_EPOCH_PROGRESSIONS[epoch.name];
+    const progName = epochProgs ? this._pick(epochProgs) : 'I_V_vi_IV';
+    epoch._progression = MG_PROGRESSIONS[progName] || MG_PROGRESSIONS.I_V_vi_IV;
+
+    // Resolve rhythm pattern
+    const epochRhythms = MG_EPOCH_RHYTHMS[epoch.name];
+    const rhythmName = epochRhythms ? this._pick(epochRhythms) : '4_4_straight';
+    epoch._rhythmPattern = MG_RHYTHM_PATTERNS[rhythmName] || MG_RHYTHM_PATTERNS['4_4_straight'];
+
+    // Resolve motif pool
+    const epochMotifs = MG_EPOCH_MOTIFS[epoch.name];
+    epoch._motifPool = (epochMotifs || ['pentatonic_rise']).map(
+      m => MG_MOTIFS[m] || MG_MOTIFS.pentatonic_rise
+    );
 
     // ──── Pad / Drone Layer ────
     this._generatePadLayer(notes, epoch, dur, beatDur);
@@ -721,103 +600,136 @@ class MusicGenerator {
   }
 
   /**
-   * Generate the main melody line.
+   * Generate the main melody line using motif-based phrases.
+   * Alternates between motif fragments and free stepwise motion.
    */
   _generateMelodyLayer(notes, epoch, dur, beatDur) {
     let t = beatDur * 2; // slight delay for melody entry
     let prevPitch = epoch.baseNote;
     const scale = epoch.scale;
+    const motifPool = epoch._motifPool || [[0, 2, 4, 7]];
 
     while (t < dur) {
-      // Decide note duration: eighth, quarter, half, or whole beat
-      const durations = [beatDur * 0.5, beatDur, beatDur * 2, beatDur * 4];
-      const weights = [0.3, 0.4, 0.2, 0.1];
-      const noteDur = this._weightedPick(durations, weights);
+      // 40% chance: play a motif fragment; 60%: free melody
+      if (this._rand() < 0.4 && motifPool.length > 0) {
+        const motif = this._pick(motifPool);
+        const startLen = this._randInt(3, Math.min(motif.length + 1, 9));
+        const stepDur = beatDur * (0.4 + this._rand() * 0.6);
+        const vel = 0.4 + this._rand() * 0.3;
+        const transpose = this._randInt(-2, 3) * (scale.length > 2 ? 1 : 2);
 
-      // Decide pitch: step motion with occasional leaps
-      let interval;
-      if (this._rand() < 0.7) {
-        // Step: move 1-2 scale degrees
-        interval = this._randInt(-2, 3);
+        for (let i = 0; i < startLen && t < dur; i++) {
+          const interval = motif[i % motif.length] + transpose;
+          const pitch = Math.max(36, Math.min(96, epoch.baseNote + interval));
+          const bend = (this._rand() < this.bendAmount) ?
+            (this._rand() - 0.5) * this.bendAmount : 0;
+          // Humanization: timing jitter ±10-30ms
+          const jitter = (this._rand() - 0.5) * 0.03;
+
+          notes.push({
+            t: t + jitter, dur: stepDur * 0.85,
+            note: pitch, vel: vel * (0.85 + 0.15 * this._rand()),
+            ch: 0, inst: epoch.inst, bend,
+          });
+          prevPitch = pitch;
+          t += stepDur;
+        }
+        // Breathing space after motif
+        t += beatDur * (1 + this._rand() * 2);
       } else {
-        // Leap: move 3-5 scale degrees
-        interval = this._randInt(-5, 6);
-        if (interval === 0) interval = 3;
-      }
+        // Free stepwise melody (original approach)
+        const durations = [beatDur * 0.5, beatDur, beatDur * 2, beatDur * 4];
+        const weights = [0.3, 0.4, 0.2, 0.1];
+        const noteDur = this._weightedPick(durations, weights);
 
-      // Map to scale
-      const prevScalePos = this._nearestScalePos(prevPitch, epoch.baseNote, scale);
-      const newScalePos = prevScalePos + interval;
-      const newPitch = this._scalePosToPitch(newScalePos, epoch.baseNote, scale);
+        let interval;
+        if (this._rand() < 0.7) {
+          interval = this._randInt(-2, 3);
+        } else {
+          interval = this._randInt(-5, 6);
+          if (interval === 0) interval = 3;
+        }
 
-      // Clamp to reasonable range
-      const pitch = Math.max(36, Math.min(96, newPitch));
-      prevPitch = pitch;
+        const prevScalePos = this._nearestScalePos(prevPitch, epoch.baseNote, scale);
+        const newScalePos = prevScalePos + interval;
+        const newPitch = this._scalePosToPitch(newScalePos, epoch.baseNote, scale);
+        const pitch = Math.max(36, Math.min(96, newPitch));
+        prevPitch = pitch;
 
-      const vel = 0.4 + this._rand() * 0.4;
-      const bend = (this._rand() < this.bendAmount) ? (this._rand() - 0.5) * this.bendAmount : 0;
+        const vel = 0.4 + this._rand() * 0.4;
+        const bend = (this._rand() < this.bendAmount) ?
+          (this._rand() - 0.5) * this.bendAmount : 0;
+        // Humanization jitter
+        const jitter = (this._rand() - 0.5) * 0.02;
 
-      // Rest probability (lower = more notes)
-      if (this._rand() > 0.1) {
-        notes.push({
-          t, dur: noteDur * 0.9,
-          note: pitch, vel, ch: 0,
-          inst: epoch.inst, bend,
-        });
-      }
+        if (this._rand() > 0.1) {
+          notes.push({
+            t: t + jitter, dur: noteDur * 0.9,
+            note: pitch, vel, ch: 0,
+            inst: epoch.inst, bend,
+          });
+        }
 
-      t += noteDur;
-
-      // Occasional pause for phrasing
-      if (this._rand() < 0.08) {
-        t += beatDur * this._randInt(1, 3);
+        t += noteDur;
+        if (this._rand() < 0.08) {
+          t += beatDur * this._randInt(1, 3);
+        }
       }
     }
   }
 
   /**
-   * Generate chord hits at configurable density.
+   * Generate chord hits following harmonic progressions from data tables.
    */
   _generateChordLayer(notes, epoch, dur, beatDur) {
     if (this.chordDensity <= 0) return;
 
     let t = 0;
     const scale = epoch.scale;
+    const progression = epoch._progression || [0, 5, 7];
     const chordInterval = beatDur * 4 / Math.max(0.1, this.chordDensity);
+    let progIdx = 0;
 
     while (t < dur) {
       if (this._rand() < this.chordDensity) {
-        // Build a chord: root + third + fifth (in scale)
-        const rootIdx = this._randInt(0, scale.length);
-        const root = epoch.baseNote + scale[rootIdx];
+        // Get root from progression (cycling through)
+        const progRoot = progression[progIdx % progression.length];
+        progIdx++;
+
+        // Build chord on the progression root
+        const root = epoch.baseNote + progRoot;
         const chordTones = [root];
 
-        // Add third (2 scale degrees up)
-        const thirdIdx = (rootIdx + 2) % scale.length;
-        const thirdOctave = (rootIdx + 2 >= scale.length) ? 12 : 0;
-        chordTones.push(epoch.baseNote + scale[thirdIdx] + thirdOctave);
+        // Find nearest scale tones for 3rd and 5th above the root
+        const rootScalePos = this._nearestScalePos(root, epoch.baseNote, scale);
 
-        // Add fifth (4 scale degrees up)
-        const fifthIdx = (rootIdx + 4) % scale.length;
-        const fifthOctave = (rootIdx + 4 >= scale.length) ? 12 : 0;
-        chordTones.push(epoch.baseNote + scale[fifthIdx] + fifthOctave);
+        // Add third (2 scale degrees up from root)
+        const thirdPitch = this._scalePosToPitch(rootScalePos + 2, epoch.baseNote, scale);
+        chordTones.push(thirdPitch);
 
-        // Optional: add seventh for dense chords
+        // Add fifth (4 scale degrees up from root)
+        const fifthPitch = this._scalePosToPitch(rootScalePos + 4, epoch.baseNote, scale);
+        chordTones.push(fifthPitch);
+
+        // Optional seventh for dense chords
         if (this.chordDensity > 0.7 && this._rand() < 0.5) {
-          const sevIdx = (rootIdx + 6) % scale.length;
-          const sevOctave = (rootIdx + 6 >= scale.length) ? 12 : 0;
-          chordTones.push(epoch.baseNote + scale[sevIdx] + sevOctave);
+          const sevPitch = this._scalePosToPitch(rootScalePos + 6, epoch.baseNote, scale);
+          chordTones.push(sevPitch);
         }
 
         const chordDur = beatDur * (2 + this._rand() * 4);
         const vel = 0.2 + this._rand() * 0.25;
+        // Humanization jitter for chord onset
+        const jitter = (this._rand() - 0.5) * 0.015;
 
         for (const pitch of chordTones) {
-          notes.push({
-            t, dur: chordDur * 0.9,
-            note: pitch, vel, ch: 2,
-            inst: epoch.padInst, bend: 0,
-          });
+          if (pitch >= 36 && pitch <= 96) {
+            notes.push({
+              t: t + jitter, dur: chordDur * 0.9,
+              note: pitch, vel, ch: 2,
+              inst: epoch.padInst, bend: 0,
+            });
+          }
         }
       }
 
@@ -872,50 +784,58 @@ class MusicGenerator {
   }
 
   /**
-   * Generate percussion patterns.
+   * Generate percussion using structured rhythm patterns from data tables.
+   * Uses the epoch's rhythm pattern to place kick/snare/hihat hits.
    */
   _generatePercussionLayer(notes, epoch, dur, beatDur) {
     if (epoch.percChance <= 0) return;
 
+    const rhythmPattern = epoch._rhythmPattern || [0.0, 0.25, 0.5, 0.75];
+    const cycleDur = beatDur * 4; // One rhythm cycle = 4 beats
     let t = 0;
-    const patternLen = this._randInt(4, 8);
-    const pattern = [];
 
-    // Generate a repeating pattern
-    for (let i = 0; i < patternLen; i++) {
-      const kick = (i === 0 || (i === patternLen / 2 && this._rand() < 0.7));
-      const snare = (i === Math.floor(patternLen / 2) || (this._rand() < 0.15));
-      const hihat = this._rand() < 0.6;
-      pattern.push({ kick, snare, hihat });
-    }
+    // Build a kick/snare/hat assignment for each onset in the pattern
+    const percAssign = rhythmPattern.map((onset, i) => ({
+      onset,
+      kick: (i === 0) || (i === Math.floor(rhythmPattern.length / 2) && this._rand() < 0.7),
+      snare: (i === Math.floor(rhythmPattern.length / 2)) ||
+             (i === Math.floor(rhythmPattern.length * 0.75) && this._rand() < 0.4),
+      hihat: this._rand() < 0.65,
+    }));
 
-    let beatIdx = 0;
     while (t < dur) {
-      if (this._rand() < epoch.percChance) {
-        const p = pattern[beatIdx % patternLen];
+      for (const p of percAssign) {
+        const hitTime = t + p.onset * cycleDur;
+        if (hitTime >= dur) break;
+        if (this._rand() > epoch.percChance) continue;
+
+        // Humanization jitter ±10ms
+        const jitter = (this._rand() - 0.5) * 0.02;
 
         if (p.kick) {
           notes.push({
-            t, dur: 0.15, note: 36, vel: 0.5 + this._rand() * 0.3,
+            t: hitTime + jitter, dur: 0.15, note: 36,
+            vel: 0.5 + this._rand() * 0.3,
             ch: 9, inst: 'percussion', bend: 0,
           });
         }
         if (p.snare) {
           notes.push({
-            t, dur: 0.1, note: 38, vel: 0.4 + this._rand() * 0.3,
+            t: hitTime + jitter, dur: 0.1, note: 38,
+            vel: 0.4 + this._rand() * 0.3,
             ch: 9, inst: 'percussion', bend: 0,
           });
         }
         if (p.hihat) {
           notes.push({
-            t, dur: 0.05, note: 42, vel: 0.2 + this._rand() * 0.2,
+            t: hitTime + jitter, dur: 0.05, note: 42,
+            vel: 0.2 + this._rand() * 0.2,
             ch: 9, inst: 'percussion', bend: 0,
           });
         }
       }
 
-      beatIdx++;
-      t += beatDur;
+      t += cycleDur;
     }
   }
 
