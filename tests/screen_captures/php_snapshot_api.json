@@ -1,6 +1,6 @@
 {
-  "seed": 582532,
-  "elapsed_seconds": 0.031,
+  "seed": 33394,
+  "elapsed_seconds": 0.199,
   "current_epoch": "Present Day",
   "epoch_index": 12,
   "temperature": 295.0000001096576,
@@ -9,7 +9,7 @@
     "particles_created": 500,
     "atoms_formed": 0,
     "molecules_formed": 0,
-    "lifeforms_created": 20
+    "lifeforms_created": 100
   },
   "epochs": [
     {
@@ -130,7 +130,7 @@
         "particles_created": 500,
         "atoms_formed": 0,
         "molecules_formed": 0,
-        "lifeforms_created": 20
+        "lifeforms_created": 100
       }
     },
     {
@@ -141,7 +141,7 @@
         "particles_created": 500,
         "atoms_formed": 0,
         "molecules_formed": 0,
-        "lifeforms_created": 20
+        "lifeforms_created": 100
       }
     },
     {
@@ -152,7 +152,7 @@
         "particles_created": 500,
         "atoms_formed": 0,
         "molecules_formed": 0,
-        "lifeforms_created": 20
+        "lifeforms_created": 100
       }
     }
   ]
