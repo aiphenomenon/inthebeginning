@@ -75,7 +75,27 @@ Created `future_memories/v30-wasm-audio-mode-plan.md` with 3-phase approach:
 - Deploy: 151 passed
 - Node.js: all passing
 
-### Commits (8 total, all pushed)
+#### Phase 3: SoundFont Integration [10:30-10:36 CT]
+1. **sf2.rs** — Rust SF2 parser (623 lines):
+   - Reads RIFF/sfbk container structure
+   - Parses sdta (sample data: PCM16 → f32)
+   - Parses pdta (presets, instruments, zones, generators)
+   - find_zone() resolves bank/program/key/vel to sample + parameters
+   - 4 SF2-specific tests → commit c6872c0
+2. **lib.rs updates** — Added load_sf2(), has_sf2(), sf2_preset_count(),
+   sf2_sample_count(), set_use_sf2() → commit c6872c0
+3. **wasm-synth.js** — loadSoundFont(url), setUseSf2(bool), sf2Loaded
+   property → commit a223f32
+4. **wasm-synth-processor.js** — Handle load_sf2 and set_use_sf2 messages
+   with WASM memory allocation → commit a223f32
+5. **deploy/v8 updated** — 40KB WASM binary (up from 27KB) → commit 2c412ca
+
+### Test Results (Final)
+- Rust tests: 11 passed (7 synth + 4 SF2)
+- Python deploy: 151 passed
+- Node.js: all passing
+
+### Commits (12 total, all pushed)
 1. 5001f60 — plan: V30 WASM audio synthesis mode
 2. 8c1d559 — feat(wasm): add AUDIO_MODE.WASM to music-sync.js
 3. a2e2cfd — feat(wasm): create wasm-synth.js
@@ -85,3 +105,7 @@ Created `future_memories/v30-wasm-audio-mode-plan.md` with 3-phase approach:
 7. cef4ce9 — feat(wasm): create Rust WASM synth crate
 8. 1f44ef0 — feat(wasm): AudioWorklet + WASM binary integration
 9. 0e8f01b — feat(v8): create deploy/v8 with WASM mode
+10. 2fb896a — docs: session log, release history, apps overview
+11. c6872c0 — feat(wasm): SF2 parser in Rust
+12. a223f32 — feat(wasm): SF2 loading in JS bridge
+13. 2c412ca — chore: update deploy/v8 with SF2-enabled WASM

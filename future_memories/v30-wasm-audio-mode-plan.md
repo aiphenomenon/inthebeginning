@@ -111,6 +111,6 @@
 - [x] Without WASM binary, gracefully falls back to SynthEngine
 - [x] With WASM binary, all existing knobs (mutation, style, volume) work
 - [x] MIDI files play through WASM synthesis
-- [x] deploy/v8 created with WASM mode (27KB WASM binary)
+- [x] deploy/v8 created with WASM mode (40KB WASM binary with SF2 parser)
 - [ ] Procedural music through WASM (future: route MusicGenerator through WASM)
-- [ ] SoundFont integration (Phase 3) — deferred, do last
+- [x] SoundFont integration (Phase 3) — SF2 parser in Rust, JS loading bridge

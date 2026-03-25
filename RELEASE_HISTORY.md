@@ -37,10 +37,19 @@ the existing SynthEngine when WASM is unavailable.
 - All existing knobs (mutation presets, volume, speed) work with WASM mode
 - ID3 display shows WASM/Fallback indicator
 
+### SoundFont Integration
+
+- Rust SF2 parser: reads RIFF container, extracts samples (PCM→f32),
+  presets, instruments, zones, and generator parameters
+- load_sf2() in WASM engine parses and stores SF2 for sample-based synthesis
+- JS bridge: loadSoundFont(url), setUseSf2(bool), sf2Loaded property
+- AudioWorklet handles SF2 loading via message passing
+- 11 Rust tests (7 synth + 4 SF2 parser)
+
 ### Deploy
 
 - `deploy/v8/` is GitHub Pages ready (zero build step)
-- 27KB WASM binary included at `js/wasm_synth_bg.wasm`
+- 40KB WASM binary at `js/wasm_synth_bg.wasm` (includes SF2 parser)
 
 ---
 
