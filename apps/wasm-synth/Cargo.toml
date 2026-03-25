@@ -1,0 +1,17 @@
+[package]
+name = "wasm-synth"
+version = "0.1.0"
+edition = "2021"
+description = "WebAssembly audio synthesizer for inthebeginning bounce"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+js-sys = "0.3"
+
+[profile.release]
+opt-level = "s"
+lto = true

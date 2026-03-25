@@ -21,6 +21,7 @@ apps/go/simulator
 # Rust
 apps/rust/target/
 apps/wasm/target/
+apps/wasm-synth/target/
 
 # C / C++
 apps/c/build/
