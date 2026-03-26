@@ -126,6 +126,79 @@ pub enum Spin {
 // Particle
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Wave function
+// ---------------------------------------------------------------------------
+
+/// Simplified quantum wave function with amplitude and phase.
+#[derive(Debug, Clone)]
+pub struct WaveFunction {
+    pub amplitude: f64,
+    pub phase: f64,
+    pub coherent: bool,
+}
+
+impl WaveFunction {
+    pub fn new() -> Self {
+        Self {
+            amplitude: 1.0,
+            phase: 0.0,
+            coherent: true,
+        }
+    }
+
+    /// Born rule: |psi|^2
+    pub fn probability(&self) -> f64 {
+        self.amplitude * self.amplitude
+    }
+
+    /// Time evolution: phase rotation by E*dt/hbar.
+    pub fn evolve(&mut self, dt: f64, energy: f64) {
+        if self.coherent {
+            self.phase += energy * dt / HBAR;
+            self.phase %= 2.0 * PI;
+        }
+    }
+
+    /// Measurement: collapse to eigenstate. Returns true if 'detected'.
+    pub fn collapse(&mut self, rng: &mut impl Rng) -> bool {
+        let result = rng.gen::<f64>() < self.probability();
+        self.amplitude = if result { 1.0 } else { 0.0 };
+        self.coherent = false;
+        result
+    }
+
+    /// Superposition of two states.
+    pub fn superpose(&self, other: &WaveFunction) -> WaveFunction {
+        let phase_diff = self.phase - other.phase;
+        let combined_amp = (self.amplitude.powi(2)
+            + other.amplitude.powi(2)
+            + 2.0 * self.amplitude * other.amplitude * phase_diff.cos())
+        .sqrt()
+        .min(1.0);
+        let combined_phase = (self.phase + other.phase) / 2.0;
+        WaveFunction {
+            amplitude: combined_amp,
+            phase: combined_phase,
+            coherent: true,
+        }
+    }
+
+    pub fn to_compact(&self) -> String {
+        format!("ψ({:.3}∠{:.2})", self.amplitude, self.phase)
+    }
+}
+
+impl Default for WaveFunction {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Particle
+// ---------------------------------------------------------------------------
+
 #[derive(Debug, Clone)]
 pub struct Particle {
     pub id: u32,
@@ -134,6 +207,8 @@ pub struct Particle {
     pub momentum: [f64; 3],
     pub spin: Spin,
     pub color: Option<ColorCharge>,
+    pub wave_fn: WaveFunction,
+    pub entangled_with: Option<u32>,
 }
 
 impl Particle {
@@ -141,6 +216,65 @@ impl Particle {
         let p2: f64 = self.momentum.iter().map(|p| p * p).sum();
         let m = self.particle_type.mass();
         (p2 * C * C + (m * C * C).powi(2)).sqrt()
+    }
+
+    /// de Broglie wavelength: lambda = h / p
+    pub fn wavelength(&self) -> f64 {
+        let p = (self.momentum.iter().map(|x| x * x).sum::<f64>()).sqrt();
+        if p < 1e-20 {
+            return f64::INFINITY;
+        }
+        2.0 * PI * HBAR / p
+    }
+
+    pub fn to_compact(&self) -> String {
+        format!(
+            "{}[{:.1},{:.1},{:.1}]s={}",
+            self.particle_type.label(),
+            self.position[0],
+            self.position[1],
+            self.position[2],
+            if self.spin == Spin::Up { "0.5" } else { "-0.5" },
+        )
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Entangled pair
+// ---------------------------------------------------------------------------
+
+/// A pair of entangled particles (EPR pair).
+#[derive(Debug, Clone)]
+pub struct EntangledPair {
+    pub particle_a_id: u32,
+    pub particle_b_id: u32,
+    pub bell_state: &'static str,
+}
+
+impl EntangledPair {
+    /// Measure particle A, instantly determining B. Returns A's spin.
+    pub fn measure(
+        &self,
+        particles: &mut [Particle],
+        rng: &mut impl Rng,
+    ) -> Option<Spin> {
+        let (spin_a, spin_b) = if rng.gen::<bool>() {
+            (Spin::Up, Spin::Down)
+        } else {
+            (Spin::Down, Spin::Up)
+        };
+
+        for p in particles.iter_mut() {
+            if p.id == self.particle_a_id {
+                p.spin = spin_a;
+                p.wave_fn.coherent = false;
+            } else if p.id == self.particle_b_id {
+                p.spin = spin_b;
+                p.wave_fn.coherent = false;
+            }
+        }
+
+        Some(spin_a)
     }
 }
 
@@ -151,6 +285,7 @@ impl Particle {
 pub struct QuantumField {
     pub temperature: f64,
     pub particles: Vec<Particle>,
+    pub entangled_pairs: Vec<EntangledPair>,
     pub vacuum_energy: f64,
     pub total_created: u64,
     pub total_annihilated: u64,
@@ -162,6 +297,7 @@ impl QuantumField {
         Self {
             temperature,
             particles: Vec::new(),
+            entangled_pairs: Vec::new(),
             vacuum_energy: 0.0,
             total_created: 0,
             total_annihilated: 0,
@@ -187,6 +323,8 @@ impl QuantumField {
                 momentum: [gauss(rng, 0.0, 5.0), gauss(rng, 0.0, 5.0), gauss(rng, 0.0, 5.0)],
                 spin: random_spin(rng),
                 color: Some(random_color(rng)),
+                wave_fn: WaveFunction::new(),
+                entangled_with: None,
             });
         }
         // 20 down quarks
@@ -199,6 +337,8 @@ impl QuantumField {
                 momentum: [gauss(rng, 0.0, 5.0), gauss(rng, 0.0, 5.0), gauss(rng, 0.0, 5.0)],
                 spin: random_spin(rng),
                 color: Some(random_color(rng)),
+                wave_fn: WaveFunction::new(),
+                entangled_with: None,
             });
         }
         // 40 electrons
@@ -211,6 +351,8 @@ impl QuantumField {
                 momentum: [gauss(rng, 0.0, 3.0), gauss(rng, 0.0, 3.0), gauss(rng, 0.0, 3.0)],
                 spin: random_spin(rng),
                 color: None,
+                wave_fn: WaveFunction::new(),
+                entangled_with: None,
             });
         }
         // 5 photons
@@ -223,6 +365,8 @@ impl QuantumField {
                 momentum: [gauss(rng, 0.0, 10.0), gauss(rng, 0.0, 10.0), gauss(rng, 0.0, 10.0)],
                 spin: Spin::Up,
                 color: None,
+                wave_fn: WaveFunction::new(),
+                entangled_with: None,
             });
         }
         self.total_created += self.particles.len() as u64;
@@ -258,6 +402,8 @@ impl QuantumField {
             } else {
                 None
             },
+            wave_fn: WaveFunction::new(),
+            entangled_with: Some(id2),
         });
         self.particles.push(Particle {
             id: id2,
@@ -274,6 +420,14 @@ impl QuantumField {
             } else {
                 None
             },
+            wave_fn: WaveFunction::new(),
+            entangled_with: Some(id1),
+        });
+
+        self.entangled_pairs.push(EntangledPair {
+            particle_a_id: id1,
+            particle_b_id: id2,
+            bell_state: "phi+",
         });
 
         self.total_created += 2;
@@ -349,6 +503,8 @@ impl QuantumField {
                 momentum: mom,
                 spin: random_spin(rng),
                 color: None,
+                wave_fn: WaveFunction::new(),
+                entangled_with: None,
             };
             hadrons.push(proton);
         }
@@ -384,6 +540,8 @@ impl QuantumField {
                 momentum: mom,
                 spin: random_spin(rng),
                 color: None,
+                wave_fn: WaveFunction::new(),
+                entangled_with: None,
             };
             hadrons.push(neutron);
         }
@@ -406,6 +564,60 @@ impl QuantumField {
         hadrons
     }
 
+    /// Annihilate particle-antiparticle pair, returning energy.
+    pub fn annihilate(&mut self, p1_id: u32, p2_id: u32) -> f64 {
+        let e1 = self.particles.iter().find(|p| p.id == p1_id).map(|p| p.energy()).unwrap_or(0.0);
+        let e2 = self.particles.iter().find(|p| p.id == p2_id).map(|p| p.energy()).unwrap_or(0.0);
+        let energy = e1 + e2;
+
+        self.particles.retain(|p| p.id != p1_id && p.id != p2_id);
+        self.total_annihilated += 2;
+        self.vacuum_energy += energy * 0.01;
+
+        // Create photons from annihilation
+        let id1 = self.alloc_id();
+        let id2 = self.alloc_id();
+        self.particles.push(Particle {
+            id: id1,
+            particle_type: ParticleType::Photon,
+            position: [0.0; 3],
+            momentum: [energy / (2.0 * C), 0.0, 0.0],
+            spin: Spin::Up,
+            color: None,
+            wave_fn: WaveFunction::new(),
+            entangled_with: None,
+        });
+        self.particles.push(Particle {
+            id: id2,
+            particle_type: ParticleType::Photon,
+            position: [0.0; 3],
+            momentum: [-energy / (2.0 * C), 0.0, 0.0],
+            spin: Spin::Up,
+            color: None,
+            wave_fn: WaveFunction::new(),
+            entangled_with: None,
+        });
+
+        energy
+    }
+
+    /// Environmental decoherence of a particle's wave function.
+    pub fn decohere(&mut self, particle_id: u32, environment_coupling: f64, rng: &mut impl Rng) {
+        if let Some(p) = self.particles.iter_mut().find(|p| p.id == particle_id) {
+            if p.wave_fn.coherent {
+                let decoherence_rate = environment_coupling * self.temperature;
+                if rng.gen::<f64>() < decoherence_rate {
+                    p.wave_fn.collapse(rng);
+                }
+            }
+        }
+    }
+
+    /// Cool the field (universe expansion).
+    pub fn cool(&mut self, factor: f64) {
+        self.temperature *= factor;
+    }
+
     /// Evolve all particles by one time step.
     pub fn evolve(&mut self, dt: f64) {
         for p in &mut self.particles {
@@ -422,7 +634,32 @@ impl QuantumField {
                     p.position[i] += p.momentum[i] / p_mag * C * dt;
                 }
             }
+
+            // Evolve wave function
+            p.wave_fn.evolve(dt, p.energy());
         }
+    }
+
+    /// Total energy in the field.
+    pub fn total_energy(&self) -> f64 {
+        self.particles.iter().map(|p| p.energy()).sum::<f64>() + self.vacuum_energy
+    }
+
+    /// Compact state representation.
+    pub fn to_compact(&self) -> String {
+        let counts = self.particle_counts();
+        let count_str: String = counts
+            .iter()
+            .map(|(pt, c)| format!("{}:{}", pt.label(), c))
+            .collect::<Vec<_>>()
+            .join(",");
+        format!(
+            "QF[T={:.1e} E={:.1e} n={} {}]",
+            self.temperature,
+            self.total_energy(),
+            self.particles.len(),
+            count_str,
+        )
     }
 
     /// Count particles by type.
@@ -578,6 +815,8 @@ mod tests {
             momentum: [0.0; 3],
             spin: Spin::Up,
             color: None,
+            wave_fn: WaveFunction::new(),
+            entangled_with: None,
         };
         // E = mc^2 when at rest (C=1)
         let expected = M_ELECTRON * C * C;
@@ -593,6 +832,8 @@ mod tests {
             momentum: [1.0, 0.0, 0.0],
             spin: Spin::Up,
             color: None,
+            wave_fn: WaveFunction::new(),
+            entangled_with: None,
         };
         // E = |p|c for massless particle
         let expected = 1.0 * C;
@@ -608,6 +849,8 @@ mod tests {
             momentum: [3.0, 4.0, 0.0],
             spin: Spin::Up,
             color: None,
+            wave_fn: WaveFunction::new(),
+            entangled_with: None,
         };
         // E = sqrt(p^2 * c^2 + m^2 * c^4)
         let p2 = 9.0 + 16.0; // = 25
@@ -713,17 +956,73 @@ mod tests {
         assert!(remaining_ups + remaining_downs < initial_ups + initial_downs);
     }
 
+    /// Helper to create a test particle.
+    fn make_particle(id: u32, pt: ParticleType, momentum: [f64; 3]) -> Particle {
+        Particle {
+            id,
+            particle_type: pt,
+            position: [0.0; 3],
+            momentum,
+            spin: Spin::Up,
+            color: None,
+            wave_fn: WaveFunction::new(),
+            entangled_with: None,
+        }
+    }
+
+    #[test]
+    fn test_wave_function_born_rule() {
+        let wf = WaveFunction { amplitude: 0.5, phase: 0.0, coherent: true };
+        assert!((wf.probability() - 0.25).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_wave_function_evolve() {
+        let mut wf = WaveFunction::new();
+        wf.evolve(1.0, 1.0);
+        assert!(wf.phase > 0.0);
+        assert!(wf.coherent);
+    }
+
+    #[test]
+    fn test_wave_function_collapse() {
+        let mut rng = make_rng();
+        let mut wf = WaveFunction::new();
+        let _result = wf.collapse(&mut rng);
+        assert!(!wf.coherent);
+        assert!(wf.amplitude == 0.0 || wf.amplitude == 1.0);
+    }
+
+    #[test]
+    fn test_wave_function_superpose() {
+        let a = WaveFunction { amplitude: 0.5, phase: 0.0, coherent: true };
+        let b = WaveFunction { amplitude: 0.5, phase: 0.0, coherent: true };
+        let c = a.superpose(&b);
+        assert!(c.coherent);
+        assert!(c.amplitude > 0.0 && c.amplitude <= 1.0);
+    }
+
+    #[test]
+    fn test_particle_wavelength() {
+        let p = make_particle(1, ParticleType::Electron, [0.0; 3]);
+        assert!(p.wavelength().is_infinite());
+
+        let p2 = make_particle(2, ParticleType::Electron, [1.0, 0.0, 0.0]);
+        assert!(p2.wavelength().is_finite());
+        assert!(p2.wavelength() > 0.0);
+    }
+
+    #[test]
+    fn test_particle_to_compact() {
+        let p = make_particle(1, ParticleType::Electron, [0.0; 3]);
+        let s = p.to_compact();
+        assert!(s.contains("e-"));
+    }
+
     #[test]
     fn test_evolve_moves_particles() {
         let mut qf = QuantumField::new(1e6);
-        qf.particles.push(Particle {
-            id: 1,
-            particle_type: ParticleType::Electron,
-            position: [0.0, 0.0, 0.0],
-            momentum: [1.0, 0.0, 0.0],
-            spin: Spin::Up,
-            color: None,
-        });
+        qf.particles.push(make_particle(1, ParticleType::Electron, [1.0, 0.0, 0.0]));
 
         qf.evolve(1.0);
         // position should have changed: p/m * dt = 1.0/1.0 * 1.0 = 1.0
@@ -735,47 +1034,20 @@ mod tests {
     #[test]
     fn test_evolve_photon_moves_at_c() {
         let mut qf = QuantumField::new(1e6);
-        qf.particles.push(Particle {
-            id: 1,
-            particle_type: ParticleType::Photon,
-            position: [0.0, 0.0, 0.0],
-            momentum: [1.0, 0.0, 0.0],
-            spin: Spin::Up,
-            color: None,
-        });
+        qf.particles.push(make_particle(1, ParticleType::Photon, [1.0, 0.0, 0.0]));
 
         qf.evolve(1.0);
-        // Massless particle: position += (p/|p|) * c * dt = 1.0 * 1.0 * 1.0 = 1.0
         assert!((qf.particles[0].position[0] - C).abs() < 1e-10);
     }
 
     #[test]
     fn test_particle_counts() {
         let mut qf = QuantumField::new(1e6);
-        qf.particles.push(Particle {
-            id: 1,
-            particle_type: ParticleType::Electron,
-            position: [0.0; 3],
-            momentum: [0.0; 3],
-            spin: Spin::Up,
-            color: None,
-        });
-        qf.particles.push(Particle {
-            id: 2,
-            particle_type: ParticleType::Electron,
-            position: [0.0; 3],
-            momentum: [0.0; 3],
-            spin: Spin::Down,
-            color: None,
-        });
-        qf.particles.push(Particle {
-            id: 3,
-            particle_type: ParticleType::Proton,
-            position: [0.0; 3],
-            momentum: [0.0; 3],
-            spin: Spin::Up,
-            color: None,
-        });
+        qf.particles.push(make_particle(1, ParticleType::Electron, [0.0; 3]));
+        let mut p2 = make_particle(2, ParticleType::Electron, [0.0; 3]);
+        p2.spin = Spin::Down;
+        qf.particles.push(p2);
+        qf.particles.push(make_particle(3, ParticleType::Proton, [0.0; 3]));
 
         let counts = qf.particle_counts();
         let electron_count = counts.iter().find(|(pt, _)| *pt == ParticleType::Electron).map(|(_, c)| *c);
@@ -787,21 +1059,11 @@ mod tests {
     #[test]
     fn test_proton_neutron_count() {
         let mut qf = QuantumField::new(1e6);
-        qf.particles.push(Particle {
-            id: 1, particle_type: ParticleType::Proton,
-            position: [0.0; 3], momentum: [0.0; 3],
-            spin: Spin::Up, color: None,
-        });
-        qf.particles.push(Particle {
-            id: 2, particle_type: ParticleType::Neutron,
-            position: [0.0; 3], momentum: [0.0; 3],
-            spin: Spin::Up, color: None,
-        });
-        qf.particles.push(Particle {
-            id: 3, particle_type: ParticleType::Neutron,
-            position: [0.0; 3], momentum: [0.0; 3],
-            spin: Spin::Down, color: None,
-        });
+        qf.particles.push(make_particle(1, ParticleType::Proton, [0.0; 3]));
+        qf.particles.push(make_particle(2, ParticleType::Neutron, [0.0; 3]));
+        let mut n2 = make_particle(3, ParticleType::Neutron, [0.0; 3]);
+        n2.spin = Spin::Down;
+        qf.particles.push(n2);
 
         assert_eq!(qf.proton_count(), 1);
         assert_eq!(qf.neutron_count(), 2);
@@ -810,21 +1072,9 @@ mod tests {
     #[test]
     fn test_remove_hadrons() {
         let mut qf = QuantumField::new(1e6);
-        qf.particles.push(Particle {
-            id: 1, particle_type: ParticleType::Proton,
-            position: [0.0; 3], momentum: [0.0; 3],
-            spin: Spin::Up, color: None,
-        });
-        qf.particles.push(Particle {
-            id: 2, particle_type: ParticleType::Electron,
-            position: [0.0; 3], momentum: [0.0; 3],
-            spin: Spin::Up, color: None,
-        });
-        qf.particles.push(Particle {
-            id: 3, particle_type: ParticleType::Neutron,
-            position: [0.0; 3], momentum: [0.0; 3],
-            spin: Spin::Down, color: None,
-        });
+        qf.particles.push(make_particle(1, ParticleType::Proton, [0.0; 3]));
+        qf.particles.push(make_particle(2, ParticleType::Electron, [0.0; 3]));
+        qf.particles.push(make_particle(3, ParticleType::Neutron, [0.0; 3]));
 
         qf.remove_hadrons();
         assert_eq!(qf.particles.len(), 1);
@@ -835,29 +1085,53 @@ mod tests {
     fn test_remove_for_recombination() {
         let mut qf = QuantumField::new(1e6);
         for i in 0..3 {
-            qf.particles.push(Particle {
-                id: i, particle_type: ParticleType::Proton,
-                position: [0.0; 3], momentum: [0.0; 3],
-                spin: Spin::Up, color: None,
-            });
+            qf.particles.push(make_particle(i, ParticleType::Proton, [0.0; 3]));
         }
         for i in 3..6 {
-            qf.particles.push(Particle {
-                id: i, particle_type: ParticleType::Electron,
-                position: [0.0; 3], momentum: [0.0; 3],
-                spin: Spin::Up, color: None,
-            });
+            qf.particles.push(make_particle(i, ParticleType::Electron, [0.0; 3]));
         }
-        qf.particles.push(Particle {
-            id: 10, particle_type: ParticleType::Photon,
-            position: [0.0; 3], momentum: [1.0, 0.0, 0.0],
-            spin: Spin::Up, color: None,
-        });
+        qf.particles.push(make_particle(10, ParticleType::Photon, [1.0, 0.0, 0.0]));
 
         qf.remove_for_recombination(2, 2);
-        // Should have 1 proton + 1 electron + 1 photon = 3
         assert_eq!(qf.particles.len(), 3);
         assert_eq!(qf.proton_count(), 1);
+    }
+
+    #[test]
+    fn test_annihilate() {
+        let mut qf = QuantumField::new(1e6);
+        qf.particles.push(make_particle(1, ParticleType::Electron, [1.0, 0.0, 0.0]));
+        qf.particles.push(make_particle(2, ParticleType::Positron, [-1.0, 0.0, 0.0]));
+
+        let energy = qf.annihilate(1, 2);
+        assert!(energy > 0.0);
+        assert_eq!(qf.total_annihilated, 2);
+        // Should have created 2 photons
+        assert_eq!(qf.particles.len(), 2);
+        assert!(qf.particles.iter().all(|p| p.particle_type == ParticleType::Photon));
+    }
+
+    #[test]
+    fn test_cool() {
+        let mut qf = QuantumField::new(1e6);
+        qf.cool(0.5);
+        assert!((qf.temperature - 5e5).abs() < 1.0);
+    }
+
+    #[test]
+    fn test_total_energy() {
+        let mut qf = QuantumField::new(1e6);
+        qf.particles.push(make_particle(1, ParticleType::Electron, [0.0; 3]));
+        assert!(qf.total_energy() > 0.0);
+    }
+
+    #[test]
+    fn test_to_compact() {
+        let mut qf = QuantumField::new(1e6);
+        qf.particles.push(make_particle(1, ParticleType::Electron, [0.0; 3]));
+        let s = qf.to_compact();
+        assert!(s.contains("QF["));
+        assert!(s.contains("e-:1"));
     }
 
     #[test]
@@ -888,6 +1162,16 @@ mod tests {
     }
 
     #[test]
+    fn test_entangled_pairs_created_in_pair_production() {
+        let mut rng = make_rng();
+        let mut qf = QuantumField::new(1e6);
+        let energy = 2.0 * M_ELECTRON * C * C + 10.0;
+        qf.pair_production(energy, &mut rng);
+        assert_eq!(qf.entangled_pairs.len(), 1);
+        assert_eq!(qf.entangled_pairs[0].bell_state, "phi+");
+    }
+
+    #[test]
     fn test_particle_spin_variants() {
         assert_eq!(Spin::Up as i32, 0);
         assert_eq!(Spin::Down as i32, 1);
@@ -895,7 +1179,6 @@ mod tests {
 
     #[test]
     fn test_color_charge_variants() {
-        // Verify all color charge variants exist
         let _red = ColorCharge::Red;
         let _green = ColorCharge::Green;
         let _blue = ColorCharge::Blue;

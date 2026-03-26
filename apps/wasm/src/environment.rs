@@ -8,6 +8,41 @@ use rand::Rng;
 use crate::constants::*;
 
 // ---------------------------------------------------------------------------
+// Environmental events
+// ---------------------------------------------------------------------------
+
+/// Types of environmental events.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum EventType {
+    Volcanic,
+    Asteroid,
+    SolarFlare,
+    IceAge,
+}
+
+/// An environmental event that affects the simulation.
+#[derive(Debug, Clone)]
+pub struct EnvironmentalEvent {
+    pub event_type: EventType,
+    pub intensity: f64,
+    pub duration: u32,
+    pub position: [f64; 3],
+    pub remaining: u32,
+}
+
+impl EnvironmentalEvent {
+    pub fn is_active(&self) -> bool {
+        self.remaining > 0
+    }
+
+    pub fn tick(&mut self) {
+        if self.remaining > 0 {
+            self.remaining -= 1;
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Environment
 // ---------------------------------------------------------------------------
 
@@ -15,10 +50,13 @@ pub struct Environment {
     pub temperature: f64,
     pub uv_intensity: f64,
     pub cosmic_ray_flux: f64,
+    pub stellar_wind: f64,
     pub atmospheric_density: f64,
     pub water_availability: f64,
     pub day_night_cycle: f64,
     pub season: f64,
+    pub events: Vec<EnvironmentalEvent>,
+    pub event_history: Vec<EnvironmentalEvent>,
     internal_tick: u64,
 }
 
@@ -28,10 +66,13 @@ impl Environment {
             temperature: initial_temperature,
             uv_intensity: 0.0,
             cosmic_ray_flux: 0.0,
+            stellar_wind: 0.0,
             atmospheric_density: 0.0,
             water_availability: 0.0,
             day_night_cycle: 0.0,
             season: 0.0,
+            events: Vec::new(),
+            event_history: Vec::new(),
             internal_tick: 0,
         }
     }
@@ -94,6 +135,86 @@ impl Environment {
             self.water_availability =
                 ((epoch_tick - 220_000) as f64 / 30_000.0).min(1.0);
         }
+
+        // Stellar wind
+        if epoch_tick > STAR_FORMATION_EPOCH {
+            self.stellar_wind = 0.5 + gauss(rng, 0.0, 0.1).abs();
+        }
+
+        // Generate environmental events (only in habitable epochs)
+        if epoch_tick > EARTH_EPOCH {
+            // Tick existing events
+            for event in &mut self.events {
+                event.tick();
+            }
+            // Archive finished events
+            let (active, finished): (Vec<_>, Vec<_>) =
+                self.events.drain(..).partition(|e| e.is_active());
+            self.events = active;
+            self.event_history.extend(finished);
+
+            // Volcanic
+            if rng.gen::<f64>() < 0.005 {
+                self.events.push(EnvironmentalEvent {
+                    event_type: EventType::Volcanic,
+                    intensity: rng.gen::<f64>() * 5.0,
+                    duration: rng.gen_range(10..50),
+                    position: [gauss(rng, 0.0, 10.0), gauss(rng, 0.0, 10.0), 0.0],
+                    remaining: rng.gen_range(10..50),
+                });
+            }
+            // Asteroid
+            if rng.gen::<f64>() < 0.0001 {
+                self.events.push(EnvironmentalEvent {
+                    event_type: EventType::Asteroid,
+                    intensity: rng.gen::<f64>() * 10.0,
+                    duration: rng.gen_range(5..20),
+                    position: [gauss(rng, 0.0, 20.0), gauss(rng, 0.0, 20.0), 0.0],
+                    remaining: rng.gen_range(5..20),
+                });
+            }
+            // Solar flare
+            if rng.gen::<f64>() < 0.01 {
+                self.events.push(EnvironmentalEvent {
+                    event_type: EventType::SolarFlare,
+                    intensity: rng.gen::<f64>() * 3.0,
+                    duration: rng.gen_range(2..10),
+                    position: [0.0; 3],
+                    remaining: rng.gen_range(2..10),
+                });
+            }
+            // Ice age
+            if rng.gen::<f64>() < 0.001 {
+                self.events.push(EnvironmentalEvent {
+                    event_type: EventType::IceAge,
+                    intensity: rng.gen::<f64>() * 2.0,
+                    duration: rng.gen_range(50..200),
+                    position: [0.0; 3],
+                    remaining: rng.gen_range(50..200),
+                });
+            }
+
+            // Apply event effects
+            for event in &self.events {
+                match event.event_type {
+                    EventType::Volcanic => {
+                        self.temperature += event.intensity * 0.5;
+                        self.atmospheric_density = (self.atmospheric_density + 0.01).min(1.0);
+                    }
+                    EventType::Asteroid => {
+                        self.temperature -= event.intensity * 0.3;
+                        self.cosmic_ray_flux += event.intensity * 0.1;
+                    }
+                    EventType::SolarFlare => {
+                        self.uv_intensity += event.intensity;
+                        self.cosmic_ray_flux += event.intensity * 0.5;
+                    }
+                    EventType::IceAge => {
+                        self.temperature -= event.intensity * 5.0;
+                    }
+                }
+            }
+        }
     }
 
     /// Check if conditions support life.
@@ -114,6 +235,19 @@ impl Environment {
             return 0.1;
         }
         (self.temperature * 0.1).max(0.1)
+    }
+
+    /// Compact state representation.
+    pub fn to_compact(&self) -> String {
+        format!(
+            "Env[T={:.1} UV={:.2} CR={:.2} atm={:.2} H2O={:.2} events={}]",
+            self.temperature,
+            self.uv_intensity,
+            self.cosmic_ray_flux,
+            self.atmospheric_density,
+            self.water_availability,
+            self.events.len(),
+        )
     }
 }
 

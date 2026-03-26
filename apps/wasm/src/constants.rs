@@ -73,6 +73,43 @@ pub const BOND_ENERGY_HYDROGEN: f64 = 0.2;
 pub const BOND_ENERGY_VAN_DER_WAALS: f64 = 0.01;
 
 // === Biology parameters ===
+pub const NUCLEOTIDE_BASES: [&str; 4] = ["A", "T", "G", "C"];
+pub const RNA_BASES: [&str; 4] = ["A", "U", "G", "C"];
+pub const AMINO_ACIDS: [&str; 20] = [
+    "Ala", "Arg", "Asn", "Asp", "Cys", "Gln", "Glu", "Gly",
+    "His", "Ile", "Leu", "Lys", "Met", "Phe", "Pro", "Ser",
+    "Thr", "Trp", "Tyr", "Val",
+];
+
+/// Standard genetic code: mRNA codon -> amino acid name.
+/// Returns None for unknown codons; "STOP" for stop codons.
+pub fn codon_to_amino_acid(codon: &str) -> Option<&'static str> {
+    match codon {
+        "AUG" => Some("Met"),
+        "UUU" | "UUC" => Some("Phe"),
+        "UUA" | "UUG" | "CUU" | "CUC" | "CUA" | "CUG" => Some("Leu"),
+        "AUU" | "AUC" | "AUA" => Some("Ile"),
+        "GUU" | "GUC" | "GUA" | "GUG" => Some("Val"),
+        "UCU" | "UCC" | "UCA" | "UCG" | "AGU" | "AGC" => Some("Ser"),
+        "CCU" | "CCC" | "CCA" | "CCG" => Some("Pro"),
+        "ACU" | "ACC" | "ACA" | "ACG" => Some("Thr"),
+        "GCU" | "GCC" | "GCA" | "GCG" => Some("Ala"),
+        "UAU" | "UAC" => Some("Tyr"),
+        "CAU" | "CAC" => Some("His"),
+        "CAA" | "CAG" => Some("Gln"),
+        "AAU" | "AAC" => Some("Asn"),
+        "AAA" | "AAG" => Some("Lys"),
+        "GAU" | "GAC" => Some("Asp"),
+        "GAA" | "GAG" => Some("Glu"),
+        "UGU" | "UGC" => Some("Cys"),
+        "UGG" => Some("Trp"),
+        "CGU" | "CGC" | "CGA" | "CGG" | "AGA" | "AGG" => Some("Arg"),
+        "GGU" | "GGC" | "GGA" | "GGG" => Some("Gly"),
+        "UAA" | "UAG" | "UGA" => Some("STOP"),
+        _ => None,
+    }
+}
+
 pub const METHYLATION_PROBABILITY: f64 = 0.03;
 pub const DEMETHYLATION_PROBABILITY: f64 = 0.01;
 pub const HISTONE_ACETYLATION_PROB: f64 = 0.02;
@@ -185,8 +222,8 @@ pub fn epoch_description_for_tick(tick: u64) -> &'static str {
 /// Colors shift: hot white -> orange -> blue -> dark blue -> green-tinged -> earth tones
 pub fn epoch_background_color(tick: u64) -> [f32; 3] {
     let t = tick as f32;
-    let max = PRESENT_EPOCH as f32;
-    let frac = (t / max).clamp(0.0, 1.0);
+    let _max = PRESENT_EPOCH as f32;
+    let _frac = (t / _max).clamp(0.0, 1.0);
 
     if tick < INFLATION_EPOCH {
         // Hot white

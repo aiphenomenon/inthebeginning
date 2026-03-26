@@ -5,7 +5,7 @@
 
 use rand::Rng;
 
-use crate::atomic::{Atom, AtomicSystem};
+use crate::atomic::Atom;
 use crate::constants::*;
 
 // ---------------------------------------------------------------------------
@@ -428,6 +428,33 @@ impl ChemicalSystem {
         }
 
         formed
+    }
+
+    /// Count molecules by name.
+    pub fn molecule_census(&self) -> Vec<(String, usize)> {
+        use std::collections::HashMap;
+        let mut map: HashMap<String, usize> = HashMap::new();
+        for mol in &self.molecules {
+            *map.entry(mol.name.clone()).or_insert(0) += 1;
+        }
+        let mut v: Vec<_> = map.into_iter().collect();
+        v.sort_by_key(|(name, _)| name.clone());
+        v
+    }
+
+    pub fn to_compact(&self) -> String {
+        let census = self.molecule_census();
+        let census_str: String = census
+            .iter()
+            .map(|(name, count)| format!("{}:{}", name, count))
+            .collect::<Vec<_>>()
+            .join(",");
+        format!(
+            "Chem[n={} rx={} {}]",
+            self.molecules.len(),
+            self.reactions_occurred,
+            census_str,
+        )
     }
 }
 

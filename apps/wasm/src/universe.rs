@@ -4,14 +4,14 @@
 //! emergence of life. Port of the Python `simulator/universe.py`.
 
 use rand::rngs::SmallRng;
-use rand::{Rng, SeedableRng};
+use rand::SeedableRng;
 
 use crate::atomic::AtomicSystem;
 use crate::biology::Biosphere;
 use crate::chemistry::ChemicalSystem;
 use crate::constants::*;
 use crate::environment::Environment;
-use crate::quantum::{ParticleType, QuantumField};
+use crate::quantum::QuantumField;
 
 // ---------------------------------------------------------------------------
 // Snapshot for renderer
@@ -33,8 +33,42 @@ pub struct Snapshot {
 }
 
 // ---------------------------------------------------------------------------
+// SimulationMetrics
+// ---------------------------------------------------------------------------
+
+/// Performance metrics for the simulation.
+pub struct SimulationMetrics {
+    pub ticks_completed: u64,
+    pub particles_created: u64,
+    pub atoms_formed: u64,
+    pub molecules_formed: u64,
+    pub cells_born: u64,
+    pub mutations: u64,
+}
+
+impl SimulationMetrics {
+    pub fn new() -> Self {
+        Self {
+            ticks_completed: 0,
+            particles_created: 0,
+            atoms_formed: 0,
+            molecules_formed: 0,
+            cells_born: 0,
+            mutations: 0,
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Universe
 // ---------------------------------------------------------------------------
+
+/// An epoch transition record.
+pub struct EpochTransition {
+    pub tick: u64,
+    pub from: &'static str,
+    pub to: &'static str,
+}
 
 pub struct Universe {
     pub tick: u64,
@@ -54,6 +88,11 @@ pub struct Universe {
     pub atoms_formed: u64,
     pub molecules_formed: u64,
     pub cells_born: u64,
+    pub mutations: u64,
+
+    // State tracking
+    pub history: Vec<Snapshot>,
+    pub epoch_transitions: Vec<EpochTransition>,
 
     rng: SmallRng,
 
@@ -83,6 +122,9 @@ impl Universe {
             atoms_formed: 0,
             molecules_formed: 0,
             cells_born: 0,
+            mutations: 0,
+            history: Vec::new(),
+            epoch_transitions: Vec::new(),
             rng,
             earth_seeded: false,
             earth_molecules_formed: false,
@@ -97,6 +139,13 @@ impl Universe {
 
         // Epoch transition
         let new_epoch = epoch_name_for_tick(self.tick);
+        if new_epoch != self.current_epoch_name {
+            self.epoch_transitions.push(EpochTransition {
+                tick: self.tick,
+                from: self.current_epoch_name,
+                to: new_epoch,
+            });
+        }
         self.current_epoch_name = new_epoch;
 
         // Update environment
@@ -213,7 +262,7 @@ impl Universe {
         // === Biology ===
         if self.tick >= LIFE_EPOCH && self.environment.is_habitable() {
             if self.biosphere.is_none() {
-                self.biosphere = Some(Biosphere::new(3, &mut self.rng));
+                self.biosphere = Some(Biosphere::new(3, 90, &mut self.rng));
                 self.cells_born += 3;
             }
 
@@ -226,7 +275,14 @@ impl Universe {
                     &mut self.rng,
                 );
                 self.cells_born = bio.total_born;
+                self.mutations = bio.total_mutations();
             }
+        }
+
+        // Record state snapshot periodically
+        let interval = (self.max_ticks / 100).max(1);
+        if self.tick % interval == 0 {
+            self.history.push(self.snapshot());
         }
     }
 
@@ -258,6 +314,11 @@ impl Universe {
         self.atoms_formed = 0;
         self.molecules_formed = 0;
         self.cells_born = 0;
+        self.mutations = 0;
+
+        // Reset history
+        self.history.clear();
+        self.epoch_transitions.clear();
 
         // Reset one-time event flags
         self.earth_seeded = false;
@@ -273,6 +334,58 @@ impl Universe {
     /// Whether the simulation has reached its end.
     pub fn is_complete(&self) -> bool {
         self.tick >= self.max_ticks
+    }
+
+    /// Build a `SimulationMetrics` summary.
+    pub fn metrics(&self) -> SimulationMetrics {
+        SimulationMetrics {
+            ticks_completed: self.tick,
+            particles_created: self.particles_created,
+            atoms_formed: self.atoms_formed,
+            molecules_formed: self.molecules_formed,
+            cells_born: self.cells_born,
+            mutations: self.mutations,
+        }
+    }
+
+    /// Full compact state representation.
+    pub fn state_compact(&self) -> String {
+        let mut parts = vec![
+            format!("U[t={}/{} e={}]", self.tick, self.max_ticks, self.current_epoch_name),
+            self.quantum_field.to_compact(),
+            self.atomic_system.to_compact(),
+        ];
+        if let Some(ref chem) = self.chemical_system {
+            parts.push(chem.to_compact());
+        }
+        if let Some(ref bio) = self.biosphere {
+            parts.push(bio.to_compact());
+        }
+        parts.push(self.environment.to_compact());
+        parts.join(" | ")
+    }
+
+    /// Run the simulation to completion.
+    pub fn run(&mut self) {
+        while self.tick < self.max_ticks {
+            self.step();
+        }
+    }
+
+    /// Run the simulation in perpetual Big Bounce mode.
+    ///
+    /// After each cycle completes, the universe resets and starts a new cycle.
+    /// Runs `max_cycles` cycles (0 = infinite, but in WASM we require a limit).
+    pub fn run_perpetual(&mut self, max_cycles: u32) {
+        let mut cycle = 0u32;
+        while max_cycles == 0 || cycle < max_cycles {
+            self.run();
+            cycle += 1;
+            if max_cycles > 0 && cycle >= max_cycles {
+                break;
+            }
+            self.big_bounce();
+        }
     }
 
     /// Capture a snapshot for the renderer.

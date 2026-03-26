@@ -196,7 +196,7 @@ impl AtomicSystem {
     }
 
     /// Recombination: capture electrons as temperature drops.
-    pub fn recombination(&mut self, field: &mut QuantumField, rng: &mut impl Rng) -> usize {
+    pub fn recombination(&mut self, field: &mut QuantumField, _rng: &mut impl Rng) -> usize {
         if self.temperature > T_RECOMBINATION {
             return 0;
         }
@@ -347,6 +347,25 @@ impl AtomicSystem {
         let mut v: Vec<_> = map.into_iter().collect();
         v.sort_by_key(|(s, _)| *s);
         v
+    }
+
+    pub fn cool(&mut self, factor: f64) {
+        self.temperature *= factor;
+    }
+
+    pub fn to_compact(&self) -> String {
+        let counts = self.element_counts();
+        let count_str: String = counts
+            .iter()
+            .map(|(s, c)| format!("{}:{}", s, c))
+            .collect::<Vec<_>>()
+            .join(",");
+        format!(
+            "Atoms[n={} T={:.1e} {}]",
+            self.atoms.len(),
+            self.temperature,
+            count_str,
+        )
     }
 }
 
@@ -624,6 +643,8 @@ mod tests {
             momentum: [0.0; 3],
             spin: crate::quantum::Spin::Up,
             color: None,
+            wave_fn: crate::quantum::WaveFunction::new(),
+            entangled_with: None,
         });
         let created = sys.recombination(&mut field, &mut rng);
         assert_eq!(created, 0, "No recombination above threshold temperature");
@@ -645,6 +666,8 @@ mod tests {
                 momentum: [0.0; 3],
                 spin: crate::quantum::Spin::Up,
                 color: None,
+                wave_fn: crate::quantum::WaveFunction::new(),
+                entangled_with: None,
             });
             field.particles.push(crate::quantum::Particle {
                 id: i * 2 + 2,
@@ -653,6 +676,8 @@ mod tests {
                 momentum: [0.0; 3],
                 spin: crate::quantum::Spin::Up,
                 color: None,
+                wave_fn: crate::quantum::WaveFunction::new(),
+                entangled_with: None,
             });
         }
 
