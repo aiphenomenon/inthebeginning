@@ -109,3 +109,48 @@ Created `future_memories/v30-wasm-audio-mode-plan.md` with 3-phase approach:
 11. c6872c0 — feat(wasm): SF2 parser in Rust
 12. a223f32 — feat(wasm): SF2 loading in JS bridge
 13. 2c412ca — chore: update deploy/v8 with SF2-enabled WASM
+
+## Turn 2 — 2026-03-26 05:28 CT (10:28 UTC)
+
+### Request
+User asks to continue — previous session timed out after bringing WASM simulator
+to full Python reference parity.
+
+### Previous Session Work (before timeout)
+
+The prior session made two additional commits beyond Turn 1:
+
+14. 4ec929d — docs: final V30 session log and release history updates
+15. e39a90d — chore: update auto-generated test artifacts from V30 test runs
+16. 94d8ca6 — feat(wasm): bring Rust/WASM simulator to full parity with Python reference
+
+#### WASM Simulator Full Parity (commit 94d8ca6)
+Massive update to `apps/wasm/src/` — 1,580 lines added across 7 files:
+- **quantum.rs**: WaveFunction (Born rule, evolve, collapse, superpose),
+  EntangledPair (Bell states, measure), particle wavelength, annihilate,
+  decohere, cool, total_energy, to_compact
+- **biology.rs**: Complete rewrite — Gene (epigenetic marks, transcribe, mutate),
+  DNAStrand (replication, GC content), translate_mrna (full codon table),
+  Protein (fold, function types), Cell (central dogma, metabolize, fitness, divide),
+  Biosphere (natural selection with top-50% reproduce, population cap)
+- **constants.rs**: NUCLEOTIDE_BASES, RNA_BASES, AMINO_ACIDS, full genetic code mapping
+- **environment.rs**: EnvironmentalEvent system (volcanic, asteroid, solar flare, ice age)
+- **chemistry.rs**: molecule_census and to_compact methods
+- **atomic.rs**: cool and to_compact methods
+- **universe.rs**: SimulationMetrics, EpochTransition tracking, history snapshots,
+  state_compact, run/run_perpetual, mutations tracking
+
+All 149 WASM Rust tests pass.
+
+### This Session Actions
+
+#### Continuation housekeeping [05:28 CT]
+- Updated this session log with Turn 2 details
+- Verified WASM tests: 149 passed
+- Running full Python test suite and remaining language tests
+
+### Test Results
+- Python core + AST: 269 passed (1.01s)
+- Python deploy: 151 passed (1.82s)
+- Rust WASM: 149 passed (3.14s)
+- Total: 569 tests passing

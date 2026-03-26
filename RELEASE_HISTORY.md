@@ -51,6 +51,24 @@ the existing SynthEngine when WASM is unavailable.
 - `deploy/v8/` is GitHub Pages ready (zero build step)
 - 40KB WASM binary at `js/wasm_synth_bg.wasm` (includes SF2 parser)
 
+### WASM Simulator Full Python Parity
+
+Brought `apps/wasm/` Rust simulator to full parity with the Python reference
+implementation (+1,580 lines across 7 files):
+
+- **quantum.rs**: WaveFunction (Born rule, evolve, collapse, superpose),
+  EntangledPair (Bell states, measure), particle wavelength, decoherence
+- **biology.rs**: Gene (epigenetic marks, transcribe, mutate), DNAStrand
+  (replication, GC content, complementary strand), translate_mrna (full codon
+  table), Protein (fold, function types), Cell (central dogma, metabolize,
+  fitness, divide), Biosphere (natural selection, population cap)
+- **constants.rs**: NUCLEOTIDE_BASES, RNA_BASES, AMINO_ACIDS, full genetic code
+- **environment.rs**: EnvironmentalEvent system (volcanic, asteroid, solar flare,
+  ice age) with probabilities matching Python reference
+- **universe.rs**: SimulationMetrics, EpochTransition tracking, history snapshots,
+  state_compact, run/run_perpetual
+- 149 Rust tests passing
+
 ---
 
 ## v0.29.0 — 2026-03-25 — inthebeginning bounce V7 (World Music Engine)

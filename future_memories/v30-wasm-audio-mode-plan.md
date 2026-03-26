@@ -114,3 +114,19 @@
 - [x] deploy/v8 created with WASM mode (40KB WASM binary with SF2 parser)
 - [ ] Procedural music through WASM (future: route MusicGenerator through WASM)
 - [x] SoundFont integration (Phase 3) — SF2 parser in Rust, JS loading bridge
+
+## WASM Simulator Full Parity — 2026-03-26 01:23 UTC
+
+Brought `apps/wasm/` Rust simulator to full parity with Python reference:
+- quantum.rs: WaveFunction, EntangledPair, Born rule, decoherence
+- biology.rs: Gene, DNAStrand, Protein, Cell, Biosphere (full central dogma)
+- constants.rs: Full genetic code mapping (codon → amino acid)
+- environment.rs: EnvironmentalEvent system
+- chemistry.rs/atomic.rs: census and compact output methods
+- universe.rs: SimulationMetrics, epoch transitions, history snapshots
+- 149 Rust tests all passing
+
+## Turn 2 Session — 2026-03-26 05:28 CT (10:28 UTC)
+
+Continuation after timeout. Completing housekeeping: session log, release history,
+test verification, commit and push.
