@@ -6,6 +6,7 @@
 // point sprites with epoch-based color palettes.
 
 #if canImport(MetalKit)
+import InTheBeginningSimulator
 import MetalKit
 import simd
 

@@ -4,6 +4,7 @@
 // Main simulation view with Canvas-based particle rendering,
 // control panel, and real-time statistics overlay.
 
+import InTheBeginningSimulator
 import SwiftUI
 
 // MARK: - Main Simulation View

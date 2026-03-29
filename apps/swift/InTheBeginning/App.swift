@@ -5,6 +5,7 @@
 // A SwiftUI app that models physics from the Big Bang through the
 // emergence of life, rendered in real time.
 
+import InTheBeginningSimulator
 import SwiftUI
 
 @main

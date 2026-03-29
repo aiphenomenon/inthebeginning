@@ -5,6 +5,7 @@
 // Provides controls for seed, speed, visualization style,
 // and audio toggle.
 
+import InTheBeginningSimulator
 import SwiftUI
 
 // MARK: - Visualization Style

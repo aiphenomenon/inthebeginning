@@ -40,10 +40,10 @@ jobs:
         run: swift --version
       - name: Build simulator library
         working-directory: apps/swift
-        run: swift build --target InTheBeginningSimulator
+        run: swift build
       - name: Run tests
         working-directory: apps/swift
-        run: swift test --filter SimulatorTests
+        run: swift test
 
   swift-app:
     needs: check-freshness

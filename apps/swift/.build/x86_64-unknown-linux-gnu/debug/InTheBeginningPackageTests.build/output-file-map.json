@@ -1,0 +1,12 @@
+{
+  "": {
+    "swift-dependencies": "/home/claude/inthebeginning/apps/swift/.build/x86_64-unknown-linux-gnu/debug/InTheBeginningPackageTests.build/primary.swiftdeps"
+  },
+  "/home/claude/inthebeginning/apps/swift/.build/x86_64-unknown-linux-gnu/debug/InTheBeginningPackageTests.derived/runner.swift": {
+    "dependencies": "/home/claude/inthebeginning/apps/swift/.build/x86_64-unknown-linux-gnu/debug/InTheBeginningPackageTests.build/runner.d",
+    "object": "/home/claude/inthebeginning/apps/swift/.build/x86_64-unknown-linux-gnu/debug/InTheBeginningPackageTests.build/runner.swift.o",
+    "swiftmodule": "/home/claude/inthebeginning/apps/swift/.build/x86_64-unknown-linux-gnu/debug/InTheBeginningPackageTests.build/runner~partial.swiftmodule",
+    "swift-dependencies": "/home/claude/inthebeginning/apps/swift/.build/x86_64-unknown-linux-gnu/debug/InTheBeginningPackageTests.build/runner.swiftdeps",
+    "diagnostics": "/home/claude/inthebeginning/apps/swift/.build/x86_64-unknown-linux-gnu/debug/InTheBeginningPackageTests.build/runner.dia"
+  }
+}

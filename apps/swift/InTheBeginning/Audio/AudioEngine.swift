@@ -7,6 +7,7 @@
 // on epoch transitions.
 
 #if canImport(AVFoundation)
+import InTheBeginningSimulator
 import AVFoundation
 import Foundation
 

@@ -5,6 +5,7 @@
 // all 13 cosmic epochs. Highlights the current epoch and
 // displays overall simulation progress.
 
+import InTheBeginningSimulator
 import SwiftUI
 
 // MARK: - Epoch Timeline View
