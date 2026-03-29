@@ -118,16 +118,38 @@ class WasmSynthProcessor extends AudioWorkletProcessor {
 
   async _initWasm(wasmBytes) {
     try {
-      const { instance } = await WebAssembly.instantiate(wasmBytes, {
-        // wasm-bindgen needs a minimal import object
-        './wasm_synth_bg.js': {
-          // wasm-bindgen heap management stubs for worklet context
-          __wbindgen_throw: (ptr, len) => {
-            // Minimal error handling in worklet
-            console.error('WASM error in worklet');
-          },
-        },
-      });
+      // Build import object dynamically — wasm-bindgen generates imports
+      // with hashed names like __wbg_log_<hash>. We need to provide all
+      // imports the WASM module expects.
+      const wasmModule = await WebAssembly.compile(wasmBytes);
+      const requiredImports = {};
+      for (const imp of WebAssembly.Module.imports(wasmModule)) {
+        if (!requiredImports[imp.module]) requiredImports[imp.module] = {};
+        if (imp.kind === 'function') {
+          // Provide stubs for all expected function imports
+          if (imp.name.includes('log')) {
+            requiredImports[imp.module][imp.name] = (ptr, len) => {
+              // Log from WASM — read string from memory if available
+              try {
+                if (this._wasmMemory) {
+                  const bytes = new Uint8Array(this._wasmMemory.buffer, ptr, len);
+                  const text = new TextDecoder().decode(bytes);
+                  console.log('WASM:', text);
+                }
+              } catch (e) { /* ignore log errors in worklet */ }
+            };
+          } else if (imp.name.includes('throw')) {
+            requiredImports[imp.module][imp.name] = (ptr, len) => {
+              console.error('WASM error in worklet');
+            };
+          } else {
+            // Generic stub for any other imported function
+            requiredImports[imp.module][imp.name] = () => {};
+          }
+        }
+      }
+
+      const { instance } = await WebAssembly.instantiate(wasmModule, requiredImports);
 
       this._wasmMemory = instance.exports.memory;
 

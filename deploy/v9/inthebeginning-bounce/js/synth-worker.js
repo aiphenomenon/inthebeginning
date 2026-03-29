@@ -18,7 +18,9 @@ self.onmessage = function(e) {
 
   if (msg.type === 'parse') {
     try {
-      const data = new DataView(msg.buffer);
+      // Accept both ArrayBuffer and Uint8Array (wasm-synth sends Uint8Array)
+      const rawBuf = msg.buffer instanceof ArrayBuffer ? msg.buffer : msg.buffer.buffer;
+      const data = new DataView(rawBuf);
       const result = parseMidi(data);
       if (result) {
         self.postMessage({
