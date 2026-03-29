@@ -88,6 +88,24 @@ synthesis, JS for scheduling/structure, Web Audio for effects).
 - Python core tests: 283 passed in 0.56s
 - No JS errors in either game or visualizer (excluding expected 404s for shared assets)
 
-### Remaining Work
-- Approach C hybrid audio enhancements (next session)
-- More edge case testing with full deploy layout
+### CI Fixes (2026-03-29 morning continued)
+- Fixed GitHub CI python-tests: excluded integration tests (covered by golden.yml)
+- Regenerated golden snapshots for token count drift
+- Added token count normalization to golden comparison
+- Fixed Swift: added `import InTheBeginningSimulator` to all 6 Apple-only files
+- Set up Apple CI daily schedule, monitoring 11:00 AM CT run
+- Cleaned up .gitignore for Swift .build/
+
+### V9 Game Release Plan (2026-03-29 afternoon)
+1. Research: Read PLAN.md, RELEASE_HISTORY.md, all future_memories,
+   docs/ pertaining to game/music/audio, session_logs archive,
+   and git history to understand v7→v8 regressions
+2. Comparative Playwright testing across v5/v6/v7/v8 deploy versions
+   to identify all gameplay, audio, and visual regressions
+3. Fix all regressions + bring game to v9 quality
+4. Rename all "Cosmic Runner" references to "inthebeginning bounce"
+5. Create deploy/v9 with all fixes
+6. Visual test report: screenshots + animated GIFs in session log
+7. Make gameplay capture reproducible for future releases
+8. Update deploy/shared if audio/MIDI assets changed
+9. Approach C hybrid audio enhancements (WASM + JS)

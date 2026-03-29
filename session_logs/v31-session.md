@@ -79,6 +79,29 @@ future enhancement work.
 
 **Python core tests**: 283 passed in 0.56s
 
+### Turn 4: GitHub CI Fixes [2026-03-29 08:00-11:00 CT (13:00-16:00 UTC)]
+
+**Actions**:
+1. Set up SSH deploy key for git push (stored on persistent volume)
+2. Set up fine-grained GitHub PAT for Actions API read access
+3. Merged develop→main, renamed working branch to `develop`
+4. Created Apple Platforms CI workflow (macOS/iOS/tvOS via cron schedule)
+5. Fixed CI: python-tests excluded integration tests, golden snapshot regen,
+   token count normalization, Swift missing `import InTheBeginningSimulator`
+6. CI results: ubuntu CI 11/11 green, Golden tests green,
+   Apple CI: swift-simulator import fix pushed, awaiting verification
+
+**GitHub CI Status**:
+- CI (ubuntu): **11/11 passing** — all languages compile + test
+- Golden Output Tests: **passing** — snapshot comparison with token normalization
+- Apple Platforms: swift import fix deployed, monitoring 11:00 AM CT scheduled run
+- Server Smoke Tests: **passing**
+
+### Turn 5: V9 Game Release Planning [2026-03-29 11:00 CT (16:00 UTC)]
+
+Starting deep research into game history v5→v8, identifying regressions,
+planning comprehensive v9 release with Playwright-verified visual test reports.
+
 ### Commits
 
 1. `d61daa7` refactor(docs): rearchitect steering for Claude Code CLI
@@ -87,3 +110,8 @@ future enhancement work.
 4. `0cc46f3` docs(future_memories): add V31 plan
 5. `cef51b9` fix(web): key-2 mode switch, visualizer FAMILY_HUES & generateCycle bugs
 6. `0a10647` fix(web): MIDI info panel empty on first track load
+7. `a2bf463` fix(tests): stale CMake cache detection + skip Xcode-only Swift test
+8. `02cafd9` fix(tests): normalize AST token counts in golden snapshot comparison
+9. `57d6b43` fix(swift): add missing import InTheBeginningSimulator to app files
+10. `b10beba` chore: remove swift .build/ from tracking, add to gitignore
+11. `3c579c1` ci(apple): schedule for verification
