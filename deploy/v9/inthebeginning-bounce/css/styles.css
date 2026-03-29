@@ -399,6 +399,7 @@ html, body {
 
 .hud > * { pointer-events: auto; }
 .hud-left, .hud-right, .hud-center { display: flex; align-items: center; gap: 6px; }
+.hud-right { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 60vw; flex-wrap: nowrap; }
 .hud-center { flex-direction: column; gap: 2px; align-items: center; }
 
 .hud-score { font-size: 22px; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; }

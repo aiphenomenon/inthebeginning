@@ -79,11 +79,16 @@ class CosmicRunnerApp {
     this.midiInfoPanel = document.getElementById('midi-info');
 
     // Mode buttons
+    const playerCountRow = document.querySelector('.player-count-select');
     document.querySelectorAll('.mode-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
         this.mode = btn.dataset.mode;
+        // Hide player count for non-game modes
+        if (playerCountRow) {
+          playerCountRow.style.display = this.mode === 'game' ? '' : 'none';
+        }
       });
     });
 
@@ -699,8 +704,17 @@ class CosmicRunnerApp {
   }
 
   _restart() {
+    // Stop all audio before returning to title
+    if (this.player) {
+      this.player.pause();
+      this.player.destroy();
+    }
     if (this.game) this.game.destroy();
-    if (this.player) this.player.destroy();
+    // Suspend audio context to fully silence
+    if (this.musicSync?.audioElement) {
+      this.musicSync.audioElement.pause();
+      this.musicSync.audioElement.currentTime = 0;
+    }
     this.game = null;
     this.player = null;
     this.mainScreen.classList.remove('active');
@@ -720,11 +734,18 @@ class CosmicRunnerApp {
       t.classList.toggle('active', t.dataset.mode === mode);
     });
 
-    // Grid dim tabs
+    // Grid dim tabs: visible in grid and game modes, hidden in player
     const gridDimTabs = document.getElementById('grid-dim-tabs');
     if (gridDimTabs) {
-      gridDimTabs.style.display = mode === 'grid' ? 'flex' : 'none';
+      gridDimTabs.style.display = (mode === 'grid' || mode === 'game') ? 'flex' : 'none';
     }
+
+    // Mode-aware HUD: hide speed/mutation/style buttons in player mode
+    const hideInPlayer = ['speed-down', 'speed-up', 'mutation-btn', 'style-btn'];
+    hideInPlayer.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = mode === 'player' ? 'none' : '';
+    });
 
     if (this.game) {
       this.game.setMode(mode);
