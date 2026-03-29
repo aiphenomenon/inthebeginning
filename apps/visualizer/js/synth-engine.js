@@ -38,7 +38,7 @@ const TIMBRES = {
 };
 
 /** Instrument family → base hue for coloring (matches grid.js scheme). */
-const FAMILY_HUES = {
+var FAMILY_HUES = {
   strings: 0,       // red
   keys: 220,        // blue
   winds: 120,       // green
