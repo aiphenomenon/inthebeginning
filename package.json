@@ -1,5 +1,29 @@
 {
   "dependencies": {
-    "acorn": "^8.16.0"
-  }
+    "@playwright/test": "^1.58.2",
+    "acorn": "^8.16.0",
+    "playwright": "^1.58.2"
+  },
+  "name": "inthebeginning",
+  "description": "A multi-language cosmic physics simulator that models the universe from the Big Bang through the emergence of DNA-based life — implemented across 16 applications in 12 programming languages.",
+  "version": "1.0.0",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aiphenomenon/inthebeginning.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aiphenomenon/inthebeginning/issues"
+  },
+  "homepage": "https://github.com/aiphenomenon/inthebeginning#readme"
 }
