@@ -10,7 +10,7 @@
 
 [33m[Cue 1] Parsing simulator/quantum.py...[0m
   Nodes: 2245
-  Time: 1285.9ms
+  Time: 1249.1ms
   Memory: 1553KB
 
 [33m[Cue 2] Finding symbols in quantum.py...[0m
@@ -84,8 +84,8 @@ Running simulation...
 [1m[33m============================================================[0m
 
 [1mPerformance:[0m
-  Wall Time:     0.438s
-  CPU User:      0.438s
+  Wall Time:     0.454s
+  CPU User:      0.454s
   CPU System:    0.000s
   Peak Memory:   598 KB
   Ticks:         300000

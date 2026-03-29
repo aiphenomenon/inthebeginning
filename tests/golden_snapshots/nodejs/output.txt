@@ -23,7 +23,7 @@
 
   [2mt=  5000[0m [33m[█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░][0m [2m1.7%[0m
 [2m           Temp: [0m2.7 K
-[2m      Particles: [0m83 [2m(electron:49 proton:15 positron:9 down:5 photon:5)[0m
+[2m      Particles: [0m77 [2m(electron:46 proton:15 positron:6 down:5 photon:5)[0m
 
 
 [1m[33m  ── NUCLEOSYNTHESIS EPOCH ─────────────────────────────────────────[0m
@@ -31,42 +31,42 @@
 
   [2mt= 10000[0m [33m[█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░][0m [2m3.3%[0m
 [2m           Temp: [0m2.7 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt= 15000[0m [33m[██░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░][0m [2m5.0%[0m
 [2m           Temp: [0m2.7 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt= 20000[0m [33m[███░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░][0m [2m6.7%[0m
 [2m           Temp: [0m2.7 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt= 25000[0m [33m[███░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░][0m [2m8.3%[0m
-[2m           Temp: [0m2.7 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m-12.3 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt= 30000[0m [33m[████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░][0m [2m10.0%[0m
-[2m           Temp: [0m2.7 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m-12.3 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt= 35000[0m [33m[█████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░][0m [2m11.7%[0m
-[2m           Temp: [0m2.7 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m-12.3 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt= 40000[0m [33m[█████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░][0m [2m13.3%[0m
-[2m           Temp: [0m2.7 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m-12.3 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt= 45000[0m [33m[██████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░][0m [2m15.0%[0m
 [2m           Temp: [0m2.7 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
 
@@ -74,53 +74,53 @@
 [2m     Atoms form, universe becomes transparent[0m
 
   [2mt= 50000[0m [36m[███████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░][0m [2m16.7%[0m
-[2m           Temp: [0m3.3 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m2.7 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt= 55000[0m [36m[███████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░][0m [2m18.3%[0m
-[2m           Temp: [0m3.1 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m2.1 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt= 60000[0m [36m[████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░][0m [2m20.0%[0m
-[2m           Temp: [0m1.9 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m2.6 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt= 65000[0m [36m[█████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░][0m [2m21.7%[0m
-[2m           Temp: [0m2.5 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m2.4 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt= 70000[0m [36m[█████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░][0m [2m23.3%[0m
-[2m           Temp: [0m3.7 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m2.6 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt= 75000[0m [36m[██████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░][0m [2m25.0%[0m
-[2m           Temp: [0m2.5 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m3.4 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt= 80000[0m [36m[███████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░][0m [2m26.7%[0m
-[2m           Temp: [0m3.1 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m3.0 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt= 85000[0m [36m[███████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░][0m [2m28.3%[0m
-[2m           Temp: [0m2.1 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m2.8 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt= 90000[0m [36m[████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░][0m [2m30.0%[0m
-[2m           Temp: [0m2.9 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m2.7 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt= 95000[0m [36m[█████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░][0m [2m31.7%[0m
-[2m           Temp: [0m3.0 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m3.4 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
 
@@ -128,103 +128,103 @@
 [2m     First stars ignite, heavier elements forged[0m
 
   [2mt=100000[0m [34m[█████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░][0m [2m33.3%[0m
-[2m           Temp: [0m2.6 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m1.9 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt=105000[0m [34m[██████████████░░░░░░░░░░░░░░░░░░░░░░░░░░][0m [2m35.0%[0m
 [2m           Temp: [0m2.8 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt=110000[0m [34m[███████████████░░░░░░░░░░░░░░░░░░░░░░░░░][0m [2m36.7%[0m
-[2m           Temp: [0m2.8 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m2.9 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt=115000[0m [34m[███████████████░░░░░░░░░░░░░░░░░░░░░░░░░][0m [2m38.3%[0m
-[2m           Temp: [0m2.8 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m2.7 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt=120000[0m [34m[████████████████░░░░░░░░░░░░░░░░░░░░░░░░][0m [2m40.0%[0m
-[2m           Temp: [0m3.3 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m2.3 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt=125000[0m [34m[█████████████████░░░░░░░░░░░░░░░░░░░░░░░][0m [2m41.7%[0m
-[2m           Temp: [0m2.5 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m2.9 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt=130000[0m [34m[█████████████████░░░░░░░░░░░░░░░░░░░░░░░][0m [2m43.3%[0m
-[2m           Temp: [0m2.1 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m2.2 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt=135000[0m [34m[██████████████████░░░░░░░░░░░░░░░░░░░░░░][0m [2m45.0%[0m
-[2m           Temp: [0m3.5 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m1.9 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt=140000[0m [34m[███████████████████░░░░░░░░░░░░░░░░░░░░░][0m [2m46.7%[0m
-[2m           Temp: [0m3.1 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m2.2 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt=145000[0m [34m[███████████████████░░░░░░░░░░░░░░░░░░░░░][0m [2m48.3%[0m
-[2m           Temp: [0m2.9 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m2.5 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt=150000[0m [34m[████████████████████░░░░░░░░░░░░░░░░░░░░][0m [2m50.0%[0m
-[2m           Temp: [0m2.5 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m2.4 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt=155000[0m [34m[█████████████████████░░░░░░░░░░░░░░░░░░░][0m [2m51.7%[0m
 [2m           Temp: [0m2.4 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt=160000[0m [34m[█████████████████████░░░░░░░░░░░░░░░░░░░][0m [2m53.3%[0m
-[2m           Temp: [0m3.5 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m3.4 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt=165000[0m [34m[██████████████████████░░░░░░░░░░░░░░░░░░][0m [2m55.0%[0m
-[2m           Temp: [0m2.6 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m2.2 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt=170000[0m [34m[███████████████████████░░░░░░░░░░░░░░░░░][0m [2m56.7%[0m
-[2m           Temp: [0m2.3 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m2.5 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt=175000[0m [34m[███████████████████████░░░░░░░░░░░░░░░░░][0m [2m58.3%[0m
-[2m           Temp: [0m2.8 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m3.6 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt=180000[0m [34m[████████████████████████░░░░░░░░░░░░░░░░][0m [2m60.0%[0m
-[2m           Temp: [0m2.4 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m1.7 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt=185000[0m [34m[█████████████████████████░░░░░░░░░░░░░░░][0m [2m61.7%[0m
-[2m           Temp: [0m2.3 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m2.4 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt=190000[0m [34m[█████████████████████████░░░░░░░░░░░░░░░][0m [2m63.3%[0m
-[2m           Temp: [0m3.2 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m3.5 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt=195000[0m [34m[██████████████████████████░░░░░░░░░░░░░░][0m [2m65.0%[0m
-[2m           Temp: [0m2.4 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m3.2 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
 
@@ -232,13 +232,13 @@
 [2m     Our solar system coalesces from stellar debris[0m
 
   [2mt=200000[0m [34m[███████████████████████████░░░░░░░░░░░░░][0m [2m66.7%[0m
-[2m           Temp: [0m286.1 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m285.9 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
   [2mt=205000[0m [34m[███████████████████████████░░░░░░░░░░░░░][0m [2m68.3%[0m
-[2m           Temp: [0m288.9 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m291.0 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m15 [2m(H:15)[0m
 
 
@@ -246,184 +246,184 @@
 [2m     Earth forms, oceans appear[0m
 
   [2mt=210000[0m [32m[████████████████████████████░░░░░░░░░░░░][0m [2m70.0%[0m
-[2m           Temp: [0m284.0 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m299.2 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m108 [2m(H:55 C:15 O:15 He:10 N:10 P:3)[0m
 [2m      Molecules: [0m21 [2m(water:15 methane:6)[0m
 
   [2mt=215000[0m [32m[█████████████████████████████░░░░░░░░░░░][0m [2m71.7%[0m
-[2m           Temp: [0m307.5 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m310.1 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m201 [2m(H:95 C:30 O:30 He:20 N:20 P:6)[0m
 [2m      Molecules: [0m39 [2m(water:30 methane:8 ammonia:1)[0m
 
   [2mt=220000[0m [32m[█████████████████████████████░░░░░░░░░░░][0m [2m73.3%[0m
-[2m           Temp: [0m297.4 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m303.9 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m201 [2m(H:95 C:30 O:30 He:20 N:20 P:6)[0m
 [2m      Molecules: [0m39 [2m(water:30 methane:8 ammonia:1)[0m
 
   [2mt=225000[0m [32m[██████████████████████████████░░░░░░░░░░][0m [2m75.0%[0m
-[2m           Temp: [0m302.1 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m304.0 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m201 [2m(H:95 C:30 O:30 He:20 N:20 P:6)[0m
 [2m      Molecules: [0m39 [2m(water:30 methane:8 ammonia:1)[0m
-[2m     Habitable: [0m[32mYES[0m [2mUV=0.790 CR=0.186[0m
+[2m     Habitable: [0m[32mYES[0m [2mUV=0.711 CR=0.148[0m
 
   [2mt=230000[0m [32m[███████████████████████████████░░░░░░░░░][0m [2m76.7%[0m
-[2m           Temp: [0m302.4 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m297.8 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m201 [2m(H:95 C:30 O:30 He:20 N:20 P:6)[0m
 [2m      Molecules: [0m39 [2m(water:30 methane:8 ammonia:1)[0m
-[2m     Habitable: [0m[32mYES[0m [2mUV=1.662 CR=0.914[0m
+[2m     Habitable: [0m[32mYES[0m [2mUV=0.000 CR=0.098[0m
 
   [2mt=235000[0m [32m[███████████████████████████████░░░░░░░░░][0m [2m78.3%[0m
-[2m           Temp: [0m301.4 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m297.7 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m201 [2m(H:95 C:30 O:30 He:20 N:20 P:6)[0m
 [2m      Molecules: [0m39 [2m(water:30 methane:8 ammonia:1)[0m
-[2m     Habitable: [0m[32mYES[0m [2mUV=0.860 CR=0.324[0m
+[2m     Habitable: [0m[32mYES[0m [2mUV=0.650 CR=0.078[0m
 
   [2mt=240000[0m [32m[████████████████████████████████░░░░░░░░][0m [2m80.0%[0m
-[2m           Temp: [0m303.4 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m291.4 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m201 [2m(H:95 C:30 O:30 He:20 N:20 P:6)[0m
 [2m      Molecules: [0m39 [2m(water:30 methane:8 ammonia:1)[0m
-[2m     Habitable: [0m[32mYES[0m [2mUV=0.000 CR=0.139[0m
+[2m     Habitable: [0m[32mYES[0m [2mUV=3.139 CR=1.652[0m
 
   [2mt=245000[0m [32m[█████████████████████████████████░░░░░░░][0m [2m81.7%[0m
-[2m           Temp: [0m292.3 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m303.1 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m201 [2m(H:95 C:30 O:30 He:20 N:20 P:6)[0m
 [2m      Molecules: [0m39 [2m(water:30 methane:8 ammonia:1)[0m
-[2m     Habitable: [0m[32mYES[0m [2mUV=0.510 CR=0.065[0m
+[2m     Habitable: [0m[32mYES[0m [2mUV=0.510 CR=0.175[0m
 
 
 [1m[32m  ── LIFE EPOCH ─────────────────────────────────────────[0m
 [2m     First self-replicating molecules[0m
 
   [2mt=250000[0m [32m[█████████████████████████████████░░░░░░░][0m [2m83.3%[0m
-[2m           Temp: [0m293.9 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m285.4 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m201 [2m(H:95 C:30 O:30 He:20 N:20 P:6)[0m
 [2m      Molecules: [0m39 [2m(water:30 methane:8 ammonia:1)[0m
-[2m          Cells: [0m4 [2mgen=1 fit=0.688 mut=0[0m
-[2m     Habitable: [0m[32mYES[0m [2mUV=0.170 CR=0.150[0m
-[2m            DNA: [0m[36mCAGATTTACTACGGCAGGAGTGCTCGGGAA...[0m
+[2m          Cells: [0m4 [2mgen=1 fit=0.682 mut=0[0m
+[2m     Habitable: [0m[32mYES[0m [2mUV=0.000 CR=0.087[0m
+[2m            DNA: [0m[36mAGGGTTTGCCTGACTTGCTACACTTAGTCG...[0m
 
   [2mt=255000[0m [32m[██████████████████████████████████░░░░░░][0m [2m85.0%[0m
-[2m           Temp: [0m283.4 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m281.1 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m201 [2m(H:95 C:30 O:30 He:20 N:20 P:6)[0m
 [2m      Molecules: [0m39 [2m(water:30 methane:8 ammonia:1)[0m
-[2m          Cells: [0m100 [2mgen=51 fit=0.432 mut=4[0m
-[2m     Habitable: [0m[32mYES[0m [2mUV=0.333 CR=0.059[0m
-[2m            DNA: [0m[36mAATCGTGGCCGTTCACGTCATGCGTCACTG...[0m
+[2m          Cells: [0m100 [2mgen=51 fit=0.412 mut=2[0m
+[2m     Habitable: [0m[32mYES[0m [2mUV=0.370 CR=0.103[0m
+[2m            DNA: [0m[36mATTGCACTACGCTAAAATATTGTGTCGTGG...[0m
 
   [2mt=260000[0m [32m[███████████████████████████████████░░░░░][0m [2m86.7%[0m
-[2m           Temp: [0m281.2 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m280.3 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m201 [2m(H:95 C:30 O:30 He:20 N:20 P:6)[0m
 [2m      Molecules: [0m39 [2m(water:30 methane:8 ammonia:1)[0m
-[2m          Cells: [0m100 [2mgen=101 fit=0.428 mut=0[0m
-[2m     Habitable: [0m[32mYES[0m [2mUV=0.000 CR=0.169[0m
-[2m            DNA: [0m[36mAATCGTGGCCGTTCACGTCATGCGTCACTG...[0m
+[2m          Cells: [0m100 [2mgen=101 fit=0.413 mut=0[0m
+[2m     Habitable: [0m[32mYES[0m [2mUV=0.000 CR=0.164[0m
+[2m            DNA: [0m[36mATTGCACTACGCTAAAATATTGTGCCGTGG...[0m
 
   [2mt=265000[0m [32m[███████████████████████████████████░░░░░][0m [2m88.3%[0m
-[2m           Temp: [0m233.0 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m276.5 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m201 [2m(H:95 C:30 O:30 He:20 N:20 P:6)[0m
 [2m      Molecules: [0m39 [2m(water:30 methane:8 ammonia:1)[0m
-[2m          Cells: [0m100 [2mgen=151 fit=0.727 mut=0[0m
-[2m     Habitable: [0m[32mYES[0m [2mUV=0.150 CR=4.991[0m
-[2m            DNA: [0m[36mAATCGTGGCCGTTCACGTCATGCGTCACTG...[0m
+[2m          Cells: [0m100 [2mgen=151 fit=0.435 mut=4[0m
+[2m     Habitable: [0m[32mYES[0m [2mUV=0.300 CR=0.154[0m
+[2m            DNA: [0m[36mATTGCACTACGCTAAAATATTGTGCCGTGG...[0m
 
   [2mt=270000[0m [32m[████████████████████████████████████░░░░][0m [2m90.0%[0m
-[2m           Temp: [0m224.4 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m275.7 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m201 [2m(H:95 C:30 O:30 He:20 N:20 P:6)[0m
 [2m      Molecules: [0m39 [2m(water:30 methane:8 ammonia:1)[0m
-[2m          Cells: [0m100 [2mgen=201 fit=0.432 mut=0[0m
-[2m     Habitable: [0m[32mYES[0m [2mUV=0.000 CR=4.975[0m
-[2m            DNA: [0m[36mAATCGTGGCCGTTCACGTCATGCGTCACTG...[0m
+[2m          Cells: [0m100 [2mgen=201 fit=0.424 mut=0[0m
+[2m     Habitable: [0m[32mYES[0m [2mUV=0.000 CR=0.060[0m
+[2m            DNA: [0m[36mATGGCACTACGCTAAAATATTGTGCCGTGG...[0m
 
   [2mt=275000[0m [32m[█████████████████████████████████████░░░][0m [2m91.7%[0m
-[2m           Temp: [0m247.9 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m278.7 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m201 [2m(H:95 C:30 O:30 He:20 N:20 P:6)[0m
 [2m      Molecules: [0m39 [2m(water:30 methane:8 ammonia:1)[0m
-[2m          Cells: [0m100 [2mgen=251 fit=0.394 mut=1[0m
-[2m     Habitable: [0m[32mYES[0m [2mUV=0.689 CR=0.286[0m
-[2m            DNA: [0m[36mAATCGTGGCCGTTCACGTCATGCGTCACTG...[0m
+[2m          Cells: [0m100 [2mgen=251 fit=0.439 mut=0[0m
+[2m     Habitable: [0m[32mYES[0m [2mUV=0.300 CR=0.156[0m
+[2m            DNA: [0m[36mATGGCACTACGCTAAAATATTGTGCCGTGG...[0m
 
 
 [1m[32m  ── DNA ERA EPOCH ─────────────────────────────────────────[0m
 [2m     DNA-based life, epigenetics emerge[0m
 
   [2mt=280000[0m [32m[█████████████████████████████████████░░░][0m [2m93.3%[0m
-[2m           Temp: [0m242.4 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m277.8 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m201 [2m(H:95 C:30 O:30 He:20 N:20 P:6)[0m
 [2m      Molecules: [0m39 [2m(water:30 methane:8 ammonia:1)[0m
-[2m          Cells: [0m100 [2mgen=301 fit=0.416 mut=0[0m
-[2m     Habitable: [0m[32mYES[0m [2mUV=0.000 CR=0.086[0m
-[2m            DNA: [0m[36mAATCGTGGCCGTTCACGTCATGCGTCACTG...[0m
+[2m          Cells: [0m100 [2mgen=301 fit=0.422 mut=0[0m
+[2m     Habitable: [0m[32mYES[0m [2mUV=0.000 CR=0.079[0m
+[2m            DNA: [0m[36mATGGCACTACGCTAAAATATTGTGCCGTGG...[0m
 
   [2mt=285000[0m [32m[██████████████████████████████████████░░][0m [2m95.0%[0m
-[2m           Temp: [0m252.6 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m287.5 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m201 [2m(H:95 C:30 O:30 He:20 N:20 P:6)[0m
 [2m      Molecules: [0m39 [2m(water:30 methane:8 ammonia:1)[0m
-[2m          Cells: [0m100 [2mgen=351 fit=0.408 mut=1[0m
-[2m     Habitable: [0m[32mYES[0m [2mUV=0.270 CR=0.094[0m
-[2m            DNA: [0m[36mAATCGTGGCCGTTCACGTCATGCGTCACTG...[0m
+[2m          Cells: [0m100 [2mgen=351 fit=0.429 mut=2[0m
+[2m     Habitable: [0m[32mYES[0m [2mUV=0.300 CR=0.074[0m
+[2m            DNA: [0m[36mATGGCACTACGCTAAAATATTGTGCCGTGG...[0m
 
   [2mt=290000[0m [32m[███████████████████████████████████████░][0m [2m96.7%[0m
-[2m           Temp: [0m250.3 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m291.5 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m201 [2m(H:95 C:30 O:30 He:20 N:20 P:6)[0m
 [2m      Molecules: [0m39 [2m(water:30 methane:8 ammonia:1)[0m
-[2m          Cells: [0m100 [2mgen=401 fit=0.436 mut=0[0m
-[2m     Habitable: [0m[32mYES[0m [2mUV=0.000 CR=0.058[0m
-[2m            DNA: [0m[36mAATCGTGGCCGTTCACGTCATGCGTCACTG...[0m
+[2m          Cells: [0m100 [2mgen=401 fit=0.431 mut=0[0m
+[2m     Habitable: [0m[32mYES[0m [2mUV=0.000 CR=0.056[0m
+[2m            DNA: [0m[36mATGGCACTACGCTAAAATATTGTGCCGTGG...[0m
 
   [2mt=295000[0m [32m[███████████████████████████████████████░][0m [2m98.3%[0m
-[2m           Temp: [0m263.3 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m268.3 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m201 [2m(H:95 C:30 O:30 He:20 N:20 P:6)[0m
 [2m      Molecules: [0m39 [2m(water:30 methane:8 ammonia:1)[0m
-[2m          Cells: [0m100 [2mgen=451 fit=0.396 mut=3[0m
-[2m     Habitable: [0m[32mYES[0m [2mUV=0.957 CR=0.406[0m
-[2m            DNA: [0m[36mAATCGTGGCCGTTCACGTCATGCGTCACTG...[0m
+[2m          Cells: [0m100 [2mgen=451 fit=0.396 mut=2[0m
+[2m     Habitable: [0m[32mYES[0m [2mUV=1.619 CR=0.784[0m
+[2m            DNA: [0m[36mATGGCACTACGCTAAAATATTGTGCCGTGG...[0m
 
 
 [1m[37m  ── PRESENT EPOCH ─────────────────────────────────────────[0m
 [2m     Complex life, intelligence[0m
 
   [2mt=300000[0m [37m[████████████████████████████████████████][0m [2m100.0%[0m
-[2m           Temp: [0m254.4 K
-[2m      Particles: [0m68 [2m(electron:49 positron:9 down:5 photon:5)[0m
+[2m           Temp: [0m275.3 K
+[2m      Particles: [0m62 [2m(electron:46 positron:6 down:5 photon:5)[0m
 [2m          Atoms: [0m201 [2m(H:95 C:30 O:30 He:20 N:20 P:6)[0m
 [2m      Molecules: [0m39 [2m(water:30 methane:8 ammonia:1)[0m
-[2m          Cells: [0m100 [2mgen=501 fit=0.726 mut=0[0m
-[2m     Habitable: [0m[32mYES[0m [2mUV=0.000 CR=0.090[0m
-[2m            DNA: [0m[36mAATCGTGGCCGTTCACGTCATGCGTCACTG...[0m
+[2m          Cells: [0m100 [2mgen=501 fit=0.728 mut=0[0m
+[2m     Habitable: [0m[32mYES[0m [2mUV=0.000 CR=0.052[0m
+[2m            DNA: [0m[36mATGGCACTACGCTAAAATATTGTGCCGTGG...[0m
 
 
 [1m[37m  ══════════════════════════════════════════════════════════[0m
 [1m[37m   SIMULATION COMPLETE[0m
 [1m[37m  ══════════════════════════════════════════════════════════[0m
 
-[2m   Runtime:          [0m0.33s
+[2m   Runtime:          [0m0.28s
 [2m   Total ticks:      [0m300.0k
 [2m   Final epoch:      [0mPresent
-[2m   Temperature:      [0m254.4 K
+[2m   Temperature:      [0m275.3 K
 
 [1m   Cumulative Statistics:[0m
-[2m   Particles created: [0m128
+[2m   Particles created: [0m122
 [2m   Atoms formed:      [0m201
 [2m   Molecules formed:  [0m39
-[2m   Cells born:        [0m4.3k
+[2m   Cells born:        [0m5.0k
 [2m   Mutations:         [0m0
 
 [1m   Final Element Counts:[0m
@@ -442,9 +442,9 @@
 [1m   Biosphere:[0m
 [2m     Population:      [0m100
 [2m     Generations:     [0m501
-[2m     Avg fitness:     [0m0.7265
+[2m     Avg fitness:     [0m0.7275
 [2m     Total mutations: [0m0
-[2m     Sample DNA:      [0m[36mAATCGTGGCCGTTCACGTCATGCGTCACTG...[0m
+[2m     Sample DNA:      [0m[36mATGGCACTACGCTAAAATATTGTGCCGTGG...[0m
 
 [2m  From quantum foam to conscious observers -- the universe persists.[0m
 

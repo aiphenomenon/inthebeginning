@@ -36,6 +36,8 @@ def normalize_output(text):
         line = re.sub(r'/[^\s]+/inthebeginning/', '<ROOT>/', line)
         # Strip timestamps
         line = re.sub(r'\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}', '<TIMESTAMP>', line)
+        # Strip AST token counts (vary with codebase size)
+        line = re.sub(r'Total tokens: \d+', 'Total tokens: <N>', line)
         normalized.append(line)
     return "\n".join(normalized)
 
@@ -77,7 +79,7 @@ def load_golden_snapshot(lang):
     """Load the golden normalized output for a language."""
     path = os.path.join(SNAPSHOT_DIR, lang, "output_normalized.txt")
     with open(path) as f:
-        return f.read()
+        return normalize_output(f.read())
 
 
 def load_golden_metadata(lang):
