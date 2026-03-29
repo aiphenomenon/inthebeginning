@@ -10,16 +10,17 @@ Web/iOS (gVisor) hook-based flow, see `docs/web-ios-flow.md`.
 
 1. [Project Overview](#project-overview)
 2. [Coding Principles](#coding-principles)
-3. [Test Execution](#test-execution)
-4. [Session Logging Protocol](#session-logging-protocol)
-5. [Future Memories Protocol](#future-memories-protocol)
-6. [Documentation Reference](#documentation-reference)
-7. [Cross-Compilation](#cross-compilation)
-8. [CI/CD](#cicd)
-9. [File Structure](#file-structure)
-10. [GitHub Pages Deployment](#github-pages-deployment)
-11. [Web Application Modes](#web-application-modes)
-12. [For Agentic Tools](#for-agentic-tools)
+3. [CLI Hooks](#cli-hooks)
+4. [Test Execution](#test-execution)
+5. [Session Logging Protocol](#session-logging-protocol)
+6. [Future Memories Protocol](#future-memories-protocol)
+7. [Documentation Reference](#documentation-reference)
+8. [Cross-Compilation](#cross-compilation)
+9. [CI/CD](#cicd)
+10. [File Structure](#file-structure)
+11. [GitHub Pages Deployment](#github-pages-deployment)
+12. [Web Application Modes](#web-application-modes)
+13. [For Agentic Tools](#for-agentic-tools)
 
 ---
 
@@ -84,6 +85,53 @@ end-user consumption. They are the only network-facing components.
 When a physics engine change is made in the Python reference, propagate the change
 to all other language implementations. Use `tests/test_cross_language_parity.py` to
 verify epoch transitions match.
+
+---
+
+## CLI Hooks
+
+Claude Code CLI hooks in `.claude/settings.json` enforce key engineering practices
+automatically. The hooks are in `.claude/hooks/` and fire at specific lifecycle
+points. These complement the steering in this file — both the hooks and CLAUDE.md
+should agree on what's expected.
+
+### Hook Summary
+
+| Hook | Event | What It Does | Blocking? |
+|------|-------|-------------|-----------|
+| `lint-on-write.sh` | PostToolUse (Edit/Write) | Python `py_compile`, JSON validation, JS `node --check` | No (feedback) |
+| `pre-commit-plan-check.sh` | PreToolUse (Bash git commit) | Blocks commit if code changed but no future_memories plan exists | **Yes** (exit 2) |
+| `post-bash-test-nudge.sh` | PostToolUse (Bash) | After build commands, reminds to run corresponding test suite | No (nudge) |
+| `stop-check.sh` | Stop | Blocks stop if uncommitted changes, unpushed commits, or missing session log | **Yes** (exit 2) |
+| `session-start.sh` | SessionStart | Injects branch, plan, session log, and dirty-tree status | No (context) |
+
+### Hook-Enforced Practices
+
+These practices are enforced by hooks **and** expected by this steering file:
+
+1. **Lint every write**: Python files must pass `py_compile`, JSON files must be
+   valid. Fix syntax errors immediately — the hook output shows the error.
+
+2. **Plan before code commits**: A `future_memories/v{VERSION}-plan.md` must exist
+   before committing source code changes. Doc-only commits (session logs, markdown)
+   are exempt. Write the plan, commit it, then start coding.
+
+3. **Commit before stopping**: The Stop hook blocks if there are uncommitted or
+   unpushed changes. Always commit logical units of work and push to remote before
+   ending a conversation turn.
+
+4. **Session log every turn**: The Stop hook checks for a session log in
+   `session_logs/`. Generate one before the conversation ends.
+
+5. **Test after building**: After build commands (cargo build, go build, make,
+   npm run build), run the corresponding test suite. The hook reminds; follow through.
+
+### Commit and Push Cadence
+
+- Commit at every significant milestone, not just end of turn
+- Push future_memories plans and large commits immediately
+- Push code changes at intervals of roughly every 15-20 minutes
+- The Stop hook enforces that nothing is left uncommitted or unpushed at turn end
 
 ---
 
@@ -330,7 +378,8 @@ docs/                Architecture documentation
 session_logs/        Per-turn session and transcript logs
 future_memories/     Verbose plan files for session restoration
 .github/workflows/   CI/CD pipelines
-.claude/             Claude Code settings
+.claude/             Claude Code settings and CLI hooks
+  hooks/             Hook scripts (lint, plan check, stop check, etc.)
 ```
 
 ---
