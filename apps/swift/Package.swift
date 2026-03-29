@@ -28,26 +28,30 @@ var targets: [Target] = [
     ),
 ]
 
+// The app executable requires SwiftUI/Metal/AVFoundation (Apple platforms only).
+// Skip it when SKIP_APP_TARGET is set (CI simulator-only builds).
 #if os(macOS) || os(iOS) || os(tvOS)
-targets.append(
-    .executableTarget(
-        name: "InTheBeginning",
-        dependencies: ["InTheBeginningSimulator"],
-        path: "InTheBeginning",
-        exclude: ["Simulator"],
-        sources: [
-            "App.swift",
-            "Views/SimulationView.swift",
-            "Views/EpochTimelineView.swift",
-            "Views/SettingsView.swift",
-            "Renderer/MetalRenderer.swift",
-            "Audio/AudioEngine.swift",
-        ],
-        resources: [
-            .process("Renderer/Shaders.metal"),
-        ]
+if ProcessInfo.processInfo.environment["SKIP_APP_TARGET"] == nil {
+    targets.append(
+        .executableTarget(
+            name: "InTheBeginning",
+            dependencies: ["InTheBeginningSimulator"],
+            path: "InTheBeginning",
+            exclude: ["Simulator"],
+            sources: [
+                "App.swift",
+                "Views/SimulationView.swift",
+                "Views/EpochTimelineView.swift",
+                "Views/SettingsView.swift",
+                "Renderer/MetalRenderer.swift",
+                "Audio/AudioEngine.swift",
+            ],
+            resources: [
+                .process("Renderer/Shaders.metal"),
+            ]
+        )
     )
-)
+}
 #endif
 
 let package = Package(

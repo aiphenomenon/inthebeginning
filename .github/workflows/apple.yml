@@ -2,8 +2,8 @@ name: Apple Platforms (macOS/iOS/tvOS)
 
 on:
   schedule:
-    # 11:00 AM CT (16:00 UTC) daily
-    - cron: '0 16 * * *'
+    # 12:05 PM CT (17:05 UTC) — verification run, then reset to daily schedule
+    - cron: '5 17 * * *'
   workflow_dispatch: {}  # Manual trigger from GitHub UI
 
 jobs:
@@ -40,9 +40,13 @@ jobs:
         run: swift --version
       - name: Build simulator library
         working-directory: apps/swift
+        env:
+          SKIP_APP_TARGET: "1"
         run: swift build
-      - name: Run tests
+      - name: Run simulator tests
         working-directory: apps/swift
+        env:
+          SKIP_APP_TARGET: "1"
         run: swift test
 
   swift-app:
