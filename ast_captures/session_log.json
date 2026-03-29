@@ -21,7 +21,7 @@
       },
       "sequence_id": 1,
       "parent_id": 0,
-      "timestamp": 1774792148.873866,
+      "timestamp": 1774793109.7438643,
       "context_tokens_approx": 0
     },
     {
@@ -31,9 +31,9 @@
         "ast_node_count": 2245,
         "source_hash": "75923ca01cc4a178",
         "metrics": {
-          "wall_time_ms": 1285.850358006428,
-          "cpu_user_ms": 1284.8039999999999,
-          "cpu_system_ms": 0.9770000000000004,
+          "wall_time_ms": 1280.1459449983668,
+          "cpu_user_ms": 1277.1090000000002,
+          "cpu_system_ms": 3.0269999999999992,
           "peak_memory_kb": 1553,
           "current_memory_kb": 762,
           "disk_read_bytes": 0,
@@ -20338,7 +20338,7 @@
       },
       "sequence_id": 2,
       "parent_id": 1,
-      "timestamp": 1774792150.1672294,
+      "timestamp": 1774793111.0309954,
       "context_tokens_approx": 59402
     },
     {
@@ -20352,7 +20352,7 @@
       },
       "sequence_id": 3,
       "parent_id": 0,
-      "timestamp": 1774792150.1762176,
+      "timestamp": 1774793111.0375423,
       "context_tokens_approx": 0
     },
     {
@@ -20362,9 +20362,9 @@
         "ast_node_count": 0,
         "source_hash": "75923ca01cc4a178",
         "metrics": {
-          "wall_time_ms": 1222.5547050038585,
-          "cpu_user_ms": 1220.457,
-          "cpu_system_ms": 1.9970000000000006,
+          "wall_time_ms": 1344.222785999591,
+          "cpu_user_ms": 1343.2040000000002,
+          "cpu_system_ms": 0.9989999999999999,
           "peak_memory_kb": 1545,
           "current_memory_kb": 30,
           "disk_read_bytes": 0,
@@ -20733,7 +20733,7 @@
       },
       "sequence_id": 4,
       "parent_id": 3,
-      "timestamp": 1774792151.399056,
+      "timestamp": 1774793112.3820844,
       "context_tokens_approx": 956
     },
     {
@@ -20747,7 +20747,7 @@
       },
       "sequence_id": 5,
       "parent_id": 0,
-      "timestamp": 1774792151.3992195,
+      "timestamp": 1774793112.382249,
       "context_tokens_approx": 0
     },
     {
@@ -20757,9 +20757,9 @@
         "ast_node_count": 0,
         "source_hash": "75923ca01cc4a178",
         "metrics": {
-          "wall_time_ms": 1219.3131140011246,
-          "cpu_user_ms": 1219.265,
-          "cpu_system_ms": 0.0,
+          "wall_time_ms": 1224.526257996331,
+          "cpu_user_ms": 1224.532,
+          "cpu_system_ms": 0.001000000000001,
           "peak_memory_kb": 1545,
           "current_memory_kb": 21,
           "disk_read_bytes": 0,
@@ -20835,7 +20835,7 @@
       },
       "sequence_id": 6,
       "parent_id": 5,
-      "timestamp": 1774792152.6187894,
+      "timestamp": 1774793113.6070006,
       "context_tokens_approx": 175
     },
     {
@@ -20849,7 +20849,7 @@
       },
       "sequence_id": 7,
       "parent_id": 0,
-      "timestamp": 1774792152.6189,
+      "timestamp": 1774793113.607069,
       "context_tokens_approx": 0
     },
     {
@@ -20859,9 +20859,9 @@
         "ast_node_count": 0,
         "source_hash": "75923ca01cc4a178",
         "metrics": {
-          "wall_time_ms": 1219.3515570033924,
-          "cpu_user_ms": 1218.2380000000003,
-          "cpu_system_ms": 0.9969999999999997,
+          "wall_time_ms": 1217.8048310015583,
+          "cpu_user_ms": 1217.3229999999999,
+          "cpu_system_ms": 0.0,
           "peak_memory_kb": 1537,
           "current_memory_kb": 12,
           "disk_read_bytes": 0,
@@ -20880,7 +20880,7 @@
       },
       "sequence_id": 8,
       "parent_id": 7,
-      "timestamp": 1774792153.8384593,
+      "timestamp": 1774793114.8250678,
       "context_tokens_approx": 28
     },
     {
@@ -20894,7 +20894,7 @@
       },
       "sequence_id": 9,
       "parent_id": 0,
-      "timestamp": 1774792153.838509,
+      "timestamp": 1774793114.8251176,
       "context_tokens_approx": 0
     },
     {
@@ -20904,9 +20904,9 @@
         "ast_node_count": 0,
         "source_hash": "75923ca01cc4a178",
         "metrics": {
-          "wall_time_ms": 1224.5927740004845,
-          "cpu_user_ms": 1224.5299999999997,
-          "cpu_system_ms": 0.001000000000001,
+          "wall_time_ms": 1259.4319050040212,
+          "cpu_user_ms": 1259.4200000000005,
+          "cpu_system_ms": 0.0,
           "peak_memory_kb": 1536,
           "current_memory_kb": 17,
           "disk_read_bytes": 0,
@@ -21137,7 +21137,7 @@
       },
       "sequence_id": 10,
       "parent_id": 9,
-      "timestamp": 1774792155.0633402,
+      "timestamp": 1774793116.0847898,
       "context_tokens_approx": 555
     },
     {
@@ -21145,7 +21145,7 @@
       "payload": null,
       "sequence_id": 100,
       "parent_id": 0,
-      "timestamp": 1774792155.06344,
+      "timestamp": 1774793116.0848935,
       "context_tokens_approx": 0
     },
     {
@@ -21633,7 +21633,7 @@
       },
       "sequence_id": 11,
       "parent_id": 100,
-      "timestamp": 1774792155.063459,
+      "timestamp": 1774793116.0849118,
       "context_tokens_approx": 0
     }
   ]
