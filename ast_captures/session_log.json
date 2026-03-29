@@ -14,14 +14,14 @@
       "cue_type": "query",
       "payload": {
         "action": "parse",
-        "target": "/home/claude/inthebeginning/simulator/quantum.py",
+        "target": "/home/claude/projects/inthebeginning/simulator/quantum.py",
         "language": "python",
         "filters": {},
         "depth": -1
       },
       "sequence_id": 1,
       "parent_id": 0,
-      "timestamp": 1774752050.6093502,
+      "timestamp": 1774760132.1623256,
       "context_tokens_approx": 0
     },
     {
@@ -31,9 +31,9 @@
         "ast_node_count": 2245,
         "source_hash": "75923ca01cc4a178",
         "metrics": {
-          "wall_time_ms": 1208.0613859998266,
-          "cpu_user_ms": 1208.0490000000002,
-          "cpu_system_ms": 0.024000000000000583,
+          "wall_time_ms": 1177.9244499994093,
+          "cpu_user_ms": 1172.796,
+          "cpu_system_ms": 5.016000000000001,
           "peak_memory_kb": 1553,
           "current_memory_kb": 762,
           "disk_read_bytes": 0,
@@ -20338,21 +20338,21 @@
       },
       "sequence_id": 2,
       "parent_id": 1,
-      "timestamp": 1774752051.8244536,
+      "timestamp": 1774760133.3471134,
       "context_tokens_approx": 59402
     },
     {
       "cue_type": "query",
       "payload": {
         "action": "symbols",
-        "target": "/home/claude/inthebeginning/simulator/quantum.py",
+        "target": "/home/claude/projects/inthebeginning/simulator/quantum.py",
         "language": "python",
         "filters": {},
         "depth": -1
       },
       "sequence_id": 3,
       "parent_id": 0,
-      "timestamp": 1774752051.8305879,
+      "timestamp": 1774760133.353128,
       "context_tokens_approx": 0
     },
     {
@@ -20362,9 +20362,9 @@
         "ast_node_count": 0,
         "source_hash": "75923ca01cc4a178",
         "metrics": {
-          "wall_time_ms": 1237.013484000272,
-          "cpu_user_ms": 1236.028,
-          "cpu_system_ms": 0.9999999999999991,
+          "wall_time_ms": 1182.648572998005,
+          "cpu_user_ms": 1182.6009999999999,
+          "cpu_system_ms": 0.0,
           "peak_memory_kb": 1545,
           "current_memory_kb": 30,
           "disk_read_bytes": 0,
@@ -20733,21 +20733,21 @@
       },
       "sequence_id": 4,
       "parent_id": 3,
-      "timestamp": 1774752053.067881,
+      "timestamp": 1774760134.5360346,
       "context_tokens_approx": 956
     },
     {
       "cue_type": "query",
       "payload": {
         "action": "dependencies",
-        "target": "/home/claude/inthebeginning/simulator/quantum.py",
+        "target": "/home/claude/projects/inthebeginning/simulator/quantum.py",
         "language": "python",
         "filters": {},
         "depth": -1
       },
       "sequence_id": 5,
       "parent_id": 0,
-      "timestamp": 1774752053.0680437,
+      "timestamp": 1774760134.5361924,
       "context_tokens_approx": 0
     },
     {
@@ -20757,8 +20757,8 @@
         "ast_node_count": 0,
         "source_hash": "75923ca01cc4a178",
         "metrics": {
-          "wall_time_ms": 1228.5394530008489,
-          "cpu_user_ms": 1228.5510000000004,
+          "wall_time_ms": 1182.9838209996524,
+          "cpu_user_ms": 1182.9340000000004,
           "cpu_system_ms": 0.0,
           "peak_memory_kb": 1545,
           "current_memory_kb": 21,
@@ -20835,21 +20835,21 @@
       },
       "sequence_id": 6,
       "parent_id": 5,
-      "timestamp": 1774752054.2968016,
+      "timestamp": 1774760135.7193959,
       "context_tokens_approx": 175
     },
     {
       "cue_type": "query",
       "payload": {
         "action": "metrics",
-        "target": "/home/claude/inthebeginning/simulator/quantum.py",
+        "target": "/home/claude/projects/inthebeginning/simulator/quantum.py",
         "language": "python",
         "filters": {},
         "depth": -1
       },
       "sequence_id": 7,
       "parent_id": 0,
-      "timestamp": 1774752054.296869,
+      "timestamp": 1774760135.7194622,
       "context_tokens_approx": 0
     },
     {
@@ -20859,8 +20859,8 @@
         "ast_node_count": 0,
         "source_hash": "75923ca01cc4a178",
         "metrics": {
-          "wall_time_ms": 1233.8052079994668,
-          "cpu_user_ms": 1233.8199999999997,
+          "wall_time_ms": 1236.2129420034762,
+          "cpu_user_ms": 1236.1429999999998,
           "cpu_system_ms": 0.0,
           "peak_memory_kb": 1537,
           "current_memory_kb": 12,
@@ -20880,21 +20880,21 @@
       },
       "sequence_id": 8,
       "parent_id": 7,
-      "timestamp": 1774752055.5308905,
+      "timestamp": 1774760136.9558556,
       "context_tokens_approx": 28
     },
     {
       "cue_type": "query",
       "payload": {
         "action": "coverage_map",
-        "target": "/home/claude/inthebeginning/simulator/quantum.py",
+        "target": "/home/claude/projects/inthebeginning/simulator/quantum.py",
         "language": "python",
         "filters": {},
         "depth": -1
       },
       "sequence_id": 9,
       "parent_id": 0,
-      "timestamp": 1774752055.5309596,
+      "timestamp": 1774760136.9559038,
       "context_tokens_approx": 0
     },
     {
@@ -20904,8 +20904,8 @@
         "ast_node_count": 0,
         "source_hash": "75923ca01cc4a178",
         "metrics": {
-          "wall_time_ms": 1292.3014939988207,
-          "cpu_user_ms": 1292.319,
+          "wall_time_ms": 1209.749872003158,
+          "cpu_user_ms": 1209.288,
           "cpu_system_ms": 0.0,
           "peak_memory_kb": 1536,
           "current_memory_kb": 17,
@@ -21137,7 +21137,7 @@
       },
       "sequence_id": 10,
       "parent_id": 9,
-      "timestamp": 1774752056.8235164,
+      "timestamp": 1774760138.1658792,
       "context_tokens_approx": 555
     },
     {
@@ -21145,7 +21145,7 @@
       "payload": null,
       "sequence_id": 100,
       "parent_id": 0,
-      "timestamp": 1774752056.8236191,
+      "timestamp": 1774760138.1659806,
       "context_tokens_approx": 0
     },
     {
@@ -21633,7 +21633,7 @@
       },
       "sequence_id": 11,
       "parent_id": 100,
-      "timestamp": 1774752056.8236365,
+      "timestamp": 1774760138.165999,
       "context_tokens_approx": 0
     }
   ]

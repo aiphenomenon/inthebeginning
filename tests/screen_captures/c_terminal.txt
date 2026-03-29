@@ -27,7 +27,7 @@
   Quantum Field:
     Temperature:     1.00e+10 K
     Particles:       2
-    Total energy:    9611729.00 SU
+    Total energy:    1925288.38 SU
     Protons:         0
     Neutrons:        0
     Electrons:       1
