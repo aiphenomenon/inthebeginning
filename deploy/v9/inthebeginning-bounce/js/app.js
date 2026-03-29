@@ -510,46 +510,64 @@ class CosmicRunnerApp {
   // ──── Music Loading ────
 
   async _loadMusic() {
-    // Try to auto-detect sibling directories for audio assets
-    // Shared assets path (GitHub Pages structure) and local paths
-    const bases = [
+    // Album JSON locations (where album.json lives)
+    const albumJsonPaths = [
+      'audio/album.json',
+      '../../shared/audio/tracks/album.json',
+      '../../shared/audio/metadata/v1/album.json',
+      '../shared/audio/tracks/album.json',
+    ];
+    // Audio base URLs (where the MP3 files live)
+    const audioBases = [
       'audio/',
       '../../shared/audio/tracks/',
       '../shared/audio/tracks/',
-      '../cosmic-runner-v5/audio/',
     ];
 
-    // Try album.json first, then album_notes.json as fallback
-    for (const base of bases) {
-      for (const name of ['album.json', 'album_notes.json']) {
-        try {
-          const loaded = await this.musicSync.loadAlbum(base + name, base);
-          if (loaded) {
-            this.musicLoaded = true;
-            break;
-          }
-        } catch (e) { /* try next */ }
-      }
-      if (this.musicLoaded) break;
+    // Load album.json from the first available location
+    let albumData = null;
+    for (const path of albumJsonPaths) {
+      try {
+        const resp = await fetch(path);
+        if (resp.ok) {
+          albumData = await resp.json();
+          break;
+        }
+      } catch (e) { /* try next */ }
     }
 
-    // Also try loading album metadata from shared metadata path
-    if (!this.musicLoaded) {
-      const metaBases = [
-        '../../shared/audio/metadata/v1/',
-        '../shared/audio/metadata/v1/',
-      ];
-      for (const base of metaBases) {
+    if (!albumData) return;
+
+    // Find the correct audio base URL by checking if the first track MP3 exists
+    const firstTrack = (albumData.tracks || [])[0];
+    const mp3File = firstTrack?.audio_file || firstTrack?.file;
+    let audioBase = 'audio/';
+
+    if (mp3File) {
+      for (const base of audioBases) {
         try {
-          const audioBase = base.replace('metadata/v1/', 'tracks/');
-          const loaded = await this.musicSync.loadAlbum(base + 'album.json', audioBase);
+          const resp = await fetch(base + mp3File, { method: 'HEAD' });
+          if (resp.ok) {
+            audioBase = base;
+            break;
+          }
+        } catch (e) { /* try next */ }
+      }
+    }
+
+    // Now load the album with the correct audio base URL
+    try {
+      // Re-load via MusicSync with the verified audio base
+      for (const path of albumJsonPaths) {
+        try {
+          const loaded = await this.musicSync.loadAlbum(path, audioBase);
           if (loaded) {
             this.musicLoaded = true;
             break;
           }
         } catch (e) { /* try next */ }
       }
-    }
+    } catch (e) { /* album load failed */ }
 
     // Load MIDI catalog (prefer shared midi/ dir so base URL resolves to MIDI files)
     const midiPaths = [

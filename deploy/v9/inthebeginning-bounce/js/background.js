@@ -418,7 +418,7 @@ class Background {
           ctx.fillStyle = `hsla(${eHue}, 80%, 70%, ${maxExplode * 0.3})`;
 
           // Expanding ring effect
-          const expandR = (1 - maxExplode) * cellW * 0.8;
+          const expandR = Math.max(0, (1 - maxExplode) * cellW * 0.8);
           ctx.beginPath();
           ctx.arc(x + cellW / 2, y + cellH / 2, expandR, 0, Math.PI * 2);
           ctx.fill();
@@ -523,7 +523,7 @@ class Background {
           ctx.shadowColor = `hsl(${hue}, 80%, 70%)`;
           ctx.shadowBlur = maxExplode * 10 * depth;
           ctx.fillStyle = `hsla(${hue}, 80%, 70%, ${maxExplode * 0.2})`;
-          const er = (1 - maxExplode) * pw * 0.6;
+          const er = Math.max(0, (1 - maxExplode) * pw * 0.6);
           ctx.beginPath();
           ctx.arc(px + pw / 2, py - elevation + ph / 2, er, 0, Math.PI * 2);
           ctx.fill();
