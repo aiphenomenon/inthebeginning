@@ -29,9 +29,10 @@ var targets: [Target] = [
 ]
 
 // The app executable requires SwiftUI/Metal/AVFoundation (Apple platforms only).
-// Skip it when SKIP_APP_TARGET is set (CI simulator-only builds).
-#if os(macOS) || os(iOS) || os(tvOS)
-if ProcessInfo.processInfo.environment["SKIP_APP_TARGET"] == nil {
+// The swift-app CI job builds this via xcodebuild instead.
+// Skip in SPM builds to avoid compile errors when SwiftUI types don't resolve.
+#if false  // Disabled for SPM; use Xcode/xcodebuild for the full app
+if true {
     targets.append(
         .executableTarget(
             name: "InTheBeginning",
