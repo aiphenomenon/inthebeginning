@@ -959,6 +959,8 @@ class MusicGenerator {
 
     if (this._synth) {
       this._synth.init();
+      // Stop any lingering scheduled notes before resuming
+      this._synth.stopAll();
       this._synth.resume();
     }
 

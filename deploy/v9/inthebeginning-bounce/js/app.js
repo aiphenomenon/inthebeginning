@@ -1115,23 +1115,19 @@ class CosmicRunnerApp {
   _onKeyDown(e) {
     if (this.screen !== 'main') return;
 
+    // In 2-player: P1=WASD+Space, P2=Arrows+Numpad+IJKL
+    // In 1-player: all key sets control player 0
+    const is2P = this.numPlayers === 2;
+    const p2 = is2P ? 1 : 0;  // P2 target (or P1 in single-player)
+
     switch (e.key) {
-      // Player 1: Arrows + WASD
+      // Space always jumps player 1
       case ' ':
-      case 'ArrowUp':
         e.preventDefault();
         if (this.game) this.game.jump(0);
         break;
-      case 'ArrowDown':
-        e.preventDefault();
-        if (this.game) this.game.fastDrop(0);
-        break;
-      case 'ArrowLeft':
-        this._p1LeftHeld = true;
-        break;
-      case 'ArrowRight':
-        this._p1RightHeld = true;
-        break;
+
+      // WASD — always player 1
       case 'w': case 'W':
         if (this.game) this.game.jump(0);
         break;
@@ -1145,39 +1141,61 @@ class CosmicRunnerApp {
         this._p1RightHeld = true;
         break;
 
-      // Player 2: IJKL (right-side keys) + Numpad
-      case 'i': case 'I':
-        if (this.game) this.game.jump(1);
+      // Arrows — P2 in 2-player, P1 in 1-player
+      case 'ArrowUp':
+        e.preventDefault();
+        if (this.game) this.game.jump(p2);
         break;
-      case 'k': case 'K':
-        if (this.game) this.game.fastDrop(1);
+      case 'ArrowDown':
+        e.preventDefault();
+        if (this.game) this.game.fastDrop(p2);
         break;
-      case 'j': case 'J':
-        this._p2LeftHeld = true;
+      case 'ArrowLeft':
+        if (is2P) this._p2LeftHeld = true;
+        else this._p1LeftHeld = true;
         break;
-      case 'l': case 'L':
-        this._p2RightHeld = true;
+      case 'ArrowRight':
+        if (is2P) this._p2RightHeld = true;
+        else this._p1RightHeld = true;
         break;
 
-      // Numpad P2
+      // IJKL (vim-style) — P2 in 2-player, P1 in 1-player
+      case 'i': case 'I':
+        if (this.game) this.game.jump(p2);
+        break;
+      case 'k': case 'K':
+        if (this.game) this.game.fastDrop(p2);
+        break;
+      case 'j': case 'J':
+        if (is2P) this._p2LeftHeld = true;
+        else this._p1LeftHeld = true;
+        break;
+      case 'l': case 'L':
+        if (is2P) this._p2RightHeld = true;
+        else this._p1RightHeld = true;
+        break;
+
+      // Numpad — P2 in 2-player, P1 in 1-player
       case '8':
         if (e.location === KeyboardEvent.DOM_KEY_LOCATION_NUMPAD) {
-          if (this.game) this.game.jump(1);
+          if (this.game) this.game.jump(p2);
         }
         break;
       case '4':
         if (e.location === KeyboardEvent.DOM_KEY_LOCATION_NUMPAD) {
-          this._p2LeftHeld = true;
+          if (is2P) this._p2LeftHeld = true;
+          else this._p1LeftHeld = true;
         }
         break;
       case '6':
         if (e.location === KeyboardEvent.DOM_KEY_LOCATION_NUMPAD) {
-          this._p2RightHeld = true;
+          if (is2P) this._p2RightHeld = true;
+          else this._p1RightHeld = true;
         }
         break;
       case '5':
         if (e.location === KeyboardEvent.DOM_KEY_LOCATION_NUMPAD) {
-          if (this.game) this.game.fastDrop(1);
+          if (this.game) this.game.fastDrop(p2);
         }
         break;
 
@@ -1217,21 +1235,41 @@ class CosmicRunnerApp {
   }
 
   _onKeyUp(e) {
+    const is2P = this.numPlayers === 2;
     switch (e.key) {
-      // P1 keys
-      case 'ArrowLeft': this._p1LeftHeld = false; break;
-      case 'ArrowRight': this._p1RightHeld = false; break;
+      // WASD — always P1
       case 'a': case 'A': this._p1LeftHeld = false; break;
       case 'd': case 'D': this._p1RightHeld = false; break;
-      // P2 keys (IJKL)
-      case 'j': case 'J': this._p2LeftHeld = false; break;
-      case 'l': case 'L': this._p2RightHeld = false; break;
-      // P2 numpad
+      // Arrows — P2 in 2P, P1 in 1P
+      case 'ArrowLeft':
+        if (is2P) this._p2LeftHeld = false;
+        else this._p1LeftHeld = false;
+        break;
+      case 'ArrowRight':
+        if (is2P) this._p2RightHeld = false;
+        else this._p1RightHeld = false;
+        break;
+      // IJKL — P2 in 2P, P1 in 1P
+      case 'j': case 'J':
+        if (is2P) this._p2LeftHeld = false;
+        else this._p1LeftHeld = false;
+        break;
+      case 'l': case 'L':
+        if (is2P) this._p2RightHeld = false;
+        else this._p1RightHeld = false;
+        break;
+      // Numpad — P2 in 2P, P1 in 1P
       case '4':
-        if (e.location === KeyboardEvent.DOM_KEY_LOCATION_NUMPAD) this._p2LeftHeld = false;
+        if (e.location === KeyboardEvent.DOM_KEY_LOCATION_NUMPAD) {
+          if (is2P) this._p2LeftHeld = false;
+          else this._p1LeftHeld = false;
+        }
         break;
       case '6':
-        if (e.location === KeyboardEvent.DOM_KEY_LOCATION_NUMPAD) this._p2RightHeld = false;
+        if (e.location === KeyboardEvent.DOM_KEY_LOCATION_NUMPAD) {
+          if (is2P) this._p2RightHeld = false;
+          else this._p1RightHeld = false;
+        }
         break;
     }
   }
