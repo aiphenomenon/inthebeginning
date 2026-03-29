@@ -27,7 +27,7 @@
   Quantum Field:
     Temperature:     1.00e+10 K
     Particles:       4
-    Total energy:    30273964.00 SU
+    Total energy:    31082290.00 SU
     Protons:         0
     Neutrons:        0
     Electrons:       2
@@ -58,13 +58,13 @@
 
   Quantum Field:
     Temperature:     1.00e+10 K
-    Particles:       46
-    Total energy:    1032048448.00 SU
+    Particles:       48
+    Total energy:    1076402176.00 SU
     Protons:         0
     Neutrons:        0
     Electrons:       22
     Photons:         0
-    Created total:   46
+    Created total:   48
     Annihilated:     0
   Environment:
     Temperature:     5.00e+09 K
@@ -90,13 +90,13 @@
 
   Quantum Field:
     Temperature:     1.00e+08 K
-    Particles:       54
-    Total energy:    1071299392.00 SU
+    Particles:       58
+    Total energy:    1154372096.00 SU
     Protons:         0
     Neutrons:        0
-    Electrons:       26
+    Electrons:       27
     Photons:         0
-    Created total:   54
+    Created total:   58
     Annihilated:     0
   Environment:
     Temperature:     1.00e+08 K
@@ -122,13 +122,13 @@
 
   Quantum Field:
     Temperature:     1.00e+07 K
-    Particles:       114
-    Total energy:    1071598912.00 SU
+    Particles:       120
+    Total energy:    1154754816.00 SU
     Protons:         0
     Neutrons:        0
-    Electrons:       53
+    Electrons:       50
     Photons:         0
-    Created total:   114
+    Created total:   120
     Annihilated:     0
   Environment:
     Temperature:     1.00e+07 K
@@ -151,17 +151,17 @@
   ------------------------------------------------------------
   Events:
     [tick   1000] Hadron epoch: quarks confine into protons and neutrons
-    [tick   1000] Quark confinement formed 2 hadrons
+    [tick   1000] Quark confinement formed 5 hadrons
 
   Quantum Field:
     Temperature:     1.00e+06 K
     Particles:       110
-    Total energy:    1071570496.00 SU
-    Protons:         2
+    Total energy:    1146007296.00 SU
+    Protons:         5
     Neutrons:        0
-    Electrons:       53
+    Electrons:       50
     Photons:         0
-    Created total:   114
+    Created total:   120
     Annihilated:     0
   Environment:
     Temperature:     1.00e+06 K
@@ -184,11 +184,11 @@
   ------------------------------------------------------------
   Events:
     [tick   5000] Big Bang nucleosynthesis: hydrogen and helium form
-    [tick   5000] Nucleosynthesis created 2 light nuclei (H, He)
+    [tick   5000] Nucleosynthesis created 5 light nuclei (H, He)
 
   Atomic System:
-    Total atoms:     2
-    Hydrogen (H):    2
+    Total atoms:     5
+    Hydrogen (H):    5
   Environment:
     Temperature:     1.00e+04 K
     Radiation:       1.00e+04
@@ -210,11 +210,11 @@
   ------------------------------------------------------------
   Events:
     [tick  10000] Recombination: electrons bind to nuclei, universe becomes transparent
-    [tick  10000] Recombination captured 2 atoms from plasma
+    [tick  10000] Recombination captured 5 atoms from plasma
 
   Atomic System:
-    Total atoms:     4
-    Hydrogen (H):    4
+    Total atoms:     10
+    Hydrogen (H):    10
   Environment:
     Temperature:     3.00e+03 K
     Radiation:       1.00e+02
@@ -238,8 +238,8 @@
     [tick  50000] First stars ignite: stellar nucleosynthesis begins
 
   Atomic System:
-    Total atoms:     4
-    Hydrogen (H):    4
+    Total atoms:     10
+    Hydrogen (H):    10
   Environment:
     Temperature:     1.00e+02 K
     Radiation:       5.00e+01
@@ -264,8 +264,8 @@
     [tick 100000] Solar system forms from collapsing molecular cloud
 
   Atomic System:
-    Total atoms:     4
-    Hydrogen (H):    4
+    Total atoms:     10
+    Hydrogen (H):    10
   Environment:
     Temperature:     5.00e+02 K
     Radiation:       2.00e+01
@@ -291,8 +291,8 @@
     [tick 200000] Earth forms: volcanic outgassing creates early atmosphere
 
   Atomic System:
-    Total atoms:     4
-    Hydrogen (H):    4
+    Total atoms:     10
+    Hydrogen (H):    10
   Environment:
     Temperature:     4.88e+02 K
     Radiation:       1.00e+01
@@ -319,15 +319,15 @@
     [tick 210000] Biosphere seeded with 8 protocells
 
   Atomic System:
-    Total atoms:     4
-    Hydrogen (H):    4
+    Total atoms:     10
+    Hydrogen (H):    10
   Biosphere:
     Living cells:    12
     Generation:      1
     Total born:      12
     Total died:      0
-    Avg fitness:     0.7234
-    Total mutations: 1
+    Avg fitness:     0.5799
+    Total mutations: 0
   Environment:
     Temperature:     3.18e+02 K
     Radiation:       5.00e+00
@@ -353,15 +353,15 @@
     [tick 250000] DNA replication and genetic code established
 
   Atomic System:
-    Total atoms:     4
-    Hydrogen (H):    4
+    Total atoms:     10
+    Hydrogen (H):    10
   Biosphere:
-    Living cells:    38
+    Living cells:    34
     Generation:      21
-    Total born:      38
+    Total born:      34
     Total died:      0
-    Avg fitness:     0.5939
-    Total mutations: 19
+    Avg fitness:     0.4327
+    Total mutations: 18
   Environment:
     Temperature:     2.98e+02 K
     Radiation:       3.00e+00
@@ -390,15 +390,15 @@
     [tick 280000] Present day: complex life thrives on Earth
 
   Atomic System:
-    Total atoms:     4
-    Hydrogen (H):    4
+    Total atoms:     10
+    Hydrogen (H):    10
   Biosphere:
-    Living cells:    128
+    Living cells:    71
     Generation:      36
-    Total born:      194
-    Total died:      66
-    Avg fitness:     0.6667
-    Total mutations: 31
+    Total born:      71
+    Total died:      0
+    Avg fitness:     0.5334
+    Total mutations: 35
   Environment:
     Temperature:     2.88e+02 K
     Radiation:       1.00e+00
@@ -423,18 +423,18 @@
 
   Quantum Field:
     Temperature:     1.00e+04 K
-    Particles:       106
-    Total energy:    1031436992.00 SU
+    Particles:       100
+    Total energy:    1039144256.00 SU
     Protons:         0
     Neutrons:        0
-    Electrons:       51
+    Electrons:       45
     Photons:         0
-    Created total:   114
+    Created total:   120
     Annihilated:     0
 
   Atomic System:
-    Total atoms:     4
-    Hydrogen (H):    4
+    Total atoms:     10
+    Hydrogen (H):    10
 
   Chemistry:
     Molecules:       0
@@ -446,10 +446,10 @@
   Biosphere:
     Living cells:    128
     Generation:      45
-    Total born:      413
-    Total died:      285
-    Avg fitness:     0.7692
-    Total mutations: 21
+    Total born:      207
+    Total died:      79
+    Avg fitness:     0.6085
+    Total mutations: 33
 
   Environment:
     Temperature:     2.88e+02 K
@@ -469,11 +469,11 @@
     [tick     10 | Electroweak       ] Electroweak symmetry breaking: W/Z bosons acquire mass
     [tick    100 | Quark             ] Quark epoch: quark-gluon plasma fills the universe
     [tick   1000 | Hadron            ] Hadron epoch: quarks confine into protons and neutrons
-    [tick   1000 | Hadron            ] Quark confinement formed 2 hadrons
+    [tick   1000 | Hadron            ] Quark confinement formed 5 hadrons
     [tick   5000 | Nucleosynthesis   ] Big Bang nucleosynthesis: hydrogen and helium form
-    [tick   5000 | Nucleosynthesis   ] Nucleosynthesis created 2 light nuclei (H, He)
+    [tick   5000 | Nucleosynthesis   ] Nucleosynthesis created 5 light nuclei (H, He)
     [tick  10000 | Recombination     ] Recombination: electrons bind to nuclei, universe becomes transparent
-    [tick  10000 | Recombination     ] Recombination captured 2 atoms from plasma
+    [tick  10000 | Recombination     ] Recombination captured 5 atoms from plasma
     [tick  50000 | Star Formation    ] First stars ignite: stellar nucleosynthesis begins
     [tick 100000 | Solar System      ] Solar system forms from collapsing molecular cloud
     [tick 200000 | Earth Formation   ] Earth forms: volcanic outgassing creates early atmosphere

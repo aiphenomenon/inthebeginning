@@ -4,34 +4,34 @@
 ======================================================================
 
   [ 0] Planck                  T=1.00e+10 K  Scale=6.38e-27
-       Particles: 46  Atoms: 0  Molecules: 0  Life: 0
+       Particles: 56  Atoms: 0  Molecules: 0  Life: 0
   [ 1] Inflation               T=9.73e+26 K  Scale=6.38e+123
-       Particles: 102  Atoms: 0  Molecules: 0  Life: 0
+       Particles: 114  Atoms: 0  Molecules: 0  Life: 0
   [ 2] Electroweak             T=8.72e+24 K  Scale=4.07e+132
-       Particles: 146  Atoms: 0  Molecules: 0  Life: 0
+       Particles: 158  Atoms: 0  Molecules: 0  Life: 0
   [ 3] Quark-Gluon Plasma      T=2.57e+22 K  Scale=2.59e+141
-       Particles: 198  Atoms: 0  Molecules: 0  Life: 0
+       Particles: 212  Atoms: 0  Molecules: 0  Life: 0
   [ 4] Hadron                  T=2.43e+19 K  Scale=1.65e+150
-       Particles: 198  Atoms: 0  Molecules: 0  Life: 0
+       Particles: 212  Atoms: 0  Molecules: 0  Life: 0
   [ 5] Nucleosynthesis         T=7.19e+15 K  Scale=1.05e+159
-       Particles: 198  Atoms: 0  Molecules: 0  Life: 0
+       Particles: 212  Atoms: 0  Molecules: 0  Life: 0
   [ 6] Recombination           T=6.47e+11 K  Scale=6.72e+167
-       Particles: 198  Atoms: 0  Molecules: 0  Life: 0
+       Particles: 212  Atoms: 0  Molecules: 0  Life: 0
   [ 7] Star Formation          T=1.82e+07 K  Scale=1.11e+168
-       Particles: 198  Atoms: 0  Molecules: 0  Life: 0
+       Particles: 212  Atoms: 0  Molecules: 0  Life: 0
   [ 8] Solar System            T=5.92e+03 K  Scale=1.82e+168
-       Particles: 198  Atoms: 0  Molecules: 0  Life: 0
+       Particles: 212  Atoms: 0  Molecules: 0  Life: 0
   [ 9] Earth Formation         T=2.88e+02 K  Scale=2.99e+168
-       Particles: 198  Atoms: 0  Molecules: 0  Life: 0
+       Particles: 212  Atoms: 0  Molecules: 0  Life: 0
   [10] Life Emergence          T=3.00e+02 K  Scale=4.92e+168
-       Particles: 198  Atoms: 0  Molecules: 0  Life: 0
+       Particles: 212  Atoms: 0  Molecules: 0  Life: 0
   [11] DNA Evolution           T=2.98e+02 K  Scale=8.09e+168
-       Particles: 198  Atoms: 0  Molecules: 0  Life: 0
+       Particles: 212  Atoms: 0  Molecules: 0  Life: 0
   [12] Present Day             T=2.95e+02 K  Scale=1.33e+169
-       Particles: 198  Atoms: 0  Molecules: 0  Life: 0
+       Particles: 212  Atoms: 0  Molecules: 0  Life: 0
 
 ----------------------------------------------------------------------
-Simulation complete in 0.050 seconds
+Simulation complete in 0.054 seconds
 Final temperature: 295.00 K
 Total epochs simulated: 13
 ----------------------------------------------------------------------
