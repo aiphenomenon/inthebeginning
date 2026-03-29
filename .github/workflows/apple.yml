@@ -1,0 +1,98 @@
+name: Apple Platforms (macOS/iOS/tvOS)
+
+on:
+  schedule:
+    # 7:50 AM CT (12:50 UTC) — test schedule, will update to 8:00 AM CT (13:00 UTC)
+    - cron: '50 12 * * *'
+  workflow_dispatch: {}  # Manual trigger from GitHub UI
+
+jobs:
+  check-freshness:
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - id: check
+        name: Skip if no commits in last 25 hours
+        run: |
+          LAST_COMMIT=$(git log -1 --format=%ct)
+          NOW=$(date +%s)
+          AGE=$(( NOW - LAST_COMMIT ))
+          HOURS=$(( AGE / 3600 ))
+          echo "Last commit: ${HOURS}h ago"
+          if [ $AGE -lt 90000 ]; then
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping — no commits in last 25 hours"
+          fi
+
+  swift-simulator:
+    needs: check-freshness
+    if: needs.check-freshness.outputs.should_run == 'true'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Swift version
+        run: swift --version
+      - name: Build simulator library
+        working-directory: apps/swift
+        run: swift build
+      - name: Run tests
+        working-directory: apps/swift
+        run: swift test
+
+  swift-app:
+    needs: check-freshness
+    if: needs.check-freshness.outputs.should_run == 'true'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Xcode version
+        run: xcodebuild -version
+      - name: Build iOS app
+        working-directory: apps/swift
+        run: |
+          xcodebuild build \
+            -scheme InTheBeginning \
+            -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
+            -skipPackagePluginValidation \
+            CODE_SIGNING_ALLOWED=NO \
+            2>&1 | tail -20
+      - name: Build macOS app
+        working-directory: apps/swift
+        run: |
+          xcodebuild build \
+            -scheme InTheBeginning \
+            -destination 'platform=macOS' \
+            -skipPackagePluginValidation \
+            CODE_SIGNING_ALLOWED=NO \
+            2>&1 | tail -20
+      - name: Build tvOS app
+        working-directory: apps/swift
+        run: |
+          xcodebuild build \
+            -scheme InTheBeginning \
+            -destination 'platform=tvOS Simulator,name=Apple TV,OS=latest' \
+            -skipPackagePluginValidation \
+            CODE_SIGNING_ALLOWED=NO \
+            2>&1 | tail -20
+
+  macos-screensaver:
+    needs: check-freshness
+    if: needs.check-freshness.outputs.should_run == 'true'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build screensaver
+        working-directory: apps/screensaver-macos
+        run: |
+          xcodebuild build \
+            -project InTheBeginning.xcodeproj \
+            -scheme InTheBeginning \
+            -destination 'platform=macOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            2>&1 | tail -20
