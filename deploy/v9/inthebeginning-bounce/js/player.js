@@ -521,10 +521,20 @@ class GamePlayer {
    * @param {number} speed - 0.25 to 4.0
    */
   setSpeed(speed) {
-    this.midiPlayer.setSpeed(speed);
-    this.musicGenerator.setSpeed(speed);
+    this._speed = Math.max(0.5, Math.min(4.0, speed));
+    this.midiPlayer.setSpeed(this._speed);
+    this.musicGenerator.setSpeed(this._speed);
     // MP3 mode: use playbackRate
-    this.audio.playbackRate = Math.max(0.25, Math.min(4.0, speed));
+    this.audio.playbackRate = this._speed;
+  }
+
+  /**
+   * Adjust speed by a delta (e.g., +0.1 or -0.1).
+   * @param {number} delta - Speed change amount.
+   */
+  adjustSpeed(delta) {
+    const current = this._speed || 1.0;
+    this.setSpeed(current + delta);
   }
 
   // ──── Mutation Control ────

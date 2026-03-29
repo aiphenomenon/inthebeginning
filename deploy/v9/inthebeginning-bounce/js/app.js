@@ -113,9 +113,11 @@ class CosmicRunnerApp {
     const speedUp = document.getElementById('speed-up');
     if (speedDown) speedDown.addEventListener('click', () => {
       if (this.game) this.game.adjustSpeed(-SPEED_STEP);
+      if (this.player) this.player.adjustSpeed(-SPEED_STEP);
     });
     if (speedUp) speedUp.addEventListener('click', () => {
       if (this.game) this.game.adjustSpeed(SPEED_STEP);
+      if (this.player) this.player.adjustSpeed(SPEED_STEP);
     });
 
     // Mode tabs

@@ -1082,7 +1082,8 @@ class MusicGenerator {
    */
   setSpeed(spd) {
     const currentPos = this.getCurrentTime();
-    this.speed = Math.max(0.25, Math.min(4.0, spd));
+    // Minimum 0.8x to avoid sparse/silent playback at low tempos
+    this.speed = Math.max(0.8, Math.min(4.0, spd));
     if (this.isPlaying) {
       this._currentTime = currentPos;
       const ctx = this._synth?.ctx;
