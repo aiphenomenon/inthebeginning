@@ -24,14 +24,14 @@
   [ 9] Earth Formation         T=2.88e+2 K  Scale=2.99e+168
        Particles: 500  Atoms: 0  Molecules: 0  Life: 0
   [10] Life Emergence          T=3.00e+2 K  Scale=4.92e+168
-       Particles: 500  Atoms: 0  Molecules: 0  Life: 100
+       Particles: 500  Atoms: 0  Molecules: 0  Life: 20
   [11] DNA Evolution           T=2.98e+2 K  Scale=8.09e+168
-       Particles: 500  Atoms: 0  Molecules: 0  Life: 100
+       Particles: 500  Atoms: 0  Molecules: 0  Life: 20
   [12] Present Day             T=2.95e+2 K  Scale=1.33e+169
-       Particles: 500  Atoms: 0  Molecules: 0  Life: 100
+       Particles: 500  Atoms: 0  Molecules: 0  Life: 20
 
 ----------------------------------------------------------------------
-Simulation complete in 0.243 seconds
+Simulation complete in 0.048 seconds
 Final temperature: 295.00 K
 Total epochs simulated: 13
 ----------------------------------------------------------------------
