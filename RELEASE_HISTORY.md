@@ -4,6 +4,56 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.31.0 — 2026-03-29 — V9 Game Release + Steering Rearchitecture
+
+### Summary
+
+Major quality release: V9 game created by merging V7 (all features working)
+with V8's WASM additions, fixing 10+ regressions introduced in V8. Also
+rearchitected CLAUDE.md/AGENTS.md for Claude Code CLI, set up CLI hooks,
+GitHub CI, and Apple platform builds.
+
+### V9 Game (deploy/v9)
+
+V9 restores all V7 features that V8 lost while keeping V8's WASM synth mode:
+- **Restored**: Game completion, pause-stops-music, MIDI auto-play, MIDI/Synth
+  HUD display, infiniteMode toggle, title screen buttons, album metadata/ID3,
+  note info for MP3 mode
+- **Fixed**: Key "2" mode switch, MIDI info on first load, visualizer
+  FAMILY_HUES/generateCycle errors
+- **Added**: WASM Synth as 4th sound mode (from V8)
+- **Branding**: All "Cosmic Runner" → "inthebeginning bounce"
+- **Visual test report**: Screenshots and animated GIFs in session_logs/
+
+### Steering Rearchitecture
+
+- CLAUDE.md: 1,662 → 499 lines (single source of truth for CLI)
+- AGENTS.md: 967 → 271 lines (AST protocol only)
+- docs/web-ios-flow.md: Preserves gVisor/FAIL hook approach
+- 5 CLI hooks: lint-on-write, plan-before-commit, stop-check, test-nudge, session-start
+
+### GitHub CI
+
+- Ubuntu CI: 11/11 language jobs passing
+- Golden Output Tests: Passing (token count normalization)
+- Apple Platforms: macOS/iOS/tvOS builds via daily cron schedule
+- Fixed: Swift `import InTheBeginningSimulator` in all app files
+
+### Files Changed
+
+- NEW: deploy/v9/ (19 JS files, HTML, CSS, WASM binary)
+- NEW: .claude/hooks/ (5 hook scripts)
+- NEW: docs/web-ios-flow.md
+- NEW: tests/test_web_game.mjs (Playwright test suite)
+- NEW: session_logs/v31-visual-report.md (screenshots + GIFs)
+- MODIFIED: CLAUDE.md, AGENTS.md, .claude/settings.json
+- MODIFIED: .github/workflows/ (ci.yml, golden.yml, apple.yml)
+- MODIFIED: deploy/v4-v8 JS files (bug fixes propagated)
+- MODIFIED: apps/swift/ (import fix), apps/cosmic-runner-v5/ (bug fixes)
+- MODIFIED: tests/test_golden_outputs.py, tests/test_visualizer_golden.py
+
+---
+
 ## v0.30.0 — 2026-03-25 — WebAssembly Audio Synthesis Mode (V8)
 
 ### Summary
