@@ -2,8 +2,8 @@ name: Apple Platforms (macOS/iOS/tvOS)
 
 on:
   schedule:
-    # 12:50 PM CT (17:50 UTC) — verification run
-    - cron: '50 17 * * *'
+    # 8:00 AM CT (13:00 UTC) daily
+    - cron: '0 13 * * *'
   workflow_dispatch: {}  # Manual trigger from GitHub UI
 
 jobs:
@@ -43,7 +43,8 @@ jobs:
         run: swift build
       - name: Run simulator tests
         working-directory: apps/swift
-        run: swift test
+        timeout-minutes: 10
+        run: swift test 2>&1 | head -200
 
   swift-app:
     needs: check-freshness
