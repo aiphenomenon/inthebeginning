@@ -2,8 +2,8 @@ name: Apple Platforms (macOS/iOS/tvOS)
 
 on:
   schedule:
-    # 9:00 AM CT (14:00 UTC) daily
-    - cron: '0 14 * * *'
+    # 9:30 AM CT (14:30 UTC) daily
+    - cron: '30 14 * * *'
   workflow_dispatch: {}  # Manual trigger from GitHub UI
 
 jobs:
