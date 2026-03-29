@@ -767,3 +767,11 @@ button, .mode-btn, .player-count-btn, .tab-btn, .dim-btn,
   .title-content { padding: 8px; }
   .overlay-panel { max-height: 95vh; overflow-y: auto; }
 }
+
+/* Credits panel */
+.credits-panel { max-height: 80vh; overflow-y: auto; }
+.credits-content h3 { color: var(--accent); margin-top: 1.2em; margin-bottom: 0.3em; font-size: 0.95em; }
+.credits-content p { font-size: 0.85em; line-height: 1.4; margin: 0.2em 0; }
+.credits-content a { text-decoration: none; }
+.credits-content a:hover { text-decoration: underline; }
+

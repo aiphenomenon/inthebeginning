@@ -161,6 +161,10 @@ class CosmicRunnerApp {
     const titleAccess = document.getElementById('accessibility-btn');
     if (titleTheme) titleTheme.addEventListener('click', () => this._showOverlay('theme-overlay'));
     if (titleAccess) titleAccess.addEventListener('click', () => this._showOverlay('accessibility-overlay'));
+    const creditsBtn = document.getElementById('credits-btn');
+    const creditsClose = document.getElementById('credits-close');
+    if (creditsBtn) creditsBtn.addEventListener('click', () => this._showOverlay('credits-overlay'));
+    if (creditsClose) creditsClose.addEventListener('click', () => this._hideOverlay('credits-overlay'));
     if (ingameHelp) ingameHelp.addEventListener('click', () => { this._updateHelpSections(); this._showOverlay('help-overlay'); });
     if (mutationBtn) mutationBtn.addEventListener('click', () => this._showOverlay('mutation-overlay'));
     if (styleBtn) styleBtn.addEventListener('click', () => this._showOverlay('style-overlay'));
@@ -315,7 +319,7 @@ class CosmicRunnerApp {
   _closeAllOverlays() {
     const overlayIds = [
       'theme-overlay', 'accessibility-overlay', 'help-overlay',
-      'mutation-overlay', 'style-overlay', 'track-overlay',
+      'mutation-overlay', 'style-overlay', 'track-overlay', 'credits-overlay',
     ];
     for (const id of overlayIds) {
       const el = document.getElementById(id);
