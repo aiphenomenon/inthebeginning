@@ -1278,13 +1278,17 @@ class CosmicRunnerApp {
   }
 
   _movementLoop() {
-    const moveSpeed = 0.015;
+    // Movement speed: 2D is slower for precision, 3D slightly faster
+    const is3D = this.game && this.game.gridDim === '3d';
+    const moveSpeed = is3D ? 0.012 : 0.008;
     const step = () => {
       if (this.game && this.game.mode === 'game' && !this.game.paused) {
-        if (this._p1LeftHeld) this.game.movePlayer(0, -moveSpeed);
-        if (this._p1RightHeld) this.game.movePlayer(0, moveSpeed);
-        if (this._p2LeftHeld) this.game.movePlayer(1, -moveSpeed);
-        if (this._p2RightHeld) this.game.movePlayer(1, moveSpeed);
+        const is3D = this.game.gridDim === '3d';
+        const speed = is3D ? 0.012 : 0.008;
+        if (this._p1LeftHeld) this.game.movePlayer(0, -speed);
+        if (this._p1RightHeld) this.game.movePlayer(0, speed);
+        if (this._p2LeftHeld) this.game.movePlayer(1, -speed);
+        if (this._p2RightHeld) this.game.movePlayer(1, speed);
       }
       requestAnimationFrame(step);
     };
