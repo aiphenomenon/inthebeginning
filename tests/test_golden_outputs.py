@@ -299,8 +299,15 @@ class TestGoldenOutputs(unittest.TestCase):
     def test_cpp_builds_successfully(self):
         """C++ simulator compiles without errors."""
         cwd = os.path.join(PROJECT_ROOT, "apps", "cpp")
-        os.makedirs(os.path.join(cwd, "build"), exist_ok=True)
         build_dir = os.path.join(cwd, "build")
+        # Clean stale CMake cache if source dir has moved
+        cache_file = os.path.join(build_dir, "CMakeCache.txt")
+        if os.path.exists(cache_file):
+            with open(cache_file) as f:
+                if cwd not in f.read():
+                    import shutil
+                    shutil.rmtree(build_dir, ignore_errors=True)
+        os.makedirs(build_dir, exist_ok=True)
         subprocess.run(
             ["cmake", ".."], capture_output=True, timeout=30, cwd=build_dir,
         )

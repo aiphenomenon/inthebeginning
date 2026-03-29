@@ -318,9 +318,13 @@ class TestMacOSScreensaver(unittest.TestCase):
         self.assertGreater(len(swift_tests), 0,
                            "No Swift test files found")
 
-    @unittest.skipUnless(toolchain_available(["swift", "--version"]), "Swift not available")
+    @unittest.skipUnless(
+        toolchain_available(["swift", "--version"]) and
+        os.path.exists(os.path.join(PROJECT_ROOT, "apps", "screensaver-macos", "Package.swift")),
+        "Swift not available or screensaver uses Xcode project (not SPM)"
+    )
     def test_swift_tests_pass(self):
-        """macOS screensaver Swift tests pass (if toolchain available)."""
+        """macOS screensaver Swift tests pass (if SPM-based and toolchain available)."""
         result = subprocess.run(
             ["swift", "test"],
             capture_output=True, text=True, timeout=120,
