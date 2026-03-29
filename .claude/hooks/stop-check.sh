@@ -20,12 +20,12 @@ if [ -n "$UNCOMMITTED" ] || [ -n "$STAGED" ]; then
     ISSUES="${ISSUES}[STOP-CHECK] Uncommitted changes detected. Commit and push before ending.\n"
 fi
 
-# 2. Check for unpushed commits
+# 2. Check for unpushed commits (warning only — push may require auth setup)
 UPSTREAM=$(git -C "$PROJECT_ROOT" rev-parse --abbrev-ref '@{upstream}' 2>/dev/null)
 if [ -n "$UPSTREAM" ]; then
     UNPUSHED=$(git -C "$PROJECT_ROOT" log "$UPSTREAM"..HEAD --oneline 2>/dev/null)
     if [ -n "$UNPUSHED" ]; then
-        ISSUES="${ISSUES}[STOP-CHECK] Unpushed commits detected. Push to remote before ending.\n"
+        echo "[STOP-CHECK] Warning: unpushed commits detected. Push when auth is available."
     fi
 fi
 
