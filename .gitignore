@@ -58,3 +58,4 @@ apps/go/sim_binary
 apps/go/sse_server_test
 tests/golden_snapshots/audio/test_output.wav
 .claude/worktrees/
+apps/swift/.build/
