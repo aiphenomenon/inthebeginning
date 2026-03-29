@@ -21,7 +21,7 @@
   EPOCH: Inflation             tick 10/300000
   Exponential expansion, quantum fluctuations seed structure
 ==============================================================================
-  Temperature : 1.00e9            Energy      : 1.28e7
+  Temperature : 1.00e9            Energy      : 1.53e7
   Particles   : 6                 Atoms       : 0
   Molecules   : 0                 Water (H2O) : 0
   Amino acids : 0                 Nucleotides : 0
@@ -32,7 +32,7 @@
   EPOCH: Electroweak           tick 100/300000
   Electromagnetic and weak forces separate
 ==============================================================================
-  Temperature : 1.00e8            Energy      : 5.26e8
+  Temperature : 1.00e8            Energy      : 5.21e8
   Particles   : 540               Atoms       : 0
   Molecules   : 0                 Water (H2O) : 0
   Amino acids : 0                 Nucleotides : 0
@@ -43,8 +43,8 @@
   EPOCH: Quark                 tick 1000/300000
   Quark-gluon plasma, free quarks
 ==============================================================================
-  Temperature : 1000000.00        Energy      : 5.50e8
-  Particles   : 1426              Atoms       : 0
+  Temperature : 1000000.00        Energy      : 5.45e8
+  Particles   : 1476              Atoms       : 0
   Molecules   : 0                 Water (H2O) : 0
   Amino acids : 0                 Nucleotides : 0
 
@@ -54,8 +54,8 @@
   EPOCH: Hadron                tick 5000/300000
   Quarks confined into protons and neutrons
 ==============================================================================
-  Temperature : 100000.00         Energy      : 5.42e8
-  Particles   : 3794              Atoms       : 0
+  Temperature : 100000.00         Energy      : 5.34e8
+  Particles   : 3748              Atoms       : 0
   Molecules   : 0                 Water (H2O) : 0
   Amino acids : 0                 Nucleotides : 0
 
@@ -65,146 +65,138 @@
   EPOCH: Nucleosynthesis       tick 10000/300000
   Light nuclei form: H, He, Li
 ==============================================================================
-  Temperature : 10000.00          Energy      : 5.42e8
-  Particles   : 3794              Atoms       : 27
+  Temperature : 10000.00          Energy      : 5.34e8
+  Particles   : 3748              Atoms       : 31
   Molecules   : 0                 Water (H2O) : 0
   Amino acids : 0                 Nucleotides : 0
 
 
-  [##--------------------------------------]   5.0%  T=8602.81  particles=3794  atoms=27  pop=0
-  [##--------------------------------------]   6.7%  T=7400.83  particles=3794  atoms=27  pop=0
-  [###-------------------------------------]   8.3%  T=6366.79  particles=3794  atoms=27  pop=0
-  [####------------------------------------]  10.0%  T=5477.23  particles=3794  atoms=27  pop=0
-  [####------------------------------------]  11.7%  T=4711.95  particles=3794  atoms=27  pop=0
-  [#####-----------------------------------]  13.3%  T=4053.60  particles=3794  atoms=27  pop=0
-  [######----------------------------------]  15.0%  T=3487.23  particles=3794  atoms=27  pop=0
+  [##--------------------------------------]   5.0%  T=8602.81  particles=3748  atoms=31  pop=0
+  [##--------------------------------------]   6.7%  T=7400.83  particles=3748  atoms=31  pop=0
+  [###-------------------------------------]   8.3%  T=6366.79  particles=3748  atoms=31  pop=0
+  [####------------------------------------]  10.0%  T=5477.23  particles=3748  atoms=31  pop=0
+  [####------------------------------------]  11.7%  T=4711.95  particles=3748  atoms=31  pop=0
+  [#####-----------------------------------]  13.3%  T=4053.60  particles=3748  atoms=31  pop=0
+  [######----------------------------------]  15.0%  T=3487.23  particles=3748  atoms=31  pop=0
                                                                                                     
 ==============================================================================
   EPOCH: Recombination         tick 50000/300000
   Atoms form, universe becomes transparent
 ==============================================================================
-  Temperature : 3000.00           Energy      : 5.28e8
-  Particles   : 3740              Atoms       : 54
+  Temperature : 3000.00           Energy      : 5.18e8
+  Particles   : 3686              Atoms       : 62
   Molecules   : 0                 Water (H2O) : 0
   Amino acids : 0                 Nucleotides : 0
 
 
-  [#######---------------------------------]  18.3%  T=2687.88  particles=3740  atoms=54  pop=0
-  [########--------------------------------]  20.0%  T=2408.22  particles=3740  atoms=54  pop=0
-  [########--------------------------------]  21.7%  T=2157.67  particles=3740  atoms=54  pop=0
-  [#########-------------------------------]  23.3%  T=1933.18  particles=3740  atoms=54  pop=0
-  [##########------------------------------]  25.0%  T=1732.05  particles=3740  atoms=54  pop=0
-  [##########------------------------------]  26.7%  T=1551.85  particles=3740  atoms=54  pop=0
-  [###########-----------------------------]  28.3%  T=1390.39  particles=3740  atoms=54  pop=0
-  [############----------------------------]  30.0%  T=1245.73  particles=3740  atoms=54  pop=0
-  [############----------------------------]  31.7%  T=1116.12  particles=3740  atoms=54  pop=0
+  [#######---------------------------------]  18.3%  T=2687.88  particles=3686  atoms=62  pop=0
+  [########--------------------------------]  20.0%  T=2408.22  particles=3686  atoms=62  pop=0
+  [########--------------------------------]  21.7%  T=2157.67  particles=3686  atoms=62  pop=0
+  [#########-------------------------------]  23.3%  T=1933.18  particles=3686  atoms=62  pop=0
+  [##########------------------------------]  25.0%  T=1732.05  particles=3686  atoms=62  pop=0
+  [##########------------------------------]  26.7%  T=1551.85  particles=3686  atoms=62  pop=0
+  [###########-----------------------------]  28.3%  T=1390.39  particles=3686  atoms=62  pop=0
+  [############----------------------------]  30.0%  T=1245.73  particles=3686  atoms=62  pop=0
+  [############----------------------------]  31.7%  T=1116.12  particles=3686  atoms=62  pop=0
                                                                                                     
 ==============================================================================
   EPOCH: Star Formation        tick 100000/300000
   First stars ignite, heavier elements forged
 ==============================================================================
-  Temperature : 1000.00           Energy      : 5.28e8
-  Particles   : 3740              Atoms       : 464
-  Molecules   : 103               Water (H2O) : 80
+  Temperature : 1000.00           Energy      : 5.18e8
+  Particles   : 3686              Atoms       : 472
+  Molecules   : 105               Water (H2O) : 80
   Amino acids : 0                 Nucleotides : 0
 
 
-  [##############--------------------------]  35.0%  T=965.94  particles=3740  atoms=464  pop=0
-  [##############--------------------------]  36.7%  T=933.03  particles=3740  atoms=464  pop=0
-  [###############-------------------------]  38.3%  T=901.25  particles=3740  atoms=464  pop=0
-  [################------------------------]  40.0%  T=870.55  particles=3740  atoms=464  pop=0
-  [################------------------------]  41.7%  T=840.90  particles=3740  atoms=464  pop=0
-  [#################-----------------------]  43.3%  T=812.25  particles=3740  atoms=464  pop=0
-  [##################----------------------]  45.0%  T=784.58  particles=3740  atoms=464  pop=0
-  [##################----------------------]  46.7%  T=757.86  particles=3740  atoms=464  pop=0
-  [###################---------------------]  48.3%  T=732.04  particles=3740  atoms=464  pop=0
-  [####################--------------------]  50.0%  T=707.11  particles=3740  atoms=464  pop=0
-  [####################--------------------]  51.7%  T=683.02  particles=3740  atoms=464  pop=0
-  [#####################-------------------]  53.3%  T=659.75  particles=3740  atoms=464  pop=0
-  [######################------------------]  55.0%  T=637.28  particles=3740  atoms=464  pop=0
-  [######################------------------]  56.7%  T=615.57  particles=3740  atoms=464  pop=0
-  [#######################-----------------]  58.3%  T=594.60  particles=3740  atoms=464  pop=0
-  [########################----------------]  60.0%  T=574.35  particles=3740  atoms=464  pop=0
-  [########################----------------]  61.7%  T=554.78  particles=3740  atoms=464  pop=0
-  [#########################---------------]  63.3%  T=535.89  particles=3740  atoms=464  pop=0
-  [##########################--------------]  65.0%  T=517.63  particles=3740  atoms=464  pop=0
+  [##############--------------------------]  35.0%  T=965.94  particles=3686  atoms=472  pop=0
+  [##############--------------------------]  36.7%  T=933.03  particles=3686  atoms=472  pop=0
+  [###############-------------------------]  38.3%  T=901.25  particles=3686  atoms=472  pop=0
+  [################------------------------]  40.0%  T=870.55  particles=3686  atoms=472  pop=0
+  [################------------------------]  41.7%  T=840.90  particles=3686  atoms=472  pop=0
+  [#################-----------------------]  43.3%  T=812.25  particles=3686  atoms=472  pop=0
+  [##################----------------------]  45.0%  T=784.58  particles=3686  atoms=472  pop=0
+  [##################----------------------]  46.7%  T=757.86  particles=3686  atoms=472  pop=0
+  [###################---------------------]  48.3%  T=732.04  particles=3686  atoms=472  pop=0
+  [####################--------------------]  50.0%  T=707.11  particles=3686  atoms=472  pop=0
+  [####################--------------------]  51.7%  T=683.02  particles=3686  atoms=472  pop=0
+  [#####################-------------------]  53.3%  T=659.75  particles=3686  atoms=472  pop=0
+  [######################------------------]  55.0%  T=637.28  particles=3686  atoms=472  pop=0
+  [######################------------------]  56.7%  T=615.57  particles=3686  atoms=472  pop=0
+  [#######################-----------------]  58.3%  T=594.60  particles=3686  atoms=472  pop=0
+  [########################----------------]  60.0%  T=574.35  particles=3686  atoms=472  pop=0
+  [########################----------------]  61.7%  T=554.78  particles=3686  atoms=472  pop=0
+  [#########################---------------]  63.3%  T=535.89  particles=3686  atoms=472  pop=0
+  [##########################--------------]  65.0%  T=517.63  particles=3686  atoms=472  pop=0
                                                                                                     
 ==============================================================================
   EPOCH: Solar System          tick 200000/300000
   Our solar system coalesces from stellar debris
 ==============================================================================
-  Temperature : 500.00            Energy      : 5.28e8
-  Particles   : 3740              Atoms       : 679
-  Molecules   : 128               Water (H2O) : 80
+  Temperature : 500.00            Energy      : 5.18e8
+  Particles   : 3686              Atoms       : 687
+  Molecules   : 130               Water (H2O) : 80
   Amino acids : 0                 Nucleotides : 0
 
 
-  [###########################-------------]  68.3%  T=447.21  particles=3740  atoms=679  pop=0
+  [###########################-------------]  68.3%  T=447.21  particles=3686  atoms=687  pop=0
                                                                                                     
 ==============================================================================
   EPOCH: Earth                 tick 210000/300000
   Earth forms, oceans appear
 ==============================================================================
-  Temperature : 400.00            Energy      : 5.28e8
-  Particles   : 3740              Atoms       : 4089
-  Molecules   : 128               Water (H2O) : 80
+  Temperature : 400.00            Energy      : 5.18e8
+  Particles   : 3686              Atoms       : 4097
+  Molecules   : 130               Water (H2O) : 80
   Amino acids : 0                 Nucleotides : 0
 
 
-  [############################------------]  71.7%  T=383.91  particles=3740  atoms=4089  pop=0
-  [#############################-----------]  73.3%  T=368.46  particles=3740  atoms=4089  pop=0
-  [##############################----------]  75.0%  T=353.64  particles=3740  atoms=4089  pop=0
-  [##############################----------]  76.7%  T=339.41  particles=3740  atoms=4089  pop=0
-  [###############################---------]  78.3%  T=325.76  particles=3740  atoms=4089  pop=0
-  [################################--------]  80.0%  T=312.65  particles=3740  atoms=4089  pop=0
-  [################################--------]  81.7%  T=300.07  particles=3740  atoms=4089  pop=0
+  [############################------------]  71.7%  T=383.91  particles=3686  atoms=4097  pop=0
+  [#############################-----------]  73.3%  T=368.46  particles=3686  atoms=4097  pop=0
+  [##############################----------]  75.0%  T=353.64  particles=3686  atoms=4097  pop=0
+  [##############################----------]  76.7%  T=339.41  particles=3686  atoms=4097  pop=0
+  [###############################---------]  78.3%  T=325.76  particles=3686  atoms=4097  pop=0
+  [################################--------]  80.0%  T=312.65  particles=3686  atoms=4097  pop=0
+  [################################--------]  81.7%  T=300.07  particles=3686  atoms=4097  pop=0
                                                                                                     
 ==============================================================================
   EPOCH: Life                  tick 250000/300000
   First self-replicating molecules
 ==============================================================================
-  Temperature : 288.00            Energy      : 5.28e8
-  Particles   : 3740              Atoms       : 4089
-  Molecules   : 334               Water (H2O) : 80
-  Amino acids : 199               Nucleotides : 7
+  Temperature : 288.00            Energy      : 5.18e8
+  Particles   : 3686              Atoms       : 4097
+  Molecules   : 366               Water (H2O) : 80
+  Amino acids : 231               Nucleotides : 5
 
 
-  [##################################------]  85.0%  T=288.00  particles=3740  atoms=4089  pop=200
-  [##################################------]  86.7%  T=288.00  particles=3740  atoms=4089  pop=200
-  [###################################-----]  88.3%  T=288.00  particles=3740  atoms=4089  pop=200
-  [####################################----]  90.0%  T=288.00  particles=3740  atoms=4089  pop=200
-  [####################################----]  91.7%  T=288.00  particles=3740  atoms=4089  pop=200
+  [##################################------]  85.0%  T=288.00  particles=3686  atoms=4097  pop=0
+  [##################################------]  86.7%  T=288.00  particles=3686  atoms=4097  pop=0
+  [###################################-----]  88.3%  T=288.00  particles=3686  atoms=4097  pop=0
+  [####################################----]  90.0%  T=288.00  particles=3686  atoms=4097  pop=0
+  [####################################----]  91.7%  T=288.00  particles=3686  atoms=4097  pop=0
                                                                                                     
 ==============================================================================
   EPOCH: DNA Era               tick 280000/300000
   DNA-based life, epigenetics emerge
 ==============================================================================
-  Temperature : 288.00            Energy      : 5.28e8
-  Particles   : 3740              Atoms       : 4089
-  Molecules   : 418               Water (H2O) : 80
-  Amino acids : 273               Nucleotides : 17
-------------------------------------------------------------------------------
-  Population  : 200               Generation  : 29500
-  Avg fitness : 0.9950            Species     : 200
-  Habitable   : YES               Oxygen      : 22.56%
+  Temperature : 288.00            Energy      : 5.18e8
+  Particles   : 3686              Atoms       : 4097
+  Molecules   : 426               Water (H2O) : 80
+  Amino acids : 289               Nucleotides : 7
 
 
-  [######################################--]  95.0%  T=288.00  particles=3740  atoms=4089  pop=200
-  [######################################--]  96.7%  T=288.00  particles=3740  atoms=4089  pop=200
-  [#######################################-]  98.3%  T=288.00  particles=3740  atoms=4089  pop=200
+  [######################################--]  95.0%  T=288.00  particles=3686  atoms=4097  pop=0
+  [######################################--]  96.7%  T=288.00  particles=3686  atoms=4097  pop=0
+  [#######################################-]  98.3%  T=288.00  particles=3686  atoms=4097  pop=0
                                                                                                     
 ==============================================================================
   EPOCH: Present               tick 300000/300000
   Complex life, intelligence
 ==============================================================================
-  Temperature : 288.00            Energy      : 5.28e8
-  Particles   : 3740              Atoms       : 4089
-  Molecules   : 418               Water (H2O) : 80
-  Amino acids : 273               Nucleotides : 17
-------------------------------------------------------------------------------
-  Population  : 200               Generation  : 49500
-  Avg fitness : 0.9992            Species     : 200
-  Habitable   : YES               Oxygen      : 20.20%
+  Temperature : 288.00            Energy      : 5.18e8
+  Particles   : 3686              Atoms       : 4097
+  Molecules   : 426               Water (H2O) : 80
+  Amino acids : 289               Nucleotides : 7
 
 
                                                                                                     
@@ -212,14 +204,10 @@
   EPOCH: Present               tick 300000/300000
   Complex life, intelligence
 ==============================================================================
-  Temperature : 288.00            Energy      : 5.28e8
-  Particles   : 3740              Atoms       : 4089
-  Molecules   : 418               Water (H2O) : 80
-  Amino acids : 273               Nucleotides : 17
-------------------------------------------------------------------------------
-  Population  : 200               Generation  : 49500
-  Avg fitness : 0.9992            Species     : 200
-  Habitable   : YES               Oxygen      : 20.20%
+  Temperature : 288.00            Energy      : 5.18e8
+  Particles   : 3686              Atoms       : 4097
+  Molecules   : 426               Water (H2O) : 80
+  Amino acids : 289               Nucleotides : 7
 
 
                                                                                                     
@@ -229,14 +217,14 @@
   Wall-clock time : <TIME>
   Final tick      : 300000
   Final temp      : 288.00 K
-  Total energy    : 5.28e8
-  Particles       : 3740
-  Atoms           : 4089
-  Molecules       : 418 (H2O: 80, amino acids: 273, nucleotides: 17)
-  Lifeforms       : 200 across 200 species
-  Generations     : 49500
-  Avg fitness     : 0.9992
+  Total energy    : 5.18e8
+  Particles       : 3686
+  Atoms           : 4097
+  Molecules       : 426 (H2O: 80, amino acids: 289, nucleotides: 7)
+  Lifeforms       : 0 across 0 species
+  Generations     : 0
+  Avg fitness     : 0.0000
   Habitable       : YES
-  Atm. oxygen     : 20.20%
+  Atm. oxygen     : 0.00%
 ==============================================================================
 

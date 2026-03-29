@@ -61,7 +61,7 @@
   Turns: 6
   Symbols found: 30
   Dependencies found: 6
-  Total tokens: 62017
+  Total tokens: 61116
 
   Session log saved to <ROOT>/ast_captures/session_log.json
 

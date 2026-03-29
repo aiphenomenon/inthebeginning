@@ -6,6 +6,19 @@
 // entanglement (simplified), and the quark-hadron transition.
 
 import Foundation
+#if canImport(simd)
+import simd
+#endif
+
+// MARK: - Cross-platform SIMD helpers
+
+private func vectorLength(_ v: SIMD3<Double>) -> Double {
+    sqrt(v.x * v.x + v.y * v.y + v.z * v.z)
+}
+
+private func vectorLengthSquared(_ v: SIMD3<Double>) -> Double {
+    v.x * v.x + v.y * v.y + v.z * v.z
+}
 
 // MARK: - Enums
 
@@ -148,13 +161,13 @@ final class Particle: Identifiable, Sendable {
     var charge: Double { ParticleProperties.charge(of: particleType) }
 
     var energy: Double {
-        let p2 = simd_length_squared(momentum)
+        let p2 = vectorLengthSquared(momentum)
         let mc2 = mass * PhysicsConstants.c * PhysicsConstants.c
         return sqrt(p2 * PhysicsConstants.c * PhysicsConstants.c + mc2 * mc2)
     }
 
     var wavelength: Double {
-        let p = simd_length(momentum)
+        let p = vectorLength(momentum)
         guard p > 1e-20 else { return .infinity }
         return 2.0 * .pi * PhysicsConstants.hbar / p
     }
@@ -259,7 +272,7 @@ final class QuantumField {
             Double.random(in: -1...1),
             Double.random(in: -1...1)
         )
-        let norm = max(simd_length(direction), 1e-10)
+        let norm = max(vectorLength(direction), 1e-10)
         let pMomentum = energy / (2.0 * PhysicsConstants.c)
         let dir = direction / norm
 
@@ -396,7 +409,7 @@ final class QuantumField {
             if p.mass > 0 {
                 p.position += (p.momentum / p.mass) * dt
             } else {
-                let pMag = max(simd_length(p.momentum), 1e-10)
+                let pMag = max(vectorLength(p.momentum), 1e-10)
                 p.position += (p.momentum / pMag) * PhysicsConstants.c * dt
             }
             p.waveFn.evolve(dt: dt, energy: p.energy)

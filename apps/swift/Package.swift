@@ -3,6 +3,53 @@
 
 import PackageDescription
 
+var targets: [Target] = [
+    // Simulator library (pure Foundation, no UI dependencies — works on Linux)
+    .target(
+        name: "InTheBeginningSimulator",
+        dependencies: [],
+        path: "InTheBeginning/Simulator",
+        sources: [
+            "Constants.swift",
+            "QuantumField.swift",
+            "AtomicSystem.swift",
+            "ChemicalSystem.swift",
+            "Biosphere.swift",
+            "Environment.swift",
+            "Universe.swift",
+        ]
+    ),
+
+    // Simulator tests (pure XCTest, works on Linux)
+    .testTarget(
+        name: "SimulatorTests",
+        dependencies: ["InTheBeginningSimulator"],
+        path: "Tests/SimulatorTests"
+    ),
+]
+
+#if os(macOS) || os(iOS) || os(tvOS)
+targets.append(
+    .executableTarget(
+        name: "InTheBeginning",
+        dependencies: ["InTheBeginningSimulator"],
+        path: "InTheBeginning",
+        exclude: ["Simulator"],
+        sources: [
+            "App.swift",
+            "Views/SimulationView.swift",
+            "Views/EpochTimelineView.swift",
+            "Views/SettingsView.swift",
+            "Renderer/MetalRenderer.swift",
+            "Audio/AudioEngine.swift",
+        ],
+        resources: [
+            .process("Renderer/Shaders.metal"),
+        ]
+    )
+)
+#endif
+
 let package = Package(
     name: "InTheBeginning",
     platforms: [
@@ -16,47 +63,5 @@ let package = Package(
             targets: ["InTheBeginningSimulator"]
         ),
     ],
-    targets: [
-        // Simulator library (pure Foundation, no UI dependencies)
-        .target(
-            name: "InTheBeginningSimulator",
-            dependencies: [],
-            path: "InTheBeginning/Simulator",
-            sources: [
-                "Constants.swift",
-                "QuantumField.swift",
-                "AtomicSystem.swift",
-                "ChemicalSystem.swift",
-                "Biosphere.swift",
-                "Environment.swift",
-                "Universe.swift",
-            ]
-        ),
-
-        // Main app executable
-        .executableTarget(
-            name: "InTheBeginning",
-            dependencies: ["InTheBeginningSimulator"],
-            path: "InTheBeginning",
-            exclude: ["Simulator"],
-            sources: [
-                "App.swift",
-                "Views/SimulationView.swift",
-                "Views/EpochTimelineView.swift",
-                "Views/SettingsView.swift",
-                "Renderer/MetalRenderer.swift",
-                "Audio/AudioEngine.swift",
-            ],
-            resources: [
-                .process("Renderer/Shaders.metal"),
-            ]
-        ),
-
-        // Simulator tests
-        .testTarget(
-            name: "SimulatorTests",
-            dependencies: ["InTheBeginningSimulator"],
-            path: "Tests/SimulatorTests"
-        ),
-    ]
+    targets: targets
 )

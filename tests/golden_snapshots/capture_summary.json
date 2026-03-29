@@ -1,8 +1,17 @@
 {
   "seed": 42,
   "ticks": 300000,
-  "captured_at": "2026-03-07T19:38:01Z",
+  "captured_at": "2026-03-29T02:09:13Z",
   "results": {
+    "python": "captured",
+    "nodejs": "captured",
+    "go": "captured",
+    "rust": "captured",
+    "c": "captured",
+    "cpp": "captured",
+    "java": "captured",
+    "perl": "captured",
+    "php": "captured",
     "typescript": "captured"
   }
 }

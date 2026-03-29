@@ -1,0 +1,290 @@
+
+[1m[36m  ============================================================[0m
+[1m[36m  |                                                          |[0m
+[1m[36m  |        IN THE BEGINNING -- Cosmic Evolution Simulator    |[0m
+[1m[36m  |                                                          |[0m
+[1m[36m  |    From the Big Bang to Life: A Physics Simulation       |[0m
+[1m[36m  |                                                          |[0m
+[1m[36m  ============================================================[0m
+[1m
+Beginning cosmic simulation with seed: 42[0m
+Total epochs: 13
+Total ticks: 300000
+
+
+[31m[1m  ----------------------------------------------------------------[0m
+[31m[1m  EPOCH 1/13: PLANCK  (tick 1)
+[0m[31m  All forces unified, T~10^32K[0m
+[31m[1m  ----------------------------------------------------------------[0m
+
+[31m  --- State at end of Planck epoch ---[0m
+    Temperature:       8.0000e+09 K
+    Scale factor:      1.0240e-27
+    Total energy:      3.4032e+07
+    Particles:                  8  (created: 8  annihilated: 0)
+      Breakdown:     electron=4 positron=4 
+
+[31m[1m  ----------------------------------------------------------------[0m
+[31m[1m  EPOCH 2/13: INFLATION  (tick 10)
+[0m[31m  Exponential expansion, quantum fluctuations seed structure[0m
+[31m[1m  ----------------------------------------------------------------[0m
+
+[31m  --- State at end of Inflation epoch ---[0m
+    Temperature:       1.0000e+08 K
+    Scale factor:      5.4454e-24
+    Total energy:      1.0944e+10
+    Particles:              3,608  (created: 3,608  annihilated: 0)
+      Breakdown:     electron=1640 positron=1640 up=164 down=164 
+
+[33m[1m  ----------------------------------------------------------------[0m
+[33m[1m  EPOCH 3/13: ELECTROWEAK  (tick 100)
+[0m[33m  Electromagnetic and weak forces separate[0m
+[33m[1m  ----------------------------------------------------------------[0m
+
+[33m  --- State at end of Electroweak epoch ---[0m
+    Temperature:       2.0000e+06 K
+    Scale factor:      5.4947e-24
+    Total energy:      1.0951e+10
+    Particles:              4,132  (created: 4,132  annihilated: 0)
+      Breakdown:     electron=1888 positron=1888 up=178 down=178 
+
+[33m[1m  ----------------------------------------------------------------[0m
+[33m[1m  EPOCH 4/13: QUARK  (tick 1,000)
+[0m[33m  Quark-gluon plasma, free quarks[0m
+[33m[1m  ----------------------------------------------------------------[0m
+
+[33m  --- State at end of Quark epoch ---[0m
+    Temperature:       5.0000e+05 K
+    Scale factor:      5.7189e-24
+    Total energy:      1.0951e+10
+    Particles:              4,132  (created: 4,132  annihilated: 0)
+      Breakdown:     electron=1888 positron=1888 up=178 down=178 
+
+[35m[1m  ----------------------------------------------------------------[0m
+[35m[1m  EPOCH 5/13: HADRON  (tick 5,000)
+[0m[35m  Quarks confined into protons and neutrons[0m
+[35m[1m  ----------------------------------------------------------------[0m
+
+[35m  --- State at end of Hadron epoch ---[0m
+    Temperature:       1.0000e+04 K
+    Scale factor:      6.0121e-24
+    Total energy:      1.0794e+10
+    Particles:              3,954  (created: 4,132  annihilated: 0)
+      Breakdown:     electron=1888 positron=1888 down=89 proton=89 
+    Recent events:
+      > t=5001 Confinement: 89 protons, 0 neutrons
+
+[35m[1m  ----------------------------------------------------------------[0m
+[35m[1m  EPOCH 6/13: NUCLEOSYNTHESIS  (tick 10,000)
+[0m[35m  Light nuclei form: H, He, Li[0m
+[35m[1m  ----------------------------------------------------------------[0m
+
+[35m  --- State at end of Nucleosynthesis epoch ---[0m
+    Temperature:       3.0000e+03 K
+    Scale factor:      8.9690e-24
+    Total energy:      1.0794e+10
+    Particles:              3,954  (created: 4,132  annihilated: 0)
+      Breakdown:     electron=1888 positron=1888 down=89 proton=89 
+    Atoms:                    160  (bonds: 0)
+      Elements:      He=40 H=120 
+    Recent events:
+      > t=5001 Confinement: 89 protons, 0 neutrons
+      > t=10100 BBN (direct): formed 160 nuclei ({He=40, H=120})
+
+[36m[1m  ----------------------------------------------------------------[0m
+[36m[1m  EPOCH 7/13: RECOMBINATION  (tick 50,000)
+[0m[36m  Atoms form, universe becomes transparent[0m
+[36m[1m  ----------------------------------------------------------------[0m
+
+[36m  --- State at end of Recombination epoch ---[0m
+    Temperature:       1.5000e+04 K
+    Scale factor:      1.4787e-23
+    Total energy:      1.0493e+10
+    Particles:              3,776  (created: 4,132  annihilated: 0)
+      Breakdown:     electron=1799 positron=1888 down=89 
+    Atoms:                    249  (bonds: 0)
+      Elements:      He=40 H=209 
+    Recent events:
+      > t=5001 Confinement: 89 protons, 0 neutrons
+      > t=10100 BBN (direct): formed 160 nuclei ({He=40, H=120})
+      > t=50001 Recombination: 89 atoms formed
+
+[34m[1m  ----------------------------------------------------------------[0m
+[34m[1m  EPOCH 8/13: STAR FORMATION  (tick 100,000)
+[0m[34m  First stars ignite, heavier elements forged[0m
+[34m[1m  ----------------------------------------------------------------[0m
+
+[34m  --- State at end of Star Formation epoch ---[0m
+    Temperature:       1.2000e+04 K
+    Scale factor:      4.0196e-23
+    Total energy:      1.0493e+10
+    Particles:              3,776  (created: 4,132  annihilated: 0)
+      Breakdown:     electron=1799 positron=1888 down=89 
+    Atoms:                    241  (bonds: 0)
+      Elements:      He=29 H=209 C=2 N=1 
+    Recent events:
+      > t=176955 Stellar forge: {C=1}
+      > t=188702 Stellar forge: {O=1}
+      > t=194519 Stellar forge: {N=1}
+
+[32m[1m  ----------------------------------------------------------------[0m
+[32m[1m  EPOCH 9/13: SOLAR SYSTEM  (tick 200,000)
+[0m[32m  Our solar system coalesces from stellar debris[0m
+[32m[1m  ----------------------------------------------------------------[0m
+
+[32m  --- State at end of Solar System epoch ---[0m
+    Temperature:       5.7600e+02 K
+    Scale factor:      4.4423e-23
+    Total energy:      1.0493e+10
+    Particles:              3,776  (created: 4,132  annihilated: 0)
+      Breakdown:     electron=1799 positron=1888 down=89 
+    Atoms:                    286  (bonds: 0)
+      Elements:      He=29 H=209 C=17 N=11 O=20 
+    Molecules:                 48  (reactions: 0)
+      Water: 20  Amino acids: 0  Nucleotides: 0
+    Recent events:
+      > t=194519 Stellar forge: {N=1}
+      > t=200001 Supernova enrichment: +15C +10N +20O
+      > t=200001 Solar system forms. Elements: {He=29, H=209, C=17, N=11, O=20}  Molecules: {water=20, methane=17, ammonia=11}
+
+[32m[1m  ----------------------------------------------------------------[0m
+[32m[1m  EPOCH 10/13: EARTH  (tick 210,000)
+[0m[32m  Earth forms, oceans appear[0m
+[32m[1m  ----------------------------------------------------------------[0m
+
+[32m  --- State at end of Earth epoch ---[0m
+    Temperature:       2.8800e+02 K
+    Scale factor:      6.6272e-23
+    Total energy:      1.0493e+10
+    Particles:              3,776  (created: 4,132  annihilated: 0)
+      Breakdown:     electron=1799 positron=1888 down=89 
+    Atoms:                    286  (bonds: 0)
+      Elements:      He=29 H=209 C=17 N=11 O=20 
+    Molecules:                 48  (reactions: 0)
+      Water: 20  Amino acids: 0  Nucleotides: 0
+    Environment:     ENV[T=288K P=1.0atm ocean=71% UV=0.80 hab=0.74 atmo={N2:50.0%,H2O:25.0%,CH4:12.5%,NH3:7.5%}]
+      Liquid water:  YES  (ocean coverage: 71%)
+    Recent events:
+      > t=200001 Supernova enrichment: +15C +10N +20O
+      > t=200001 Solar system forms. Elements: {He=29, H=209, C=17, N=11, O=20}  Molecules: {water=20, methane=17, ammonia=11}
+      > t=210001 Earth forms! ENV[T=500K P=10.0atm ocean=0% UV=0.80 hab=0.00 atmo={CO2:60.0%,N2:20.0%,H2O:10.0%,CH4:5.0%}]
+
+[32m[1m  ----------------------------------------------------------------[0m
+[32m[1m  EPOCH 11/13: LIFE  (tick 250,000)
+[0m[32m  First self-replicating molecules[0m
+[32m[1m  ----------------------------------------------------------------[0m
+
+[32m  --- State at end of Life epoch ---[0m
+    Temperature:       2.8800e+02 K
+    Scale factor:      8.9457e-23
+    Total energy:      1.0493e+10
+    Particles:              3,776  (created: 4,132  annihilated: 0)
+      Breakdown:     electron=1799 positron=1888 down=89 
+    Atoms:                    286  (bonds: 0)
+      Elements:      He=29 H=209 C=17 N=11 O=20 
+    Molecules:                 48  (reactions: 0)
+      Water: 20  Amino acids: 0  Nucleotides: 0
+    Environment:     ENV[T=288K P=1.0atm ocean=71% UV=0.80 hab=0.74 atmo={N2:50.0%,H2O:25.0%,CH4:12.5%,NH3:7.5%}]
+      Liquid water:  YES  (ocean coverage: 71%)
+    Lifeforms:                200 alive  (total species: 1  extinct: 592)
+      Avg fitness:   0.1052  Max generation: 0
+      DNA strands:   2  Replications: 791
+      Species:       protocell=200 
+    Recent events:
+      > t=210001 Earth forms! ENV[T=500K P=10.0atm ocean=0% UV=0.80 hab=0.00 atmo={CO2:60.0%,N2:20.0%,H2O:10.0%,CH4:5.0%}]
+      > t=250001 ABIOGENESIS! First self-replicating molecule: DNA[len=30 gen=0 mut=0 gc=0.40 GGTATTGCAT...AAACGTAGGG]
+      > t=250001 First lifeform: protocell#1[fit=1.000 age=0 genes=30 ALIVE]
+
+[32m[1m  ----------------------------------------------------------------[0m
+[32m[1m  EPOCH 12/13: DNA ERA  (tick 280,000)
+[0m[32m  DNA-based life, epigenetics emerge[0m
+[32m[1m  ----------------------------------------------------------------[0m
+
+[32m  --- State at end of DNA Era epoch ---[0m
+    Temperature:       2.7256e+00 K
+    Scale factor:      1.0926e-22
+    Total energy:      1.0493e+10
+    Particles:              3,776  (created: 4,132  annihilated: 0)
+      Breakdown:     electron=1799 positron=1888 down=89 
+    Atoms:                    286  (bonds: 0)
+      Elements:      He=29 H=209 C=17 N=11 O=20 
+    Molecules:                 48  (reactions: 0)
+      Water: 20  Amino acids: 0  Nucleotides: 0
+    Environment:     ENV[T=288K P=1.0atm ocean=71% UV=0.05 hab=0.95 atmo={N2:39.5%,O2:21.0%,H2O:19.7%,CH4:9.9%}]
+      Liquid water:  YES  (ocean coverage: 71%)
+      Complex life:  [32mSUPPORTED[0m
+    Lifeforms:                200 alive  (total species: 3  extinct: 784)
+      Avg fitness:   0.8533  Max generation: 12
+      DNA strands:   500  Replications: 1,973
+      Species:       protocell=18 mammal=182 
+    Recent events:
+      > t=210001 Earth forms! ENV[T=500K P=10.0atm ocean=0% UV=0.80 hab=0.00 atmo={CO2:60.0%,N2:20.0%,H2O:10.0%,CH4:5.0%}]
+      > t=250001 ABIOGENESIS! First self-replicating molecule: DNA[len=30 gen=0 mut=0 gc=0.40 GGTATTGCAT...AAACGTAGGG]
+      > t=250001 First lifeform: protocell#1[fit=1.000 age=0 genes=30 ALIVE]
+
+[37m[1m  ----------------------------------------------------------------[0m
+[37m[1m  EPOCH 13/13: PRESENT  (tick 300,000)
+[0m[37m  Complex life, intelligence[0m
+[37m[1m  ----------------------------------------------------------------[0m
+
+[37m  --- State at end of Present epoch ---[0m
+    Temperature:       2.7256e+00 K
+    Scale factor:      1.0926e-22
+    Total energy:      1.0493e+10
+    Particles:              3,776  (created: 4,132  annihilated: 0)
+      Breakdown:     electron=1799 positron=1888 down=89 
+    Atoms:                    286  (bonds: 0)
+      Elements:      He=29 H=209 C=17 N=11 O=20 
+    Molecules:                 48  (reactions: 0)
+      Water: 20  Amino acids: 0  Nucleotides: 0
+    Environment:     ENV[T=288K P=1.0atm ocean=71% UV=0.05 hab=0.95 atmo={N2:39.5%,O2:21.0%,H2O:19.7%,CH4:9.9%}]
+      Liquid water:  YES  (ocean coverage: 71%)
+      Complex life:  [32mSUPPORTED[0m
+    Lifeforms:                200 alive  (total species: 3  extinct: 784)
+      Avg fitness:   0.8533  Max generation: 12
+      DNA strands:   500  Replications: 1,973
+      Species:       protocell=18 mammal=182 
+    Recent events:
+      > t=210001 Earth forms! ENV[T=500K P=10.0atm ocean=0% UV=0.80 hab=0.00 atmo={CO2:60.0%,N2:20.0%,H2O:10.0%,CH4:5.0%}]
+      > t=250001 ABIOGENESIS! First self-replicating molecule: DNA[len=30 gen=0 mut=0 gc=0.40 GGTATTGCAT...AAACGTAGGG]
+      > t=250001 First lifeform: protocell#1[fit=1.000 age=0 genes=30 ALIVE]
+
+[1m[36m  ================================================================[0m
+[1m[36m  SIMULATION COMPLETE -- The Story of Everything[0m
+[1m[36m  ================================================================[0m
+
+  Total simulation ticks:    300,000
+  Final temperature:         2.7256e+00 K
+  Final scale factor:        1.0926e-22
+  Total energy:              1.0493e+10
+
+  Particles remaining:       3,776
+  Particles created:         4,132
+  Particles annihilated:     0
+
+  Atoms formed:              286
+  Chemical bonds:            0
+  Elements: {He=29, H=209, C=17, N=11, O=20}
+
+  Molecules:                 48
+  Water molecules:           20
+  Amino acids:               0
+  Nucleotides:               0
+  Chemical reactions:        0
+
+  Living organisms:          200
+  Total species emerged:     3
+  Extinctions:               784
+  DNA replications:          1,973
+  Average fitness:           0.8533
+  Max evolutionary gen:      12
+
+  Surface temperature:       288.0 K
+  Habitability:              0.95
+  Ocean coverage:            71%
+  Atmosphere:                {CO2=7.896551498737838E-4, N2=0.3946051724250633, H2O=0.19730258621253166, CH4=0.09865129310626583, NH3=0.05919077586375926, H2=0.039460517242506155, O2=0.21}
+
+[1m[32m  >>> Life has emerged from the cosmos! <<<[0m
+
+[1m[36m  Total events logged: 13[0m
+

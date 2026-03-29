@@ -10,8 +10,8 @@
 
 [33m[Cue 1] Parsing simulator/quantum.py...[0m
   Nodes: 2245
-  Time: 981.8ms
-  Memory: 1594KB
+  Time: 1190.4ms
+  Memory: 1553KB
 
 [33m[Cue 2] Finding symbols in quantum.py...[0m
   Found 30 symbols:
@@ -61,9 +61,9 @@
   Turns: 6
   Symbols found: 30
   Dependencies found: 6
-  Total tokens: 62017
+  Total tokens: 61116
 
-  Session log saved to /home/user/inthebeginning/ast_captures/session_log.json
+  Session log saved to /home/claude/inthebeginning/ast_captures/session_log.json
 
 [1m[32m=== Reality Simulation: Big Bang to Life ===[0m
 
@@ -84,10 +84,10 @@ Running simulation...
 [1m[33m============================================================[0m
 
 [1mPerformance:[0m
-  Wall Time:     0.419s
-  CPU User:      0.390s
+  Wall Time:     0.455s
+  CPU User:      0.455s
   CPU System:    0.000s
-  Peak Memory:   611 KB
+  Peak Memory:   598 KB
   Ticks:         300000
 
 [1mCreation:[0m
@@ -125,7 +125,7 @@ Running simulation...
 
 [33m============================================================[0m
 
-Results saved to /home/user/inthebeginning/ast_captures/simulation_results.json
+Results saved to /home/claude/inthebeginning/ast_captures/simulation_results.json
 
 [1m[36m=== Post-Simulation AST Analysis ===[0m
 

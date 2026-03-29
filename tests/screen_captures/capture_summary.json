@@ -7,12 +7,12 @@
     },
     {
       "file": "c_terminal.txt",
-      "size_bytes": 1387,
+      "size_bytes": 1386,
       "type": "txt"
     },
     {
       "file": "capture_summary.json",
-      "size_bytes": 2369,
+      "size_bytes": 2366,
       "type": "json"
     },
     {
@@ -27,7 +27,7 @@
     },
     {
       "file": "go_sse_api.json",
-      "size_bytes": 21226,
+      "size_bytes": 21185,
       "type": "json"
     },
     {
@@ -62,7 +62,7 @@
     },
     {
       "file": "nodejs_terminal.txt",
-      "size_bytes": 2677,
+      "size_bytes": 2667,
       "type": "txt"
     },
     {
@@ -77,7 +77,7 @@
     },
     {
       "file": "php_snapshot_api.json",
-      "size_bytes": 3867,
+      "size_bytes": 3866,
       "type": "json"
     },
     {
@@ -121,5 +121,5 @@
       "type": "png"
     }
   ],
-  "timestamp": "2026-03-26 10:38 CT"
+  "timestamp": "2026-03-29 02:39 CT"
 }

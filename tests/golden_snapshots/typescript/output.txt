@@ -414,7 +414,7 @@
 [1m[37m   SIMULATION COMPLETE[0m
 [1m[37m  ══════════════════════════════════════════════════════════[0m
 
-[2m   Runtime:          [0m0.26s
+[2m   Runtime:          [0m0.24s
 [2m   Total ticks:      [0m300.0k
 [2m   Final epoch:      [0mPresent
 [2m   Temperature:      [0m263.2 K

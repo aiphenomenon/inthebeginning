@@ -7,45 +7,46 @@
                  13.8 billion years in the blink of an eye
   ========================================================================
 
-  Seed: 1772912041306860332
+  Seed: 1774750125559445449
 
   [ 1/13] Planck             [***                                     ]   8%
          Quantum gravity dominates; spacetime foam
-         T=9.56e+09 K | particles: 46
+         T=9.56e+09 K | particles: 48
 
   [ 2/13] Inflation          [~~~~~~                                  ]  15%
          Exponential expansion of spacetime
-         T=6.10e+09 K | particles: 532
+         T=6.10e+09 K | particles: 522
 
   [ 3/13] Electroweak        [!!!!!!!!!                               ]  23%
          Electroweak symmetry breaking; W/Z bosons acquire mass
-         T=6.87e+07 K | particles: 1172
+         T=6.87e+07 K | particles: 1136
 
   [ 4/13] QuarkGluon         [############                            ]  31%
          Quark-gluon plasma; free quarks and gluons
-         T=2.73e+00 K | particles: 1172
+         T=2.73e+00 K | particles: 1136
 
   [ 5/13] Hadron             [@@@@@@@@@@@@@@@                         ]  38%
          Quarks confine into protons and neutrons
-         T=2.73e+00 K | particles: 1110
-           >> Quark confinement: 31 hadrons formed
+         T=2.73e+00 K | particles: 1088
+           >> Quark confinement: 24 hadrons formed
 
   [ 6/13] Nucleosynthesis    [%%%%%%%%%%%%%%%%%%                      ]  46%
          Light nuclei form: H, He, Li
-         T=2.73e+00 K | particles: 1110
+         T=2.73e+00 K | particles: 1088
 
   [ 7/13] Recombination      [&&&&&&&&&&&&&&&&&&&&&&                  ]  54%
          Electrons captured by nuclei; atoms form
-         T=3.16e+00 K | particles: 1050 | atoms: 30
-           >> Recombination: 30 atoms formed
+         T=-4.28e+01 K | particles: 1042 | atoms: 23
+           >> Recombination: 23 atoms formed
 
   [ 8/13] StarFormation      [+++++++++++++++++++++++++               ]  62%
          First stars ignite; heavy element forging
-         T=2.44e+00 K | particles: 1050 | atoms: 30
+         T=-4.29e+01 K | particles: 1042 | atoms: 23
 
   [ 9/13] SolarSystem        [OOOOOOOOOOOOOOOOOOOOOOOOOOOO            ]  69%
          Protoplanetary disk collapses; planets form
-         T=2.97e+02 K | particles: 1050 | atoms: 80
+         T=2.58e+02 K | particles: 1042 | atoms: 83
+           >> Accretion disk: elements aggregating
            >> Accretion disk: elements aggregating
            >> Accretion disk: elements aggregating
            >> Accretion disk: elements aggregating
@@ -54,23 +55,23 @@
 
   [10/13] EarthFormation     [ooooooooooooooooooooooooooooooo         ]  77%
          Rocky planet cools; oceans condense
-         T=2.94e+02 K | particles: 1050 | atoms: 122 | molecules: 26
-           >> Oceans forming: 13 water molecules
+         T=2.89e+02 K | particles: 1042 | atoms: 125 | molecules: 27
+           >> Oceans forming: 15 water molecules
            >> Oceans forming: 3 water molecules
            >> Oceans forming: 3 water molecules
 
   [11/13] LifeEmergence      [..................................      ]  85%
          First protocells arise from prebiotic chemistry
-         T=2.93e+02 K | particles: 1050 | atoms: 482 | molecules: 26
+         T=2.95e+02 K | particles: 1042 | atoms: 395 | molecules: 28
 
   [12/13] DNAEvolution       [=====================================   ]  92%
          DNA replication, mutation, and natural selection
-         T=3.15e+02 K | particles: 1050 | atoms: 482 | molecules: 26 | cells: 100
+         T=3.00e+02 K | particles: 1042 | atoms: 395 | molecules: 28 | cells: 100
            >> LIFE EMERGES: first protocells self-assemble!
 
   [13/13] Present            [^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^] 100%
          Complex life; billions of years of evolution
-         T=3.15e+02 K | particles: 1050 | atoms: 482 | molecules: 26 | cells: 100
+         T=3.00e+02 K | particles: 1042 | atoms: 395 | molecules: 28 | cells: 100
 
   ------------------------------------------------------------------------
 
@@ -80,44 +81,44 @@
   --- Final State of the Universe ---
 
   Universe age:                  299900 ticks
-  Wall-clock time:               0.166 s
+  Wall-clock time:               0.117 s
 
   [Quantum Field]
-    Particles remaining:    1050
-    Total created:          1172
+    Particles remaining:    1042
+    Total created:          1136
     Total annihilated:      0
-    Total field energy:     4826081731.23 SU
-    Particle census:        electron=495, positron=525, neutron=1, down=29
+    Total field energy:     4867656031.33 SU
+    Particle census:        electron=498, positron=521, neutron=1, down=22
 
   [Atomic System]
-    Total atoms:            482
+    Total atoms:            395
     Bonds formed:           0
-    Element census:         Si=5, Fe=5, H=212, C=86, N=83, O=91
+    Element census:         H=173, C=69, N=66, O=75, Si=6, Fe=6
 
   [Chemical System]
-    Total molecules:        26
-    Water molecules:        19
-    Amino acids:            0
+    Total molecules:        28
+    Water molecules:        21
+    Amino acids:            1
     Nucleotides:            0
-    Reactions occurred:      0
+    Reactions occurred:      1
 
   [Biosphere]
     Living cells:           100
-    Total born:             2949
-    Total died:             2849
+    Total born:             2864
+    Total died:             2764
     Generations:            200
-    Average fitness:        0.7299
+    Average fitness:        0.4733
     Average GC content:     0.5000
     Total mutations:        0
 
   [Environment]
-    Temperature:            314.52 K
+    Temperature:            300.44 K
     UV intensity:           0.0000
-    Cosmic ray flux:        0.0881
+    Cosmic ray flux:        0.0628
     Atmospheric density:    1.0000
     Water availability:     1.0000
     Habitable:              Yes
-    Environmental events:   13
+    Environmental events:   14
 
   ========================================================================
                  And so, from quantum foam to living cells,

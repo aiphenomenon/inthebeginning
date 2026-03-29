@@ -8,6 +8,12 @@
 
 import Foundation
 
+// MARK: - Cross-platform SIMD helper
+
+private func vectorLength(_ v: SIMD3<Double>) -> Double {
+    sqrt(v.x * v.x + v.y * v.y + v.z * v.z)
+}
+
 // MARK: - Periodic Table Data
 
 struct ElementData {
@@ -210,7 +216,7 @@ final class Atom: Identifiable {
     }
 
     func distance(to other: Atom) -> Double {
-        simd_length(position - other.position)
+        vectorLength(position - other.position)
     }
 }
 

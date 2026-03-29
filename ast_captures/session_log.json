@@ -7,21 +7,21 @@
     "symbols_found": 30,
     "deps_found": 6,
     "pending_transforms": 0,
-    "total_tokens": 62017
+    "total_tokens": 61116
   },
   "history": [
     {
       "cue_type": "query",
       "payload": {
         "action": "parse",
-        "target": "/home/user/inthebeginning/simulator/quantum.py",
+        "target": "/home/claude/inthebeginning/simulator/quantum.py",
         "language": "python",
         "filters": {},
         "depth": -1
       },
       "sequence_id": 1,
       "parent_id": 0,
-      "timestamp": 1774521434.8652062,
+      "timestamp": 1774752050.6093502,
       "context_tokens_approx": 0
     },
     {
@@ -31,15 +31,15 @@
         "ast_node_count": 2245,
         "source_hash": "75923ca01cc4a178",
         "metrics": {
-          "wall_time_ms": 1057.149021999976,
-          "cpu_user_ms": 990.0000000000001,
-          "cpu_system_ms": 0.0,
-          "peak_memory_kb": 1594,
-          "current_memory_kb": 793,
+          "wall_time_ms": 1208.0613859998266,
+          "cpu_user_ms": 1208.0490000000002,
+          "cpu_system_ms": 0.024000000000000583,
+          "peak_memory_kb": 1553,
+          "current_memory_kb": 762,
           "disk_read_bytes": 0,
           "disk_write_bytes": 0,
           "prompt_tokens_approx": 3070,
-          "result_tokens_approx": 60303
+          "result_tokens_approx": 59402
         },
         "data": {
           "type": "Module",
@@ -4319,19 +4319,19 @@
                               "type": "Constant",
                               "name": "",
                               "line": 120,
-                              "col": 15,
+                              "col": 17,
                               "end_line": 120,
-                              "end_col": 61,
-                              "src": "f\"\u03c8({self.amplitude:.3f}\u2220{self.phase:.2f})\""
+                              "end_col": 20,
+                              "src": "\u03c8({"
                             },
                             {
                               "type": "FormattedValue",
                               "name": "",
                               "line": 120,
-                              "col": 15,
+                              "col": 20,
                               "end_line": 120,
-                              "end_col": 61,
-                              "src": "f\"\u03c8({self.amplitude:.3f}\u2220{self.phase:.2f})\"",
+                              "end_col": 40,
+                              "src": "self.amplitude:.3f}\u2220",
                               "children": [
                                 {
                                   "type": "Attribute",
@@ -4371,19 +4371,19 @@
                                   "type": "JoinedStr",
                                   "name": "",
                                   "line": 120,
-                                  "col": 15,
+                                  "col": 35,
                                   "end_line": 120,
-                                  "end_col": 61,
-                                  "src": "f\"\u03c8({self.amplitude:.3f}\u2220{self.phase:.2f})\"",
+                                  "end_col": 39,
+                                  "src": ".3f}",
                                   "children": [
                                     {
                                       "type": "Constant",
                                       "name": "",
                                       "line": 120,
-                                      "col": 15,
+                                      "col": 36,
                                       "end_line": 120,
-                                      "end_col": 61,
-                                      "src": "f\"\u03c8({self.amplitude:.3f}\u2220{self.phase:.2f})\""
+                                      "end_col": 39,
+                                      "src": "3f}"
                                     }
                                   ]
                                 }
@@ -4393,19 +4393,19 @@
                               "type": "Constant",
                               "name": "",
                               "line": 120,
-                              "col": 15,
+                              "col": 40,
                               "end_line": 120,
-                              "end_col": 61,
-                              "src": "f\"\u03c8({self.amplitude:.3f}\u2220{self.phase:.2f})\""
+                              "end_col": 43,
+                              "src": "{se"
                             },
                             {
                               "type": "FormattedValue",
                               "name": "",
                               "line": 120,
-                              "col": 15,
+                              "col": 43,
                               "end_line": 120,
-                              "end_col": 61,
-                              "src": "f\"\u03c8({self.amplitude:.3f}\u2220{self.phase:.2f})\"",
+                              "end_col": 59,
+                              "src": "lf.phase:.2f})\"",
                               "children": [
                                 {
                                   "type": "Attribute",
@@ -4445,19 +4445,19 @@
                                   "type": "JoinedStr",
                                   "name": "",
                                   "line": 120,
-                                  "col": 15,
+                                  "col": 54,
                                   "end_line": 120,
-                                  "end_col": 61,
-                                  "src": "f\"\u03c8({self.amplitude:.3f}\u2220{self.phase:.2f})\"",
+                                  "end_col": 58,
+                                  "src": "f})\"",
                                   "children": [
                                     {
                                       "type": "Constant",
                                       "name": "",
                                       "line": 120,
-                                      "col": 15,
+                                      "col": 55,
                                       "end_line": 120,
-                                      "end_col": 61,
-                                      "src": "f\"\u03c8({self.amplitude:.3f}\u2220{self.phase:.2f})\""
+                                      "end_col": 58,
+                                      "src": "})\""
                                     }
                                   ]
                                 }
@@ -4467,10 +4467,9 @@
                               "type": "Constant",
                               "name": "",
                               "line": 120,
-                              "col": 15,
+                              "col": 59,
                               "end_line": 120,
-                              "end_col": 61,
-                              "src": "f\"\u03c8({self.amplitude:.3f}\u2220{self.phase:.2f})\""
+                              "end_col": 60
                             }
                           ]
                         }
@@ -6949,10 +6948,10 @@
                               "type": "FormattedValue",
                               "name": "",
                               "line": 164,
-                              "col": 16,
-                              "end_line": 167,
-                              "end_col": 38,
-                              "src": "        return (f\"{self.particle_type.value}\"\n                f\"[{self.position[0]:.1f},{self.position[1]:.1f},\"\n                f\"{self.position[2]:.1f}]\"\n                f\"s={self.spin.value}\")",
+                              "col": 18,
+                              "end_line": 164,
+                              "end_col": 44,
+                              "src": "{self.particle_type.value}",
                               "children": [
                                 {
                                   "type": "Attribute",
@@ -7010,20 +7009,20 @@
                             {
                               "type": "Constant",
                               "name": "",
-                              "line": 164,
-                              "col": 16,
-                              "end_line": 167,
-                              "end_col": 38,
-                              "src": "        return (f\"{self.particle_type.value}\"\n                f\"[{self.position[0]:.1f},{self.position[1]:.1f},\"\n                f\"{self.position[2]:.1f}]\"\n                f\"s={self.spin.value}\")"
+                              "line": 165,
+                              "col": 18,
+                              "end_line": 165,
+                              "end_col": 19,
+                              "src": "["
                             },
                             {
                               "type": "FormattedValue",
                               "name": "",
-                              "line": 164,
-                              "col": 16,
-                              "end_line": 167,
-                              "end_col": 38,
-                              "src": "        return (f\"{self.particle_type.value}\"\n                f\"[{self.position[0]:.1f},{self.position[1]:.1f},\"\n                f\"{self.position[2]:.1f}]\"\n                f\"s={self.spin.value}\")",
+                              "line": 165,
+                              "col": 19,
+                              "end_line": 165,
+                              "end_col": 41,
+                              "src": "{self.position[0]:.1f}",
                               "children": [
                                 {
                                   "type": "Subscript",
@@ -7089,19 +7088,19 @@
                                   "type": "JoinedStr",
                                   "name": "",
                                   "line": 165,
-                                  "col": 16,
+                                  "col": 36,
                                   "end_line": 165,
-                                  "end_col": 66,
-                                  "src": "f\"[{self.position[0]:.1f},{self.position[1]:.1f},\"",
+                                  "end_col": 40,
+                                  "src": ":.1f",
                                   "children": [
                                     {
                                       "type": "Constant",
                                       "name": "",
                                       "line": 165,
-                                      "col": 16,
+                                      "col": 37,
                                       "end_line": 165,
-                                      "end_col": 66,
-                                      "src": "f\"[{self.position[0]:.1f},{self.position[1]:.1f},\""
+                                      "end_col": 40,
+                                      "src": ".1f"
                                     }
                                   ]
                                 }
@@ -7110,20 +7109,20 @@
                             {
                               "type": "Constant",
                               "name": "",
-                              "line": 164,
-                              "col": 16,
-                              "end_line": 167,
-                              "end_col": 38,
-                              "src": "        return (f\"{self.particle_type.value}\"\n                f\"[{self.position[0]:.1f},{self.position[1]:.1f},\"\n                f\"{self.position[2]:.1f}]\"\n                f\"s={self.spin.value}\")"
+                              "line": 165,
+                              "col": 41,
+                              "end_line": 165,
+                              "end_col": 42,
+                              "src": ","
                             },
                             {
                               "type": "FormattedValue",
                               "name": "",
-                              "line": 164,
-                              "col": 16,
-                              "end_line": 167,
-                              "end_col": 38,
-                              "src": "        return (f\"{self.particle_type.value}\"\n                f\"[{self.position[0]:.1f},{self.position[1]:.1f},\"\n                f\"{self.position[2]:.1f}]\"\n                f\"s={self.spin.value}\")",
+                              "line": 165,
+                              "col": 42,
+                              "end_line": 165,
+                              "end_col": 64,
+                              "src": "{self.position[1]:.1f}",
                               "children": [
                                 {
                                   "type": "Subscript",
@@ -7189,19 +7188,19 @@
                                   "type": "JoinedStr",
                                   "name": "",
                                   "line": 165,
-                                  "col": 16,
+                                  "col": 59,
                                   "end_line": 165,
-                                  "end_col": 66,
-                                  "src": "f\"[{self.position[0]:.1f},{self.position[1]:.1f},\"",
+                                  "end_col": 63,
+                                  "src": ":.1f",
                                   "children": [
                                     {
                                       "type": "Constant",
                                       "name": "",
                                       "line": 165,
-                                      "col": 16,
+                                      "col": 60,
                                       "end_line": 165,
-                                      "end_col": 66,
-                                      "src": "f\"[{self.position[0]:.1f},{self.position[1]:.1f},\""
+                                      "end_col": 63,
+                                      "src": ".1f"
                                     }
                                   ]
                                 }
@@ -7210,20 +7209,20 @@
                             {
                               "type": "Constant",
                               "name": "",
-                              "line": 164,
-                              "col": 16,
-                              "end_line": 167,
-                              "end_col": 38,
-                              "src": "        return (f\"{self.particle_type.value}\"\n                f\"[{self.position[0]:.1f},{self.position[1]:.1f},\"\n                f\"{self.position[2]:.1f}]\"\n                f\"s={self.spin.value}\")"
+                              "line": 165,
+                              "col": 64,
+                              "end_line": 165,
+                              "end_col": 65,
+                              "src": ","
                             },
                             {
                               "type": "FormattedValue",
                               "name": "",
-                              "line": 164,
-                              "col": 16,
-                              "end_line": 167,
-                              "end_col": 38,
-                              "src": "        return (f\"{self.particle_type.value}\"\n                f\"[{self.position[0]:.1f},{self.position[1]:.1f},\"\n                f\"{self.position[2]:.1f}]\"\n                f\"s={self.spin.value}\")",
+                              "line": 166,
+                              "col": 18,
+                              "end_line": 166,
+                              "end_col": 40,
+                              "src": "{self.position[2]:.1f}",
                               "children": [
                                 {
                                   "type": "Subscript",
@@ -7289,19 +7288,19 @@
                                   "type": "JoinedStr",
                                   "name": "",
                                   "line": 166,
-                                  "col": 16,
+                                  "col": 35,
                                   "end_line": 166,
-                                  "end_col": 42,
-                                  "src": "f\"{self.position[2]:.1f}]\"",
+                                  "end_col": 39,
+                                  "src": ":.1f",
                                   "children": [
                                     {
                                       "type": "Constant",
                                       "name": "",
                                       "line": 166,
-                                      "col": 16,
+                                      "col": 36,
                                       "end_line": 166,
-                                      "end_col": 42,
-                                      "src": "f\"{self.position[2]:.1f}]\""
+                                      "end_col": 39,
+                                      "src": ".1f"
                                     }
                                   ]
                                 }
@@ -7310,20 +7309,20 @@
                             {
                               "type": "Constant",
                               "name": "",
-                              "line": 164,
-                              "col": 16,
+                              "line": 166,
+                              "col": 40,
                               "end_line": 167,
-                              "end_col": 38,
-                              "src": "        return (f\"{self.particle_type.value}\"\n                f\"[{self.position[0]:.1f},{self.position[1]:.1f},\"\n                f\"{self.position[2]:.1f}]\"\n                f\"s={self.spin.value}\")"
+                              "end_col": 20,
+                              "src": "                f\"{self.position[2]:.1f}]\"\n                f\"s={self.spin.value}\")"
                             },
                             {
                               "type": "FormattedValue",
                               "name": "",
-                              "line": 164,
-                              "col": 16,
+                              "line": 167,
+                              "col": 20,
                               "end_line": 167,
-                              "end_col": 38,
-                              "src": "        return (f\"{self.particle_type.value}\"\n                f\"[{self.position[0]:.1f},{self.position[1]:.1f},\"\n                f\"{self.position[2]:.1f}]\"\n                f\"s={self.spin.value}\")",
+                              "end_col": 37,
+                              "src": "{self.spin.value}",
                               "children": [
                                 {
                                   "type": "Attribute",
@@ -19803,10 +19802,10 @@
                                       "type": "FormattedValue",
                                       "name": "",
                                       "line": 379,
-                                      "col": 29,
+                                      "col": 31,
                                       "end_line": 379,
-                                      "end_col": 39,
-                                      "src": "f\"{k}:{v}\"",
+                                      "end_col": 34,
+                                      "src": "{k}",
                                       "children": [
                                         {
                                           "type": "Name",
@@ -19831,19 +19830,19 @@
                                       "type": "Constant",
                                       "name": "",
                                       "line": 379,
-                                      "col": 29,
+                                      "col": 34,
                                       "end_line": 379,
-                                      "end_col": 39,
-                                      "src": "f\"{k}:{v}\""
+                                      "end_col": 35,
+                                      "src": ":"
                                     },
                                     {
                                       "type": "FormattedValue",
                                       "name": "",
                                       "line": 379,
-                                      "col": 29,
+                                      "col": 35,
                                       "end_line": 379,
-                                      "end_col": 39,
-                                      "src": "f\"{k}:{v}\"",
+                                      "end_col": 38,
+                                      "src": "{v}",
                                       "children": [
                                         {
                                           "type": "Name",
@@ -20026,19 +20025,19 @@
                               "type": "Constant",
                               "name": "",
                               "line": 380,
-                              "col": 16,
-                              "end_line": 381,
-                              "end_col": 55,
-                              "src": "        return (f\"QF[T={self.temperature:.1e} E={self.total_energy():.1e} \"\n                f\"n={len(self.particles)} {count_str}]\")"
+                              "col": 18,
+                              "end_line": 380,
+                              "end_col": 23,
+                              "src": "QF[T="
                             },
                             {
                               "type": "FormattedValue",
                               "name": "",
                               "line": 380,
-                              "col": 16,
-                              "end_line": 381,
-                              "end_col": 55,
-                              "src": "        return (f\"QF[T={self.temperature:.1e} E={self.total_energy():.1e} \"\n                f\"n={len(self.particles)} {count_str}]\")",
+                              "col": 23,
+                              "end_line": 380,
+                              "end_col": 45,
+                              "src": "{self.temperature:.1e}",
                               "children": [
                                 {
                                   "type": "Attribute",
@@ -20078,19 +20077,19 @@
                                   "type": "JoinedStr",
                                   "name": "",
                                   "line": 380,
-                                  "col": 16,
+                                  "col": 40,
                                   "end_line": 380,
-                                  "end_col": 75,
-                                  "src": "f\"QF[T={self.temperature:.1e} E={self.total_energy():.1e} \"",
+                                  "end_col": 44,
+                                  "src": ":.1e",
                                   "children": [
                                     {
                                       "type": "Constant",
                                       "name": "",
                                       "line": 380,
-                                      "col": 16,
+                                      "col": 41,
                                       "end_line": 380,
-                                      "end_col": 75,
-                                      "src": "f\"QF[T={self.temperature:.1e} E={self.total_energy():.1e} \""
+                                      "end_col": 44,
+                                      "src": ".1e"
                                     }
                                   ]
                                 }
@@ -20100,19 +20099,19 @@
                               "type": "Constant",
                               "name": "",
                               "line": 380,
-                              "col": 16,
-                              "end_line": 381,
-                              "end_col": 55,
-                              "src": "        return (f\"QF[T={self.temperature:.1e} E={self.total_energy():.1e} \"\n                f\"n={len(self.particles)} {count_str}]\")"
+                              "col": 45,
+                              "end_line": 380,
+                              "end_col": 48,
+                              "src": " E="
                             },
                             {
                               "type": "FormattedValue",
                               "name": "",
                               "line": 380,
-                              "col": 16,
-                              "end_line": 381,
-                              "end_col": 55,
-                              "src": "        return (f\"QF[T={self.temperature:.1e} E={self.total_energy():.1e} \"\n                f\"n={len(self.particles)} {count_str}]\")",
+                              "col": 48,
+                              "end_line": 380,
+                              "end_col": 73,
+                              "src": "{self.total_energy():.1e}",
                               "children": [
                                 {
                                   "type": "Call",
@@ -20163,19 +20162,19 @@
                                   "type": "JoinedStr",
                                   "name": "",
                                   "line": 380,
-                                  "col": 16,
+                                  "col": 68,
                                   "end_line": 380,
-                                  "end_col": 75,
-                                  "src": "f\"QF[T={self.temperature:.1e} E={self.total_energy():.1e} \"",
+                                  "end_col": 72,
+                                  "src": ":.1e",
                                   "children": [
                                     {
                                       "type": "Constant",
                                       "name": "",
                                       "line": 380,
-                                      "col": 16,
+                                      "col": 69,
                                       "end_line": 380,
-                                      "end_col": 75,
-                                      "src": "f\"QF[T={self.temperature:.1e} E={self.total_energy():.1e} \""
+                                      "end_col": 72,
+                                      "src": ".1e"
                                     }
                                   ]
                                 }
@@ -20185,19 +20184,19 @@
                               "type": "Constant",
                               "name": "",
                               "line": 380,
-                              "col": 16,
+                              "col": 73,
                               "end_line": 381,
-                              "end_col": 55,
+                              "end_col": 20,
                               "src": "        return (f\"QF[T={self.temperature:.1e} E={self.total_energy():.1e} \"\n                f\"n={len(self.particles)} {count_str}]\")"
                             },
                             {
                               "type": "FormattedValue",
                               "name": "",
-                              "line": 380,
-                              "col": 16,
+                              "line": 381,
+                              "col": 20,
                               "end_line": 381,
-                              "end_col": 55,
-                              "src": "        return (f\"QF[T={self.temperature:.1e} E={self.total_energy():.1e} \"\n                f\"n={len(self.particles)} {count_str}]\")",
+                              "end_col": 41,
+                              "src": "{len(self.particles)}",
                               "children": [
                                 {
                                   "type": "Call",
@@ -20266,20 +20265,20 @@
                             {
                               "type": "Constant",
                               "name": "",
-                              "line": 380,
-                              "col": 16,
+                              "line": 381,
+                              "col": 41,
                               "end_line": 381,
-                              "end_col": 55,
-                              "src": "        return (f\"QF[T={self.temperature:.1e} E={self.total_energy():.1e} \"\n                f\"n={len(self.particles)} {count_str}]\")"
+                              "end_col": 42,
+                              "src": " "
                             },
                             {
                               "type": "FormattedValue",
                               "name": "",
-                              "line": 380,
-                              "col": 16,
+                              "line": 381,
+                              "col": 42,
                               "end_line": 381,
-                              "end_col": 55,
-                              "src": "        return (f\"QF[T={self.temperature:.1e} E={self.total_energy():.1e} \"\n                f\"n={len(self.particles)} {count_str}]\")",
+                              "end_col": 53,
+                              "src": "{count_str}",
                               "children": [
                                 {
                                   "type": "Name",
@@ -20303,11 +20302,11 @@
                             {
                               "type": "Constant",
                               "name": "",
-                              "line": 380,
-                              "col": 16,
+                              "line": 381,
+                              "col": 53,
                               "end_line": 381,
-                              "end_col": 55,
-                              "src": "        return (f\"QF[T={self.temperature:.1e} E={self.total_energy():.1e} \"\n                f\"n={len(self.particles)} {count_str}]\")"
+                              "end_col": 54,
+                              "src": "]"
                             }
                           ]
                         }
@@ -20339,21 +20338,21 @@
       },
       "sequence_id": 2,
       "parent_id": 1,
-      "timestamp": 1774521435.9362938,
-      "context_tokens_approx": 60303
+      "timestamp": 1774752051.8244536,
+      "context_tokens_approx": 59402
     },
     {
       "cue_type": "query",
       "payload": {
         "action": "symbols",
-        "target": "/home/user/inthebeginning/simulator/quantum.py",
+        "target": "/home/claude/inthebeginning/simulator/quantum.py",
         "language": "python",
         "filters": {},
         "depth": -1
       },
       "sequence_id": 3,
       "parent_id": 0,
-      "timestamp": 1774521435.9635556,
+      "timestamp": 1774752051.8305879,
       "context_tokens_approx": 0
     },
     {
@@ -20363,10 +20362,10 @@
         "ast_node_count": 0,
         "source_hash": "75923ca01cc4a178",
         "metrics": {
-          "wall_time_ms": 1005.5422660000204,
-          "cpu_user_ms": 930.0000000000001,
-          "cpu_system_ms": 0.0,
-          "peak_memory_kb": 1586,
+          "wall_time_ms": 1237.013484000272,
+          "cpu_user_ms": 1236.028,
+          "cpu_system_ms": 0.9999999999999991,
+          "peak_memory_kb": 1545,
           "current_memory_kb": 30,
           "disk_read_bytes": 0,
           "disk_write_bytes": 0,
@@ -20734,21 +20733,21 @@
       },
       "sequence_id": 4,
       "parent_id": 3,
-      "timestamp": 1774521436.970309,
+      "timestamp": 1774752053.067881,
       "context_tokens_approx": 956
     },
     {
       "cue_type": "query",
       "payload": {
         "action": "dependencies",
-        "target": "/home/user/inthebeginning/simulator/quantum.py",
+        "target": "/home/claude/inthebeginning/simulator/quantum.py",
         "language": "python",
         "filters": {},
         "depth": -1
       },
       "sequence_id": 5,
       "parent_id": 0,
-      "timestamp": 1774521436.9710739,
+      "timestamp": 1774752053.0680437,
       "context_tokens_approx": 0
     },
     {
@@ -20758,10 +20757,10 @@
         "ast_node_count": 0,
         "source_hash": "75923ca01cc4a178",
         "metrics": {
-          "wall_time_ms": 1010.3705180000588,
-          "cpu_user_ms": 930.0000000000001,
+          "wall_time_ms": 1228.5394530008489,
+          "cpu_user_ms": 1228.5510000000004,
           "cpu_system_ms": 0.0,
-          "peak_memory_kb": 1586,
+          "peak_memory_kb": 1545,
           "current_memory_kb": 21,
           "disk_read_bytes": 0,
           "disk_write_bytes": 0,
@@ -20836,21 +20835,21 @@
       },
       "sequence_id": 6,
       "parent_id": 5,
-      "timestamp": 1774521437.9824011,
+      "timestamp": 1774752054.2968016,
       "context_tokens_approx": 175
     },
     {
       "cue_type": "query",
       "payload": {
         "action": "metrics",
-        "target": "/home/user/inthebeginning/simulator/quantum.py",
+        "target": "/home/claude/inthebeginning/simulator/quantum.py",
         "language": "python",
         "filters": {},
         "depth": -1
       },
       "sequence_id": 7,
       "parent_id": 0,
-      "timestamp": 1774521437.9828775,
+      "timestamp": 1774752054.296869,
       "context_tokens_approx": 0
     },
     {
@@ -20860,10 +20859,10 @@
         "ast_node_count": 0,
         "source_hash": "75923ca01cc4a178",
         "metrics": {
-          "wall_time_ms": 1045.1987630000303,
-          "cpu_user_ms": 960.0,
+          "wall_time_ms": 1233.8052079994668,
+          "cpu_user_ms": 1233.8199999999997,
           "cpu_system_ms": 0.0,
-          "peak_memory_kb": 1578,
+          "peak_memory_kb": 1537,
           "current_memory_kb": 12,
           "disk_read_bytes": 0,
           "disk_write_bytes": 0,
@@ -20881,21 +20880,21 @@
       },
       "sequence_id": 8,
       "parent_id": 7,
-      "timestamp": 1774521439.02918,
+      "timestamp": 1774752055.5308905,
       "context_tokens_approx": 28
     },
     {
       "cue_type": "query",
       "payload": {
         "action": "coverage_map",
-        "target": "/home/user/inthebeginning/simulator/quantum.py",
+        "target": "/home/claude/inthebeginning/simulator/quantum.py",
         "language": "python",
         "filters": {},
         "depth": -1
       },
       "sequence_id": 9,
       "parent_id": 0,
-      "timestamp": 1774521439.029475,
+      "timestamp": 1774752055.5309596,
       "context_tokens_approx": 0
     },
     {
@@ -20905,10 +20904,10 @@
         "ast_node_count": 0,
         "source_hash": "75923ca01cc4a178",
         "metrics": {
-          "wall_time_ms": 1077.587746000063,
-          "cpu_user_ms": 1000.0,
+          "wall_time_ms": 1292.3014939988207,
+          "cpu_user_ms": 1292.319,
           "cpu_system_ms": 0.0,
-          "peak_memory_kb": 1577,
+          "peak_memory_kb": 1536,
           "current_memory_kb": 17,
           "disk_read_bytes": 0,
           "disk_write_bytes": 0,
@@ -21138,7 +21137,7 @@
       },
       "sequence_id": 10,
       "parent_id": 9,
-      "timestamp": 1774521440.1082537,
+      "timestamp": 1774752056.8235164,
       "context_tokens_approx": 555
     },
     {
@@ -21146,7 +21145,7 @@
       "payload": null,
       "sequence_id": 100,
       "parent_id": 0,
-      "timestamp": 1774521440.1087441,
+      "timestamp": 1774752056.8236191,
       "context_tokens_approx": 0
     },
     {
@@ -21160,7 +21159,7 @@
           "symbols_found": 30,
           "deps_found": 6,
           "pending_transforms": 0,
-          "total_tokens": 62017
+          "total_tokens": 61116
         },
         "all_symbols": [
           {
@@ -21634,7 +21633,7 @@
       },
       "sequence_id": 11,
       "parent_id": 100,
-      "timestamp": 1774521440.108779,
+      "timestamp": 1774752056.8236365,
       "context_tokens_approx": 0
     }
   ]
