@@ -1,40 +1,5 @@
 {
-  "hooks": {
-    "PreToolUse": [],
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '[REMINDER] Generate JSON transcript companion (session_logs/v{VERSION}-session.json) alongside markdown session log. Schema: session_logs/transcript_schema.json. Truncate tool output at 500 lines. Proofread user input. Redact security tokens only (system paths OK).' && bash /home/user/inthebeginning/.claude/steering-check.sh post-tool"
-          }
-        ]
-      }
-    ],
-    "Notification": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash /home/user/inthebeginning/.claude/steering-check.sh notification"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash /home/user/inthebeginning/.claude/steering-check.sh stop"
-          }
-        ]
-      }
-    ]
-  },
+  "hooks": {},
   "permissions": {
     "allow": [],
     "deny": []
