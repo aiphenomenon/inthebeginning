@@ -136,3 +136,23 @@ planning comprehensive v9 release with Playwright-verified visual test reports.
 - WASM Firefox: verified fallback works with DataView fix
 
 **Test Results**: 14/14 PASS, zero JS errors.
+
+### Turn 7: V32 Phase 3 — Final Items [2026-03-30 01:00-02:00 CT]
+
+**Fixes and features:**
+1. KNOWN_ISSUES.md: Double pause icon + minimize stops MIDI documented
+2. 3D bloom grid: petal-like animated clusters replace isometric cubes
+3. MIDI soundbank instrument selection panel (10 families, toggle on/off)
+4. MP3 sourcing info: engine provenance (RadioEngineV8, seed 42, 1771 MIDIs)
+5. MIDI licensing in era display (MAESTRO/ADL license info)
+
+**Git archaeology**: Traced RadioEngineV8 MIDI sampling to deterministic
+SHA256-based selection from 1,771 files. Seed 42 for all tracks.
+Per-track MIDI provenance recoverable by re-running engine.
+
+**Playwright**: 15/15 pass, zero JS errors. New features verified:
+- Instrument panel opens with 10 families
+- 3D bloom grid renders with animated petals
+- Credits overlay functional
+
+**Total V32 commits**: 12 (phases 1-3)

@@ -14,6 +14,16 @@ rearchitected CLAUDE.md/AGENTS.md for Claude Code CLI, set up CLI hooks,
 GitHub CI, and Apple platform builds.
 
 
+
+### V32 Phase 3 (2026-03-30)
+
+Final items:
+- 3D grid bloom: animated petal clusters replace isometric cubes
+- Instrument soundbank panel: toggle 10 instrument families on/off for MIDI
+- MP3 engine provenance: shows RadioEngineV8/V15, seed 42, MIDI pool info
+- MIDI licensing: CC BY-NC-SA 4.0 (MAESTRO) / CC BY 4.0 (ADL) shown in info panel
+- Known issues documented: double pause icon, minimize stops MIDI
+
 ### V32 Phase 2 (2026-03-30)
 
 Additional fixes completing all items from the comprehensive bug report:
