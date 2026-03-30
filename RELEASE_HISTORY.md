@@ -13,6 +13,18 @@ with V8's WASM additions, fixing 10+ regressions introduced in V8. Also
 rearchitected CLAUDE.md/AGENTS.md for Claude Code CLI, set up CLI hooks,
 GitHub CI, and Apple platform builds.
 
+
+### V32 Phase 2 (2026-03-30)
+
+Additional fixes completing all items from the comprehensive bug report:
+- 3D gameplay: faster fly-through, forgiving jump detection, terrain smoothing
+- Scoring: 3pts per landing (not per object), aligned with game design intent
+- Mutation: playhead no longer jumps when switching mutations mid-playback
+- Infinite mode: properly enforced for MIDI (12 tracks) and synth
+- UI: new title font layout, level transition flash, MIDI licensing display
+- Infrastructure: lint hooks for Go/Swift/HTML/CSS, apps/ dev symlink
+- Playwright verified: 14/14 pass, zero JS errors
+
 ### V9 Game (deploy/v9)
 
 V9 restores all V7 features that V8 lost while keeping V8's WASM synth mode:

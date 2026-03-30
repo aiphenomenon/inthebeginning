@@ -115,3 +115,24 @@ planning comprehensive v9 release with Playwright-verified visual test reports.
 9. `57d6b43` fix(swift): add missing import InTheBeginningSimulator to app files
 10. `b10beba` chore: remove swift .build/ from tracking, add to gitignore
 11. `3c579c1` ci(apple): schedule for verification
+
+### Turn 6: V32 Phase 2 — Complete All Remaining Items [2026-03-30 00:00-01:00 CT]
+
+**Requested**: Complete all remaining unfixed items from the bug report.
+
+**Fixes applied (7 additional commits):**
+- 3D obstacle speed: 220 base (was 140) for fly-through behavior
+- Jump scoring: 3pts once per landing, not per object
+- 3D jump-over: 30% horizontal margin for forgiveness
+- Mutation playhead: preserves position across tempo changes
+- Infinite mode: MIDI stops after 12, synth stops at last track
+- Controls Guide: 2P section hidden in 1P mode
+- Title font: "inthebeginning" small, "BOUNCE" large
+- Track title click: shows MIDI info in non-MP3 modes
+- MIDI licensing: era + license source in display
+- Level transition: blue flash overlay animation
+- Lint hooks: Go, Swift, HTML, CSS added
+- apps/inthebeginning-bounce → deploy/v9 symlink (dev location)
+- WASM Firefox: verified fallback works with DataView fix
+
+**Test Results**: 14/14 PASS, zero JS errors.
