@@ -92,3 +92,11 @@ Covers gameplay mechanics, audio integration, UI/UX, WASM fixes, and new feature
 18. WASM Firefox fallback
 19. Linting for all languages in hooks
 20. Reinstate apps/ as primary dev location
+
+## Phase 3: Final Items (2026-03-30)
+
+1. Known issues file: double pause icon, minimize stops MIDI
+2. 3D grid blooming clusters (not cubes — use expanded 2D cell clusters)
+3. MIDI soundbank instrument selection panel
+4. MP3 sourcing info (git archaeology for RadioEngineV8 MIDI sampling)
+5. Follow steering: session log, transcript, release history
