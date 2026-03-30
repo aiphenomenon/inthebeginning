@@ -68,3 +68,27 @@ Covers gameplay mechanics, audio integration, UI/UX, WASM fixes, and new feature
 38. Visual report with before/after screenshots.
 39. Follow all steering: future memories, session logs, release history.
 40. GitHub Pages deployment instructions.
+
+## Phase 2: Complete All Remaining Items (2026-03-30)
+
+### Round 2 Fixes
+1. 3D objects fly-through (not pause at bottom)
+2. Jump scoring: 3pts once per jump landing, not per-object mid-air
+3. Runner terrain manifold smoothing
+4. Infinite mode enforcement for MIDI/synth (12-track limit when unchecked)
+5. Double pause button icon investigation
+6. Track name click → useful modal for all modes
+7. Level transition animation (CSS)
+8. Grid 3D cube shapes
+9. Title font: split sizing + space-themed
+10. MIDI licensing display
+11. MP3 sourcing info (which MIDIs sampled)
+12. MIDI soundbank instrument selection panel
+13. Minimize window MIDI playback
+14. Mutation playhead jumping fix
+15. Arpeggio/runs in MIDI investigation
+16. Controls Guide per player count
+17. Accessibility settings edge cases
+18. WASM Firefox fallback
+19. Linting for all languages in hooks
+20. Reinstate apps/ as primary dev location
