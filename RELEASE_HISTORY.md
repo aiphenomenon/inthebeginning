@@ -6,6 +6,24 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 
 
+
+## v0.35.0 — 2026-03-30 — Comprehensive Markdown Sweep
+
+### Summary
+Map-reduce sweep of 115 markdown files across 40+ directories with 5 parallel
+agents. Fixed 16 issues (6 high, 5 medium, 5 low): version number mismatches,
+missing READMEs, stale references, archive creation.
+
+### Key Fixes
+- README.md: 12→13 programming languages
+- deploy/v7-v10 READMEs: all said "V6", corrected to match directory version
+- PLAN.md: marked as historical (V22 era, superseded)
+- Created READMEs for apps/wasm-synth/ and apps/cosmic-runner-v5/
+- Created future_memories/archive.tar.gz for shipped plan files
+- Added markdown consistency steering to CLAUDE.md
+
+---
+
 ## v0.34.0 — 2026-03-30 — V10: MIDI Provenance + Effects Display
 
 ### MIDI Source Recovery

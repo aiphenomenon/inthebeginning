@@ -1,5 +1,5 @@
 {
-  "status": "round2_applying_fixes",
+  "status": "complete",
   "version_bump": "v0.35.0",
   "markdown_files": [
     "./.pytest_cache/README.md",
@@ -238,6 +238,16 @@
       "fix": "Note: historical, not blocking"
     }
   ],
-  "fixes_applied": [],
+  "fixes_applied": [
+    "README.md: 12\u219213 languages",
+    "deploy/v7-v10 READMEs: version headers fixed",
+    "deploy/v10 KNOWN_ISSUES.md: V9\u2192V10",
+    "PLAN.md: historical header added",
+    "apps/wasm-synth/README.md: created",
+    "apps/cosmic-runner-v5/README.md: created",
+    "docs/web-ios-flow.md: archive warning added",
+    "future_memories/archive.tar.gz: created",
+    "CLAUDE.md: markdown consistency steering added"
+  ],
   "files_visited": []
 }

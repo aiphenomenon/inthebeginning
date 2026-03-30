@@ -201,3 +201,16 @@ Mozart, Borodin, Diabelli, Lincke, across 3250 notes.
 - Effects tags show: reverb %, filter, pitch shift for mutations
 
 **Playwright**: 13/13 pass, zero JS errors.
+
+### Turn 10: V35 — Comprehensive Markdown Sweep [2026-03-30 15:00-16:30 CT]
+
+**Approach**: Map-reduce with 5 parallel agents, each scoping a directory tree.
+Round 1 (MAP): 5 agents audit all 115 markdown files against actual code.
+Round 2 (REDUCE): Consolidated 16 issues, applied fixes in 3 batches.
+Round 3 (VERIFY): Confirmed all 16 fixes landed correctly.
+
+**Issues fixed**: 6 high (version numbers, language count), 5 medium (missing
+READMEs, stale PLAN.md, Java test command), 5 low (archive warning, future
+memories archive, steering update).
+
+**Tracking**: markdown_sweep_tracker.json indexes all files visited and fixes applied.
