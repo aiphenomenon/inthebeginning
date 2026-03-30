@@ -5,6 +5,23 @@ Release history for **In The Beginning** — reverse chronological order (newest
 ---
 
 
+
+## v0.34.0 — 2026-03-30 — V10: MIDI Provenance + Effects Display
+
+### MIDI Source Recovery
+Re-ran RadioEngineV8 seed=42 to recover exact MIDI files sampled per segment.
+15 unique sources: Chopin, Bach, Joplin, Beethoven, Haydn, Verdi, Mozart,
+Borodin, Diabelli, Lincke. Enhanced v4 JSON per track with midi_source per note.
+
+### Effects Display
+Lower-left note boxes now show: pitch+instrument, MIDI source file (for MP3),
+active effects (reverb, filter, pitch shift) when mutations are applied.
+
+### deploy/v10
+Created from v9 with enhanced note data, v10 title, v4 JSON files.
+
+---
+
 ## v0.33.0 — 2026-03-30 — Approach C Compositional WASM + MP3 Album
 
 ### Approach C: Hybrid Compositional Engine

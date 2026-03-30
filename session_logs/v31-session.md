@@ -176,3 +176,28 @@ Per-track MIDI provenance recoverable by re-running engine.
 - album.json metadata matches all 12 track files
 
 **Playwright**: 4/4 sound modes pass, zero JS errors.
+
+### Turn 9: V34/V10 — MIDI Provenance + Effects Display [2026-03-30 05:00-06:30 CT]
+
+**MIDI Provenance Recovery:**
+Re-ran RadioEngineV8 MIDI selection (seed=42) with mido-loaded MIDI library
+(1820 sequences, 35s load time). Successfully recovered per-segment MIDI
+sources: 15 unique files from Chopin, Bach, Joplin, Beethoven, Haydn, Verdi,
+Mozart, Borodin, Diabelli, Lincke, across 3250 notes.
+
+**Per-Track Sources:**
+- Ember: Chopin Nocturne + Bach English Suite
+- Torrent: Joplin Binks + Lincke Glow Worm + Beethoven Quartet 03
+- Quartz: Verdi + Haydn
+- Tide: Borodin + Haydn
+- Root: Bach Partitas + Diabelli
+- Glacier: Beethoven + Mozart + Verdi La Traviata
+- Tracks 7-12: Same sources (both engines use same seed+sim_states)
+
+**deploy/v10 Created:**
+- Enhanced v4 note JSON files with midi_source per event
+- album.json references v4 files (falls back to v3)
+- Note info boxes show: pitch+instrument, MIDI source, effects
+- Effects tags show: reverb %, filter, pitch shift for mutations
+
+**Playwright**: 13/13 pass, zero JS errors.
