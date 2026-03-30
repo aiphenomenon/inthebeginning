@@ -264,11 +264,14 @@ class MusicSync {
       const t = ev[0], dur = ev[1];
       if (t > time + 0.1) break;
       if (t <= time && t + dur > time) {
-        active.push({
+        const obj = {
           t, dur, note: ev[2],
           inst: instMap[String(ev[3])] || 'unknown',
           vel: ev[4], ch: ev[5],
-        });
+        };
+        // Include MIDI source if present (v4 note data)
+        if (ev[6]) obj.midi_source = ev[6];
+        active.push(obj);
       }
     }
     return active;
