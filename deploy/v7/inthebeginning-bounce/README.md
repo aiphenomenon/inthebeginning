@@ -1,9 +1,9 @@
-# inthebeginning bounce — V6
+# inthebeginning bounce — V7
 
 A cosmic runner game with three display modes (Game, Player, Grid) and three
 sound modes (MP3 Album, MIDI Library, Synth Generator).
 
-## What's New in V6
+## What's New in V7
 
 - **Renamed**: "Cosmic Runner" → "inthebeginning bounce"
 - **12-epoch synth generator**: 9 audio layers, richer sonic architecture

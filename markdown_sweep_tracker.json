@@ -1,5 +1,5 @@
 {
-  "status": "round1_in_progress",
+  "status": "round2_applying_fixes",
   "version_bump": "v0.35.0",
   "markdown_files": [
     "./.pytest_cache/README.md",
@@ -124,7 +124,120 @@
   "total_md_files": 115,
   "total_archives": 1,
   "round1_agents": {},
-  "issues_found": [],
+  "issues_found": [
+    {
+      "file": "RELEASE_HISTORY.md",
+      "line": "54-63",
+      "issue": "V32 Phase labels inside v0.31.0 entry",
+      "severity": "medium",
+      "fix": "Rename to V31 Phase or remove version prefix"
+    },
+    {
+      "file": "PLAN.md",
+      "line": "general",
+      "issue": "Outdated V22 plan not archived",
+      "severity": "low",
+      "fix": "Archive or add historical header"
+    },
+    {
+      "file": "README.md",
+      "line": "5",
+      "issue": "Says 12 languages, should be 13",
+      "severity": "high",
+      "fix": "Change to 13"
+    },
+    {
+      "file": "CLAUDE.md",
+      "line": "162",
+      "issue": "Java test command incomplete",
+      "severity": "medium",
+      "fix": "Add mkdir + main class compile steps"
+    },
+    {
+      "file": "docs/apps_overview.md",
+      "line": "8",
+      "issue": "App count inconsistency (16 vs 18+)",
+      "severity": "medium",
+      "fix": "Clarify which apps are core vs experimental"
+    },
+    {
+      "file": "docs/roadmap.md",
+      "line": "115",
+      "issue": "Ambiguous Cosmic Runner reference",
+      "severity": "low",
+      "fix": "Clarify app name"
+    },
+    {
+      "file": "docs/web-ios-flow.md",
+      "line": "1",
+      "issue": "Archived warning could be stronger",
+      "severity": "low",
+      "fix": "Add prominent banner"
+    },
+    {
+      "file": "apps/wasm-synth/",
+      "line": "N/A",
+      "issue": "Missing README.md",
+      "severity": "medium",
+      "fix": "Create README"
+    },
+    {
+      "file": "apps/cosmic-runner-v5/",
+      "line": "N/A",
+      "issue": "Orphaned directory, no README",
+      "severity": "low",
+      "fix": "Add README or archive"
+    },
+    {
+      "file": "deploy/v7/inthebeginning-bounce/README.md",
+      "line": "1",
+      "issue": "Header says V6 not V7",
+      "severity": "high",
+      "fix": "Change to V7"
+    },
+    {
+      "file": "deploy/v8/inthebeginning-bounce/README.md",
+      "line": "1",
+      "issue": "Header says V6 not V8",
+      "severity": "high",
+      "fix": "Change to V8"
+    },
+    {
+      "file": "deploy/v9/inthebeginning-bounce/README.md",
+      "line": "1",
+      "issue": "Header says V6 not V9",
+      "severity": "high",
+      "fix": "Change to V9"
+    },
+    {
+      "file": "deploy/v10/inthebeginning-bounce/README.md",
+      "line": "1",
+      "issue": "Header says V6 not V10",
+      "severity": "high",
+      "fix": "Change to V10"
+    },
+    {
+      "file": "deploy/v10/inthebeginning-bounce/KNOWN_ISSUES.md",
+      "line": "1",
+      "issue": "Title says V9 not V10",
+      "severity": "high",
+      "fix": "Change to V10"
+    },
+    {
+      "file": "future_memories/",
+      "line": "N/A",
+      "issue": "No archive.tar.gz for shipped plans",
+      "severity": "medium",
+      "fix": "Create archive"
+    },
+    {
+      "file": "session_logs/",
+      "line": "N/A",
+      "issue": "7 session logs lack JSON companions",
+      "severity": "low",
+      "fix": "Note: historical, not blocking"
+    }
+  ],
   "fixes_applied": [],
   "files_visited": []
 }

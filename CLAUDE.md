@@ -546,3 +546,7 @@ When working on this repository with any automated agent (Jules, Codex, Devin, e
 6. **Review roadmap**: Check `docs/roadmap.md` before proposing new features
 7. **Session logging**: Generate logs in `session_logs/` per the protocol above
 8. **AST-first development**: See `AGENTS.md` for the AST-passing protocol
+9. **Markdown consistency**: Periodically verify all markdown files are accurate
+   and consistent with actual code/config state. Apply factual corrections only
+   — don't rewrite steering intent during cleanup. Session logs are append-only
+   (never modified). Use `markdown_sweep_tracker.json` to track sweep progress.

@@ -1,3 +1,6 @@
+> **ARCHIVED**: This flow applies only to Claude Code Web/iOS (gVisor sandbox).
+> For Claude Code CLI, see `CLAUDE.md`. Do NOT apply these hooks to CLI.
+
 # Claude Code Web/iOS Flow (gVisor Hooks)
 
 This document preserves the hook-based steering approach used when working in

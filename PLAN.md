@@ -1,3 +1,7 @@
+> **HISTORICAL PLAN (V22 era)** — This plan predates the current state.
+> See `RELEASE_HISTORY.md` for what was actually implemented.
+> See `future_memories/` for current plans.
+
 # V22 Implementation Plan — Unified WASM Music + Visualizer + Side-Scroller
 
 ## Overview

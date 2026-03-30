@@ -2,7 +2,7 @@
 
 A multi-language cosmic physics simulator that models the universe from the Big Bang
 through the emergence of DNA-based life — implemented across 16 applications in
-12 programming languages.
+13 programming languages.
 
 The project also demonstrates an **AST-passing workflow** for AI-assisted development,
 where compact Abstract Syntax Tree representations are exchanged between an LLM agent
