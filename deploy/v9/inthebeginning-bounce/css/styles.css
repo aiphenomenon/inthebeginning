@@ -43,15 +43,27 @@ html, body {
 .title-content { text-align: center; max-height: 100dvh; max-height: 100vh; overflow-y: auto; padding: 20px; }
 
 .title-text {
-  font-size: clamp(28px, 7vw, 64px);
   font-weight: 900;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.12em;
   background: linear-gradient(135deg, #4af, #a4f, #f4a, #4af);
   background-size: 300% 300%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   animation: title-shimmer 4s ease infinite;
+  line-height: 1.1;
+}
+.title-prefix {
+  font-size: clamp(16px, 3.5vw, 32px);
+  letter-spacing: 0.25em;
+  font-weight: 300;
+}
+.title-main {
+  font-size: clamp(36px, 10vw, 80px);
+  letter-spacing: 0.08em;
+  font-weight: 900;
+  text-transform: uppercase;
+  text-shadow: 0 0 40px rgba(100, 160, 255, 0.3);
 }
 
 @keyframes title-shimmer {

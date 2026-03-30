@@ -413,9 +413,10 @@ class CosmicRunnerApp {
     const isGame = this.mode === 'game';
     const isPlayer = this.mode === 'player';
     const isGrid = this.mode === 'grid';
+    const is2P = this.numPlayers === 2;
 
     if (gameSection) gameSection.style.display = isGame ? '' : 'none';
-    if (twoPlayerSection) twoPlayerSection.style.display = isGame ? '' : 'none';
+    if (twoPlayerSection) twoPlayerSection.style.display = (isGame && is2P) ? '' : 'none';
     if (scoringSection) scoringSection.style.display = isGame ? '' : 'none';
     if (playerSection) playerSection.style.display = (isPlayer || isGrid) ? '' : 'none';
     if (gridSection) gridSection.style.display = isGrid ? '' : 'none';

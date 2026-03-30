@@ -352,8 +352,15 @@ class MidiPlayer {
    * @param {Object} mutation - { pitchShift, tempoMult, reverb, filter }
    */
   setMutation(mutation) {
+    // Preserve playback position across tempo changes
+    const currentPos = this.isPlaying ? this.getCurrentTime() : this._currentTime;
     this._mutation = mutation || { pitchShift: 0, tempoMult: 1.0, reverb: 0, filter: 'none' };
     if (this._synth) this._synth.setMutation(this._mutation);
+    // Recalculate start time so getCurrentTime() returns the same position
+    if (this.isPlaying && this._synth?.ctx) {
+      this._currentTime = currentPos;
+      this._startCtxTime = this._synth.ctx.currentTime - (currentPos / this._effectiveSpeed());
+    }
   }
 
   /**

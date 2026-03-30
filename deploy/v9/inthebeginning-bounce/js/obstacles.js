@@ -359,7 +359,11 @@ class ObstacleManager {
         }
       } else {
         // 3D mode: obstacle has passed below the player
-        const horizontalOverlap = bounds.x < ob.x + ob.w && bounds.x + bounds.w > ob.x;
+        // Use generous horizontal overlap (±30% margin) — player gets credit
+        // if they're approximately in the flight path when jumping
+        const margin = ob.w * 0.3;
+        const horizontalOverlap = bounds.x < ob.x + ob.w + margin &&
+          bounds.x + bounds.w > ob.x - margin;
         const passedBelow = ob.y > bounds.y + bounds.h;
         if (horizontalOverlap && passedBelow && !isGrounded) {
           obs.jumpedOver = true;

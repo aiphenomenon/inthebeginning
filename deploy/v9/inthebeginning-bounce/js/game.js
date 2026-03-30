@@ -297,7 +297,10 @@ class Game {
       this.scrollSpeed = (180 + intensity * 120) * this.userSpeedMult;
       // Scale obstacle speed based on level: gentler at early levels, still responsive
       const levelScale = 1.0 + this.currentLevel * 0.04;
-      this.fallSpeed = (140 + intensity * 80) * this.userSpeedMult * levelScale;
+      // In 3D mode obstacles need to fly through faster so they don't linger
+      const is3D = this.gridDim === '3d';
+      const baseFall = is3D ? 220 : 140;
+      this.fallSpeed = (baseFall + intensity * 80) * this.userSpeedMult * levelScale;
     } else {
       this.speed = 0.3;
       this.scrollSpeed = 30;

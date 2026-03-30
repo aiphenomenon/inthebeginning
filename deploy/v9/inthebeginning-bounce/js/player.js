@@ -483,7 +483,16 @@ class GamePlayer {
   // ──── Track End Handlers ────
 
   _onMidiTrackEnd() {
-    // Auto-advance to next random MIDI (infinite shuffle)
+    this._midiTrackCount = (this._midiTrackCount || 0) + 1;
+    // Non-infinite: stop after 12 MIDI tracks
+    if (!this.infiniteMode && this._midiTrackCount >= 12) {
+      this.isPlaying = false;
+      this._updatePlayIcon();
+      this._stopTimeLoop();
+      if (this.onGameComplete) this.onGameComplete();
+      return;
+    }
+    // Auto-advance to next random MIDI
     this.midiPlayer.loadNext().then(() => {
       this.midiPlayer.play();
       this.isPlaying = true;
@@ -494,6 +503,14 @@ class GamePlayer {
   }
 
   _onSynthTrackEnd() {
+    // Synth generator has 12 tracks; non-infinite stops at last track
+    if (!this.infiniteMode && this.musicGenerator.currentTrack >= this.musicGenerator.trackCount - 1) {
+      this.isPlaying = false;
+      this._updatePlayIcon();
+      this._stopTimeLoop();
+      if (this.onGameComplete) this.onGameComplete();
+      return;
+    }
     // Auto-advance to next generated track
     this.musicGenerator.nextTrack();
     this.musicGenerator.play();

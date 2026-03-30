@@ -145,7 +145,9 @@ class Runner {
         this.jumpCount = 0;
         this.fastDropping = false;
         if (this.jumpOverCount > 0) {
-          this.points += this.jumpOverCount * SCORE.JUMP_OVER;
+          // Award 3pts once per jump landing (not per object), regardless
+          // of how many objects were jumped over during the airborne phase
+          this.points += SCORE.JUMP_OVER;
           this.jumpOverCount = 0;
         }
       }
