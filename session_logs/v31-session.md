@@ -156,3 +156,23 @@ Per-track MIDI provenance recoverable by re-running engine.
 - Credits overlay functional
 
 **Total V32 commits**: 12 (phases 1-3)
+
+### Turn 8: V33 — Approach C WASM + MP3 Album [2026-03-30 02:00-03:00 CT]
+
+**Approach C Compositional Engine:**
+- Ported from Python RadioEngine to JS music-generator.js:
+  - 7 rondo patterns (ABACA, AABA, ABCBA, etc.) with section transposition
+  - Consonance engine (interval scoring, iterative adjustment, min 0.55)
+  - 6 arpeggio forms (block, ascending, alberti, broken, pendulum)
+  - Diatonic chord quality per scale mode
+- WASM mode now uses MusicGenerator for note generation instead of raw MIDI
+- Tracks divided into rondo sections with varied transposition + arpeggio forms
+- Consonance post-processing applied per section
+
+**MP3 Album:**
+- Verified: 12 split tracks present in deploy/shared/audio/tracks/ (83MB total)
+- Source: RadioEngineV8 seed=42 (tracks 1-6) + RadioEngineV15_V8Tempo seed=42 (tracks 7-12)
+- Path resolution fix (from V32) correctly falls back to shared/audio/tracks/
+- album.json metadata matches all 12 track files
+
+**Playwright**: 4/4 sound modes pass, zero JS errors.
