@@ -294,6 +294,173 @@ const MG_DOMAIN_TIMBRES = {
   cosmic:    ['cosmic', 'choir_ah', 'warm_pad', 'tibetan_bowl'],
 };
 
+// ═══════════════════════════════════════════════════════════════════════════
+// RONDO PATTERNS — Classical form structures for section recurrence
+// Ported from Python radio_engine.py RONDO_PATTERNS
+// ═══════════════════════════════════════════════════════════════════════════
+
+const MG_RONDO_PATTERNS = {
+  'ABACA':   ['A', 'B', 'A', 'C', 'A'],
+  'ABACADA': ['A', 'B', 'A', 'C', 'A', 'D', 'A'],
+  'ABCBA':   ['A', 'B', 'C', 'B', 'A'],
+  'AABBA':   ['A', 'A', 'B', 'B', 'A'],
+  'ABCDA':   ['A', 'B', 'C', 'D', 'A'],
+  'ABACBA':  ['A', 'B', 'A', 'C', 'B', 'A'],
+  'AABA':    ['A', 'A', 'B', 'A'],
+};
+const MG_RONDO_NAMES = Object.keys(MG_RONDO_PATTERNS);
+
+// Section transposition offsets (semitones from A section root)
+const MG_SECTION_TRANSPOSE = { 'A': 0, 'B': 5, 'C': -3, 'D': 7 };
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ARPEGGIO FORMS — 6 patterns for chord voicing variation
+// Ported from Python radio_engine.py ARPEGGIO_FORMS
+// ═══════════════════════════════════════════════════════════════════════════
+
+const MG_ARPEGGIO_FORMS = {
+  block:      notes => notes,
+  ascending:  notes => [...notes].sort((a, b) => a - b),
+  descending: notes => [...notes].sort((a, b) => b - a),
+  alberti:    notes => {
+    if (notes.length < 3) return notes;
+    const s = [...notes].sort((a, b) => a - b);
+    return [s[0], s[s.length - 1], s[1 % s.length], s[s.length - 1]];
+  },
+  broken:     notes => {
+    if (notes.length < 3) return notes;
+    const s = [...notes].sort((a, b) => a - b);
+    return [s[0], s[2 % s.length], s[1], s[s.length - 1]];
+  },
+  pendulum:   notes => {
+    const asc = [...notes].sort((a, b) => a - b);
+    const desc = [...asc].reverse().slice(1, -1);
+    return asc.concat(desc);
+  },
+};
+const MG_ARPEGGIO_NAMES = Object.keys(MG_ARPEGGIO_FORMS);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CONSONANCE ENGINE — Harmonic interval scoring and voice adjustment
+// Ported from Python radio_engine.py ConsonanceEngine
+// ═══════════════════════════════════════════════════════════════════════════
+
+const MG_INTERVAL_CONSONANCE = [
+  1.0,   // 0: unison
+  0.05,  // 1: minor 2nd
+  0.3,   // 2: major 2nd
+  0.7,   // 3: minor 3rd
+  0.75,  // 4: major 3rd
+  0.8,   // 5: perfect 4th
+  0.15,  // 6: tritone
+  0.95,  // 7: perfect 5th
+  0.7,   // 8: minor 6th
+  0.75,  // 9: major 6th
+  0.3,   // 10: minor 7th
+  0.2,   // 11: major 7th
+];
+
+class ConsonanceEngine {
+  /** Score the composite consonance of all simultaneous notes (0-1). */
+  static scoreComposite(notes) {
+    if (notes.length < 2) return 1.0;
+    let total = 0, pairs = 0;
+    for (let i = 0; i < notes.length; i++) {
+      for (let j = i + 1; j < notes.length; j++) {
+        const interval = Math.abs(notes[i] - notes[j]) % 12;
+        total += MG_INTERVAL_CONSONANCE[interval];
+        pairs++;
+      }
+    }
+    return pairs > 0 ? total / pairs : 1.0;
+  }
+
+  /**
+   * Adjust voices for consonance. Tries shifting worst-sounding notes
+   * by ±1-2 semitones and snapping to scale until score >= minScore.
+   * @param {number[]} notes - MIDI note numbers.
+   * @param {number[]} scale - Scale intervals from root.
+   * @param {number} root - Root MIDI note.
+   * @param {number} minScore - Minimum acceptable consonance (default 0.55).
+   * @returns {number[]} Adjusted notes.
+   */
+  static adjust(notes, scale, root, minScore = 0.55) {
+    let current = [...notes];
+    for (let pass = 0; pass < 5; pass++) {
+      const score = ConsonanceEngine.scoreComposite(current);
+      if (score >= minScore) return current;
+
+      // Find the note contributing most dissonance
+      let worstIdx = 0, worstScore = 999;
+      for (let i = 0; i < current.length; i++) {
+        let noteScore = 0, count = 0;
+        for (let j = 0; j < current.length; j++) {
+          if (i === j) continue;
+          noteScore += MG_INTERVAL_CONSONANCE[Math.abs(current[i] - current[j]) % 12];
+          count++;
+        }
+        const avg = count > 0 ? noteScore / count : 1;
+        if (avg < worstScore) { worstScore = avg; worstIdx = i; }
+      }
+
+      // Try adjustments: ±1, ±2 semitones, snap to scale
+      let bestNote = current[worstIdx], bestComposite = ConsonanceEngine.scoreComposite(current);
+      for (const delta of [-1, 1, -2, 2]) {
+        const candidate = current[worstIdx] + delta;
+        // Snap to nearest scale note
+        const snapped = ConsonanceEngine._snapToScale(candidate, scale, root);
+        const trial = [...current];
+        trial[worstIdx] = snapped;
+        const trialScore = ConsonanceEngine.scoreComposite(trial);
+        if (trialScore > bestComposite) {
+          bestComposite = trialScore;
+          bestNote = snapped;
+        }
+      }
+      current[worstIdx] = bestNote;
+    }
+    return current;
+  }
+
+  /** Snap a MIDI note to the nearest note in the given scale. */
+  static _snapToScale(note, scale, root) {
+    const octave = Math.floor((note - root) / 12);
+    let closest = note, minDist = 999;
+    for (const interval of scale) {
+      const scaleNote = root + octave * 12 + interval;
+      for (const oct of [scaleNote - 12, scaleNote, scaleNote + 12]) {
+        const dist = Math.abs(note - oct);
+        if (dist < minDist) { minDist = dist; closest = oct; }
+      }
+    }
+    return closest;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DIATONIC CHORD QUALITIES — scale-degree-specific chord types
+// ═══════════════════════════════════════════════════════════════════════════
+
+const MG_CHORD_INTERVALS = {
+  maj:  [0, 4, 7],
+  min:  [0, 3, 7],
+  dim:  [0, 3, 6],
+  aug:  [0, 4, 8],
+  maj7: [0, 4, 7, 11],
+  min7: [0, 3, 7, 10],
+  dom7: [0, 4, 7, 10],
+};
+
+const MG_DIATONIC_QUALITY = {
+  ionian:          ['maj', 'min', 'min', 'maj', 'maj', 'min', 'dim'],
+  dorian:          ['min', 'min', 'maj', 'maj', 'min', 'dim', 'maj'],
+  phrygian:        ['min', 'maj', 'maj', 'min', 'dim', 'maj', 'min'],
+  lydian:          ['maj', 'maj', 'min', 'dim', 'maj', 'min', 'min'],
+  mixolydian:      ['maj', 'min', 'dim', 'maj', 'min', 'min', 'maj'],
+  aeolian:         ['min', 'dim', 'maj', 'min', 'min', 'maj', 'maj'],
+  harmonic_minor:  ['min', 'dim', 'aug', 'min', 'maj', 'maj', 'dim'],
+};
+
 class MusicGenerator {
   /**
    * @param {SynthEngine} synthEngine - Shared SynthEngine instance for audio.
@@ -452,26 +619,44 @@ class MusicGenerator {
       m => MG_MOTIFS[m] || MG_MOTIFS.pentatonic_rise
     );
 
-    // ──── Pad / Drone Layer ────
-    this._generatePadLayer(notes, epoch, dur, beatDur);
+    // ──── Rondo Form ────
+    // Divide track into sections following a classical rondo pattern
+    const rondoName = this._pick(MG_RONDO_NAMES);
+    const rondoPattern = MG_RONDO_PATTERNS[rondoName];
+    const sectionDur = dur / rondoPattern.length;
+    epoch._rondoPattern = rondoName;
 
-    // ──── Bass Layer (like Python's bass track) ────
-    this._generateBassLayer(notes, epoch, dur, beatDur, density);
+    for (let si = 0; si < rondoPattern.length; si++) {
+      const section = rondoPattern[si];
+      const sectionStart = si * sectionDur;
+      const transpose = MG_SECTION_TRANSPOSE[section] || 0;
+      const arpeggioForm = MG_ARPEGGIO_NAMES[si % MG_ARPEGGIO_NAMES.length];
 
-    // ──── Melody Layer ────
-    this._generateMelodyLayer(notes, epoch, dur, beatDur);
+      // Create a section-local epoch variant with transposition
+      const sEpoch = Object.assign({}, epoch, {
+        baseNote: epoch.baseNote + transpose,
+        _arpeggioForm: arpeggioForm,
+      });
 
-    // ──── Counter-Melody Layer (second instrument for richness) ────
-    this._generateCounterMelodyLayer(notes, epoch, dur, beatDur, density);
+      // Generate layers into a temporary array, then offset all times
+      const sectionNotes = [];
+      this._generatePadLayer(sectionNotes, sEpoch, sectionDur, beatDur);
+      this._generateBassLayer(sectionNotes, sEpoch, sectionDur, beatDur, density);
+      this._generateMelodyLayer(sectionNotes, sEpoch, sectionDur, beatDur);
+      this._generateCounterMelodyLayer(sectionNotes, sEpoch, sectionDur, beatDur, density);
+      this._generateChordLayer(sectionNotes, sEpoch, sectionDur, beatDur);
+      this._generateArpeggioLayer(sectionNotes, sEpoch, sectionDur, beatDur);
+      this._generateFillLayer(sectionNotes, sEpoch, sectionDur, beatDur, density);
 
-    // ──── Chord Layer ────
-    this._generateChordLayer(notes, epoch, dur, beatDur);
+      // Apply consonance adjustment to simultaneous chord notes
+      this._applyConsonance(sectionNotes, sEpoch);
 
-    // ──── Arpeggio Layer ────
-    this._generateArpeggioLayer(notes, epoch, dur, beatDur);
-
-    // ──── Fill / Texture Layer (ambient tonal fills) ────
-    this._generateFillLayer(notes, epoch, dur, beatDur, density);
+      // Offset all section notes to the correct position in the track
+      for (const n of sectionNotes) {
+        n.t += sectionStart;
+        notes.push(n);
+      }
+    }
 
     // ──── Ostinato / Rhythmic Pattern Layer ────
     this._generateOstinatoLayer(notes, epoch, dur, beatDur, density);
@@ -945,6 +1130,51 @@ class MusicGenerator {
       if (r <= 0) return items[i];
     }
     return items[items.length - 1];
+  }
+
+  // ──── Consonance Post-Processing ────
+
+  /**
+   * Apply consonance adjustment to notes within time windows.
+   * Groups simultaneous notes and adjusts dissonant combinations.
+   */
+  _applyConsonance(notes, epoch) {
+    if (!notes.length) return;
+
+    // Group notes into time windows (~0.1s)
+    const windowSize = 0.1;
+    const sorted = [...notes].sort((a, b) => a.t - b.t);
+    let windowStart = sorted[0].t;
+    let windowNotes = [];
+
+    for (const note of sorted) {
+      if (note.t - windowStart > windowSize) {
+        // Process this window
+        if (windowNotes.length >= 3) {
+          const pitches = windowNotes.map(n => n.note);
+          const adjusted = ConsonanceEngine.adjust(
+            pitches, epoch.scale, epoch.baseNote, 0.55
+          );
+          for (let i = 0; i < windowNotes.length; i++) {
+            windowNotes[i].note = adjusted[i];
+          }
+        }
+        windowStart = note.t;
+        windowNotes = [];
+      }
+      windowNotes.push(note);
+    }
+
+    // Process last window
+    if (windowNotes.length >= 3) {
+      const pitches = windowNotes.map(n => n.note);
+      const adjusted = ConsonanceEngine.adjust(
+        pitches, epoch.scale, epoch.baseNote, 0.55
+      );
+      for (let i = 0; i < windowNotes.length; i++) {
+        windowNotes[i].note = adjusted[i];
+      }
+    }
   }
 
   // ──── Playback Controls ────
