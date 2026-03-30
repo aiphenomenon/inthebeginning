@@ -169,11 +169,15 @@ class CosmicRunnerApp {
     if (mutationBtn) mutationBtn.addEventListener('click', () => this._showOverlay('mutation-overlay'));
     if (styleBtn) styleBtn.addEventListener('click', () => this._showOverlay('style-overlay'));
 
-    // Track title tappable — only show track list overlay in MP3 mode
+    // Track title tappable — show track list in MP3, MIDI info in MIDI/Synth
     if (this.hudTrack) {
       this.hudTrack.addEventListener('click', () => {
         if (this.soundMode === 'mp3') {
           document.getElementById('track-overlay')?.classList.toggle('visible');
+        } else {
+          // For MIDI/Synth/WASM: show the MIDI info panel as a modal-like display
+          const midiPanel = document.getElementById('midi-info');
+          if (midiPanel) midiPanel.classList.toggle('visible');
         }
       });
     }
@@ -185,7 +189,7 @@ class CosmicRunnerApp {
       });
     }
 
-    // Song title display tappable (for track list) — only in MP3 mode
+    // Song title display tappable
     if (this.songTitleDisplay) {
       this.songTitleDisplay.addEventListener('click', () => {
         if (this.soundMode === 'mp3') {
@@ -966,7 +970,12 @@ class CosmicRunnerApp {
 
       if (composerEl) composerEl.textContent = info.composer || '';
       if (pieceEl) pieceEl.textContent = info.name || '';
-      if (eraEl) eraEl.textContent = info.era || '';
+      if (eraEl) {
+        // Show era + license info
+        const eraText = info.era || '';
+        const license = info.license || 'CC BY-NC-SA 4.0 (MAESTRO) / CC BY 4.0 (ADL)';
+        eraEl.textContent = eraText ? `${eraText} · ${license}` : license;
+      }
       if (mutEl) {
         const mut = MIDI_MUTATIONS[this.currentMutationIndex];
         mutEl.textContent = mut && mut.name !== 'Original' ? `Mutation: ${mut.name}` : '';

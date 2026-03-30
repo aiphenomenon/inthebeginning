@@ -150,7 +150,18 @@ class Game {
   }
 
   setLevel(level) {
+    const prevLevel = this.currentLevel;
     this.currentLevel = level;
+
+    // Level transition flash (brief white overlay that fades)
+    if (level !== prevLevel && this.canvas) {
+      const flash = document.createElement('div');
+      flash.style.cssText = 'position:fixed;inset:0;background:rgba(100,160,255,0.15);pointer-events:none;z-index:999;transition:opacity 0.6s;';
+      document.body.appendChild(flash);
+      requestAnimationFrame(() => { flash.style.opacity = '0'; });
+      setTimeout(() => flash.remove(), 700);
+    }
+
     if (this.obstacles) {
       this.obstacles.setLevel(level);
       this.obstacles.setLaneCount(this.renderer3d.laneCount);
