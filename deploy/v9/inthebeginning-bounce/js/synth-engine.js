@@ -221,6 +221,25 @@ class SampleBank {
     this.enabled = true;
     /** @type {number} Substitution probability (0-1). */
     this.substitutionRate = 0.15;
+    /** @type {Set<string>} Disabled instrument families (use synth fallback). */
+    this._disabledFamilies = new Set();
+  }
+
+  /**
+   * Set which instrument families are disabled (will use additive synthesis instead).
+   * @param {string[]} families - Array of family IDs to disable.
+   */
+  setDisabledFamilies(families) {
+    this._disabledFamilies = new Set(families || []);
+  }
+
+  /**
+   * Check if a given instrument family is disabled.
+   * @param {string} family - Family ID (e.g., 'piano', 'strings').
+   * @returns {boolean}
+   */
+  isFamilyDisabled(family) {
+    return this._disabledFamilies.has(family);
   }
 
   /**
@@ -606,9 +625,13 @@ class SynthEngine {
     if (delay < 0) delay = 0;
 
     // Try sample-based playback first (real instrument sounds)
+    // Skip if the instrument's family is disabled by user preference
     if (this.preferSamples && this.sampleBank && (note.ch || 0) !== 9) {
-      const key = this._playNoteSample(note, delay);
-      if (key >= 0) return key;
+      const family = GM_TO_FAMILY[note.program || 0] || 'keys';
+      if (!this.sampleBank.isFamilyDisabled(family)) {
+        const key = this._playNoteSample(note, delay);
+        if (key >= 0) return key;
+      }
     }
 
     // Voice management: evict oldest if at capacity

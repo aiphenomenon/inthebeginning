@@ -197,6 +197,17 @@
   </div>
 
 
+
+  <!-- Instrument Selection Overlay -->
+  <div class="overlay" id="instrument-overlay">
+    <div class="overlay-panel instrument-panel">
+      <button class="overlay-x" id="instrument-close">&times;</button>
+      <h2>Instrument Soundbank</h2>
+      <p class="instrument-hint">Enable/disable instrument families for MIDI playback. Disabled instruments use additive synthesis fallback.</p>
+      <div class="instrument-grid" id="instrument-grid"></div>
+    </div>
+  </div>
+
   <!-- Credits Overlay -->
   <div class="overlay" id="credits-overlay">
     <div class="overlay-panel credits-panel">
@@ -262,6 +273,7 @@
         <button class="hud-btn" id="pause-btn" title="Pause">&#9646;&#9646;</button>
         <button class="hud-btn" id="mute-btn" title="Mute">&#128266;</button>
         <button class="hud-btn" id="mutation-btn" title="Mutation">&#9836;</button>
+        <button class="hud-btn" id="instrument-btn" title="Instruments">&#127929;</button>
         <button class="hud-btn" id="style-btn" title="Style">&#127911;</button>
         <button class="hud-btn" id="ingame-theme-btn" title="Theme">&#127912;</button>
         <button class="hud-btn" id="ingame-access-btn" title="Settings">&#9881;</button>

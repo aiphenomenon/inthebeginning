@@ -431,13 +431,14 @@ class Background {
   }
 
   _renderGrid3DCubist(ctx) {
-    // Cubist 3D: cells rendered as isometric cubes
+    // Blooming 3D: active cells bloom outward as petal-like clusters
     const clusterSize = 2;
     const effectiveGrid = Math.ceil(this.gridSize / clusterSize);
     const cellW = this.width / effectiveGrid;
     const cellH = this.height / effectiveGrid;
     const tilt = this.perspectiveTilt || 0.3;
     const cellExplodeEnabled = ACCESS_MODES[this.accessMode]?.cellExplode;
+    const time = performance.now() / 1000;
 
     ctx.save();
     ctx.globalAlpha = this.gridOpacity;
@@ -452,7 +453,6 @@ class Background {
       const xOff = centerX * (1 - scaleX);
 
       for (let ecol = 0; ecol < effectiveGrid; ecol++) {
-        // Aggregate brightness from cluster
         let maxBrightness = 0;
         let sumHue = 0, sumSat = 0, hueCount = 0;
         let maxExplode = 0;
@@ -481,52 +481,69 @@ class Background {
         const py = yOff;
         const pw = cellW * scaleX - 0.3;
         const ph = cellH * tilt * depth;
-        const elevation = maxBrightness * 20 * depth;
 
-        // Cubist cube: top face
+        // Bloom: the cell expands into a cluster of petals based on brightness
+        const bloomRadius = maxBrightness * pw * 0.8;
+        const petalCount = Math.floor(3 + maxBrightness * 5); // 3-8 petals
+        const cx = px + pw / 2;
+        const cy = py + ph / 2;
+
+        // Core cell (always rendered)
         ctx.fillStyle = `hsla(${hue}, ${sat}%, ${light}%, ${maxBrightness * depth})`;
-        ctx.fillRect(px, py - elevation, pw, ph);
+        ctx.fillRect(px, py, pw, ph);
 
-        // Side face (darker)
-        if (elevation > 2) {
-          ctx.fillStyle = `hsla(${hue}, ${sat}%, ${light * 0.6}%, ${maxBrightness * depth * 0.7})`;
-          // Left face
-          ctx.beginPath();
-          ctx.moveTo(px, py - elevation);
-          ctx.lineTo(px, py - elevation + ph);
-          ctx.lineTo(px - elevation * 0.3, py + ph);
-          ctx.lineTo(px - elevation * 0.3, py);
-          ctx.fill();
-          // Right face
-          ctx.fillStyle = `hsla(${hue}, ${sat}%, ${light * 0.4}%, ${maxBrightness * depth * 0.5})`;
-          ctx.beginPath();
-          ctx.moveTo(px + pw, py - elevation);
-          ctx.lineTo(px + pw, py - elevation + ph);
-          ctx.lineTo(px + pw + elevation * 0.3, py + ph);
-          ctx.lineTo(px + pw + elevation * 0.3, py);
-          ctx.fill();
+        // Bloom petals radiate outward from active cells
+        if (maxBrightness > 0.15) {
+          const phaseOffset = (erow * 7 + ecol * 13) * 0.5; // unique per cell
+          for (let p = 0; p < petalCount; p++) {
+            const angle = (p / petalCount) * Math.PI * 2 + time * 0.3 + phaseOffset;
+            const dist = bloomRadius * (0.5 + 0.5 * Math.sin(time * 2 + p));
+            const petalX = cx + Math.cos(angle) * dist;
+            const petalY = cy + Math.sin(angle) * dist * tilt; // squash in perspective
+            const petalSize = pw * 0.3 * maxBrightness * depth;
+            const petalAlpha = maxBrightness * depth * 0.5 * (1 - dist / (bloomRadius + 0.01));
+
+            if (petalSize > 0.5 && petalAlpha > 0.02) {
+              ctx.fillStyle = `hsla(${hue + p * 15}, ${sat}%, ${light + 10}%, ${petalAlpha})`;
+              ctx.fillRect(
+                petalX - petalSize / 2,
+                petalY - petalSize / 2,
+                petalSize,
+                petalSize
+              );
+            }
+          }
+
+          // Glow aura around blooming cells
+          if (maxBrightness > 0.5) {
+            ctx.shadowColor = `hsl(${hue}, ${sat}%, ${light}%)`;
+            ctx.shadowBlur = bloomRadius * 0.5;
+            ctx.fillStyle = `hsla(${hue}, ${sat}%, ${light}%, ${maxBrightness * depth * 0.15})`;
+            ctx.beginPath();
+            ctx.arc(cx, cy, bloomRadius * 0.6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+          }
         }
 
-        // Glow on bright cells
-        if (maxBrightness > 0.6) {
-          ctx.shadowColor = `hsl(${hue}, ${sat}%, ${light}%)`;
-          ctx.shadowBlur = 6 * depth;
-          ctx.fillStyle = `hsla(${hue}, ${sat}%, ${light}%, ${maxBrightness * depth * 0.3})`;
-          ctx.fillRect(px, py - elevation, pw, ph);
-          ctx.shadowBlur = 0;
-        }
-
-        // Cell explode in 3D
+        // Cell explode bloom burst
         if (cellExplodeEnabled && maxExplode > 0.05) {
           ctx.save();
-          ctx.globalAlpha = this.gridOpacity * maxExplode * 0.3;
+          ctx.globalAlpha = this.gridOpacity * maxExplode * 0.4;
           ctx.shadowColor = `hsl(${hue}, 80%, 70%)`;
-          ctx.shadowBlur = maxExplode * 10 * depth;
-          ctx.fillStyle = `hsla(${hue}, 80%, 70%, ${maxExplode * 0.2})`;
-          const er = Math.max(0, (1 - maxExplode) * pw * 0.6);
-          ctx.beginPath();
-          ctx.arc(px + pw / 2, py - elevation + ph / 2, er, 0, Math.PI * 2);
-          ctx.fill();
+          ctx.shadowBlur = maxExplode * 12 * depth;
+          // Explode as expanding ring of mini-cells
+          const explodeR = maxExplode * pw * 1.2;
+          for (let p = 0; p < 6; p++) {
+            const a = (p / 6) * Math.PI * 2 + time;
+            const ex = cx + Math.cos(a) * explodeR;
+            const ey = cy + Math.sin(a) * explodeR * tilt;
+            const es = pw * 0.25 * (1 - maxExplode);
+            if (es > 0) {
+              ctx.fillStyle = `hsla(${hue + p * 20}, 80%, 70%, ${(1 - maxExplode) * 0.5})`;
+              ctx.fillRect(ex - es / 2, ey - es / 2, es, es);
+            }
+          }
           ctx.shadowBlur = 0;
           ctx.restore();
         }

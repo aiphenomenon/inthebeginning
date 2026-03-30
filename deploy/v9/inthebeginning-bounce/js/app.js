@@ -169,6 +169,15 @@ class CosmicRunnerApp {
     if (mutationBtn) mutationBtn.addEventListener('click', () => this._showOverlay('mutation-overlay'));
     if (styleBtn) styleBtn.addEventListener('click', () => this._showOverlay('style-overlay'));
 
+    // Instrument selection
+    const instrumentBtn = document.getElementById('instrument-btn');
+    const instrumentClose = document.getElementById('instrument-close');
+    if (instrumentBtn) instrumentBtn.addEventListener('click', () => {
+      this._populateInstrumentGrid();
+      this._showOverlay('instrument-overlay');
+    });
+    if (instrumentClose) instrumentClose.addEventListener('click', () => this._hideOverlay('instrument-overlay'));
+
     // Track title tappable — show track list in MP3, MIDI info in MIDI/Synth
     if (this.hudTrack) {
       this.hudTrack.addEventListener('click', () => {
@@ -324,6 +333,7 @@ class CosmicRunnerApp {
     const overlayIds = [
       'theme-overlay', 'accessibility-overlay', 'help-overlay',
       'mutation-overlay', 'style-overlay', 'track-overlay', 'credits-overlay',
+      'instrument-overlay',
     ];
     for (const id of overlayIds) {
       const el = document.getElementById(id);
@@ -449,6 +459,60 @@ class CosmicRunnerApp {
     }
 
     if (close) close.addEventListener('click', () => this._hideOverlay('mutation-overlay'));
+  }
+
+  // ──── Instrument Selection ────
+
+  _populateInstrumentGrid() {
+    const grid = document.getElementById('instrument-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    // Instrument families with their default-enabled status
+    const families = [
+      { id: 'piano', name: 'Piano', emoji: '🎹', default: true },
+      { id: 'strings', name: 'Strings', emoji: '🎻', default: true },
+      { id: 'winds', name: 'Winds', emoji: '🎵', default: true },
+      { id: 'brass', name: 'Brass', emoji: '🎺', default: true },
+      { id: 'percussion', name: 'Percussion', emoji: '🥁', default: true },
+      { id: 'organ', name: 'Organ', emoji: '⛪', default: true },
+      { id: 'voice', name: 'Voice/Choir', emoji: '🎤', default: false },
+      { id: 'world', name: 'World', emoji: '🌍', default: true },
+      { id: 'synth', name: 'Synth Pads', emoji: '🔊', default: true },
+      { id: 'bass', name: 'Bass', emoji: '🎸', default: true },
+    ];
+
+    // Load saved preferences
+    if (!this._instrumentPrefs) {
+      this._instrumentPrefs = {};
+      families.forEach(f => { this._instrumentPrefs[f.id] = f.default; });
+    }
+
+    for (const fam of families) {
+      const btn = document.createElement('button');
+      const enabled = this._instrumentPrefs[fam.id] !== false;
+      btn.className = 'instrument-chip' + (enabled ? ' enabled' : '');
+      btn.textContent = `${fam.emoji} ${fam.name}`;
+      btn.addEventListener('click', () => {
+        this._instrumentPrefs[fam.id] = !this._instrumentPrefs[fam.id];
+        btn.classList.toggle('enabled');
+        this._applyInstrumentPrefs();
+      });
+      grid.appendChild(btn);
+    }
+  }
+
+  _applyInstrumentPrefs() {
+    // Tell SynthEngine which families to disable
+    if (this.player?._synth?.sampleBank) {
+      const bank = this.player._synth.sampleBank;
+      if (bank.setDisabledFamilies) {
+        const disabled = Object.entries(this._instrumentPrefs)
+          .filter(([, v]) => !v)
+          .map(([k]) => k);
+        bank.setDisabledFamilies(disabled);
+      }
+    }
   }
 
   _applyMutation(index) {
@@ -909,6 +973,18 @@ class CosmicRunnerApp {
         if (id3.license) parts.push(id3.license);
         albumEl.textContent = parts.join(' \u00B7 ');
       }
+      // Show engine provenance in MIDI source panel
+      const sourceEl = document.getElementById('midi-source');
+      const notesEl = document.getElementById('midi-notes');
+      const track = this.musicSync.tracks[trackIndex];
+      if (sourceEl && track) {
+        const engine = track.engine || 'RadioEngineV8';
+        sourceEl.textContent = `Source: ${engine} (seed 42) · MIDI pool: 1,771 files from 120 composers`;
+      }
+      if (notesEl && track) {
+        notesEl.textContent = `${track.nEvents || '?'} note events · ${Math.round(track.duration || 0)}s`;
+      }
+      if (this.midiInfoPanel) this.midiInfoPanel.classList.add('visible');
     } else if (this.soundMode === 'midi') {
       const info = this.player?.midiPlayer?.trackInfo;
       if (titleEl) titleEl.textContent = info?.name || 'MIDI';
