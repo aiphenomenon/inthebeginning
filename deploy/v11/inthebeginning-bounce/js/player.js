@@ -261,7 +261,12 @@ class GamePlayer {
         this.musicGenerator.play();
         break;
       case AUDIO_MODE.WASM:
-        if (this.wasmSynth) this.wasmSynth.play();
+        // Approach C: WASM mode uses MusicGenerator for compositional generation
+        // (same as Synth mode) rendered through SynthEngine/WASM
+        if (this.musicGenerator._tracks.length === 0) {
+          this.musicGenerator.generate();
+        }
+        this.musicGenerator.play();
         break;
       case AUDIO_MODE.MP3:
       default:
@@ -286,7 +291,8 @@ class GamePlayer {
         this.musicGenerator.pause();
         break;
       case AUDIO_MODE.WASM:
-        if (this.wasmSynth) this.wasmSynth.pause();
+        // Approach C: WASM uses MusicGenerator
+        this.musicGenerator.pause();
         break;
       case AUDIO_MODE.MP3:
       default:

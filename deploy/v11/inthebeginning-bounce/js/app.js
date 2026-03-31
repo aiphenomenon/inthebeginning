@@ -1286,8 +1286,16 @@ class CosmicRunnerApp {
     window.addEventListener('mouseup', () => this._onPointerUp());
 
     // Touch
+    // Touch handling with flick-to-jump detection
+    this._touchStartY = {};
+    this._touchStartTime = {};
+
     this.canvas?.addEventListener('touchstart', (e) => {
       e.preventDefault();
+      for (const t of e.changedTouches) {
+        this._touchStartY[t.identifier] = t.clientY;
+        this._touchStartTime[t.identifier] = Date.now();
+      }
       const t = e.touches[0];
       this._onPointerDown(t.clientX, t.clientY, 'touch');
     }, { passive: false });
@@ -1300,6 +1308,23 @@ class CosmicRunnerApp {
 
     this.canvas?.addEventListener('touchend', (e) => {
       e.preventDefault();
+      // Detect flick-up gesture: fast upward swipe = jump
+      for (const t of e.changedTouches) {
+        const startY = this._touchStartY[t.identifier];
+        const startTime = this._touchStartTime[t.identifier];
+        const dy = startY - t.clientY; // positive = upward
+        const dt = Date.now() - startTime;
+        delete this._touchStartY[t.identifier];
+        delete this._touchStartTime[t.identifier];
+
+        if (dy > 30 && dt < 300 && this.game) {
+          // Flick up detected — jump the nearest player
+          const x = t.clientX;
+          const midX = this.canvas.clientWidth / 2;
+          const playerIdx = (this.numPlayers === 2 && x > midX) ? 1 : 0;
+          this.game.jump(playerIdx);
+        }
+      }
       this._onPointerUp();
     }, { passive: false });
 

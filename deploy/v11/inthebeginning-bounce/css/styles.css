@@ -764,9 +764,8 @@ button, .mode-btn, .player-count-btn, .tab-btn, .dim-btn,
 
 /* Small phones (400px) */
 @media (max-width: 400px) {
-  #prev-btn, #next-btn { display: none; }
-  .mode-tabs { display: none; }
-  .grid-dim-tabs { display: none; }
+  #prev-btn, #next-btn { font-size: 14px; padding: 4px; }
+  .mode-tabs { gap: 2px; }
   .hud-center { display: none; }
   .mutation-grid { grid-template-columns: repeat(2, 1fr); }
   .music-id3 { display: none; }
