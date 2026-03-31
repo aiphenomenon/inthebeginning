@@ -49,12 +49,11 @@
         <button class="link-btn" id="accessibility-btn">Accessibility</button>
         <button class="link-btn" id="credits-btn">Credits</button>
       </div>
-      <p class="controls-hint">
-        SPACE/UP to jump (unlimited multi-jump!) &bull; DOWN fast drop &bull;
-        LEFT/RIGHT move to dodge &bull; 1/2/3 modes &bull; P pause &bull; +/- speed
+      <p class="controls-hint" id="controls-hint-1p">
+        1P: WASD / Arrows / IJKL / Numpad &bull; SPACE jump &bull; 1/2/3 modes &bull; P pause &bull; +/- speed
       </p>
-      <p class="controls-hint">
-        2P: P1=Arrows/WASD &bull; P2=IJKL or Numpad &bull; Mouse: click jump, drag to reposition
+      <p class="controls-hint" id="controls-hint-2p" style="display:none">
+        2P: P1=WASD+SPACE &bull; P2=Arrows / IJKL / Numpad &bull; Touch: drag to move, flick up to jump
       </p>
     </div>
   </div>
@@ -203,7 +202,7 @@
     <div class="overlay-panel instrument-panel">
       <button class="overlay-x" id="instrument-close">&times;</button>
       <h2>Instrument Soundbank</h2>
-      <p class="instrument-hint">Enable/disable instrument families for MIDI playback. Disabled instruments use additive synthesis fallback.</p>
+      <p class="instrument-hint">Enable/disable instrument families for MIDI, Synth, and WASM playback. Disabled instruments use additive synthesis fallback.</p>
       <div class="instrument-grid" id="instrument-grid"></div>
     </div>
   </div>
@@ -270,7 +269,7 @@
         </div>
         <button class="hud-btn" id="speed-down" title="Slower">-</button>
         <button class="hud-btn" id="speed-up" title="Faster">+</button>
-        <button class="hud-btn" id="pause-btn" title="Pause">&#9646;&#9646;</button>
+        <button class="hud-btn" id="pause-btn" title="Pause">⏸</button>
         <button class="hud-btn" id="mute-btn" title="Mute">&#128266;</button>
         <button class="hud-btn" id="mutation-btn" title="Mutation">&#9836;</button>
         <button class="hud-btn" id="instrument-btn" title="Instruments">&#127929;</button>

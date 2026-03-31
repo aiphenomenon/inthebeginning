@@ -166,6 +166,13 @@ class Background {
     ctx.fillStyle = `rgb(${bg[0]}, ${bg[1]}, ${bg[2]})`;
     ctx.fillRect(0, 0, this.width, this.height);
 
+    // Apply theme background tint for more pronounced color effect
+    const bgTint = this.themeManager?.getTheme()?.bgTint;
+    if (bgTint) {
+      ctx.fillStyle = bgTint;
+      ctx.fillRect(0, 0, this.width, this.height);
+    }
+
     // Stars
     if (this.showStars && ACCESS_MODES[this.accessMode]?.stars !== false) {
       this._renderStars(ctx, trackColor);

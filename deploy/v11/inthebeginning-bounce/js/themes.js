@@ -6,14 +6,16 @@
  */
 
 const THEMES = [
-  { name: 'Cosmic',     hueShift: 0,   satMult: 1.0, brightMult: 1.0, accent: [100, 180, 255] },
-  { name: 'Ember',      hueShift: -20, satMult: 1.2, brightMult: 1.05, accent: [255, 120, 60] },
-  { name: 'Neon',       hueShift: 30,  satMult: 1.4, brightMult: 1.15, accent: [0, 255, 180] },
-  { name: 'Midnight',   hueShift: 0,   satMult: 0.6, brightMult: 0.8, accent: [80, 80, 160] },
-  { name: 'Sunset',     hueShift: -30, satMult: 1.15, brightMult: 1.05, accent: [255, 150, 80] },
-  { name: 'Aurora',     hueShift: 60,  satMult: 1.3, brightMult: 1.1, accent: [100, 255, 150] },
-  { name: 'Void',       hueShift: 0,   satMult: 0.3, brightMult: 0.6, accent: [120, 120, 140] },
-  { name: 'Plasma',     hueShift: 45,  satMult: 1.5, brightMult: 1.2, accent: [255, 80, 255] },
+  { name: 'Default',    hueShift: 0,   satMult: 1.0, brightMult: 1.0, accent: [100, 180, 255], bgTint: null },
+  { name: 'Ember',      hueShift: -25, satMult: 1.4, brightMult: 1.1, accent: [255, 100, 40],  bgTint: 'rgba(80,20,0,0.15)' },
+  { name: 'Neon',       hueShift: 40,  satMult: 1.8, brightMult: 1.3, accent: [0, 255, 160],   bgTint: 'rgba(0,40,30,0.15)' },
+  { name: 'Midnight',   hueShift: 0,   satMult: 0.5, brightMult: 0.6, accent: [60, 60, 140],   bgTint: 'rgba(0,0,30,0.2)' },
+  { name: 'Sunset',     hueShift: -35, satMult: 1.3, brightMult: 1.1, accent: [255, 130, 60],  bgTint: 'rgba(60,20,0,0.12)' },
+  { name: 'Aurora',     hueShift: 80,  satMult: 1.5, brightMult: 1.2, accent: [80, 255, 130],  bgTint: 'rgba(0,30,20,0.12)' },
+  { name: 'Void',       hueShift: 0,   satMult: 0.2, brightMult: 0.4, accent: [100, 100, 120], bgTint: 'rgba(0,0,0,0.2)' },
+  { name: 'Plasma',     hueShift: 55,  satMult: 2.0, brightMult: 1.4, accent: [255, 60, 255],  bgTint: 'rgba(40,0,40,0.15)' },
+  { name: 'Ocean',      hueShift: -60, satMult: 1.3, brightMult: 1.0, accent: [40, 150, 255],  bgTint: 'rgba(0,10,40,0.15)' },
+  { name: 'Forest',     hueShift: 100, satMult: 1.4, brightMult: 0.9, accent: [60, 180, 80],   bgTint: 'rgba(0,20,0,0.12)' },
 ];
 
 /** Star style definitions with display symbols for the picker. */

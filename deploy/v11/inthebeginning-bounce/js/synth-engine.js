@@ -624,14 +624,28 @@ class SynthEngine {
     if (delay === undefined) delay = 0;
     if (delay < 0) delay = 0;
 
-    // Try sample-based playback first (real instrument sounds)
-    // Skip if the instrument's family is disabled by user preference
-    if (this.preferSamples && this.sampleBank && (note.ch || 0) !== 9) {
+    // Check if this instrument's family is disabled by user preference
+    if (this.sampleBank && this.sampleBank._disabledFamilies.size > 0) {
       const family = GM_TO_FAMILY[note.program || 0] || 'keys';
-      if (!this.sampleBank.isFamilyDisabled(family)) {
-        const key = this._playNoteSample(note, delay);
-        if (key >= 0) return key;
+      // Also check instrument name for family matching
+      const instName = (note.inst || '').toLowerCase();
+      const nameFamily = instName.includes('piano') ? 'piano' :
+        instName.includes('violin') || instName.includes('cello') || instName.includes('string') ? 'strings' :
+        instName.includes('flute') || instName.includes('oboe') || instName.includes('clarinet') ? 'winds' :
+        instName.includes('trumpet') || instName.includes('horn') ? 'brass' :
+        instName.includes('drum') || instName.includes('perc') ? 'percussion' :
+        instName.includes('pad') || instName.includes('synth') || instName.includes('cosmic') ? 'synth' :
+        instName.includes('choir') || instName.includes('voice') ? 'voice' : null;
+      const effectiveFamily = nameFamily || family;
+      if (this.sampleBank.isFamilyDisabled(effectiveFamily)) {
+        return -1; // Skip this note entirely — family disabled
       }
+    }
+
+    // Try sample-based playback first (real instrument sounds)
+    if (this.preferSamples && this.sampleBank && (note.ch || 0) !== 9) {
+      const key = this._playNoteSample(note, delay);
+      if (key >= 0) return key;
     }
 
     // Voice management: evict oldest if at capacity

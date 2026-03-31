@@ -98,6 +98,11 @@ class CosmicRunnerApp {
         document.querySelectorAll('.player-count-btn').forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
         this.numPlayers = parseInt(btn.dataset.players);
+        // Toggle controls hints based on player count
+        const hint1P = document.getElementById('controls-hint-1p');
+        const hint2P = document.getElementById('controls-hint-2p');
+        if (hint1P) hint1P.style.display = this.numPlayers === 1 ? '' : 'none';
+        if (hint2P) hint2P.style.display = this.numPlayers === 2 ? '' : 'none';
       });
     });
 
@@ -861,7 +866,7 @@ class CosmicRunnerApp {
     if (!this.game) return;
     const paused = this.game.togglePause();
     const pauseBtn = document.getElementById('pause-btn');
-    if (pauseBtn) pauseBtn.textContent = paused ? '\u25B6' : '\u23F8\u23F8';
+    if (pauseBtn) pauseBtn.textContent = paused ? '\u25B6' : '\u23F8';
     // Also pause/resume music when gameplay pauses/resumes
     if (this.player) {
       if (paused) {
@@ -1316,8 +1321,33 @@ class CosmicRunnerApp {
     const is2P = this.numPlayers === 2;
     const p2 = is2P ? 1 : 0;  // P2 target (or P1 in single-player)
 
+    // In player/grid mode, use music-focused key bindings
+    if (this.mode === 'player' || this.mode === 'grid') {
+      switch (e.key) {
+        case ' ':
+          e.preventDefault();
+          if (this.player) { this.player.isPlaying ? this.player.pause() : this.player.play(); }
+          return;
+        case 'ArrowLeft':
+          e.preventDefault();
+          if (this.player) {
+            const t = Math.max(0, this.player.getCurrentTime() - 15);
+            this.player._seekToPercent(t / (this.player.getDuration() || 1));
+          }
+          return;
+        case 'ArrowRight':
+          e.preventDefault();
+          if (this.player) {
+            const dur = this.player.getDuration() || 1;
+            const t = Math.min(dur, this.player.getCurrentTime() + 15);
+            this.player._seekToPercent(t / dur);
+          }
+          return;
+      }
+    }
+
     switch (e.key) {
-      // Space always jumps player 1
+      // Space always jumps player 1 (game mode)
       case ' ':
         e.preventDefault();
         if (this.game) this.game.jump(0);
