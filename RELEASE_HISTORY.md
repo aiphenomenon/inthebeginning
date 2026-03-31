@@ -7,6 +7,35 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 
 
+
+## v0.36.0 — 2026-03-31 — V11: Game Bug Fix Pass
+
+### Fixes (18 of 24 items)
+- Speed buttons: gameplay only (not music)
+- 3D emoji fade-out at bottom (no more pile-up)
+- 3D speed: mobile 150, desktop 180 (was 220)
+- Mutation cacophony: stopAll before applying new mutation
+- Mutation/style/instrument buttons: hidden in MP3 mode
+- 2D/3D toggle: changes gameplay perspective in game mode
+- Double pause icon: single ⏸ character
+- Main menu: 1P/2P controls hints toggle correctly
+- Instrument soundbank: disables families entirely (not just samples)
+- Music keyboard: Space=play/pause, arrows=seek in player/grid mode
+- Themes: more pronounced (increased satMult/brightMult, bgTint overlay)
+- Theme Default option + Ocean + Forest (10 total)
+- WASM playback: now uses MusicGenerator (was broken, calling wrong API)
+- Mobile flick-to-jump: upward swipe gesture
+- Mobile prev/next buttons: visible on all screen sizes
+
+### Still Outstanding
+- MIDI track listing improvements
+- MP3 JSON completeness verification
+- Mobile multi-tap track listing issue
+- Grid final score logic
+- Some visual refinements
+
+---
+
 ## v0.35.0 — 2026-03-30 — Comprehensive Markdown Sweep
 
 ### Summary

@@ -214,3 +214,21 @@ READMEs, stale PLAN.md, Java test command), 5 low (archive warning, future
 memories archive, steering update).
 
 **Tracking**: markdown_sweep_tracker.json indexes all files visited and fixes applied.
+
+### Turn 11: V36/V11 — Game Bug Fixes [2026-03-31 00:00-01:15 CT]
+
+**24 bugs reported. Fixes applied in 3 batches:**
+
+Batch 1: Speed buttons (gameplay only), 3D emoji fade-out, 3D speed tuning,
+mutation cacophony (stopAll before switch), mutation/style hidden in MP3,
+2D/3D toggle changes gameplay perspective.
+
+Batch 2: Double pause icon (single ⏸), main menu 1P/2P hints, instrument
+soundbank honors disabled families in Synth, modal text updated, music keyboard
+controls (Space=play/pause, arrows=seek in player mode), themes more pronounced
+with bgTint + Default/Ocean/Forest options.
+
+Batch 3: WASM playback (was calling wasmSynth.play() instead of musicGenerator),
+mobile flick-to-jump gesture, mobile prev/next buttons always visible.
+
+**Playwright**: 12/12 pass, zero JS errors.
