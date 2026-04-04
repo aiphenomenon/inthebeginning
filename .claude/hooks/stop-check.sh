@@ -42,6 +42,15 @@ if [ -z "$LATEST_JOURNAL" ] && [ -z "$LATEST_JOURNAL_GZ" ]; then
     ISSUES="${ISSUES}[STOP-CHECK] No journal file found. Write session_logs/v{VERSION}-journal.json before stopping.\n"
 fi
 
+# 5. Validate journal content (structure, verbatim text, no bracketed summaries)
+if [ -n "$LATEST_JOURNAL" ]; then
+    VALIDATE_OUTPUT=$(python3 "$PROJECT_ROOT/.claude/hooks/validate-journal.py" 2>&1)
+    VALIDATE_EXIT=$?
+    if [ "$VALIDATE_EXIT" -eq 1 ]; then
+        ISSUES="${ISSUES}${VALIDATE_OUTPUT}\n"
+    fi
+fi
+
 if [ -n "$ISSUES" ]; then
     echo -e "$ISSUES" >&2
     echo "Complete the items above before finishing." >&2

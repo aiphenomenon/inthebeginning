@@ -46,4 +46,4 @@ in `tool_calls` verbatim while raw code patch diffs are excluded.
 
 ### Journal
 
-Full turn-by-turn transcript: [v40-journal.json](v40-journal.json)
+Full turn-by-turn transcript: [v40-journal.json.tar.gz](v40-journal.json.tar.gz)
