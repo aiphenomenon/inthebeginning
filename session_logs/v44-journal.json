@@ -1,0 +1,127 @@
+{
+  "$schema": "journal_schema.json",
+  "format_version": "2.0",
+  "session": {
+    "session_id": "v44",
+    "branch": "develop",
+    "started_at": "2026-04-04 14:45 CT (19:45 UTC)",
+    "previous_version": "v43"
+  },
+  "turns": [
+    {
+      "turn_number": 1,
+      "timestamp_ct": "2026-04-04 14:45 CT",
+      "timestamp_utc": "2026-04-04 19:45 UTC",
+      "user_input": {
+        "raw": "Where are we keeping outstanding work to be done? I thought we had a file for that, but if not, we should have such a thing. And probably with a section for each app, architecture, testing, steering, and other facets of the solution. I'd like to hop out of hear and come back in YOLO mode so I don't have to accept prompts. Therefore, would you please make sure that we have a v43 cut that specifies in the session log (which will be reflected in the verbose session logging JSON, of course) that we want to get this in place? I also want to make sure when I come back that we can pick back up to also make sure that we have (1) ensured that we perform local tests as much as possible at each turn, such that we don't burn GitHub minutes (I think we're generally fine, but forget where we landed, (2) that we have good end-to-end testing, including visual tests that run when appropriate, (3) we prepare to wire up an audio driver (meaning we'll not actual play sound, but we'll get the effect of playing sound so that we'll be able to know reliably that audio is produced - which we'll be able to verify by you looking at the waveform from audio played out to an audio waveform device); this will be useful for being able to move the playhead in MP3 mode, but also for all modes of sound output ... particularly important for avoiding wasted time manually testing (manual testing is still important, but we may as well not do manual testing if we know something is broken...better to catch early). So those three items, plus the table of work to be done on \"inthebeginning bounce\" plus the addition of the General MIDI awesomeness for MIDI and WASM (and maybe synth) sound modes...plus the actual thing of making sure we have our work-to-be-done support implemented robustly in steering + hooks. Okay, can you make sure to ready the plan and get it into the cut, then let me exit out of here and come back up so we can proceed with the rest of the work in full-blown YOLO mode?",
+        "proofread": "Where are we keeping outstanding work to be done? I thought we had a file for that, but if not, we should. Probably with a section for each app, architecture, testing, steering, and other facets of the solution. I'd like to hop out of here and come back in YOLO mode so I don't have to accept prompts. Therefore, would you please make sure that we have a v44 cut that specifies in the session log that we want to get this in place? I also want to make sure when I come back that we can pick back up to: (1) ensure we perform local tests as much as possible at each turn so we don't burn GitHub minutes, (2) have good end-to-end testing including visual tests that run when appropriate, (3) prepare to wire up an audio driver (not actually playing sound, but getting the effect of playing sound so we can know reliably that audio is produced — verifiable by looking at the waveform from audio played out to a waveform device). This will be useful for moving the playhead in MP3 mode and for all modes of sound output — particularly important for avoiding wasted time on manual testing when we know something is broken. So those three items, plus the table of work to be done on inthebeginning bounce, plus General MIDI awesomeness for MIDI and WASM (and maybe Synth) sound modes, plus making sure the work-to-be-done support is implemented robustly in steering and hooks. Can you ready the plan and get it into the cut, then let me exit and come back in YOLO mode?",
+        "source": "user (proofread by Claude)"
+      },
+      "assistant_text": "Let me set this all up as a v44 cut — the work-to-be-done file, the plan for next session, and everything committed so you can come back in YOLO mode and hit the ground running.\n\nNo existing work tracking file found. Creating WORKLOG.md, v44 plan, updating CLAUDE.md and session-start hook.\n\nThe session-start hook now shows top open work items from WORKLOG.md. Testing the hook output:\n\n```\n[SESSION START] Branch: develop | Last session log: v43-session.md | Plan: v44-plan.md | Working tree: 121 uncommitted file(s)\n\nBefore starting work:\n1. Review or create a future_memories plan file (committed before code changes)\n2. Create/update the session log for this conversation\n3. Hooks enforce: Python/JSON linting on writes, plan-before-commit, commit-before-stop\n4. Check WORKLOG.md for current priorities\n\nTop open work items:\n  1 UI MIDI track listing: show next/prev 12 tracks Open V36 #14\n  2 Mobile Multiple taps spawns track listing unexpectedly Open V36 #16\n  3 Gameplay Grid mode: no final score when non-infinite ends Open V36 #7\n```\n\nv44 cut complete. Everything is set up for YOLO mode:\n\n**Created:**\n- `WORKLOG.md` — master work-to-be-done file with sections for Game, Testing, Architecture, Steering, Deploy\n- `future_memories/v44-plan.md` — roadmap for v45+ (audio driver, GM instruments, game bugs)\n\n**Updated:**\n- `CLAUDE.md` — references WORKLOG.md, adds Work Tracking section with local-first testing protocol\n- `.claude/hooks/session-start.sh` — injects top 3 open work items from WORKLOG.md\n\n**Next session priorities (v45+):**\n1. Audio waveform driver for headless testing (enables playhead seeking, sound verification)\n2. General MIDI instrument quality for MIDI/WASM modes\n3. Outstanding game bugs (5 items)\n\nYou're clear to exit and come back in YOLO mode. The session-start hook will remind you (and me) where we left off.",
+      "tool_calls": [
+        {
+          "sequence": 1,
+          "tool": "Bash",
+          "parameters": {
+            "command": "ls WORKLOG.md TODO.md WORK.md docs/work*.md docs/todo*.md 2>/dev/null"
+          },
+          "result": {
+            "output": "",
+            "truncated": false,
+            "original_length_lines": 0,
+            "original_length_chars": 0
+          }
+        },
+        {
+          "sequence": 2,
+          "tool": "Write",
+          "parameters": {
+            "file_path": "/home/claude/projects/inthebeginning/WORKLOG.md"
+          },
+          "result": {
+            "output": "File created successfully",
+            "truncated": false,
+            "original_length_lines": 1,
+            "original_length_chars": 24
+          }
+        },
+        {
+          "sequence": 3,
+          "tool": "Write",
+          "parameters": {
+            "file_path": "/home/claude/projects/inthebeginning/future_memories/v44-plan.md"
+          },
+          "result": {
+            "output": "File created successfully",
+            "truncated": false,
+            "original_length_lines": 1,
+            "original_length_chars": 24
+          }
+        },
+        {
+          "sequence": 4,
+          "tool": "Edit",
+          "parameters": {
+            "file_path": "/home/claude/projects/inthebeginning/CLAUDE.md",
+            "old_string": "added WORKLOG.md reference + Work Tracking section + local-first testing"
+          },
+          "result": {
+            "output": "Edit applied successfully",
+            "truncated": false,
+            "original_length_lines": 1,
+            "original_length_chars": 24
+          }
+        },
+        {
+          "sequence": 5,
+          "tool": "Edit",
+          "parameters": {
+            "file_path": "/home/claude/projects/inthebeginning/.claude/hooks/session-start.sh",
+            "old_string": "added WORKLOG.md top items injection"
+          },
+          "result": {
+            "output": "Edit applied successfully",
+            "truncated": false,
+            "original_length_lines": 1,
+            "original_length_chars": 24
+          }
+        },
+        {
+          "sequence": 6,
+          "tool": "Bash",
+          "parameters": {
+            "command": "bash .claude/hooks/session-start.sh"
+          },
+          "result": {
+            "output": "[SESSION START] Branch: develop | Last session log: v43-session.md | Plan: v44-plan.md | Working tree: 121 uncommitted file(s)\n\nBefore starting work:\n1. Review or create a future_memories plan file (committed before code changes)\n2. Create/update the session log for this conversation\n3. Hooks enforce: Python/JSON linting on writes, plan-before-commit, commit-before-stop\n4. Check WORKLOG.md for current priorities\n\nTop open work items:\n  1 UI MIDI track listing: show next/prev 12 tracks Open V36 #14\n  2 Mobile Multiple taps spawns track listing unexpectedly Open V36 #16\n  3 Gameplay Grid mode: no final score when non-infinite ends Open V36 #7",
+            "truncated": false,
+            "original_length_lines": 13,
+            "original_length_chars": 610
+          }
+        }
+      ],
+      "files_modified": [
+        "WORKLOG.md",
+        "CLAUDE.md",
+        ".claude/hooks/session-start.sh",
+        "future_memories/v44-plan.md",
+        "RELEASE_HISTORY.md",
+        "session_logs/v43-session.md",
+        "session_logs/v44-journal.json",
+        "session_logs/v44-session.md"
+      ],
+      "files_read": [
+        "CLAUDE.md",
+        ".claude/hooks/session-start.sh"
+      ],
+      "redactions": []
+    }
+  ],
+  "cut": {
+    "version": "v44",
+    "semver": "v0.44.0",
+    "finalized_at": "2026-04-04 14:55 CT (19:55 UTC)",
+    "commit_shas": [],
+    "summary": "Created WORKLOG.md (master work tracking), updated CLAUDE.md with Work Tracking section and local-first testing, session-start hook injects top work items. Roadmap for v45+: audio driver, GM instruments, game bugs."
+  }
+}

@@ -2,7 +2,8 @@
 
 This file is the single source of truth for Claude Code CLI steering in this
 repository. For multi-agent/AST protocol details, see `AGENTS.md`. For the
-Web/iOS (gVisor) hook-based flow, see `docs/web-ios-flow.md`.
+Web/iOS (gVisor) hook-based flow, see `docs/web-ios-flow.md`. For outstanding
+work items, see `WORKLOG.md`.
 
 ---
 
@@ -307,6 +308,39 @@ Historical files under `transcript_schema.json` (v1) are unchanged.
 - Keep the 3 most recent session logs as raw markdown files
 - Compress older logs into `session_logs/archive.tar.gz`
 - Session logs are append-only per turn -- do not rewrite historical entries
+
+---
+
+## Work Tracking
+
+`WORKLOG.md` is the master list of outstanding work items, organized by facet:
+Cosmic Runner (game bugs, audio/instruments), Testing Infrastructure,
+Architecture, Steering/Hooks, Simulator, Deploy.
+
+### Protocol
+
+- Check `WORKLOG.md` at session start to understand current priorities
+- Update `WORKLOG.md` when items are completed or new items discovered
+- Mark items with status: Open, In Progress, Done, Blocked
+- Reference WORKLOG items in commit messages where applicable
+
+### Local-First Testing
+
+Run tests locally before pushing to avoid burning GitHub CI minutes:
+
+```bash
+# Python reference (fast, ~2s) — run after every edit
+python3 -m pytest tests/ -v --tb=short
+
+# Note data completeness (fast, <1s)
+python3 -m pytest tests/test_note_data_completeness.py -v
+
+# Deploy asset validation
+python3 -m pytest tests/test_deploy_assets.py tests/test_deploy_app_flows.py -v
+```
+
+Only push when local tests pass. The CI pipeline is the final gate, not the
+first line of defense.
 
 ---
 

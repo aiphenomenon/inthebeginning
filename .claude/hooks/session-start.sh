@@ -35,6 +35,14 @@ if [ -n "$DIRTY" ]; then
     DIRTY_INFO="$DIRTY_COUNT uncommitted file(s)"
 fi
 
+# Top work items from WORKLOG.md
+WORKLOG="$PROJECT_ROOT/WORKLOG.md"
+WORK_ITEMS=""
+if [ -f "$WORKLOG" ]; then
+    # Extract first 3 Open items
+    WORK_ITEMS=$(grep -E '\| Open \|' "$WORKLOG" | head -3 | sed 's/|//g; s/  */ /g; s/^ /  /')
+fi
+
 cat <<EOF
 [SESSION START] Branch: $BRANCH | Last session log: $SESSION_INFO | Plan: $PLAN_INFO | Working tree: $DIRTY_INFO
 
@@ -42,4 +50,11 @@ Before starting work:
 1. Review or create a future_memories plan file (committed before code changes)
 2. Create/update the session log for this conversation
 3. Hooks enforce: Python/JSON linting on writes, plan-before-commit, commit-before-stop
+4. Check WORKLOG.md for current priorities
 EOF
+
+if [ -n "$WORK_ITEMS" ]; then
+    echo ""
+    echo "Top open work items:"
+    echo "$WORK_ITEMS"
+fi

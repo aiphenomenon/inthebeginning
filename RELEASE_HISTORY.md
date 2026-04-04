@@ -4,6 +4,16 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.44.0 — 2026-04-04 — Work Tracking + Testing Scaffolding
+
+### Summary
+Created WORKLOG.md — master work-to-be-done file organized by facet (game,
+testing, architecture, steering, deploy). Updated CLAUDE.md with Work Tracking
+section and local-first testing protocol. Session-start hook now injects top
+open work items. Plan for v45+: audio waveform driver, GM instruments, game bugs.
+
+---
+
 ## v0.43.0 — 2026-04-04 — MP3 Album Note Data Completeness
 
 ### Summary

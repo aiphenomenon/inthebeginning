@@ -83,4 +83,4 @@ proof that data exists throughout all tracks.
 
 ### Journal
 
-Full turn-by-turn transcript: [v43-journal.json](v43-journal.json)
+Full turn-by-turn transcript: [v43-journal.json.tar.gz](v43-journal.json.tar.gz)
