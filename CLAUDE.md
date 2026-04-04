@@ -253,8 +253,14 @@ The journal file must always reflect the latest completed turn.
 Contents per turn:
 - `user_input.raw`: Verbatim user text (security-redacted only)
 - `user_input.proofread`: Typo/grammar-corrected version
-- `assistant_text`: Full assistant response text shown on screen (no cap)
-- `tool_calls[]`: Every tool invocation with verbatim parameters and output
+- `assistant_text`: Full verbatim assistant response text as shown on screen —
+  includes markdown tables, reasoning, status updates, etc. Never use bracketed
+  summaries like `[did X]`. No length cap.
+- `tool_calls[]`: Every tool invocation with verbatim parameters and output.
+  Include process/reasoning commands verbatim (git status, git log, git diff
+  --stat, ls, validation runs, etc.). Exclude raw patch content from `git diff`
+  that only shows code changes already captured in the repo — the diff stat
+  (file list + line counts) is sufficient for those.
 - `files_modified`, `files_read`: File access log for the turn
 
 #### Truncation

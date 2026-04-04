@@ -47,4 +47,4 @@ and only the latest cut's journal stays prettified and browsable on GitHub.
 
 ### Journal
 
-Full turn-by-turn transcript: [v39-journal.json](v39-journal.json)
+Full turn-by-turn transcript: [v39-journal.json.tar.gz](v39-journal.json.tar.gz)

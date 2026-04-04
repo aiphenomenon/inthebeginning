@@ -4,6 +4,15 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.40.0 — 2026-04-04 — Journal Verbatim Content Clarification
+
+### Summary
+Clarified that assistant_text must be full verbatim screen output (not bracketed
+summaries) and that reasoning/process commands go in tool_calls verbatim while
+raw code patch diffs are excluded.
+
+---
+
 ## v0.39.0 — 2026-04-04 — Journal Compression Logic Finalization
 
 ### Summary
