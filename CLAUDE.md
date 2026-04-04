@@ -212,12 +212,49 @@ python -m pytest tests/test_screen_capture.py -v
 python tools/capture_golden.py
 ```
 
+### Browser E2E Tests (Playwright)
+
+```bash
+# Game E2E tests — headless, no audio capture (~4 min)
+python3 -m http.server 8080 --directory deploy --bind 127.0.0.1 &
+npx playwright test tests/e2e/game.spec.mjs --config=tests/e2e/playwright.config.mjs
+
+# Audio verification — headful via xvfb-run + PulseAudio (~2 min)
+bash tools/audio-sink.sh --start
+xvfb-run -a -s "-screen 0 1280x720x24" bash -c \
+  'E2E_AUDIO=1 npx playwright test tests/e2e/audio.spec.mjs --config=tests/e2e/playwright.config.mjs'
+
+# WASM verification — headful via xvfb-run + PulseAudio (~1 min)
+xvfb-run -a -s "-screen 0 1280x720x24" bash -c \
+  'E2E_AUDIO=1 npx playwright test tests/e2e/wasm.spec.mjs --config=tests/e2e/playwright.config.mjs'
+bash tools/audio-sink.sh --stop
+```
+
+### Test Tiers (Targeted Execution)
+
+Use `bash tools/quick-test.sh` for blast-radius-based test selection:
+
+| Tier | When | Duration | What |
+|------|------|----------|------|
+| 1 | Always | <5s | Note data completeness, deploy assets |
+| 2 | On code change | ~30s | Deploy flows, audio golden, language-specific |
+| 3 | Game code or cut | ~4min | Browser E2E (47 game + 11 audio/WASM tests) |
+
+```bash
+bash tools/quick-test.sh              # Auto-detect from git diff
+bash tools/quick-test.sh --tier1      # Fast tests only
+bash tools/quick-test.sh --tier2      # Tier 1 + integration
+bash tools/quick-test.sh --cut        # Full suite for version cut
+```
+
 ### Test Coverage
 
 - Run the Python reference suite after every edit
 - Run language-specific tests for any language where code was modified
 - Use `coverage_map` AST queries to identify untested code paths (see `AGENTS.md`)
 - When physics engine changes are made, verify cross-language parity
+- Run browser E2E tests when game JS or deploy assets change
+- Audio verification tests confirm real sound output via PulseAudio capture
 
 ---
 
