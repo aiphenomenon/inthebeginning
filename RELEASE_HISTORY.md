@@ -4,6 +4,16 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.41.0 — 2026-04-04 — Journal Content Validation Hook
+
+### Summary
+Added validate-journal.py to the stop hook for journal content quality checks:
+valid JSON, required fields, no bracketed summaries in assistant_text, proper
+tool_calls structure. Heuristic ignores brackets in quoted/code context to
+avoid false positives.
+
+---
+
 ## v0.40.0 — 2026-04-04 — Journal Verbatim Content Clarification
 
 ### Summary
