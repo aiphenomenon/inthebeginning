@@ -44,4 +44,4 @@ the journal per protocol. No code changes; no files written with the secret.
 
 ### Journal
 
-Full turn-by-turn transcript: [v42-journal.json](v42-journal.json)
+Full turn-by-turn transcript: [v42-journal.json.tar.gz](v42-journal.json.tar.gz)

@@ -4,6 +4,21 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.43.0 — 2026-04-04 — MP3 Album Note Data Completeness
+
+### Summary
+Fixed truncated v4 note data files causing visualization gaps in MP3 mode.
+Root cause: `extract_midi_provenance.py` lacked tiling loop (v3 generator had
+it, v4 didn't). Game prefers v4 files → visible gap after ~8s per segment.
+
+### Fix
+- Added tiling loop + mood construction to `extract_midi_provenance.py`
+- Regenerated all 12 v4 files: 100% coverage (was 23-54% gaps)
+- Before: 140-465 events/track → After: 2,050-10,231 events/track
+- 112 new tests in `test_note_data_completeness.py`
+
+---
+
 ## v0.42.0 — 2026-04-04 — Redaction Protocol Test
 
 ### Summary
