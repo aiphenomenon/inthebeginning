@@ -4,6 +4,65 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.45.0 — 2026-04-04 — Testing Infrastructure + GM Verification
+
+### Summary
+Built comprehensive browser E2E testing infrastructure with real audio
+capture. PulseAudio virtual audio sink enables spectral analysis of browser
+audio output. Playwright test suite covers all game modes, controls, overlays,
+and track navigation. Verified GM instruments, WASM synthesis, and all 4
+sound modes produce real audio. Expanded WORKLOG to cover all 22+ apps.
+
+### Testing Infrastructure
+- **PulseAudio virtual audio sink** (`tools/audio-sink.sh`): Browser audio
+  → null sink → monitor source → PCM capture → spectral analysis. Headful
+  Chromium via `xvfb-run` outputs real audio (headless uses fake device).
+- **58 Playwright E2E tests** across 3 spec files:
+  - `game.spec.mjs`: 47 tests — title screen, 9 mode combos (3 sound × 3
+    display), keyboard controls, HUD, track nav, overlays, grid, canvas, 2P
+  - `audio.spec.mjs`: 6 tests — audio capture per mode, mode-switch, pause
+  - `wasm.spec.mjs`: 5 tests — WASM load, audio, fallback, JS comparison
+- **Pytest integration**: `conftest.py` with markers, `test_e2e_browser.py`
+  as Python wrapper, `pytest.ini` with test categories
+- **Targeted execution**: `tools/quick-test.sh` with blast-radius analysis
+  (Tier 1: <5s always, Tier 2: ~30s on change, Tier 3: ~4min for game code)
+- **CI**: Added `browser-e2e` job in `.github/workflows/ci.yml`
+
+### Audio Verification Results
+| Mode | RMS | Peak | Verified |
+|------|-----|------|----------|
+| MP3 | 0.060 | 0.303 | Yes |
+| MIDI | 0.014 | 0.101 | Yes |
+| Synth | 0.009 | 0.054 | Yes |
+| WASM | 0.017 | 0.084 | Yes |
+
+### GM Instrument Verification
+- 128 GM programs → 60 MP3 samples (confirmed in `synth-engine.js`)
+- Sample-based playback with ±2 octave pitch shifting
+- 15% instrument substitution for orchestral variety
+- Additive synthesis fallback (17 timbres)
+
+### Bugs Found
+- WASM mode: no track info or time displayed (HUD empty, 0:00/0:00)
+- MP3 player: note info shows raw internal names (koto_v0_additive_32)
+- Voice/Choir instrument family unchecked by default
+- Key 3 grid switch: confirmed working (closed V36 #13)
+- apps/cosmic-runner-v5/ is STALE vs apps/inthebeginning-bounce/
+
+### WORKLOG Expansion
+Expanded from 2 sections to 20+ covering all apps: Python, Node.js, Go,
+Rust, C, C++, Java, Perl, PHP, TypeScript, Kotlin, Swift, WASM, WASM-Synth,
+Screensaver macOS/Ubuntu, Audio, Cosmic Runner variants, Visualizer.
+Enqueued WASM-to-Python music parity as priority future work.
+
+### Test Results
+- 808 Python tests pass, 1 pre-existing failure (note JSON count)
+- 47/47 game E2E tests pass
+- 6/6 audio verification tests pass
+- 5/5 WASM verification tests pass
+
+---
+
 ## v0.44.0 — 2026-04-04 — Work Tracking + Testing Scaffolding
 
 ### Summary
