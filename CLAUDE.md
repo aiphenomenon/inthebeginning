@@ -277,14 +277,18 @@ A cut occurs at each solution milestone (logical completion of a version).
 Each cut bumps the solution version number (v37 -> v38). On cut:
 
 1. Populate the journal's `cut` field with version, commit SHAs, and summary
-2. Compress: `tar czf v{VER}-journal.json.tar.gz v{VER}-journal.json`
-3. Delete the uncompressed `v{VER}-journal.json`
-4. Write `v{VER}-session.md` referencing the `.tar.gz`
-5. Update `RELEASE_HISTORY.md` with the version entry
-6. Commit and push
+2. The finalized `v{VER}-journal.json` stays **prettified and uncompressed**
+   (human-readable on GitHub)
+3. Compress the **previous** cut's journal: `tar czf v{PREV}-journal.json.tar.gz
+   v{PREV}-journal.json` and delete the uncompressed previous journal
+4. Update the **previous** session log's journal link to point to `.tar.gz`
+5. Write `v{VER}-session.md` referencing `v{VER}-journal.json` (uncompressed)
+6. Update `RELEASE_HISTORY.md` with the version entry
+7. Commit and push
 
-The journal stays **uncompressed during active work** (crash recovery).
-Compression happens only at cut time.
+At any point in time, only the **latest** cut's journal is uncompressed.
+All prior cuts are compressed to `.tar.gz`. This keeps the most recent
+journal browsable on GitHub while saving space for older ones.
 
 #### Schema
 
