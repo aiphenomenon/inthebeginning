@@ -227,7 +227,8 @@ Session logs provide continuity between agent sessions and an audit trail of wor
 ### File Naming
 
 - Session log: `session_logs/v{VERSION}-session.md`
-- JSON transcript: `session_logs/v{VERSION}-session.json`
+- Journal (active): `session_logs/v{VERSION}-journal.json`
+- Journal (finalized): `session_logs/v{VERSION}-journal.json.tar.gz`
 
 ### Content Requirements
 
@@ -236,18 +237,59 @@ Each session log entry must include:
 - Test results (pass/fail summary)
 - Files created, modified, or deleted
 - Timestamps in dual format: `YYYY-MM-DD HH:MM CT (HH:MM UTC)`
+- Reference to the finalized journal tar.gz
 
-### JSON Transcript Companion
+### Turn-by-Turn Journal Protocol
 
-Alongside each markdown session log, generate a structured JSON transcript file.
-The formal schema is defined in `session_logs/transcript_schema.json`.
+Every conversation turn is logged to a rolling journal file that captures the
+full conversation text and all tool calls verbatim.
 
-Key rules:
-- Tool output <= 500 lines: include verbatim
-- Tool output > 500 lines: include first 100 lines + truncation summary
-- Preserve user input as `raw_summary`; add `proofread` version correcting
-  speech-to-text artifacts
-- Only redact security tokens/API keys/credentials (system paths are OK)
+#### Per-Turn Write
+
+After every assistant response, write/update `session_logs/v{VER}-journal.json`
+with the current turn appended. This happens before any other end-of-turn work.
+The journal file must always reflect the latest completed turn.
+
+Contents per turn:
+- `user_input.raw`: Verbatim user text (security-redacted only)
+- `user_input.proofread`: Typo/grammar-corrected version
+- `assistant_text`: Full assistant response text shown on screen (no cap)
+- `tool_calls[]`: Every tool invocation with verbatim parameters and output
+- `files_modified`, `files_read`: File access log for the turn
+
+#### Truncation
+
+Per tool call result: if output exceeds **500 lines or 60,000 characters**,
+keep the first **100 lines or 12,000 characters** (whichever limit hits first).
+Append a truncation marker with original size and brief description of remaining
+content. This applies uniformly to all tools (Bash, Read, Agent, Grep, etc.).
+Within Agent subagent results, individual command outputs follow the same rule.
+
+#### Redaction
+
+Replace API keys, tokens, passwords, and non-project emails with
+`<REDACTED:type>`. Do not redact system paths, git SHAs, filenames, or
+project structure.
+
+#### Cuts and Version Bumps
+
+A cut occurs at each solution milestone (logical completion of a version).
+Each cut bumps the solution version number (v37 -> v38). On cut:
+
+1. Populate the journal's `cut` field with version, commit SHAs, and summary
+2. Compress: `tar czf v{VER}-journal.json.tar.gz v{VER}-journal.json`
+3. Delete the uncompressed `v{VER}-journal.json`
+4. Write `v{VER}-session.md` referencing the `.tar.gz`
+5. Update `RELEASE_HISTORY.md` with the version entry
+6. Commit and push
+
+The journal stays **uncompressed during active work** (crash recovery).
+Compression happens only at cut time.
+
+#### Schema
+
+Defined in `session_logs/journal_schema.json` (format version 2.0).
+Historical files under `transcript_schema.json` (v1) are unchanged.
 
 ### Rolling Window & Append-Only
 

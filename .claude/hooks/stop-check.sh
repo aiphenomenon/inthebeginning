@@ -35,6 +35,13 @@ if [ -z "$LATEST_SESSION" ]; then
     ISSUES="${ISSUES}[STOP-CHECK] No session log found. Generate session_logs/v{VERSION}-session.md.\n"
 fi
 
+# 4. Check that a journal file exists (either active .json or finalized .tar.gz)
+LATEST_JOURNAL=$(ls -t "$PROJECT_ROOT/session_logs/"*-journal.json 2>/dev/null | head -1)
+LATEST_JOURNAL_GZ=$(ls -t "$PROJECT_ROOT/session_logs/"*-journal.json.tar.gz 2>/dev/null | head -1)
+if [ -z "$LATEST_JOURNAL" ] && [ -z "$LATEST_JOURNAL_GZ" ]; then
+    ISSUES="${ISSUES}[STOP-CHECK] No journal file found. Write session_logs/v{VERSION}-journal.json before stopping.\n"
+fi
+
 if [ -n "$ISSUES" ]; then
     echo -e "$ISSUES" >&2
     echo "Complete the items above before finishing." >&2

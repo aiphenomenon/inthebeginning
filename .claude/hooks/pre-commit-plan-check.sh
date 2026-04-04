@@ -51,4 +51,17 @@ if [ -z "$PLAN_EXISTS" ]; then
     fi
 fi
 
+# --- Journal freshness check ---
+# Warn (not block) if the journal file is missing or stale during code commits
+LATEST_JOURNAL=$(ls -t "$PROJECT_ROOT/session_logs/"*-journal.json 2>/dev/null | head -1)
+if [ -n "$LATEST_JOURNAL" ]; then
+    JOURNAL_AGE=$(( $(date +%s) - $(stat -c %Y "$LATEST_JOURNAL" 2>/dev/null || echo 0) ))
+    if [ "$JOURNAL_AGE" -gt 1800 ]; then
+        echo "[PRE-COMMIT] Warning: Journal file $(basename "$LATEST_JOURNAL") is $(( JOURNAL_AGE / 60 )) minutes old." >&2
+        echo "Update the journal before committing." >&2
+    fi
+elif [ "${HAS_CODE_CHANGES:-false}" = true ]; then
+    echo "[PRE-COMMIT] Warning: No journal file found. Write session_logs/v{VERSION}-journal.json." >&2
+fi
+
 exit 0

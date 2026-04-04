@@ -1,0 +1,211 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/aiphenomenon/inthebeginning/session_logs/journal_schema.json",
+  "title": "Turn-by-Turn Journal",
+  "description": "Rolling journal file updated every conversation turn with full tool call capture. Compressed to .tar.gz on solution cut.",
+  "type": "object",
+  "required": ["format_version", "session", "turns"],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "format_version": {
+      "type": "string",
+      "const": "2.0"
+    },
+    "session": {
+      "$ref": "#/$defs/session"
+    },
+    "turns": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/turn"
+      }
+    },
+    "cut": {
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "#/$defs/cut" }
+      ],
+      "default": null,
+      "description": "null while in progress; populated at cut time before compression"
+    }
+  },
+  "$defs": {
+    "session": {
+      "type": "object",
+      "required": ["session_id", "branch", "started_at", "previous_version"],
+      "properties": {
+        "session_id": {
+          "type": "string",
+          "description": "Version tag for this session, e.g. 'v37'",
+          "examples": ["v37"]
+        },
+        "branch": {
+          "type": "string",
+          "description": "Git branch at session start",
+          "examples": ["develop"]
+        },
+        "started_at": {
+          "type": "string",
+          "description": "Session start time in CT with UTC, format: 'YYYY-MM-DD HH:MM CT (HH:MM UTC)'",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2} CT \\(\\d{2}:\\d{2} UTC\\)$",
+          "examples": ["2026-04-04 10:00 CT (15:00 UTC)"]
+        },
+        "previous_version": {
+          "type": ["string", "null"],
+          "description": "Previous solution version, e.g. 'v36'. null if first session.",
+          "examples": ["v36"]
+        }
+      }
+    },
+    "turn": {
+      "type": "object",
+      "required": ["turn_number", "timestamp_ct", "timestamp_utc", "user_input", "assistant_text", "tool_calls", "files_modified", "files_read", "redactions"],
+      "properties": {
+        "turn_number": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "1-indexed turn number within this version"
+        },
+        "timestamp_ct": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2} CT$",
+          "examples": ["2026-04-04 10:00 CT"]
+        },
+        "timestamp_utc": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2} UTC$",
+          "examples": ["2026-04-04 15:00 UTC"]
+        },
+        "user_input": {
+          "$ref": "#/$defs/user_input"
+        },
+        "assistant_text": {
+          "type": "string",
+          "description": "Full verbatim assistant response text (markdown). No length cap."
+        },
+        "tool_calls": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/tool_call"
+          },
+          "description": "Every tool invocation in this turn, in execution order"
+        },
+        "files_modified": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Relative paths of files created, modified, or deleted"
+        },
+        "files_read": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Relative paths of files read (via Read tool or equivalent)"
+        },
+        "redactions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Redaction markers applied, e.g. '<REDACTED:api_key> applied 2 times'",
+          "examples": [["<REDACTED:api_key> applied 2 times"]]
+        }
+      }
+    },
+    "user_input": {
+      "type": "object",
+      "required": ["raw", "proofread", "source"],
+      "properties": {
+        "raw": {
+          "type": "string",
+          "description": "Verbatim user text, security-redacted only. Preserves original phrasing, typos, speech-to-text artifacts."
+        },
+        "proofread": {
+          "type": "string",
+          "description": "Typo-corrected and grammar-fixed version of user input. Meaning preserved."
+        },
+        "source": {
+          "type": "string",
+          "description": "Attribution, e.g. 'user (proofread by Claude)'",
+          "examples": ["user (proofread by Claude)"]
+        }
+      }
+    },
+    "tool_call": {
+      "type": "object",
+      "required": ["sequence", "tool", "parameters", "result"],
+      "properties": {
+        "sequence": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "1-indexed sequence within the turn"
+        },
+        "tool": {
+          "type": "string",
+          "description": "Tool name: Bash, Read, Edit, Write, Grep, Glob, Agent, etc.",
+          "examples": ["Bash", "Read", "Edit", "Write", "Grep", "Glob", "Agent"]
+        },
+        "parameters": {
+          "type": "object",
+          "description": "Verbatim tool parameters as passed (command, file_path, pattern, prompt, etc.)"
+        },
+        "result": {
+          "$ref": "#/$defs/tool_result"
+        }
+      }
+    },
+    "tool_result": {
+      "type": "object",
+      "required": ["output", "truncated", "original_length_lines", "original_length_chars"],
+      "properties": {
+        "output": {
+          "type": "string",
+          "description": "Tool output. Verbatim if within limits; first 100 lines / 12000 chars with truncation marker if over limits."
+        },
+        "truncated": {
+          "type": "boolean",
+          "description": "true if output exceeded 500 lines or 60000 chars and was truncated"
+        },
+        "original_length_lines": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Line count of full output before any truncation"
+        },
+        "original_length_chars": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Character count of full output before any truncation"
+        }
+      }
+    },
+    "cut": {
+      "type": "object",
+      "required": ["version", "semver", "finalized_at", "commit_shas", "summary"],
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "Solution version tag, e.g. 'v37'",
+          "examples": ["v37"]
+        },
+        "semver": {
+          "type": "string",
+          "description": "Semantic version for RELEASE_HISTORY.md, e.g. 'v0.37.0'",
+          "examples": ["v0.37.0"]
+        },
+        "finalized_at": {
+          "type": "string",
+          "description": "Cut timestamp in CT with UTC",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2} CT \\(\\d{2}:\\d{2} UTC\\)$"
+        },
+        "commit_shas": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "All commits in this version, format: 'sha — message'",
+          "examples": [["abc1234 — feat: journal protocol"]]
+        },
+        "summary": {
+          "type": "string",
+          "description": "Brief summary of what this version accomplished"
+        }
+      }
+    }
+  }
+}
