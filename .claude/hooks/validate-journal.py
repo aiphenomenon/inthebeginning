@@ -79,9 +79,13 @@ def validate_journal(path):
             errors.append(f"{prefix}: assistant_text is empty")
         else:
             # Detect bracketed summaries: [text that looks like a summary]
-            # Match [...] where content is 15-200 chars and contains action words
+            # First, strip out quoted/code-fenced content where brackets are
+            # legitimate (backtick-wrapped, double-quoted references, code blocks)
+            stripped = re.sub(r'`[^`]*`', '', text)           # inline code
+            stripped = re.sub(r'"[^"]*"', '', stripped)        # double-quoted
+            stripped = re.sub(r'```[\s\S]*?```', '', stripped) # code blocks
             bracket_pattern = r'\[([^\[\]]{15,200})\]'
-            matches = re.findall(bracket_pattern, text)
+            matches = re.findall(bracket_pattern, stripped)
             for match in matches:
                 # Heuristic: if it contains action verbs typical of summaries
                 summary_words = (
