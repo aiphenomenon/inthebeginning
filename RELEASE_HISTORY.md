@@ -4,8 +4,20 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.37.0 — 2026-04-04 — Turn-by-Turn Journal Protocol
 
+### Summary
+Formalized turn-by-turn conversation journaling with full tool call capture.
+Rolling JSON journal updated every turn (crash recovery), compressed to .tar.gz
+on solution cut. Each cut bumps the solution version.
 
+### Deliverables
+- `session_logs/journal_schema.json` — JSON Schema v2.0 for journal files
+- CLAUDE.md — replaced JSON Transcript Companion with Journal Protocol section
+- Hook updates: pre-commit journal freshness warning, stop-check journal blocker
+- First journal: v37-journal.json.tar.gz (6 turns)
+
+---
 
 
 ## v0.36.0 — 2026-03-31 — V11: Game Bug Fix Pass
