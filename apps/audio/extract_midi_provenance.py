@@ -13,6 +13,7 @@ Usage:
 import sys
 import os
 import json
+import math
 import random
 import hashlib
 
@@ -20,7 +21,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from radio_engine import (
     RadioEngineV8, RadioEngineV15, NoteLog, MoodSegment,
-    SAMPLE_RATE, EPOCH_ORDER,
+    SAMPLE_RATE, EPOCH_ORDER, TIME_SIGNATURES,
 )
 
 # V15 with V8 tempo (same as generate_v8_album.py)
@@ -73,23 +74,38 @@ def extract_provenance(engine_cls, seed, duration, time_offset=0.0):
     n_segments = len(engine.segments)
     sim_states = engine._generate_sim_states(n_segments)
 
+    # Patch MoodSegment init the same way generate_full_notes.py does
+    orig, patched = engine._patch_mood_init()
+    MoodSegment.__init__ = patched
+
     segments = []
 
-    for seg_idx in range(n_segments):
+    try:
+      for seg_idx in range(n_segments):
         seg_info = engine.segments[seg_idx]
         seg_start = seg_info['start'] + time_offset
         seg_duration = seg_info['duration']
-        mood = seg_info.get('mood')
 
-        if not mood:
-            continue
+        sim_state = sim_states[min(seg_idx, len(sim_states) - 1)]
 
-        sim_state = sim_states[seg_idx] if seg_idx < len(sim_states) else {}
+        # Construct mood from scratch (same as generate_full_notes.py)
+        time_pos = seg_info['start']
+        epoch_idx = int(time_pos / engine.total_duration * 12.999)
+        epoch_idx = max(0, min(12, epoch_idx))
+        epoch = EPOCH_ORDER[epoch_idx]
+
+        mood = MoodSegment(
+            seg_idx, epoch, epoch_idx, sim_state,
+            engine.seed + seg_idx * 31337
+        )
 
         # Re-run the MIDI sampling logic
         rng = random.Random(mood.rng.random())
         tempo = mood.tempo
-        tempo_mult = engine._compute_tempo_multiplier(sim_state)
+        try:
+            tempo_mult = engine._compute_tempo_multiplier(sim_state)
+        except Exception:
+            tempo_mult = 2.0
         effective_tempo = min(tempo * tempo_mult, 360)
 
         loop_bars = rng.randint(4, 12)
@@ -118,27 +134,43 @@ def extract_provenance(engine_cls, seed, duration, time_offset=0.0):
             elif len(parts) == 1:
                 midi_composer = 'Unknown'
 
-        # Get instrument names
+        # Get instrument names (use mood-specific selection like generate_full_notes)
+        selected = engine._select_instruments(mood)
         instr_names = []
-        for instr in engine.instruments[:4]:
+        for instr in selected[:8]:
             name = instr.get('name', 'unknown')
             instr_names.append(name)
         if not instr_names:
             instr_names = ['synth']
 
-        # Build note events with provenance
+        # Build note events with provenance — tile the pattern to fill
+        # the full segment duration (matching generate_full_notes.py logic)
         notes = []
-        for t_sec, midi_note, dur_sec, vel in midi_notes:
-            abs_time = seg_start + t_sec
-            inst_name = instr_names[midi_note % len(instr_names)]
-            notes.append({
-                't': round(abs_time, 3),
-                'note': midi_note,
-                'dur': round(dur_sec, 3),
-                'vel': round(vel / 127.0 if vel > 1.0 else vel, 3),
-                'inst': inst_name,
-                'midi_source': midi_file,
-            })
+        pattern_duration = segment_duration  # duration from sample_bars_seeded
+        if pattern_duration <= 0:
+            pattern_duration = 8.0  # fallback
+        n_repeats = max(1, math.ceil(seg_duration / pattern_duration))
+        for rep in range(n_repeats):
+            offset = rep * pattern_duration
+            if offset >= seg_duration:
+                break
+            for t_sec, midi_note, dur_sec, vel in midi_notes:
+                abs_time = seg_start + offset + t_sec
+                # Clip to segment boundary
+                if abs_time >= seg_start + seg_duration:
+                    break
+                note_dur = dur_sec
+                if abs_time + note_dur > seg_start + seg_duration:
+                    note_dur = seg_start + seg_duration - abs_time
+                inst_name = instr_names[midi_note % len(instr_names)]
+                notes.append({
+                    't': round(abs_time, 3),
+                    'note': midi_note,
+                    'dur': round(note_dur, 3),
+                    'vel': round(vel / 127.0 if vel > 1.0 else vel, 3),
+                    'inst': inst_name,
+                    'midi_source': midi_file,
+                })
 
         # Get scale name
         scale_name = ''
@@ -160,6 +192,8 @@ def extract_provenance(engine_cls, seed, duration, time_offset=0.0):
             },
             'notes': notes,
         })
+    finally:
+      MoodSegment.__init__ = orig
 
     return segments
 
