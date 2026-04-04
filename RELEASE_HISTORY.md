@@ -4,6 +4,25 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.39.0 — 2026-04-04 — Journal Compression Logic Finalization
+
+### Summary
+Finalized journal cut/compression lifecycle. On each cut, ALL prior uncompressed
+journals get compressed, not just the immediately previous one. Only the latest
+cut's journal stays prettified and browsable on GitHub. Retroactively cut v38
+with session log.
+
+---
+
+## v0.38.0 — 2026-04-04 — Journal Compression Strategy Fix
+
+### Summary
+Updated journal protocol so the latest cut's journal stays prettified and
+uncompressed (readable on GitHub), while previous cuts get compressed to
+`.tar.gz` on the next cut.
+
+---
+
 ## v0.37.0 — 2026-04-04 — Turn-by-Turn Journal Protocol
 
 ### Summary

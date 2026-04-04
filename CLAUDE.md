@@ -279,9 +279,10 @@ Each cut bumps the solution version number (v37 -> v38). On cut:
 1. Populate the journal's `cut` field with version, commit SHAs, and summary
 2. The finalized `v{VER}-journal.json` stays **prettified and uncompressed**
    (human-readable on GitHub)
-3. Compress the **previous** cut's journal: `tar czf v{PREV}-journal.json.tar.gz
-   v{PREV}-journal.json` and delete the uncompressed previous journal
-4. Update the **previous** session log's journal link to point to `.tar.gz`
+3. Compress **all** prior uncompressed journals:
+   `for f in session_logs/v*-journal.json (excluding v{VER}):`
+   `tar czf $f.tar.gz $f && rm $f`
+4. Update each compressed journal's session log link to point to `.tar.gz`
 5. Write `v{VER}-session.md` referencing `v{VER}-journal.json` (uncompressed)
 6. Update `RELEASE_HISTORY.md` with the version entry
 7. Commit and push

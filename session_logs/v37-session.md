@@ -55,4 +55,4 @@ journal system (format v2).
 
 ### Journal
 
-Full turn-by-turn transcript: [v37-journal.json](v37-journal.json)
+Full turn-by-turn transcript: [v37-journal.json.tar.gz](v37-journal.json.tar.gz)
