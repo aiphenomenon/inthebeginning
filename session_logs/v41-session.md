@@ -53,4 +53,4 @@ catching a deliberate mistake and the subsequent fix.
 
 ### Journal
 
-Full turn-by-turn transcript: [v41-journal.json](v41-journal.json)
+Full turn-by-turn transcript: [v41-journal.json.tar.gz](v41-journal.json.tar.gz)

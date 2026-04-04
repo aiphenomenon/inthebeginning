@@ -4,6 +4,14 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.42.0 — 2026-04-04 — Redaction Protocol Test
+
+### Summary
+Tested journal redaction protocol with plaintext password. Both instances
+redacted as `<REDACTED:password>`. Refused to write secrets to files.
+
+---
+
 ## v0.41.0 — 2026-04-04 — Journal Content Validation Hook
 
 ### Summary
