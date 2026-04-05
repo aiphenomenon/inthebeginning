@@ -59,3 +59,6 @@ apps/go/sse_server_test
 tests/golden_snapshots/audio/test_output.wav
 .claude/worktrees/
 apps/swift/.build/
+
+# Journal tool capture (scratch file, not committed)
+session_logs/.tool_capture.jsonl

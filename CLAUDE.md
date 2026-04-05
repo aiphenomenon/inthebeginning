@@ -103,6 +103,7 @@ should agree on what's expected.
 | `lint-on-write.sh` | PostToolUse (Edit/Write) | Python `py_compile`, JSON validation, JS `node --check` | No (feedback) |
 | `pre-commit-plan-check.sh` | PreToolUse (Bash git commit) | Blocks commit if code changed but no future_memories plan exists | **Yes** (exit 2) |
 | `post-bash-test-nudge.sh` | PostToolUse (Bash) | After build commands, reminds to run corresponding test suite | No (nudge) |
+| `journal-capture.sh` | PostToolUse (all tools) | Appends verbatim tool params + output to `.tool_capture.jsonl` | No (logging) |
 | `stop-check.sh` | Stop | Blocks stop if uncommitted changes, unpushed commits, or missing session log | **Yes** (exit 2) |
 | `session-start.sh` | SessionStart | Injects branch, plan, session log, and dirty-tree status | No (context) |
 
@@ -282,6 +283,26 @@ Each session log entry must include:
 Every conversation turn is logged to a rolling journal file that captures the
 full conversation text and all tool calls verbatim.
 
+#### Automatic Tool Call Capture
+
+The `journal-capture.sh` PostToolUse hook automatically records every tool
+call to `session_logs/.tool_capture.jsonl` with verbatim parameters and output.
+This is the **primary source** for `tool_calls[]` in the journal — do NOT
+reconstruct tool calls from memory or summarize them.
+
+When writing a journal turn, read `.tool_capture.jsonl`, extract the entries
+for that turn (by timestamp range), and copy them into the journal's
+`tool_calls[]` array. Transform each JSONL entry as follows:
+
+```
+JSONL entry:  { "ts", "tool", "id", "input", "response", ... }
+Journal form: { "sequence", "tool", "parameters": <input>, "result": {
+                  "output": <response as string or JSON>,
+                  "truncated": <input_truncated || response_truncated>,
+                  "original_length_lines": <count>,
+                  "original_length_chars": <count> } }
+```
+
 #### Per-Turn Write
 
 After every assistant response, write/update `session_logs/v{VER}-journal.json`
@@ -291,23 +312,28 @@ The journal file must always reflect the latest completed turn.
 Contents per turn:
 - `user_input.raw`: Verbatim user text (security-redacted only)
 - `user_input.proofread`: Typo/grammar-corrected version
+- `user_input.source`: Attribution, e.g. "user (proofread by Claude)"
 - `assistant_text`: Full verbatim assistant response text as shown on screen —
   includes markdown tables, reasoning, status updates, etc. Never use bracketed
   summaries like `[did X]`. No length cap.
-- `tool_calls[]`: Every tool invocation with verbatim parameters and output.
-  Include process/reasoning commands verbatim (git status, git log, git diff
-  --stat, ls, validation runs, etc.). Exclude raw patch content from `git diff`
-  that only shows code changes already captured in the repo — the diff stat
-  (file list + line counts) is sufficient for those.
+- `tool_calls[]`: Built from `.tool_capture.jsonl` (see above). Every tool
+  invocation with verbatim parameters and output. Include process/reasoning
+  commands verbatim (git status, git log, git diff --stat, ls, validation
+  runs, etc.). Exclude raw patch content from `git diff` that only shows code
+  changes already captured in the repo — the diff stat (file list + line
+  counts) is sufficient for those.
 - `files_modified`, `files_read`: File access log for the turn
+- `redactions`: List of redaction markers applied, or empty array
 
 #### Truncation
 
-Per tool call result: if output exceeds **500 lines or 60,000 characters**,
-keep the first **100 lines or 12,000 characters** (whichever limit hits first).
-Append a truncation marker with original size and brief description of remaining
-content. This applies uniformly to all tools (Bash, Read, Agent, Grep, etc.).
-Within Agent subagent results, individual command outputs follow the same rule.
+The `journal-capture.sh` hook applies truncation at capture time: string
+values over 12,000 characters or 100 lines are truncated and flagged.
+This matches the journal protocol limits (500 lines / 60,000 characters
+original limit → keep first 100 lines / 12,000 characters).
+
+For manually added content (assistant_text, user_input), no truncation
+is applied — these are always captured in full.
 
 #### Redaction
 

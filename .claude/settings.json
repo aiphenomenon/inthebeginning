@@ -40,6 +40,15 @@
             "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/post-bash-test-nudge.sh\""
           }
         ]
+      },
+      {
+        "matcher": "Bash|Write|Edit|Read|Glob|Grep|Agent|WebFetch|WebSearch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/journal-capture.sh\""
+          }
+        ]
       }
     ],
     "Stop": [
