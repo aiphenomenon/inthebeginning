@@ -206,6 +206,11 @@ class MusicSync {
       case AUDIO_MODE.SYNTH:
         return this.musicGenerator ? this.musicGenerator.getCurrentTime() : 0;
       case AUDIO_MODE.WASM:
+        // WASM mode uses MusicGenerator for composition — get time from it.
+        // Falls back to wasmSynth if MIDI is loaded directly (future path).
+        if (this.musicGenerator && this.musicGenerator.getDuration() > 0) {
+          return this.musicGenerator.getCurrentTime();
+        }
         return this.wasmSynth ? this.wasmSynth.getCurrentTime() : 0;
       case AUDIO_MODE.MP3:
       default:
@@ -224,6 +229,10 @@ class MusicSync {
       case AUDIO_MODE.SYNTH:
         return this.musicGenerator ? this.musicGenerator.getDuration() : 0;
       case AUDIO_MODE.WASM:
+        // WASM mode uses MusicGenerator for composition — get duration from it.
+        if (this.musicGenerator && this.musicGenerator.getDuration() > 0) {
+          return this.musicGenerator.getDuration();
+        }
         return this.wasmSynth ? this.wasmSynth.getDuration() : 0;
       case AUDIO_MODE.MP3:
       default:
@@ -305,6 +314,29 @@ class MusicSync {
   // ──── Display Helpers ────
 
   /**
+   * Clean raw internal instrument names for display.
+   * Strips synthesis variant suffixes and capitalizes.
+   * Examples:
+   *   "organ_v0_additive_1"  → "Organ"
+   *   "acoustic_guitar"      → "Acoustic Guitar"
+   *   "bass_v0_bell_432"     → "Bass"
+   *   "koto_v0_additive_32"  → "Koto"
+   *   "electric_piano"       → "Electric Piano"
+   * @param {string} raw - Raw instrument name from note event.
+   * @returns {string} Human-readable instrument name.
+   */
+  static cleanInstrumentName(raw) {
+    if (!raw || raw === 'unknown') return 'Unknown';
+    // Strip synthesis variant suffixes: _v0_additive_N, _v0_bell_N, _v0_N, etc.
+    let name = raw.replace(/_v\d+(?:_(?:additive|bell|saw|square|sine|pad|cosmic|warm)\w*)?(?:_\d+)?$/i, '');
+    // Replace underscores with spaces
+    name = name.replace(/_/g, ' ');
+    // Title case each word
+    name = name.replace(/\b\w/g, c => c.toUpperCase());
+    return name;
+  }
+
+  /**
    * Get note info array for display.
    * @param {Array<Object>} events - Active note events.
    * @returns {Array<Object>} Deduplicated pitch/instrument pairs.
@@ -314,10 +346,11 @@ class MusicSync {
     const seen = new Set();
     for (const ev of events) {
       const pitch = midiToNoteName(ev.note || 60);
-      const key = `${pitch}-${ev.inst}`;
+      const inst = MusicSync.cleanInstrumentName(ev.inst || 'unknown');
+      const key = `${pitch}-${inst}`;
       if (!seen.has(key)) {
         seen.add(key);
-        info.push({ pitch, inst: ev.inst || 'unknown', vel: ev.vel || 0.5 });
+        info.push({ pitch, inst, vel: ev.vel || 0.5 });
       }
     }
     return info.slice(0, 12);

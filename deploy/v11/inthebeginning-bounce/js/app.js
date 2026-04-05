@@ -777,6 +777,10 @@ class CosmicRunnerApp {
         // otherwise SynthEngine does additive/sample-based synthesis)
         this.player.musicGenerator._synth = this.player._synth;
         await this.player.play();
+        // Set initial HUD track name (same as synth mode)
+        const wasmTrackName = this.player.musicGenerator.getCurrentTrackName() || 'WASM Synth';
+        if (this.hudTrack) this.hudTrack.textContent = wasmTrackName;
+        if (this.songTitleDisplay) this.songTitleDisplay.textContent = wasmTrackName;
         break;
       }
       case 'mp3':
@@ -895,18 +899,19 @@ class CosmicRunnerApp {
       }
 
       this._updateTrackListHighlight(trackIndex);
-    } else if (this.soundMode === 'midi' || this.soundMode === 'synth') {
-      // MIDI/Synth mode: advance level based on internal track counter
+    } else if (this.soundMode === 'midi' || this.soundMode === 'synth' || this.soundMode === 'wasm') {
+      // MIDI/Synth/WASM mode: advance level based on internal track counter
       this._midiSynthTrackCount = (this._midiSynthTrackCount || 0) + 1;
       const level = this._midiSynthTrackCount % 12;
 
-      // Update HUD title for MIDI/Synth
+      // Update HUD title for MIDI/Synth/WASM
       if (this.soundMode === 'midi') {
         const info = this.player?.midiPlayer?.trackInfo;
         const title = info ? `${info.composer || 'Unknown'} — ${info.name || 'MIDI'}` : 'MIDI';
         if (this.hudTrack) this.hudTrack.textContent = title;
         if (this.songTitleDisplay) this.songTitleDisplay.textContent = title;
       } else {
+        // Synth and WASM both use MusicGenerator for composition
         const trackName = this.player?.musicGenerator?.getCurrentTrackName() || 'Synth';
         if (this.hudTrack) this.hudTrack.textContent = trackName;
         if (this.songTitleDisplay) this.songTitleDisplay.textContent = trackName;

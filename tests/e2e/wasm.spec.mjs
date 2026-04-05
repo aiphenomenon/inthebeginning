@@ -61,6 +61,33 @@ test.describe('WASM Synth Mode', () => {
     }
   });
 
+  test('WASM mode shows track info and time in HUD', async ({ page }) => {
+    await page.goto(GAME_PATH);
+    await page.waitForTimeout(800);
+    const options = await page.$$eval('#sound-mode-select option', opts =>
+      opts.map(o => o.value));
+
+    if (!options.includes('wasm')) {
+      test.skip();
+      return;
+    }
+
+    await startGame(page, { soundMode: 'wasm', displayMode: 'player' });
+    await page.waitForTimeout(5000);
+    await page.screenshot({ path: join(SHOTS_DIR, 'e2e-wasm-hud.png') });
+
+    // HUD should show epoch/track name (not empty)
+    const trackName = await page.$eval('#hud-track', el => el.textContent).catch(() => '');
+    console.log(`  WASM HUD track: "${trackName}"`);
+    expect(trackName.length, 'HUD track name should not be empty').toBeGreaterThan(0);
+
+    // Time display should show non-zero duration
+    const timeText = await page.$eval('#music-time', el => el.textContent).catch(() => '');
+    console.log(`  WASM time display: "${timeText}"`);
+    // Should not be "0:00 / 0:00" — duration should be set
+    expect(timeText).not.toBe('0:00 / 0:00');
+  });
+
   test('WASM mode produces audio output', async ({ page }) => {
     await page.goto(GAME_PATH);
     await page.waitForTimeout(800);
