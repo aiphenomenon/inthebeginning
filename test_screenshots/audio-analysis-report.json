@@ -1,0 +1,35 @@
+{
+  "timestamp": "2026-04-04T21:49:50.711Z",
+  "modes": {
+    "mp3": {
+      "rms": 0.05986,
+      "peak": 0.303253,
+      "hasAudio": true,
+      "frames": 132080,
+      "sampleRate": 44100,
+      "estFreq": 363.4,
+      "zeroCrossings": 2177,
+      "wavFile": "/home/claude/projects/inthebeginning/test_screenshots/audio_report-mp3_1775339398117.wav"
+    },
+    "midi": {
+      "rms": 0.014494,
+      "peak": 0.100677,
+      "hasAudio": true,
+      "frames": 132096,
+      "sampleRate": 44100,
+      "estFreq": 395.6,
+      "zeroCrossings": 2370,
+      "wavFile": "/home/claude/projects/inthebeginning/test_screenshots/audio_report-midi_1775339410561.wav"
+    },
+    "synth": {
+      "rms": 0.008999,
+      "peak": 0.05423,
+      "hasAudio": true,
+      "frames": 132096,
+      "sampleRate": 44100,
+      "estFreq": 230.2,
+      "zeroCrossings": 1379,
+      "wavFile": "/home/claude/projects/inthebeginning/test_screenshots/audio_report-synth_1775339421009.wav"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-04-04T21:51:34.311Z",
+  "jsSynth": {
+    "rms": 0.012375,
+    "peak": 0.067291,
+    "hasAudio": true,
+    "frames": 132608,
+    "sampleRate": 44100,
+    "estFreq": 76.3,
+    "zeroCrossings": 459
+  },
+  "wasmSynth": {
+    "rms": 0.017138,
+    "peak": 0.084045,
+    "hasAudio": true,
+    "frames": 132096,
+    "sampleRate": 44100,
+    "estFreq": 388.3,
+    "zeroCrossings": 2326
+  },
+  "wasmAvailable": true
+}
