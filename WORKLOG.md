@@ -41,6 +41,14 @@ music generation directly in the browser. Different seeds to the same
 algorithm would generate similarly high quality music, influenced by
 different statistical samples from the MIDI library.
 
+### Mobile / Touch / Multi-Player
+
+| # | Category | Issue | Status | Notes |
+|---|----------|-------|--------|-------|
+| 14 | Touch | 2P flick-up: allow from lower 1/9th of each player's corner | Open | V47 — don't require precise tap, allow proximity |
+| 15 | 3D | 3D mode: player movement farther/nearer in manifold | Open | V47 — move up-screen = farther in 3D; jumps score relative to 3D position |
+| 16 | 3D | Objects vanishing at manifold edge where player is | Open | V47 — objects must disappear at player's Y, not just screen bottom; coordinate with #15 |
+
 ### Known Issues (browser limitations, not fixable from JS)
 
 | # | Issue | Workaround |
@@ -62,6 +70,9 @@ different statistical samples from the MIDI library.
 | T6 | Targeted test execution via blast radius analysis | Done | V45: tools/quick-test.sh with git diff |
 | T7 | Pytest markers (unit, integration, e2e, audio, wasm) | Done | V45: pytest.ini + conftest.py |
 | T8 | Pre-existing test fix: 12 vs 24 note JSONs | Done | V46: test_notes_files expects 24 (v3+v4) |
+| T9 | Firefox + WebKit browser verification | Open | V47: Playwright can test Firefox + WebKit on Linux |
+| T10 | Mobile/tablet viewport E2E tests | Open | V47: iPhone 16 (390×844), iPad (820×1180) |
+| T11 | Touch interaction E2E tests | Open | V47: tap, swipe, seek via touch on mobile viewports |
 
 ---
 
