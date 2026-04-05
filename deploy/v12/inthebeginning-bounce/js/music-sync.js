@@ -24,6 +24,7 @@ const AUDIO_MODE = {
   MIDI: 'midi',
   SYNTH: 'synth',
   WASM: 'wasm',
+  HIFI: 'hifi',
 };
 
 class MusicSync {
@@ -212,6 +213,8 @@ class MusicSync {
           return this.musicGenerator.getCurrentTime();
         }
         return this.wasmSynth ? this.wasmSynth.getCurrentTime() : 0;
+      case AUDIO_MODE.HIFI:
+        return this.hifiGenerator ? this.hifiGenerator.getCurrentTime() : 0;
       case AUDIO_MODE.MP3:
       default:
         return this.audioElement ? (this.audioElement.currentTime || 0) : 0;
@@ -234,6 +237,8 @@ class MusicSync {
           return this.musicGenerator.getDuration();
         }
         return this.wasmSynth ? this.wasmSynth.getDuration() : 0;
+      case AUDIO_MODE.HIFI:
+        return this.hifiGenerator ? this.hifiGenerator.getDuration() : 0;
       case AUDIO_MODE.MP3:
       default:
         return this.audioElement ? (this.audioElement.duration || 0) : 0;

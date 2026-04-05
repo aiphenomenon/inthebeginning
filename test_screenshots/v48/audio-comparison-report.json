@@ -1,0 +1,32 @@
+{
+  "timestamp": "2026-04-05T16:56:26.399Z",
+  "modes": {
+    "mp3": {
+      "rms": 0,
+      "peak": 0,
+      "hasAudio": false,
+      "frames": 132096,
+      "sampleRate": 44100,
+      "estFreq": 0,
+      "zeroCrossings": 0
+    },
+    "synth": {
+      "rms": 0,
+      "peak": 0,
+      "hasAudio": false,
+      "frames": 16459,
+      "sampleRate": 44100,
+      "estFreq": 0,
+      "zeroCrossings": 0
+    },
+    "hifi": {
+      "rms": 0,
+      "peak": 0,
+      "hasAudio": false,
+      "frames": 16460,
+      "sampleRate": 44100,
+      "estFreq": 0,
+      "zeroCrossings": 0
+    }
+  }
+}

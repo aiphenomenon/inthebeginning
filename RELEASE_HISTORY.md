@@ -4,6 +4,50 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.48.0 — 2026-04-05 — HiFi SoundFont Mode (Album-Quality Browser Audio)
+
+### Summary
+True album-quality music generation in the browser. SpessaSynth (Apache-2.0,
+pure TypeScript) renders FluidR3_GM.sf2 (142MB, MIT) through AudioWorklet.
+HiFi Generator ports the Python radio_engine's MIDI fragment sampling
+algorithm — selecting and recombining fragments from 1,854 classical MIDI
+files with harmonic consonance, rondo structures, and cosmic epoch mapping.
+
+### Audio Quality Comparison
+| Mode | RMS | Peak | Quality Source |
+|------|-----|------|---------------|
+| MP3 Album | 0.060 | 0.303 | Pre-rendered FluidSynth + radio_engine |
+| **HiFi** | **0.043** | **0.252** | **Real-time SpessaSynth + FluidR3_GM** |
+| MIDI | 0.014 | 0.101 | SampleBank (60 MP3 samples) |
+| Synth | 0.009 | 0.054 | SampleBank (60 MP3 samples) |
+
+### Components
+- **spessasynth_lib v4.2.9** (Apache-2.0) — full GM SoundFont synthesizer
+  with AudioWorklet, modulator support, SF2/SF3 loading
+- **FluidR3_GM.sf2** (142MB, MIT) — GM SoundFont via Git LFS
+- **hifi-generator.js** (~700 lines) — ports radio_engine.py's MIDI
+  fragment sampling, harmonic consonance, rondo structures, epoch mapping
+- **spessa-bridge.js** (~200 lines) — adapter to game interfaces
+
+### Algorithm Ports (Python → JavaScript)
+15 algorithms ported from radio_engine.py including: MIDI fragment
+sampling (sha256-seeded file selection, loop friendliness scoring),
+harmonic consonance (Helmholtz rules), 7 rondo forms, 24+ world
+musical scales, 13 cosmic epoch configurations, diatonic chord quality.
+Tracked in docs/port_tracking.md.
+
+### Tests
+- 80 E2E tests pass (66 game + 6 WASM + 6 HiFi + 2 audio)
+- 809 Python tests pass
+- HiFi-specific: option exists, epoch name shown, time display works,
+  grid view, graceful fallback, credits attribution
+
+### Attribution
+SpessaSynth and FluidR3_GM.sf2 credited in the game's Credits overlay
+with license info and links.
+
+---
+
 ## v0.47.0 — 2026-04-05 — WASM Overhaul + Seek Tests + Mobile Viewports
 
 ### Summary

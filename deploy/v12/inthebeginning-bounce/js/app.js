@@ -787,6 +787,97 @@ class CosmicRunnerApp {
         if (this.songTitleDisplay) this.songTitleDisplay.textContent = wasmTrackName;
         break;
       }
+      case 'hifi': {
+        // HiFi mode: SpessaSynth + FluidR3_GM.sf2 SoundFont rendering
+        // with MIDI fragment sampling from 1,800+ classical pieces.
+        // Produces album-quality audio matching the Python radio_engine pipeline.
+        this.player.setMode(AUDIO_MODE.HIFI);
+
+        // Initialize SpessaBridge with SoundFont
+        if (!this.player._spessaBridge) {
+          this.player._spessaBridge = new SpessaBridge();
+        }
+
+        // Show loading status
+        if (this.hudTrack) this.hudTrack.textContent = 'Loading SoundFont...';
+        this.player._spessaBridge.onProgress = (loaded, total) => {
+          if (this.hudTrack) {
+            this.hudTrack.textContent = `Loading SoundFont: ${Math.round(loaded / 1048576)}/${Math.round(total / 1048576)} MB`;
+          }
+        };
+
+        const sf2Paths = [
+          '../../shared/audio/soundfonts/FluidR3_GM.sf2',
+          '../shared/audio/soundfonts/FluidR3_GM.sf2',
+          'audio/soundfonts/FluidR3_GM.sf2',
+        ];
+
+        let sf2Loaded = false;
+        for (const sf2Path of sf2Paths) {
+          try {
+            const testResp = await fetch(sf2Path, { method: 'HEAD' });
+            if (testResp.ok) {
+              sf2Loaded = await this.player._spessaBridge.init(sf2Path);
+              if (sf2Loaded) break;
+            }
+          } catch (e) { /* try next path */ }
+        }
+
+        if (!sf2Loaded) {
+          console.warn('HiFi: SoundFont not found, falling back to Synth mode');
+          if (this.hudTrack) this.hudTrack.textContent = 'SoundFont unavailable — using Synth';
+          // Fall back to regular synth
+          this.player.setMode(AUDIO_MODE.SYNTH);
+          this.player.musicGenerator.seed = Date.now();
+          this.player.musicGenerator.generate();
+          this.player.musicGenerator._synth = this.player._synth;
+          await this.player.play();
+          break;
+        }
+
+        // Initialize HiFi generator
+        if (!this.player._hifiGenerator) {
+          this.player._hifiGenerator = new HiFiGenerator(this.player._spessaBridge);
+        }
+        this.musicSync.hifiGenerator = this.player._hifiGenerator;
+
+        // Load MIDI catalog for fragment sampling
+        const catalogPaths = [
+          '../../shared/audio/midi/midi_catalog.json',
+          '../shared/audio/midi/midi_catalog.json',
+          'audio/midi_catalog.json',
+        ];
+        for (const catPath of catalogPaths) {
+          try {
+            const testResp = await fetch(catPath, { method: 'HEAD' });
+            if (testResp.ok) {
+              const baseUrl = catPath.replace(/\/[^/]*$/, '');
+              await this.player._hifiGenerator.loadCatalog(catPath, baseUrl);
+              break;
+            }
+          } catch (e) { /* try next */ }
+        }
+
+        // Wire callbacks
+        this.player._hifiGenerator.onNoteEvent = (events) => {
+          if (this.player.onNoteEvent) this.player.onNoteEvent(events);
+        };
+        this.player._hifiGenerator.onTrackEnd = () => {
+          if (this.player.onTrackChange) this.player.onTrackChange(-1);
+        };
+
+        // Generate and play (default seed: 42)
+        this.player._hifiGenerator.generate(42);
+        await this.player._hifiGenerator.play();
+        this.player.isPlaying = true;
+        this.player._startTimeLoop(); // Start time display updates
+
+        // Set initial HUD
+        const hifiTrackName = this.player._hifiGenerator.getCurrentTrackName() || 'HiFi';
+        if (this.hudTrack) this.hudTrack.textContent = hifiTrackName;
+        if (this.songTitleDisplay) this.songTitleDisplay.textContent = hifiTrackName;
+        break;
+      }
       case 'mp3':
       default:
         if (this.musicLoaded && this.musicSync.tracks.length > 0) {
@@ -903,7 +994,7 @@ class CosmicRunnerApp {
       }
 
       this._updateTrackListHighlight(trackIndex);
-    } else if (this.soundMode === 'midi' || this.soundMode === 'synth' || this.soundMode === 'wasm') {
+    } else if (this.soundMode === 'midi' || this.soundMode === 'synth' || this.soundMode === 'wasm' || this.soundMode === 'hifi') {
       // MIDI/Synth/WASM mode: advance level based on internal track counter
       this._midiSynthTrackCount = (this._midiSynthTrackCount || 0) + 1;
       const level = this._midiSynthTrackCount % 12;
@@ -914,6 +1005,11 @@ class CosmicRunnerApp {
         const title = info ? `${info.composer || 'Unknown'} — ${info.name || 'MIDI'}` : 'MIDI';
         if (this.hudTrack) this.hudTrack.textContent = title;
         if (this.songTitleDisplay) this.songTitleDisplay.textContent = title;
+      } else if (this.soundMode === 'hifi') {
+        // HiFi uses HiFiGenerator for epoch names
+        const trackName = this.player?._hifiGenerator?.getCurrentTrackName() || 'HiFi';
+        if (this.hudTrack) this.hudTrack.textContent = trackName;
+        if (this.songTitleDisplay) this.songTitleDisplay.textContent = trackName;
       } else {
         // Synth and WASM both use MusicGenerator for composition
         const trackName = this.player?.musicGenerator?.getCurrentTrackName() || 'Synth';
