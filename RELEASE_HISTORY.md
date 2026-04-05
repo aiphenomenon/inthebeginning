@@ -4,6 +4,58 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.47.0 — 2026-04-05 — WASM Overhaul + Seek Tests + Mobile Viewports
+
+### Summary
+Made WASM mode fully functional with Python-quality audio via hybrid
+architecture: MusicGenerator composes (44 scales, 12 epochs, 25 rhythms),
+JS SampleBank plays with 60 real MP3 instrument samples. Fixed 2 bugs,
+added playhead seek tests across all 4 modes, mobile/tablet viewport
+tests (iPhone 16, iPad), and WASM mode combination tests. Deploy v12.
+
+### Bug Fixes
+- **#6 WASM HUD**: Added `wasm` case to `_onTrackChange()`, set initial
+  track name, routed time through MusicGenerator. Now shows "Quantum
+  Fluctuation" + "0:06 / 5:00" instead of empty/0:00.
+- **#7 Raw instrument names**: `cleanInstrumentName()` strips synthesis
+  suffixes. "koto_v0_additive_32" → "Koto", "warm_pad" → "Warm Pad".
+- **Synth HUD**: Also fixed synth mode initial track name (same gap).
+
+### WASM Audio Parity (#10 + #13)
+Hybrid JS+WASM architecture confirmed working:
+- MusicGenerator generates notes with epoch-appropriate instruments
+- JS SampleBank plays them with 60 real MP3 samples
+- WASM AudioWorklet provides low-latency additive synthesis layer
+- Audio output identical: WASM RMS=0.020, JS Synth RMS=0.020
+- All 3 display modes work: game (runner+obstacles), player (HUD+notes),
+  grid (2D/3D note blocks)
+
+### New Tests (72 total, was 47)
+- **Playhead Seeking** (5 tests): all 4 modes + programmatic seek
+- **Mobile iPhone 16** (5 tests): 390×844 portrait — title, game, player, grid, help
+- **Mobile Landscape** (2 tests): 844×390
+- **Tablet iPad** (4 tests): 820×1180 — title, game, grid, overlays
+- **WASM Combinations** (3 tests): wasm/game, wasm/player, wasm/grid
+- **WASM HUD** (1 test): track name + time verification
+
+### Deploy
+- `deploy/v12/inthebeginning-bounce/` created with all fixes
+- Shared audio paths verified (../../shared/audio/ resolves correctly)
+
+### New WORKLOG Items
+- #14: 2P flick-up from lower 1/9th corners
+- #15: 3D mode player movement in manifold
+- #16: Object vanishing at manifold edge
+- T9: Firefox + WebKit browser verification
+- T11: Touch interaction E2E tests
+
+### Test Results
+- 809 Python tests pass, 0 failures
+- 72 game/WASM E2E tests pass
+- 6 audio E2E tests pass (with xvfb-run)
+
+---
+
 ## v0.46.0 — 2026-04-05 — Journal Capture Hook + Test Fix
 
 ### Summary

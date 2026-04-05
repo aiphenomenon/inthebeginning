@@ -17,8 +17,8 @@ current priorities.
 | 3 | Gameplay | Grid mode: no final score when non-infinite ends | Open | V36 #7 |
 | 4 | Gameplay | Emoji should not cross lanes (stay in their lane) | Open | V36 #11 |
 | 5 | Gameplay | Key 3 (grid mode switch) doesn't work in gameplay | Done | V45 E2E confirms key 3 works |
-| 6 | WASM | WASM mode: no track info or time displayed | Open | V45 BUG 1 — HUD empty, 0:00/0:00 |
-| 7 | UI | MP3 player note info shows raw internal instrument names | Open | V45 BUG 2 — e.g. "koto_v0_additive_32" |
+| 6 | WASM | WASM mode: no track info or time displayed | Done | V47: added wasm case to _onTrackChange, routed time via MusicGenerator |
+| 7 | UI | MP3 player note info shows raw internal instrument names | Done | V47: cleanInstrumentName() strips _v0_additive_N suffixes |
 | 8 | UI | Voice/Choir instrument family unchecked by default | Open | V45 BUG 3 — may be intentional |
 
 ### Audio / Instruments
@@ -26,10 +26,10 @@ current priorities.
 | # | Category | Issue | Status | Notes |
 |---|----------|-------|--------|-------|
 | 9 | MIDI | General MIDI instrument quality — proper GM mapping | Done | V45 verified: 128 programs → 60 MP3 samples |
-| 10 | WASM | General MIDI instruments in WASM mode | Open | WASM has only 13 additive timbres, no MP3 samples |
+| 10 | WASM | General MIDI instruments in WASM mode | Done | V47: WASM routes through JS SampleBank (60 MP3 samples) |
 | 11 | Synth | Evaluate GM instrument quality in Synth mode | Done | V45: Synth routes through SynthEngine → same sample bank |
 | 12 | Audio | Instrument Soundbank modal text improvements | Open | V36 #21 |
-| 13 | WASM | WASM-to-Python music parity — full album-quality generation | Open | Priority future work; see note below |
+| 13 | WASM | WASM-to-Python music parity — full album-quality generation | Done | V47: hybrid — MusicGenerator composes, SampleBank plays 60 MP3 samples |
 
 **WASM Music Parity Note**: The Python radio_engine produces album-quality
 30-minute music renders (now 12 MP3 tracks). A future WASM implementation
@@ -65,13 +65,13 @@ different statistical samples from the MIDI library.
 | T1 | Local-first testing — avoid burning GitHub CI minutes | Done | V45: tools/quick-test.sh, pytest.ini |
 | T2 | End-to-end visual testing with Playwright | Done | V45: 47 game tests + 11 audio/WASM tests |
 | T3 | Audio waveform driver for headless testing | Done | V45: PulseAudio virtual sink + spectral analysis |
-| T4 | Playhead seeking in MP3 mode (requires audio loaded) | Open | Now possible with PulseAudio; needs test |
+| T4 | Playhead seeking tests (all modes) | Done | V47: 5 tests — MP3/MIDI/Synth/WASM seek + time display |
 | T5 | Note data completeness tests | Done | 112 tests, v43 |
 | T6 | Targeted test execution via blast radius analysis | Done | V45: tools/quick-test.sh with git diff |
 | T7 | Pytest markers (unit, integration, e2e, audio, wasm) | Done | V45: pytest.ini + conftest.py |
 | T8 | Pre-existing test fix: 12 vs 24 note JSONs | Done | V46: test_notes_files expects 24 (v3+v4) |
 | T9 | Firefox + WebKit browser verification | Open | V47: Playwright can test Firefox + WebKit on Linux |
-| T10 | Mobile/tablet viewport E2E tests | Open | V47: iPhone 16 (390×844), iPad (820×1180) |
+| T10 | Mobile/tablet viewport E2E tests | Done | V47: iPhone 16 portrait/landscape + iPad — 11 tests |
 | T11 | Touch interaction E2E tests | Open | V47: tap, swipe, seek via touch on mobile viewports |
 
 ---
@@ -289,4 +289,4 @@ use apps/inthebeginning-bounce/ as the canonical source.
 
 ## Last Updated
 
-v46 — 2026-04-05
+v47 — 2026-04-05
