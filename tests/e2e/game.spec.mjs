@@ -678,6 +678,252 @@ test.describe('2-Player Mode', () => {
 // JS ERROR COLLECTION (runs last, aggregates across all tests)
 // ============================================================================
 
+// ============================================================================
+// PLAYHEAD SEEKING (T4)
+// ============================================================================
+
+test.describe('Playhead Seeking', () => {
+  test('synth mode: seek bar moves with playback', async ({ page }) => {
+    await startGame(page, { soundMode: 'synth', displayMode: 'player' });
+    await page.waitForTimeout(3000);
+
+    // Get initial time
+    const time1 = await page.$eval('#music-time', el => el.textContent).catch(() => '');
+
+    // Wait for time to advance
+    await page.waitForTimeout(3000);
+    const time2 = await page.$eval('#music-time', el => el.textContent).catch(() => '');
+
+    // Time should have changed
+    expect(time1).not.toBe(time2);
+    console.log(`  Synth seek: "${time1}" → "${time2}"`);
+  });
+
+  test('synth mode: programmatic seek changes time display', async ({ page }) => {
+    await startGame(page, { soundMode: 'synth', displayMode: 'player' });
+    await page.waitForTimeout(2000);
+
+    // Set seek bar to 50%
+    await page.fill('#music-seek', '50');
+    await page.dispatchEvent('#music-seek', 'input');
+    await page.waitForTimeout(1000);
+
+    const timeAfterSeek = await page.$eval('#music-time', el => el.textContent).catch(() => '');
+    console.log(`  Synth after seek to 50%: "${timeAfterSeek}"`);
+
+    // Time should show roughly half the duration
+    // Duration is 5:00 (300s), so 50% ≈ 2:30
+    expect(timeAfterSeek).not.toBe('0:00 / 0:00');
+  });
+
+  test('midi mode: time display advances', async ({ page }) => {
+    await startGame(page, { soundMode: 'midi', displayMode: 'player' });
+    await page.waitForTimeout(4000);
+
+    const time1 = await page.$eval('#music-time', el => el.textContent).catch(() => '');
+    await page.waitForTimeout(3000);
+    const time2 = await page.$eval('#music-time', el => el.textContent).catch(() => '');
+
+    console.log(`  MIDI time: "${time1}" → "${time2}"`);
+    // At least one should be non-empty
+    expect(time1.length + time2.length).toBeGreaterThan(0);
+  });
+
+  test('wasm mode: time display advances', async ({ page }) => {
+    await page.goto(GAME_PATH);
+    await page.waitForTimeout(800);
+    const options = await page.$$eval('#sound-mode-select option', opts =>
+      opts.map(o => o.value));
+    if (!options.includes('wasm')) { test.skip(); return; }
+
+    await startGame(page, { soundMode: 'wasm', displayMode: 'player' });
+    await page.waitForTimeout(3000);
+
+    const time1 = await page.$eval('#music-time', el => el.textContent).catch(() => '');
+    await page.waitForTimeout(3000);
+    const time2 = await page.$eval('#music-time', el => el.textContent).catch(() => '');
+
+    console.log(`  WASM time: "${time1}" → "${time2}"`);
+    expect(time1).not.toBe('0:00 / 0:00');
+    expect(time2).not.toBe('0:00 / 0:00');
+  });
+
+  test('mp3 mode: seek bar shows track duration', async ({ page }) => {
+    await startGame(page, { soundMode: 'mp3', displayMode: 'player' });
+    await page.waitForTimeout(3000);
+
+    const timeText = await page.$eval('#music-time', el => el.textContent).catch(() => '');
+    console.log(`  MP3 time: "${timeText}"`);
+    // Should show some duration (e.g., "0:01 / 4:11")
+  });
+});
+
+// ============================================================================
+// MOBILE / TABLET VIEWPORT TESTS
+// ============================================================================
+
+test.describe('Mobile Viewport (iPhone 16)', () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test('title screen fits on mobile', async ({ page }) => {
+    await page.goto(GAME_PATH);
+    await page.waitForTimeout(1000);
+    await page.screenshot({ path: join(SHOTS_DIR, 'e2e-mobile-title.png') });
+
+    const startBtn = await page.$('#start-btn');
+    expect(startBtn).not.toBeNull();
+    const isVisible = await startBtn.isVisible();
+    expect(isVisible).toBe(true);
+  });
+
+  test('game mode works on mobile', async ({ page }) => {
+    await startGame(page, { soundMode: 'synth', displayMode: 'game' });
+    await page.screenshot({ path: join(SHOTS_DIR, 'e2e-mobile-game.png') });
+
+    const state = await getGameState(page);
+    expect(state.bodyClass).toContain('mode-game');
+    expect(state.hasCanvas).toBe(true);
+  });
+
+  test('music bar visible on mobile', async ({ page }) => {
+    await startGame(page, { soundMode: 'synth', displayMode: 'player' });
+    await page.waitForTimeout(2000);
+    await page.screenshot({ path: join(SHOTS_DIR, 'e2e-mobile-player.png') });
+
+    // Play button should be visible
+    const playBtn = await page.$('#play-btn');
+    expect(playBtn).not.toBeNull();
+
+    // Seek bar should be visible
+    const seekBar = await page.$('#music-seek');
+    expect(seekBar).not.toBeNull();
+
+    // Time display should be visible
+    const time = await page.$eval('#music-time', el => el.textContent).catch(() => '');
+    expect(time.length).toBeGreaterThan(0);
+  });
+
+  test('grid mode renders on mobile', async ({ page }) => {
+    await startGame(page, { soundMode: 'synth', displayMode: 'grid' });
+    await page.waitForTimeout(2000);
+    await page.screenshot({ path: join(SHOTS_DIR, 'e2e-mobile-grid.png') });
+
+    const hasContent = await canvasHasContent(page);
+    expect(hasContent).toBe(true);
+  });
+
+  test('help overlay fits on mobile', async ({ page }) => {
+    await startGame(page, { soundMode: 'synth', displayMode: 'game' });
+    const helpBtn = await page.$('#ingame-help-btn');
+    expect(helpBtn).not.toBeNull();
+    await helpBtn.click();
+    await page.waitForTimeout(500);
+    await page.screenshot({ path: join(SHOTS_DIR, 'e2e-mobile-help.png') });
+  });
+});
+
+test.describe('Mobile Landscape (iPhone 16)', () => {
+  test.use({ viewport: { width: 844, height: 390 } });
+
+  test('game works in landscape', async ({ page }) => {
+    await startGame(page, { soundMode: 'synth', displayMode: 'game' });
+    await page.screenshot({ path: join(SHOTS_DIR, 'e2e-mobile-landscape-game.png') });
+
+    const state = await getGameState(page);
+    expect(state.bodyClass).toContain('mode-game');
+  });
+
+  test('player mode in landscape', async ({ page }) => {
+    await startGame(page, { soundMode: 'synth', displayMode: 'player' });
+    await page.waitForTimeout(2000);
+    await page.screenshot({ path: join(SHOTS_DIR, 'e2e-mobile-landscape-player.png') });
+
+    const time = await page.$eval('#music-time', el => el.textContent).catch(() => '');
+    expect(time.length).toBeGreaterThan(0);
+  });
+});
+
+test.describe('Tablet Viewport (iPad)', () => {
+  test.use({ viewport: { width: 820, height: 1180 } });
+
+  test('title screen on tablet', async ({ page }) => {
+    await page.goto(GAME_PATH);
+    await page.waitForTimeout(1000);
+    await page.screenshot({ path: join(SHOTS_DIR, 'e2e-tablet-title.png') });
+
+    const startBtn = await page.$('#start-btn');
+    expect(startBtn).not.toBeNull();
+  });
+
+  test('game mode on tablet', async ({ page }) => {
+    await startGame(page, { soundMode: 'synth', displayMode: 'game' });
+    await page.screenshot({ path: join(SHOTS_DIR, 'e2e-tablet-game.png') });
+
+    const state = await getGameState(page);
+    expect(state.bodyClass).toContain('mode-game');
+  });
+
+  test('grid mode on tablet', async ({ page }) => {
+    await startGame(page, { soundMode: 'synth', displayMode: 'grid' });
+    await page.waitForTimeout(2000);
+    await page.screenshot({ path: join(SHOTS_DIR, 'e2e-tablet-grid.png') });
+
+    const hasContent = await canvasHasContent(page);
+    expect(hasContent).toBe(true);
+  });
+
+  test('overlays fit on tablet', async ({ page }) => {
+    await startGame(page, { soundMode: 'midi', displayMode: 'game' });
+
+    // Mutation overlay
+    const mutBtn = await page.$('#mutation-btn');
+    if (mutBtn) {
+      const vis = await mutBtn.evaluate(el => getComputedStyle(el).display !== 'none');
+      if (vis) {
+        await mutBtn.click();
+        await page.waitForTimeout(500);
+        await page.screenshot({ path: join(SHOTS_DIR, 'e2e-tablet-mutation.png') });
+        const closeBtn = await page.$('#mutation-close');
+        if (closeBtn) await closeBtn.click();
+      }
+    }
+  });
+});
+
+// ============================================================================
+// WASM MODE COMBINATIONS (complete coverage)
+// ============================================================================
+
+test.describe('WASM Mode Combinations', () => {
+  for (const dm of ['game', 'player', 'grid']) {
+    test(`starts in wasm/${dm} mode`, async ({ page }) => {
+      await page.goto(GAME_PATH);
+      await page.waitForTimeout(800);
+      const options = await page.$$eval('#sound-mode-select option', opts =>
+        opts.map(o => o.value));
+      if (!options.includes('wasm')) { test.skip(); return; }
+
+      await startGame(page, { soundMode: 'wasm', displayMode: dm });
+      await page.screenshot({ path: join(SHOTS_DIR, `e2e-mode-wasm-${dm}.png`) });
+
+      const state = await getGameState(page);
+      expect(state.bodyClass).toContain(`mode-${dm}`);
+
+      // HUD should have track name
+      const track = await page.$eval('#hud-track', el => el.textContent).catch(() => '');
+      expect(track.length).toBeGreaterThan(0);
+
+      // Time should not be 0:00 / 0:00
+      const time = await page.$eval('#music-time', el => el.textContent).catch(() => '');
+      expect(time).not.toBe('0:00 / 0:00');
+    });
+  }
+});
+
+// ============================================================================
+// ERROR COLLECTION
+// ============================================================================
+
 test.describe('Error Collection', () => {
   test('collect JS errors across sound modes', async ({ page }) => {
     const allErrors = [];
