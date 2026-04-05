@@ -4,6 +4,32 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.46.0 — 2026-04-05 — Journal Capture Hook + Test Fix
+
+### Summary
+Fixed journal verbatim quality by adding a PostToolUse hook that captures
+every tool call in real-time to `.tool_capture.jsonl`. Tool parameters and
+output are now verbatim, not reconstructed from memory. Fixed the pre-existing
+`test_twelve_notes_files` failure (expects 24 JSONs for v3+v4 note data).
+
+### Journal Capture System
+- `journal-capture.sh` PostToolUse hook fires on all tool types
+- Captures verbatim `tool_input` and `tool_response` to JSONL
+- Truncation at capture time (12K chars / 100 lines per field)
+- Real UTC timestamps from `datetime.now(timezone.utc)`
+- Journal assembly reads capture file instead of reconstructing from memory
+
+### Test Fix
+- `test_twelve_notes_files` → `test_notes_files`: expects 24 (12 v3 + 12 v4)
+- 809 tests pass, 0 failures
+
+### Timestamp Accuracy
+- Hook-level timestamps: precise (real system clock UTC)
+- Turn-level timestamps: approximate (assigned at journal assembly time)
+- CT derived from UTC-5 (CDT)
+
+---
+
 ## v0.45.0 — 2026-04-04 — Testing Infrastructure + GM Verification
 
 ### Summary

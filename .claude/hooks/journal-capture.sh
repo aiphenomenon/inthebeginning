@@ -20,7 +20,7 @@ CAPTURE_FILE="$PROJECT_ROOT/session_logs/.tool_capture.jsonl"
 TMPFILE=$(mktemp)
 cat > "$TMPFILE"
 
-python3 << 'PYEOF' "$TMPFILE" "$CAPTURE_FILE"
+python3 - "$TMPFILE" "$CAPTURE_FILE" << 'PYEOF'
 import json, sys, os
 from datetime import datetime, timezone
 

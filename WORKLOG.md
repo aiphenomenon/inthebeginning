@@ -61,7 +61,7 @@ different statistical samples from the MIDI library.
 | T5 | Note data completeness tests | Done | 112 tests, v43 |
 | T6 | Targeted test execution via blast radius analysis | Done | V45: tools/quick-test.sh with git diff |
 | T7 | Pytest markers (unit, integration, e2e, audio, wasm) | Done | V45: pytest.ini + conftest.py |
-| T8 | Pre-existing test fix: 12 vs 24 note JSONs | Open | test_deploy_assets expects 12, finds 24 |
+| T8 | Pre-existing test fix: 12 vs 24 note JSONs | Done | V46: test_notes_files expects 24 (v3+v4) |
 
 ---
 
@@ -278,4 +278,4 @@ use apps/inthebeginning-bounce/ as the canonical source.
 
 ## Last Updated
 
-v45 — 2026-04-04
+v46 — 2026-04-05

@@ -202,10 +202,11 @@ class TestSharedAlbumTracks(unittest.TestCase):
         mp3s = [f for f in os.listdir(self.tracks_dir) if f.endswith(".mp3")]
         self.assertEqual(len(mp3s), 12, f"Expected 12 MP3s, found {len(mp3s)}")
 
-    def test_twelve_notes_files(self):
-        """Must have exactly 12 notes JSON files."""
+    def test_notes_files(self):
+        """Must have note JSON files for all 12 tracks (v3 and v4 variants)."""
         jsons = [f for f in os.listdir(self.tracks_dir) if f.endswith(".json")]
-        self.assertEqual(len(jsons), 12, f"Expected 12 note JSONs, found {len(jsons)}")
+        self.assertEqual(len(jsons), 24,
+                         f"Expected 24 note JSONs (12 v3 + 12 v4), found {len(jsons)}")
 
     def test_mp3_files_non_empty(self):
         """Album MP3 files must be substantial (>1MB)."""
