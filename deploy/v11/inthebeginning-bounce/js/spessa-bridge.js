@@ -76,13 +76,11 @@ class SpessaBridge {
       await this._synth.soundBankManager.addSoundBank(sf2Buffer, 'gm');
       await this._synth.isReady;
 
-      // Create master gain node
+      // Connect synth output to destination through a gain node
       this._masterGain = this._ctx.createGain();
       this._masterGain.gain.value = 0.8;
-
-      // Connect synth output through gain to destination
-      // SpessaSynth connects to ctx.destination by default;
-      // we can adjust volume via its built-in controls
+      this._masterGain.connect(this._ctx.destination);
+      this._synth.connect(this._masterGain);
 
       this.ready = true;
       this.sf2Loaded = true;

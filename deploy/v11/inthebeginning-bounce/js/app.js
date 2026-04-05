@@ -869,6 +869,8 @@ class CosmicRunnerApp {
         // Generate and play (default seed: 42)
         this.player._hifiGenerator.generate(42);
         await this.player._hifiGenerator.play();
+        this.player.isPlaying = true;
+        this.player._startTimeLoop(); // Start time display updates
 
         // Set initial HUD
         const hifiTrackName = this.player._hifiGenerator.getCurrentTrackName() || 'HiFi';
