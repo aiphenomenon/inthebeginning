@@ -274,6 +274,7 @@ use apps/inthebeginning-bounce/ as the canonical source.
 | S2 | Session-start hook shows top work items | Done | V44 |
 | S3 | Stop hook verifies WORKLOG.md updated on game changes | Open | |
 | S4 | CLAUDE.md test tier documentation | Done | V45 |
+| S5 | OSI package evaluation steering guidance | Open | V48: document decision process for adopting vs porting |
 
 ---
 
