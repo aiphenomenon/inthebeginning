@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-04-05T12:18:21.168Z",
+  "timestamp": "2026-04-05T16:58:06.071Z",
   "jsSynth": {
     "rms": 0,
     "peak": 0,
     "hasAudio": false,
-    "frames": 16465,
+    "frames": 16424,
     "sampleRate": 44100,
     "estFreq": 0,
     "zeroCrossings": 0
@@ -13,7 +13,7 @@
     "rms": 0,
     "peak": 0,
     "hasAudio": false,
-    "frames": 16445,
+    "frames": 16447,
     "sampleRate": 44100,
     "estFreq": 0,
     "zeroCrossings": 0
