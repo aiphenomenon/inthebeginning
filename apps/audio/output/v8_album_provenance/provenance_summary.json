@@ -1,0 +1,83 @@
+{
+  "album": "V8 Sessions",
+  "engines": [
+    "RadioEngineV8 (seed=42)",
+    "RadioEngineV15_V8Tempo (seed=42)"
+  ],
+  "total_segments": 30,
+  "total_notes": 62910,
+  "tracks": [
+    {
+      "track": 1,
+      "title": "Ember",
+      "notes": 2626,
+      "midi_sources": []
+    },
+    {
+      "track": 2,
+      "title": "Torrent",
+      "notes": 2050,
+      "midi_sources": []
+    },
+    {
+      "track": 3,
+      "title": "Quartz",
+      "notes": 6666,
+      "midi_sources": []
+    },
+    {
+      "track": 4,
+      "title": "Tide",
+      "notes": 4629,
+      "midi_sources": []
+    },
+    {
+      "track": 5,
+      "title": "Root",
+      "notes": 5253,
+      "midi_sources": []
+    },
+    {
+      "track": 6,
+      "title": "Glacier",
+      "notes": 10231,
+      "midi_sources": []
+    },
+    {
+      "track": 7,
+      "title": "Bloom",
+      "notes": 2626,
+      "midi_sources": []
+    },
+    {
+      "track": 8,
+      "title": "Dusk",
+      "notes": 2050,
+      "midi_sources": []
+    },
+    {
+      "track": 9,
+      "title": "Coral",
+      "notes": 6666,
+      "midi_sources": []
+    },
+    {
+      "track": 10,
+      "title": "Moss",
+      "notes": 4629,
+      "midi_sources": []
+    },
+    {
+      "track": 11,
+      "title": "Thunder",
+      "notes": 5253,
+      "midi_sources": []
+    },
+    {
+      "track": 12,
+      "title": "Horizon",
+      "notes": 10231,
+      "midi_sources": []
+    }
+  ]
+}
