@@ -4,6 +4,53 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.50.0 — 2026-04-11 — HiFi Wireup Fixes + v13 Deploy (Cosmic Session)
+
+### Summary
+Fixes eight bugs reported against the v12 deploy after real GitHub Pages
+exposure. The critical fix: the SF2 SoundFont loader now detects a Git LFS
+pointer file and throws an actionable error instead of the cryptic
+`SF parsing error: Invalid chunk header! Expected "riff" got "vers"`. HiFi
+mode fallback is now visible (red HUD banner) rather than silent. Grid
+colors now work in WASM mode. Start-screen 404 noise eliminated by
+reordering probe paths. Version label bound to `APP_VERSION` in config.js
+so it can't drift. "V8 Sessions" user-facing text renamed to "Cosmic Session"
+(file names preserved). Alien favicon added.
+
+### Bug Fixes (v12 → v13)
+- **SF2 LFS pointer detection** (`spessa-bridge.js`): new
+  `_validateSoundFontBuffer` catches LFS pointer text, undersized buffers,
+  and non-RIFF magic bytes with specific error messages.
+- **Visible HiFi failure** (`app.js`): red HUD banner + `console.error` on
+  SF2 load failure; no more silent fallback to Synth.
+- **WASM grid colors** (`player.js`): `musicGenerator.onNoteEvent` gate now
+  fires for both SYNTH and WASM modes (Approach C uses MusicGenerator for
+  both).
+- **WASM velocity normalization** (`wasm-synth.js`): emitted events now use
+  normalized 0-1 velocity and string `inst`, not raw 0-127 and numeric.
+- **Piano.mp3 404 noise** (`synth-engine.js`): probe list reordered —
+  shared/instruments before legacy audio/samples.
+- **Ember.mp3 start-screen 404** (`app.js`): `audioBases` and
+  `albumJsonPaths` reordered — shared first.
+- **Version label** (`config.js` + `app.js`): `APP_VERSION = 'v13'` as
+  single source of truth; `_applyVersion()` writes title + subtitle at boot.
+- **Cosmic Session rename** (`index.html`): user-visible "V8 Sessions"
+  replaced with "Cosmic Session"; internal file names kept.
+- **Favicon** (pure stdlib): 32×32 alien-face ICO.
+
+### Regression Tests (new)
+- `tests/test_v13_deploy.py` — 21 tests (HTTP smoke + source assertions),
+  standalone or pytest.
+- `tests/test_sf2_validator.js` — 6 tests for the SF2 validator branches.
+
+### Steering
+- `CLAUDE.md`: new "Version Source of Truth" subsection documenting the
+  APP_VERSION constant and the cut checklist.
+- `apps/inthebeginning-bounce` symlink repointed from `deploy/v11/` to
+  `deploy/v13/` to match the canonical-source convention.
+
+---
+
 ## v0.48.0 — 2026-04-05 — HiFi SoundFont Mode (Album-Quality Browser Audio)
 
 ### Summary

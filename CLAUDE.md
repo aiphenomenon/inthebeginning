@@ -540,6 +540,27 @@ The `deploy/` directory is structured for **zero-build-step deployment** to GitH
 Pages. Simple filesystem copies followed by `git add`, `git commit`, `git push` --
 no build scripts, no bundlers.
 
+### Version Source of Truth
+
+The user-visible version label on the cosmic-runner / inthebeginning-bounce
+title screen is driven by `APP_VERSION` in
+`apps/inthebeginning-bounce/js/config.js`. At boot, `app.js` reads
+`APP_VERSION` and `ALBUM_DISPLAY_NAME` and writes them into `document.title`
+and the `#title-subtitle` element. Do **not** hardcode a version string in
+`index.html` — that caused v12 to ship showing "V11" on the title screen
+(see v50 session).
+
+**When cutting a new deploy version:**
+1. Bump `APP_VERSION` in `apps/inthebeginning-bounce/js/config.js`.
+2. `cp -r apps/inthebeginning-bounce deploy/vN/inthebeginning-bounce` (the
+   apps folder is a symlink to the latest deploy/vN).
+3. Repoint the `apps/inthebeginning-bounce` symlink at the new version:
+   `rm apps/inthebeginning-bounce && ln -s ../deploy/vN/inthebeginning-bounce
+   apps/inthebeginning-bounce`.
+4. Update `tests/e2e/fixtures.mjs` `GAME_PATH` to `/vN/...`.
+5. Update `tests/test_v13_deploy.py` if its hardcoded `v13` needs to move.
+6. Commit + push.
+
 ### Repository Layout
 
 ```

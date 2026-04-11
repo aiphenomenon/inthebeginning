@@ -128,7 +128,7 @@ except Exception as e:
 
 // ──── Game Page Helpers ────
 
-const GAME_PATH = '/v11/inthebeginning-bounce/index.html';
+const GAME_PATH = '/v13/inthebeginning-bounce/index.html';
 const VIZ_PATH = '/v5/visualizer/index.html';
 
 /**

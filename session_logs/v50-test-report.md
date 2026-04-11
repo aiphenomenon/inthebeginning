@@ -1,0 +1,247 @@
+# V50 Test Report — v13 Deploy Verification
+
+**Date**: 2026-04-11
+**Session log**: [v50-session.md](v50-session.md)
+**Plan**: [../future_memories/v50-plan.md](../future_memories/v50-plan.md)
+**Deploy cut**: v13 (`deploy/v13/inthebeginning-bounce/`)
+
+## Testing constraints
+
+This environment lacks:
+- A modern Node.js (only system node 12, which cannot run Playwright or
+  esprima 4 against code that uses optional chaining).
+- A headless Chromium binary.
+- PulseAudio + Xvfb for audio capture.
+- `pytest` as a standalone runner.
+
+Consequently, the usual Playwright headful + PulseAudio audio-capture suite
+(`tests/e2e/{game,hifi,audio,wasm}.spec.mjs`) could not run here. The
+verification strategy is:
+
+1. **Static HTTP serving** — real Python `http.server` serving `deploy/`
+   and assertions against the actual wire responses.
+2. **SF2 validator JS unit tests** — the core `_validateSoundFontBuffer`
+   logic extracted into a standalone node-12-compatible harness.
+3. **jsdom HTML verification** — `index.html` parsed and queried for
+   version label wireup, favicon link, rename of "V8 Sessions", and the
+   empty-subtitle placeholder.
+4. **Source-level assertions** — grep-style checks that my fixes are
+   actually present in each edited file in `deploy/v13/`.
+
+The user will do the real browser verification when deploying to GitHub
+Pages. The fixes include explicit error surfacing, so any remaining issue
+will present an actionable message rather than a cryptic one.
+
+## Results
+
+### Python integration suite — `tests/test_v13_deploy.py`
+
+**21 passed, 0 failed**
+
+```
+PASS: test_all_edited_js_files_serve
+PASS: test_app_hifi_branch_has_visible_error
+PASS: test_app_loadmusic_probes_metadata_v1_first
+PASS: test_config_has_album_display_name_cosmic_session
+PASS: test_config_has_app_version_v13
+PASS: test_favicon_serves
+PASS: test_first_album_probe_returns_200
+PASS: test_first_audio_base_probe_returns_200
+PASS: test_index_has_favicon_link
+PASS: test_index_has_no_hardcoded_v11_in_visible_text
+PASS: test_index_has_no_user_visible_v8_sessions
+PASS: test_index_html_serves
+PASS: test_piano_mp3_first_probe_returns_200
+PASS: test_player_js_wasm_gate_accepts_wasm_mode
+PASS: test_sf2_content_length_is_full_file
+PASS: test_sf2_first_four_bytes_are_riff
+PASS: test_sf2_first_probe_returns_200
+PASS: test_spessa_bridge_has_validator
+PASS: test_spessa_bridge_init_no_longer_swallows
+PASS: test_synth_engine_probes_shared_first
+PASS: test_wasm_synth_normalizes_velocity
+
+21 passed, 0 failed
+```
+
+The test is runnable standalone (`python3 tests/test_v13_deploy.py`) or
+via pytest in CI.
+
+### JS unit tests — `tests/test_sf2_validator.js`
+
+**6 passed, 0 failed**
+
+```
+PASS: null buffer is rejected as too small
+PASS: 2-byte buffer is rejected as too small
+PASS: LFS pointer is detected with specific message
+PASS: HTML response is rejected (not RIFF)
+PASS: RIFF header with too-small body is rejected
+PASS: valid RIFF with plausible size passes
+
+6 passed, 0 failed
+```
+
+These tests cover every branch of `SpessaBridge._validateSoundFontBuffer`.
+The critical case — **LFS pointer text starting with "version"** — is the
+exact failure mode the user reported in their browser:
+
+> `spessasynth.bundle.js:1 Error: SF parsing error: Invalid chunk header!
+> Expected "riff" got "vers"`
+
+The validator now catches that before it reaches SpessaSynth's parser and
+throws a message that names Git LFS directly.
+
+## Evidence — HTTP wire responses
+
+All captured from `http.server` serving the v13 deploy tree.
+
+### `GET /v13/inthebeginning-bounce/index.html`
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, ...">
+  <!-- Title and subtitle are populated at runtime from APP_VERSION /
+       ALBUM_DISPLAY_NAME in config.js (see app.js _applyVersion).  -->
+  <title>inthebeginning bounce</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+```
+
+No hardcoded V11 in the `<title>`. Favicon link present. Subtitle is an
+empty placeholder.
+
+### `GET /v13/inthebeginning-bounce/js/config.js` (first 20 lines)
+
+```javascript
+/**
+ * Configuration constants for inthebeginning bounce.
+ */
+
+/**
+ * Application version label displayed on the title screen and in the HTML
+ * title. Single source of truth — update here when cutting a new deploy.
+ * This drives `<title>` and the subtitle element at app boot time; do not
+ * hardcode a version string anywhere else in the UI.
+ */
+const APP_VERSION = 'v13';
+
+/** Album display name shown on the title screen and in credits. */
+const ALBUM_DISPLAY_NAME = 'Cosmic Session';
+
+/** Grid dimensions for the visualizer. */
+const GRID_SIZE = 64;
+```
+
+### `GET /v13/inthebeginning-bounce/favicon.ico`
+
+```
+HTTP/1.0 200 OK
+Content-type: application/octet-stream
+Content-Length: 4286
+
+file type: MS Windows icon resource - 1 icon, 32x32, 32 bits/pixel
+```
+
+Generated by hand from Python stdlib — stylized alien face, 32×32, 32-bit
+ARGB. See the generator in `session_logs/v50-session.md` for the code.
+
+### `HEAD /shared/audio/soundfonts/FluidR3_GM.sf2`
+
+```
+HTTP/1.0 200 OK
+Content-type: application/octet-stream
+Content-Length: 148398306
+Last-Modified: Sun, 05 Apr 2026 16:22:15 GMT
+```
+
+148 MB = real FluidR3_GM soundfont, not an LFS pointer. First 4 bytes
+verified as `RIFF` via partial GET.
+
+### `HEAD /shared/audio/metadata/v1/album.json`
+
+```
+HTTP/1.0 200 OK
+```
+
+First-probe hit. Previously `_loadMusic` probed `audio/album.json` first
+(404), then `tracks/album.json` (404 — album.json doesn't exist there),
+then `metadata/v1/album.json` (200). After the fix, metadata/v1 is
+probed first so there is no 404 noise on the title screen.
+
+### `HEAD /shared/audio/tracks/V8_Sessions-aiphenomenon-01-Ember.mp3`
+
+```
+HTTP/1.0 200 OK
+```
+
+First-probe hit for audioBases. Previously `audio/Ember.mp3` (404) came
+first.
+
+### `HEAD /shared/audio/instruments/piano.mp3`
+
+```
+HTTP/1.0 200 OK
+```
+
+First-probe hit for SynthEngine sample bank. Previously `audio/samples/
+piano.mp3` (404) came first — the source of the user-reported
+`synth-engine.js:491` 404 noise.
+
+## Bug-by-bug verification
+
+| # | Bug | Fix | Verified by |
+|---|---|---|---|
+| 1 | SF2 parse error "riff got vers" | Magic-byte validator in spessa-bridge.js throws actionable LFS message | `test_sf2_validator.js` 6/6, `test_spessa_bridge_has_validator` |
+| 2 | Silent HiFi → Synth fallback | Visible red HUD warning + `console.error` with per-path error list | `test_app_hifi_branch_has_visible_error` |
+| 3 | `piano.mp3` 404 console noise | Reordered `SynthEngine.initSamples` probe: shared first | `test_piano_mp3_first_probe_returns_200`, `test_synth_engine_probes_shared_first` |
+| 4 | Grid colors missing in WASM | `player.js` gate now accepts `SYNTH` **or** `WASM` for musicGenerator callbacks | `test_player_js_wasm_gate_accepts_wasm_mode` |
+| 4b | `wasm-synth` raw velocity | `(note.vel \|\| 80) / 127` normalization and string-typed `inst` | `test_wasm_synth_normalizes_velocity` |
+| 5 | `Ember.mp3` start-screen 404 | Reordered audioBases (shared first) + albumJsonPaths (metadata/v1 first) | `test_first_album_probe_returns_200`, `test_first_audio_base_probe_returns_200`, `test_app_loadmusic_probes_metadata_v1_first` |
+| 6 | Hardcoded "V11" label | `APP_VERSION = 'v13'` in config.js; populated by `app.js _applyVersion()` at boot | `test_config_has_app_version_v13`, `test_index_has_no_hardcoded_v11_in_visible_text` |
+| 7 | "V8 Sessions" visible text | Subtitle placeholder emptied; credits renamed to "Cosmic Session Album"; internal file names left unchanged | `test_index_has_no_user_visible_v8_sessions`, `test_config_has_album_display_name_cosmic_session` |
+| 8 | Missing favicon | Hand-generated 32×32 32-bit alien-face ICO via pure Python stdlib | `test_favicon_serves`, `test_index_has_favicon_link` |
+
+## What remains for in-browser verification
+
+Because we have no Chromium here, the following cannot be exercised
+locally — they must be checked by the user after pushing to GitHub Pages:
+
+1. **Real audio output** from SpessaSynth: the validator passes the buffer
+   through, but the AudioWorklet rendering path is browser-only. If the
+   sf2 is served correctly (RIFF magic, > 100 MB, not a pointer) the
+   synthesizer should produce sound — the fix removes the failure mode
+   that was masking this.
+2. **Grid cell colors** during actual music playback in Grid display mode
+   under HiFi and WASM sound modes. The player.js gate fix (allowing
+   musicGenerator events through in WASM mode) removes the reason events
+   were being swallowed, but observing the colors needs a running browser.
+3. **AudioWorklet timing** — `_emitInterval` must keep pace with the
+   SpessaSynth output. No change to that path, so if it worked before the
+   SF2 broke, it should work after.
+4. **Favicon rendering** as an alien face — the ICO is bit-valid but the
+   visual result depends on whether 32×32 is what the browser picks. On
+   Chrome it usually does. If the face renders as a green blob, that's
+   fine for the "is it alien-colored?" test.
+
+## Recommended post-push verification
+
+Once v13 is live at `aiphenomenon.github.io/.../v13/inthebeginning-bounce/`:
+
+1. Open the URL. Confirm the title bar says **"inthebeginning bounce — v13"**
+   and the subtitle says **"Cosmic Session — v13"**.
+2. Open devtools → Network, verify no 404s on load (no Ember, no
+   piano.mp3, no `audio/album.json`, no favicon).
+3. Select **HiFi** from the sound dropdown, press START. Watch the HUD
+   for either:
+   - A real track name (e.g. "Planck") → SF2 loaded, HiFi is working.
+   - A red **"⚠ HiFi unavailable — playing Synth (see console)"** banner →
+     open devtools console, read the `HiFi:` error line, act on the
+     Git LFS hint if that's the cause.
+4. Select **Grid** display mode + **WASM** sound mode. After ~3 seconds
+   of audio, the grid should display colored cells.
+5. Select **Grid** display mode + **HiFi** sound mode. Same check.

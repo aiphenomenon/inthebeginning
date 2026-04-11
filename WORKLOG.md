@@ -20,6 +20,15 @@ current priorities.
 | 6 | WASM | WASM mode: no track info or time displayed | Done | V47: added wasm case to _onTrackChange, routed time via MusicGenerator |
 | 7 | UI | MP3 player note info shows raw internal instrument names | Done | V47: cleanInstrumentName() strips _v0_additive_N suffixes |
 | 8 | UI | Voice/Choir instrument family unchecked by default | Open | V45 BUG 3 — may be intentional |
+| 17 | HiFi | SF2 cryptic "riff got vers" error on LFS pointer | Done | V50: validator detects LFS pointer, throws actionable error |
+| 18 | HiFi | Silent fallback to Synth mode masks failures | Done | V50: visible red HUD warning + console.error |
+| 19 | Grid | WASM mode: no grid colors (musicGenerator gate) | Done | V50: player.js gate now accepts WASM + SYNTH |
+| 20 | Grid | WASM mode: velocity emitted raw 0-127 instead of 0-1 | Done | V50: normalized in wasm-synth _startEmitLoop |
+| 21 | Console | synth-engine.js piano.mp3 404 noise on start | Done | V50: reorder probe paths — shared/instruments first |
+| 22 | Console | Start-screen Ember.mp3 404 before play mode | Done | V50: audioBases shared-first, albumJsonPaths metadata/v1 first |
+| 23 | UI | Start screen hardcoded "V11" despite v12 cut | Done | V50: APP_VERSION constant in config.js, populated by app.js |
+| 24 | UI | "V8 Sessions" user-facing text → "Cosmic Session" | Done | V50: subtitle empty + credits renamed (file names kept) |
+| 25 | UI | Missing favicon.ico (404 in devtools) | Done | V50: pure-stdlib generated alien-face ICO (4286 bytes) |
 
 ### Audio / Instruments
 
@@ -237,11 +246,12 @@ No outstanding items. Physics engine is stable.
 | CR2 | cosmic-runner-v2 | Archived | Has pytest tests (test_cosmic_runner_v2.py) |
 | CR3 | cosmic-runner-v3 | Active | 3 JS test files, used for V4-V7 deploys |
 | CR4 | cosmic-runner-v5 | **Stale** | Diverged from apps/inthebeginning-bounce/ |
-| CR5 | inthebeginning-bounce | **Active** | Latest source = deploy/v11/ (verified) |
+| CR5 | inthebeginning-bounce | **Active** | Canonical source = apps/inthebeginning-bounce → deploy/v13 (symlink) |
 
 **Important**: apps/cosmic-runner-v5/ is STALE — checksums differ from
-apps/inthebeginning-bounce/ and deploy/v11/. All game development should
-use apps/inthebeginning-bounce/ as the canonical source.
+apps/inthebeginning-bounce/. All game development should use
+apps/inthebeginning-bounce/ as the canonical source; it is a symlink to the
+latest deploy/vN/inthebeginning-bounce, updated whenever a new cut is made.
 
 ---
 
@@ -275,6 +285,7 @@ use apps/inthebeginning-bounce/ as the canonical source.
 | S3 | Stop hook verifies WORKLOG.md updated on game changes | Open | |
 | S4 | CLAUDE.md test tier documentation | Done | V45 |
 | S5 | OSI package evaluation steering guidance | Open | V48: document decision process for adopting vs porting |
+| S6 | Version-label source of truth documented | Done | V50: CLAUDE.md "Version Source of Truth" section added |
 
 ---
 
@@ -290,4 +301,4 @@ use apps/inthebeginning-bounce/ as the canonical source.
 
 ## Last Updated
 
-v48 — 2026-04-05
+v50 — 2026-04-11 (deploy v13)
