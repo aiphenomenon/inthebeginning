@@ -2668,5 +2668,14 @@
       "redactions": []
     }
   ],
-  "cut": null
+  "cut": {
+    "version": "v50",
+    "semver": "v0.50.0",
+    "finalized_at": "2026-04-11 08:26 CT (13:26 UTC)",
+    "commit_shas": [
+      "f17b853 — docs(v50): plan — HiFi SoundFont wireup fixes + v13 deploy",
+      "14bd63d — feat(v50): HiFi SoundFont wireup fixes + v13 deploy (Cosmic Session)"
+    ],
+    "summary": "Fixed eight v12 bugs and cut deploy v13: SF2 LFS-pointer detection, visible HiFi failure banner, WASM mode grid color restoration, reordered probe paths to eliminate start-screen 404 noise, version label bound to APP_VERSION constant, \"V8 Sessions\" user-facing rename to \"Cosmic Session\", alien favicon.ico generated from pure Python stdlib. Added 27 new regression tests (21 Python + 6 JS). Retargeted apps/inthebeginning-bounce symlink to deploy/v13. Documented version source-of-truth in CLAUDE.md."
+  }
 }
