@@ -296,9 +296,11 @@ latest deploy/vN/inthebeginning-bounce, updated whenever a new cut is made.
 | D1 | v4 note data deployed to v10, v11, shared | Done | v43 |
 | D2 | Verify deploy works end-to-end on GitHub Pages | Open | Manual check |
 | D3 | Sync cosmic-runner-v5 with inthebeginning-bounce | Open | V45 finding: v5 is stale |
+| D4 | Auto-deploy `deploy/` to Pages from this repo (no manual copy) | Done | V51: `.github/workflows/pages.yml` + root redirect. Needs Pages source = GitHub Actions (one-time UI setting) |
+| D5 | Host 142MB SoundFont so HiFi works on Pages (CDN/Release asset) | Open | V51: sf2 stripped from artifact (>100MB Pages limit); HiFi falls back to Synth |
 
 ---
 
 ## Last Updated
 
-v50 — 2026-04-11 (deploy v13)
+v51 — 2026-06-06 (GitHub Pages auto-deploy wired up)

@@ -4,6 +4,33 @@ Release history for **In The Beginning** — reverse chronological order (newest
 
 ---
 
+## v0.51.0 — 2026-06-06 — GitHub Pages auto-deploy from this repo
+
+### Summary
+Wires the `deploy/` tree directly to GitHub Pages via a GitHub Actions
+workflow, replacing the manual "copy `deploy/` into a separate gh-pages repo"
+process. A push that touches `deploy/**` now publishes the live site at
+`https://aiphenomenon.github.io/inthebeginning/`, which redirects to the
+latest game build (`v13/inthebeginning-bounce/`).
+
+### Changes
+- **`.github/workflows/pages.yml`** (new): build + deploy jobs using
+  `actions/upload-pages-artifact` / `actions/deploy-pages`. Triggers on push
+  to `develop` and `claude/develop-branch-setup-GflwB` (path-filtered to
+  `deploy/**`) and `workflow_dispatch`. `concurrency: pages` serializes deploys.
+- **`deploy/index.html`** (new): root landing that redirects to the latest
+  game; relative URL works under the project-site subpath.
+- **LFS SoundFont handling**: the workflow strips `*.sf2`/`*.sf3` LFS pointers
+  before upload (the real `FluidR3_GM.sf2` is ~142 MB, over the Pages 100 MB
+  per-file limit). HiFi mode degrades gracefully to Synth; MP3 / MIDI / Synth
+  modes are unaffected. A guard step fails the build if any file exceeds 100 MB.
+
+### One-time manual step
+Set Pages source to **GitHub Actions**: Settings → Pages → Build and
+deployment → Source → GitHub Actions.
+
+---
+
 ## v0.50.0 — 2026-04-11 — HiFi Wireup Fixes + v13 Deploy (Cosmic Session)
 
 ### Summary

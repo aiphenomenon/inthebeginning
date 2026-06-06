@@ -1,0 +1,82 @@
+name: Deploy to GitHub Pages
+
+# Publishes the deploy/ tree (Cosmic Runner game + all versions + shared
+# assets) directly to GitHub Pages. Replaces the old manual "copy deploy/ into
+# a separate gh-pages repo" workflow.
+#
+# One-time setup (cannot be done from git): in the repository settings, set
+#   Settings -> Pages -> Build and deployment -> Source -> "GitHub Actions".
+#
+# Site URL: https://aiphenomenon.github.io/inthebeginning/
+
+on:
+  push:
+    branches:
+      - develop
+      # Included so this branch deploys for verification before merging to
+      # develop. Drop it once develop is the settled deploy source.
+      - claude/develop-branch-setup-GflwB
+    paths:
+      - 'deploy/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+# Least-privilege token plus the OIDC id-token Pages deployment requires.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Serialize Pages deploys. Do not cancel an in-flight deploy: let it finish so
+# the live site is never left half-updated (also avoids races if both develop
+# and the feature branch trigger near-simultaneously).
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # No LFS: the FluidR3_GM.sf2 SoundFont is ~142 MB, which exceeds the
+          # GitHub Pages 100 MB per-file hard limit. We strip the pointers below
+          # rather than resolve them. HiFi mode degrades gracefully to Synth.
+          lfs: false
+
+      - name: Strip LFS SoundFont pointers (exceed Pages 100MB/file limit)
+        run: |
+          find deploy -type f \( -name '*.sf2' -o -name '*.sf3' \) -print -delete
+          # Ensure Jekyll processing stays disabled for the published site.
+          touch deploy/.nojekyll
+
+      - name: Verify no file exceeds the Pages 100MB per-file limit
+        run: |
+          big=$(find deploy -type f -size +100M -print)
+          if [ -n "$big" ]; then
+            echo "::error::Files exceed the GitHub Pages 100MB per-file limit:"
+            echo "$big"
+            exit 1
+          fi
+          echo "All files are within the Pages per-file size limit."
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: deploy
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
